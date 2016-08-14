@@ -23,6 +23,19 @@ func Provider() terraform.ResourceProvider {
 			},
 		},
 
-		ResourcesMap: map[string]*schema.Resource{},
+		ResourcesMap: map[string]*schema.Resource{
+			"sentry_organization": resourceSentryOrganization(),
+		},
+
+		ConfigureFunc: providerConfigure,
 	}
+}
+
+func providerConfigure(d *schema.ResourceData) (interface{}, error) {
+	config := Config{
+		Token:   d.Get("token").(string),
+		BaseURL: d.Get("base_url").(string),
+	}
+
+	return config.Client()
 }
