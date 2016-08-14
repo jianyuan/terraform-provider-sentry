@@ -64,7 +64,6 @@ func resourceSentryOrganizationUpdate(d *schema.ResourceData, meta interface{}) 
 	client := meta.(*Client)
 
 	slug := d.Id()
-
 	params := &UpdateOrganizationParams{
 		Name: d.Get("name").(string),
 		Slug: d.Get("slug").(string),

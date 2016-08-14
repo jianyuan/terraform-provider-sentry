@@ -35,7 +35,11 @@ func (m APIError) Error() string {
 	if !m.HasError() {
 		return ""
 	}
-	return fmt.Sprintf("%v", m)
+	if detail, ok := m["detail"].(string); ok {
+		return detail
+	}
+	// TODO
+	return "field errors"
 }
 
 func relevantError(httpError error, apiError APIError) error {
@@ -55,8 +59,8 @@ type Organization struct {
 }
 
 type CreateOrganizationParams struct {
-	Name string `url:"name"`
-	Slug string `url:"slug,omitempty"`
+	Name string `json:"name"`
+	Slug string `json:"slug,omitempty"`
 }
 
 type UpdateOrganizationParams struct {
@@ -75,7 +79,7 @@ func (c *Client) GetOrganization(slug string) (*Organization, *http.Response, er
 func (c *Client) CreateOrganization(params *CreateOrganizationParams) (*Organization, *http.Response, error) {
 	var org Organization
 	apiErr := make(APIError)
-	resp, err := c.sling.New().Post("0/organizations/").BodyForm(params).Receive(&org, &apiErr)
+	resp, err := c.sling.New().Post("0/organizations/").BodyJSON(params).Receive(&org, &apiErr)
 	return &org, resp, relevantError(err, apiErr)
 }
 
@@ -90,6 +94,53 @@ func (c *Client) UpdateOrganization(slug string, params *UpdateOrganizationParam
 func (c *Client) DeleteOrganization(slug string) (*http.Response, error) {
 	apiErr := make(APIError)
 	path := fmt.Sprintf("0/organizations/%s/", slug)
+	resp, err := c.sling.New().Delete(path).Receive(nil, &apiErr)
+	return resp, relevantError(err, apiErr)
+}
+
+type Team struct {
+	ID   string `json:"id"`
+	Slug string `json:"slug"`
+	Name string `json:"name"`
+}
+
+type CreateTeamParams struct {
+	Name string `json:"name"`
+	Slug string `json:"slug,omitempty"`
+}
+
+type UpdateTeamParams struct {
+	Name string `json:"name"`
+	Slug string `json:"slug,omitempty"`
+}
+
+func (c *Client) GetTeam(organizationSlug, slug string) (*Team, *http.Response, error) {
+	var team Team
+	apiErr := make(APIError)
+	path := fmt.Sprintf("0/teams/%s/%s/", organizationSlug, slug)
+	resp, err := c.sling.New().Get(path).Receive(&team, &apiErr)
+	return &team, resp, relevantError(err, apiErr)
+}
+
+func (c *Client) CreateTeam(organizationSlug string, params *CreateTeamParams) (*Team, *http.Response, error) {
+	var team Team
+	apiErr := make(APIError)
+	path := fmt.Sprintf("0/organizations/%s/teams/", organizationSlug)
+	resp, err := c.sling.New().Post(path).BodyJSON(params).Receive(&team, &apiErr)
+	return &team, resp, relevantError(err, apiErr)
+}
+
+func (c *Client) UpdateTeam(organizationSlug, slug string, params *UpdateTeamParams) (*Team, *http.Response, error) {
+	var team Team
+	apiErr := make(APIError)
+	path := fmt.Sprintf("0/teams/%s/%s/", organizationSlug, slug)
+	resp, err := c.sling.New().Put(path).BodyJSON(params).Receive(&team, &apiErr)
+	return &team, resp, relevantError(err, apiErr)
+}
+
+func (c *Client) DeleteTeam(organizationSlug, slug string) (*http.Response, error) {
+	apiErr := make(APIError)
+	path := fmt.Sprintf("0/teams/%s/%s/", organizationSlug, slug)
 	resp, err := c.sling.New().Delete(path).Receive(nil, &apiErr)
 	return resp, relevantError(err, apiErr)
 }
