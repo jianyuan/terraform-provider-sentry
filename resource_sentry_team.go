@@ -18,12 +18,12 @@ func resourceSentryTeam() *schema.Resource {
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The human readable name for the new organization",
+				Description: "The name of the team",
 			},
 			"slug": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The unique URL slug for this organization",
+				Description: "The optional slug for this team",
 				Computed:    true,
 			},
 		},

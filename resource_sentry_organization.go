@@ -13,7 +13,7 @@ func resourceSentryOrganization() *schema.Resource {
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The human readable name for the new organization",
+				Description: "The human readable name for the organization",
 			},
 			"slug": &schema.Schema{
 				Type:        schema.TypeString,
