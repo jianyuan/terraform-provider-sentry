@@ -1,0 +1,105 @@
+package main
+
+import "github.com/hashicorp/terraform/helper/schema"
+
+func resourceSentryProject() *schema.Resource {
+	return &schema.Resource{
+		Create: resourceSentryProjectCreate,
+		Read:   resourceSentryProjectRead,
+		Update: resourceSentryProjectUpdate,
+		Delete: resourceSentryProjectDelete,
+
+		Schema: map[string]*schema.Schema{
+			"organization": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The slug of the organization the project belongs to",
+			},
+			"team": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The slug of the team to create the project for",
+			},
+			"name": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The name for the project",
+			},
+			"slug": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The optional slug for this project",
+				Computed:    true,
+			},
+		},
+	}
+}
+
+func resourceSentryProjectCreate(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*Client)
+
+	org := d.Get("organization").(string)
+	team := d.Get("team").(string)
+	params := &CreateProjectParams{
+		Name: d.Get("name").(string),
+		Slug: d.Get("slug").(string),
+	}
+
+	proj, _, err := client.CreateProject(org, team, params)
+	if err != nil {
+		return err
+	}
+
+	d.SetId(proj.Slug)
+	return resourceSentryProjectRead(d, meta)
+}
+
+func resourceSentryProjectRead(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*Client)
+
+	slug := d.Id()
+	org := d.Get("organization").(string)
+
+	proj, _, err := client.GetProject(org, slug)
+	if err != nil {
+		d.SetId("")
+		return nil
+	}
+
+	d.SetId(proj.Slug)
+	d.Set("internal_id", proj.ID)
+	d.Set("name", proj.Name)
+	d.Set("slug", proj.Slug)
+	d.Set("organization", proj.Organization.Slug)
+	d.Set("team", proj.Team.Slug)
+	return nil
+}
+
+func resourceSentryProjectUpdate(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*Client)
+
+	slug := d.Id()
+	org := d.Get("organization").(string)
+	params := &UpdateProjectParams{
+		Name: d.Get("name").(string),
+		Slug: d.Get("slug").(string),
+	}
+
+	proj, _, err := client.UpdateProject(org, slug, params)
+	if err != nil {
+		return err
+	}
+
+	d.SetId(proj.Slug)
+	return resourceSentryProjectRead(d, meta)
+}
+
+func resourceSentryProjectDelete(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*Client)
+
+	slug := d.Id()
+	org := d.Get("organization").(string)
+
+	_, err := client.DeleteProject(org, slug)
+	return err
+}

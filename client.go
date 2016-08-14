@@ -99,9 +99,10 @@ func (c *Client) DeleteOrganization(slug string) (*http.Response, error) {
 }
 
 type Team struct {
-	ID   string `json:"id"`
-	Slug string `json:"slug"`
-	Name string `json:"name"`
+	Organization Organization `json:"organization"`
+	ID           string       `json:"id"`
+	Slug         string       `json:"slug"`
+	Name         string       `json:"name"`
 }
 
 type CreateTeamParams struct {
@@ -141,6 +142,55 @@ func (c *Client) UpdateTeam(organizationSlug, slug string, params *UpdateTeamPar
 func (c *Client) DeleteTeam(organizationSlug, slug string) (*http.Response, error) {
 	apiErr := make(APIError)
 	path := fmt.Sprintf("0/teams/%s/%s/", organizationSlug, slug)
+	resp, err := c.sling.New().Delete(path).Receive(nil, &apiErr)
+	return resp, relevantError(err, apiErr)
+}
+
+type Project struct {
+	Organization Organization `json:"organization"`
+	Team         Team         `json:"team"`
+	ID           string       `json:"id"`
+	Slug         string       `json:"slug"`
+	Name         string       `json:"name"`
+}
+
+type CreateProjectParams struct {
+	Name string `json:"name"`
+	Slug string `json:"slug,omitempty"`
+}
+
+type UpdateProjectParams struct {
+	Name string `json:"name"`
+	Slug string `json:"slug,omitempty"`
+}
+
+func (c *Client) GetProject(organizationSlug, slug string) (*Project, *http.Response, error) {
+	var proj Project
+	apiErr := make(APIError)
+	path := fmt.Sprintf("0/projects/%s/%s/", organizationSlug, slug)
+	resp, err := c.sling.New().Get(path).Receive(&proj, &apiErr)
+	return &proj, resp, relevantError(err, apiErr)
+}
+
+func (c *Client) CreateProject(organizationSlug, teamSlug string, params *CreateProjectParams) (*Project, *http.Response, error) {
+	var proj Project
+	apiErr := make(APIError)
+	path := fmt.Sprintf("0/teams/%s/%s/projects/", organizationSlug, teamSlug)
+	resp, err := c.sling.New().Post(path).BodyJSON(params).Receive(&proj, &apiErr)
+	return &proj, resp, relevantError(err, apiErr)
+}
+
+func (c *Client) UpdateProject(organizationSlug, slug string, params *UpdateProjectParams) (*Project, *http.Response, error) {
+	var proj Project
+	apiErr := make(APIError)
+	path := fmt.Sprintf("0/projects/%s/%s/", organizationSlug, slug)
+	resp, err := c.sling.New().Put(path).BodyJSON(params).Receive(&proj, &apiErr)
+	return &proj, resp, relevantError(err, apiErr)
+}
+
+func (c *Client) DeleteProject(organizationSlug, slug string) (*http.Response, error) {
+	apiErr := make(APIError)
+	path := fmt.Sprintf("0/projects/%s/%s/", organizationSlug, slug)
 	resp, err := c.sling.New().Delete(path).Receive(nil, &apiErr)
 	return resp, relevantError(err, apiErr)
 }

@@ -64,6 +64,7 @@ func resourceSentryTeamRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("internal_id", team.ID)
 	d.Set("name", team.Name)
 	d.Set("slug", team.Slug)
+	d.Set("organization", team.Organization.Slug)
 	return nil
 }
 
