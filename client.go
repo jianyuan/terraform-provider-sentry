@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/dghubble/sling"
@@ -191,6 +192,60 @@ func (c *Client) UpdateProject(organizationSlug, slug string, params *UpdateProj
 func (c *Client) DeleteProject(organizationSlug, slug string) (*http.Response, error) {
 	apiErr := make(APIError)
 	path := fmt.Sprintf("0/projects/%s/%s/", organizationSlug, slug)
+	resp, err := c.sling.New().Delete(path).Receive(nil, &apiErr)
+	return resp, relevantError(err, apiErr)
+}
+
+type DSN struct {
+	Secret string `json:"secret"`
+	Public string `json:"public"`
+	CSP    string `json:"csp"`
+}
+
+type Key struct {
+	ID     string `json:"id"`
+	Label  string `json:"label"`
+	Secret string `json:"secret"`
+	DSN    DSN    `json:"dsn"`
+}
+
+type CreateKeyParams struct {
+	Name string `json:"name"`
+}
+
+func (c *Client) GetKey(organizationSlug, projectSlug, keyID string) (*Key, *http.Response, error) {
+	var key Key
+
+	keys := new([]Key)
+	apiErr := make(APIError)
+
+	path := fmt.Sprintf("0/projects/%s/%s/keys/", organizationSlug, projectSlug)
+	log.Printf("[DEBUG] Client.GetKey %s", path)
+
+	resp, err := c.sling.New().Get(path).Receive(keys, &apiErr)
+
+	for _, v := range *keys {
+		if v.ID == keyID {
+			key = v
+		}
+	}
+
+	log.Printf("[DEBUG] Client.GetKey response %s", resp)
+
+	return &key, resp, relevantError(err, apiErr)
+}
+
+func (c *Client) CreateKey(organizationSlug, projectSlug string, params *CreateKeyParams) (*Key, *http.Response, error) {
+	var key Key
+	apiErr := make(APIError)
+	path := fmt.Sprintf("0/projects/%s/%s/keys/", organizationSlug, projectSlug)
+	resp, err := c.sling.New().Post(path).BodyJSON(params).Receive(&key, &apiErr)
+	return &key, resp, relevantError(err, apiErr)
+}
+
+func (c *Client) DeleteKey(organizationSlug, projectSlug, keyID string) (*http.Response, error) {
+	apiErr := make(APIError)
+	path := fmt.Sprintf("0/projects/%s/%s/keys/%s/", organizationSlug, projectSlug, keyID)
 	resp, err := c.sling.New().Delete(path).Receive(nil, &apiErr)
 	return resp, relevantError(err, apiErr)
 }
