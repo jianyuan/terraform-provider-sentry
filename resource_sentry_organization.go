@@ -8,6 +8,9 @@ func resourceSentryOrganization() *schema.Resource {
 		Read:   resourceSentryOrganizationRead,
 		Update: resourceSentryOrganizationUpdate,
 		Delete: resourceSentryOrganizationDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{

@@ -104,3 +104,9 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `id` - The ID of the created project.
+
+### Import
+
+You can import existing resources using [terraform import](https://www.terraform.io/docs/import/index.html).
+
+Organization are directly importable using `terraform import sentry_organization.default org-slug`. Teams and project via `terraform import sentry_team.default org-slug/team-slug` and `terraform import sentry_project.default org-slug/project-slug` respectively.

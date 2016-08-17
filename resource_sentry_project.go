@@ -1,6 +1,12 @@
 package main
 
-import "github.com/hashicorp/terraform/helper/schema"
+import (
+	"errors"
+	"log"
+	"strings"
+
+	"github.com/hashicorp/terraform/helper/schema"
+)
 
 func resourceSentryProject() *schema.Resource {
 	return &schema.Resource{
@@ -8,6 +14,9 @@ func resourceSentryProject() *schema.Resource {
 		Read:   resourceSentryProjectRead,
 		Update: resourceSentryProjectUpdate,
 		Delete: resourceSentryProjectDelete,
+		Importer: &schema.ResourceImporter{
+			State: resourceSentryProjectImporter,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"organization": &schema.Schema{
@@ -102,4 +111,21 @@ func resourceSentryProjectDelete(d *schema.ResourceData, meta interface{}) error
 
 	_, err := client.DeleteProject(org, slug)
 	return err
+}
+
+func resourceSentryProjectImporter(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	addrID := d.Id()
+
+	log.Printf("[DEBUG] Importing key using ADDR ID %s", addrID)
+
+	parts := strings.Split(addrID, "/")
+
+	if len(parts) != 2 {
+		return nil, errors.New("Project import requires an ADDR ID of the following schema org-slug/team-slug")
+	}
+
+	d.Set("organization", parts[0])
+	d.SetId(parts[1])
+
+	return []*schema.ResourceData{d}, nil
 }
