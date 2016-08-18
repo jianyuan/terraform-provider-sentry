@@ -146,12 +146,17 @@ func (c *Client) DeleteTeam(organizationSlug, slug string) (*http.Response, erro
 	return resp, relevantError(err, apiErr)
 }
 
+type ProjectOptions struct {
+	ResolveAge int `json:"sentry:resolve_age"`
+}
+
 type Project struct {
-	Organization Organization `json:"organization"`
-	Team         Team         `json:"team"`
-	ID           string       `json:"id"`
-	Slug         string       `json:"slug"`
-	Name         string       `json:"name"`
+	Organization Organization   `json:"organization"`
+	Team         Team           `json:"team"`
+	ID           string         `json:"id"`
+	Slug         string         `json:"slug"`
+	Name         string         `json:"name"`
+	Options      ProjectOptions `json:"options"`
 }
 
 type CreateProjectParams struct {
@@ -159,9 +164,14 @@ type CreateProjectParams struct {
 	Slug string `json:"slug,omitempty"`
 }
 
+type UpdateProjectOptionsParams struct {
+	ResolveAge int `json:"sentry:resolve_age,omitempty"`
+}
+
 type UpdateProjectParams struct {
-	Name string `json:"name"`
-	Slug string `json:"slug,omitempty"`
+	Name    string                     `json:"name"`
+	Slug    string                     `json:"slug,omitempty"`
+	Options UpdateProjectOptionsParams `json:"options,omitempty"`
 }
 
 func (c *Client) GetProject(organizationSlug, slug string) (*Project, *http.Response, error) {
