@@ -40,6 +40,11 @@ func resourceSentryProject() *schema.Resource {
 				Description: "The optional slug for this project",
 				Computed:    true,
 			},
+			"resolve_age": &schema.Schema{
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "Number of hours after issues are automatically resolved",
+			},
 		},
 	}
 }
@@ -81,6 +86,7 @@ func resourceSentryProjectRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("slug", proj.Slug)
 	d.Set("organization", proj.Organization.Slug)
 	d.Set("team", proj.Team.Slug)
+	d.Set("resolve_age", proj.Options.ResolveAge)
 	return nil
 }
 
