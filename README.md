@@ -105,6 +105,37 @@ The following attributes are exported:
 
 * `id` - The ID of the created project.
 
+#### `sentry_plugin`
+
+##### Example Usage
+
+```
+# Create a plugin
+resource "sentry_plugin" "default" {
+    organization = "my-organization"
+    project = "web-app"
+    plugin = "slack"
+    config = {
+      webhook = "slack://webhook"
+    }
+}
+```
+
+##### Argument Reference
+
+The following arguments are supported:
+
+* `organization` - (Required) The slug of the organization the plugin should be enabled for.
+* `project` - (Required) The slug of the project the plugin should be enabled for.
+* `plugin` - (Required) Identifier of the plugin.
+* `config` - (Optional) Configuration of the plugin.
+
+##### Attributes Reference
+
+The following attributes are exported:
+
+* `id` - The ID of the created plugin.
+
 ### Import
 
 You can import existing resources using [terraform import](https://www.terraform.io/docs/import/index.html).
