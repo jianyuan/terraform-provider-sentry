@@ -98,6 +98,9 @@ func resourceSentryProjectUpdate(d *schema.ResourceData, meta interface{}) error
 	params := &UpdateProjectParams{
 		Name: d.Get("name").(string),
 		Slug: d.Get("slug").(string),
+		Options: UpdateProjectOptionsParams{
+			ResolveAge: d.Get("resolve_age").(int),
+		},
 	}
 
 	proj, _, err := client.UpdateProject(org, slug, params)
