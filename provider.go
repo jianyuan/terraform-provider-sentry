@@ -28,6 +28,7 @@ func Provider() terraform.ResourceProvider {
 			"sentry_team":         resourceSentryTeam(),
 			"sentry_project":      resourceSentryProject(),
 			"sentry_key":          resourceSentryKey(),
+			"sentry_plugin":       resourceSentryPlugin(),
 		},
 
 		ConfigureFunc: providerConfigure,

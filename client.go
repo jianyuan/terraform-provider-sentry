@@ -259,3 +259,53 @@ func (c *Client) DeleteKey(organizationSlug, projectSlug, keyID string) (*http.R
 	resp, err := c.sling.New().Delete(path).Receive(nil, &apiErr)
 	return resp, relevantError(err, apiErr)
 }
+
+type PluginConfigEntry struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+
+type Plugin struct {
+	ID      string              `json:"id"`
+	Enabled bool                `json:"enabled"`
+	Config  []PluginConfigEntry `json:"config,omitempty"`
+}
+
+func (c *Client) GetPlugin(organizationSlug, projectSlug, id string) (*Plugin, *http.Response, error) {
+	var plugin Plugin
+	apiErr := make(APIError)
+	path := fmt.Sprintf("0/projects/%s/%s/plugins/%s/", organizationSlug, projectSlug, id)
+	resp, err := c.sling.New().Get(path).Receive(&plugin, &apiErr)
+
+	log.Printf("[DEBUG] Client.GetPlugin %s\n%v", path, resp)
+
+	return &plugin, resp, relevantError(err, apiErr)
+}
+
+func (c *Client) UpdatePlugin(organizationSlug, projectSlug, id string, params map[string]interface{}) (*Plugin, *http.Response, error) {
+	var plugin Plugin
+	apiErr := make(APIError)
+	path := fmt.Sprintf("0/projects/%s/%s/plugins/%s/", organizationSlug, projectSlug, id)
+	resp, err := c.sling.New().Put(path).BodyJSON(params).Receive(&plugin, &apiErr)
+
+	log.Printf("[DEBUG] Client.UpdatePlugin %s\n%v", path, resp)
+
+	return &plugin, resp, relevantError(err, apiErr)
+}
+
+func (c *Client) EnablePlugin(organizationSlug, projectSlug, id string) (*http.Response, error) {
+	apiErr := make(APIError)
+	path := fmt.Sprintf("0/projects/%s/%s/plugins/%s/", organizationSlug, projectSlug, id)
+	resp, err := c.sling.New().Post(path).Receive(nil, &apiErr)
+
+	log.Printf("[DEBUG] Client.EnablePlugin %s\n%v", path, resp)
+
+	return resp, relevantError(err, apiErr)
+}
+
+func (c *Client) DisablePlugin(organizationSlug, projectSlug, id string) (*http.Response, error) {
+	apiErr := make(APIError)
+	path := fmt.Sprintf("0/projects/%s/%s/plugins/%s/", organizationSlug, projectSlug, id)
+	resp, err := c.sling.New().Delete(path).Receive(nil, &apiErr)
+	return resp, relevantError(err, apiErr)
+}
