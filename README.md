@@ -81,7 +81,7 @@ The following attributes are exported:
 ##### Example Usage
 
 ```
-# Create a team
+# Create a project
 resource "sentry_project" "default" {
     organization = "my-organization"
     team = "my-team"
