@@ -106,24 +106,8 @@ type testAccSentryTeamExpectedAttributes struct {
 	Slug        string
 }
 
-func (attrs *testAccSentryTeamExpectedAttributes) internalValidate() error {
-	if attrs == nil {
-		return errors.New("attribute is nil")
-	}
-
-	if attrs.SlugPresent && attrs.Slug != "" {
-		return errors.New("cannot provide both SlugPresent and Slug")
-	}
-
-	return nil
-}
-
 func testAccCheckSentryTeamAttributes(team *Team, want *testAccSentryTeamExpectedAttributes) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if err := want.internalValidate(); err != nil {
-			return err
-		}
-
 		if team.Name != want.Name {
 			return fmt.Errorf("got team %q; want %q", team.Name, want.Name)
 		}
@@ -134,6 +118,10 @@ func testAccCheckSentryTeamAttributes(team *Team, want *testAccSentryTeamExpecte
 
 		if want.SlugPresent && team.Slug == "" {
 			return errors.New("got empty slug; want non-empty slug")
+		}
+
+		if want.Slug != "" && team.Slug != want.Slug {
+			return fmt.Errorf("got slug %q; want %q", team.Slug, want.Slug)
 		}
 
 		return nil
