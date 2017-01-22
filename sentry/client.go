@@ -43,11 +43,10 @@ func (m APIError) Error() error {
 		}
 		return fmt.Errorf(detail)
 	}
-	// TODO
-	return fmt.Errorf("field errors")
+	return fmt.Errorf("API errored: %v", m)
 }
 
-func relevantError(errors... error) error {
+func relevantError(errors ...error) error {
 	for _, err := range errors {
 		if err != nil {
 			return err
