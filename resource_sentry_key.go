@@ -22,13 +22,11 @@ func resourceSentryKey() *schema.Resource {
 			"organization": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 				Description: "The slug of the organization the key should be created for",
 			},
 			"project": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 				Description: "The slug of the project the key should be created for",
 			},
 			"name": &schema.Schema{
