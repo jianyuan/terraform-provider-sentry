@@ -223,6 +223,10 @@ type CreateKeyParams struct {
 	Name string `json:"name"`
 }
 
+type UpdateKeyParams struct {
+	Name string `json:"name"`
+}
+
 func (c *Client) GetKey(organizationSlug, projectSlug, keyID string) (*Key, *http.Response, error) {
 	var key Key
 
@@ -250,6 +254,14 @@ func (c *Client) CreateKey(organizationSlug, projectSlug string, params *CreateK
 	apiErr := make(APIError)
 	path := fmt.Sprintf("0/projects/%s/%s/keys/", organizationSlug, projectSlug)
 	resp, err := c.sling.New().Post(path).BodyJSON(params).Receive(&key, &apiErr)
+	return &key, resp, relevantError(err, apiErr)
+}
+
+func (c *Client) UpdateKey(organizationSlug, projectSlug string, keyID string, params *UpdateKeyParams) (*Key, *http.Response, error) {
+	var key Key
+	apiErr := make(APIError)
+	path := fmt.Sprintf("0/projects/%s/%s/keys/%s/", organizationSlug, projectSlug, keyID)
+	resp, err := c.sling.New().Put(path).BodyJSON(params).Receive(&key, &apiErr)
 	return &key, resp, relevantError(err, apiErr)
 }
 

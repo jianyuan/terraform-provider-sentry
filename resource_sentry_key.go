@@ -12,6 +12,7 @@ func resourceSentryKey() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceSentryKeyCreate,
 		Read:   resourceSentryKeyRead,
+		Update: resourceSentryKeyUpdate,
 		Delete: resourceSentryKeyDelete,
 		Importer: &schema.ResourceImporter{
 			State: resourceKeyImporter,
@@ -33,7 +34,6 @@ func resourceSentryKey() *schema.Resource {
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 				Description: "The name of the key",
 			},
 			"dsn_secret": &schema.Schema{
@@ -92,6 +92,25 @@ func resourceSentryKeyRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("dsn_public", key.DSN.Public)
 	d.Set("dsn_csp", key.DSN.CSP)
 	return nil
+}
+
+func resourceSentryKeyUpdate(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*Client)
+
+	id := d.Id()
+	org := d.Get("organization").(string)
+	project := d.Get("project").(string)
+	params := &UpdateKeyParams{
+		Name: d.Get("name").(string),
+	}
+
+	key, _, err := client.UpdateKey(org, project, id, params)
+	if err != nil {
+		return err
+	}
+
+	d.SetId(key.ID)
+	return resourceSentryKeyRead(d, meta)
 }
 
 func resourceSentryKeyDelete(d *schema.ResourceData, meta interface{}) error {
