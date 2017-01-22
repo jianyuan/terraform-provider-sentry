@@ -1,4 +1,4 @@
-package main
+package sentry
 
 import (
 	"github.com/hashicorp/terraform/helper/schema"

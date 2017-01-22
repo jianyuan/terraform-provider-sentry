@@ -1,4 +1,4 @@
-package main
+package sentry
 
 import "net/url"
 
