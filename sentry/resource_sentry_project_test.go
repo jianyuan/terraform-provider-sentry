@@ -97,7 +97,10 @@ func testAccCheckSentryProjectExists(n string, proj *Project) resource.TestCheck
 		}
 
 		client := testAccProvider.Meta().(*Client)
-		sentryProj, _, err := client.GetProject(testOrganization, rs.Primary.ID)
+		sentryProj, _, err := client.GetProject(
+			rs.Primary.Attributes["organization"],
+			rs.Primary.ID,
+		)
 		if err != nil {
 			return err
 		}

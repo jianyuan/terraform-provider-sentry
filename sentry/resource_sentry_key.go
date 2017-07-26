@@ -34,6 +34,14 @@ func resourceSentryKey() *schema.Resource {
 				Required:    true,
 				Description: "The name of the key",
 			},
+			"public": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"secret": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"dsn_secret": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
@@ -84,7 +92,8 @@ func resourceSentryKeyRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId(key.ID)
-	d.Set("name", key.Label)
+	d.Set("name", key.Name)
+	d.Set("public", key.Public)
 	d.Set("secret", key.Secret)
 	d.Set("dsn_secret", key.DSN.Secret)
 	d.Set("dsn_public", key.DSN.Public)

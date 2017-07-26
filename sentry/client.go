@@ -222,10 +222,13 @@ type DSN struct {
 }
 
 type Key struct {
-	ID     string `json:"id"`
-	Label  string `json:"label"`
-	Secret string `json:"secret"`
-	DSN    DSN    `json:"dsn"`
+	ID        string `json:"id"`
+	Name      string `json:"name"`
+	Public    string `json:"public"`
+	Secret    string `json:"secret"`
+	ProjectID int    `json:"projectId"`
+	IsActive  bool   `json:"isActive"`
+	DSN       DSN    `json:"dsn"`
 }
 
 type CreateKeyParams struct {

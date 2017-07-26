@@ -63,7 +63,10 @@ func testAccCheckSentryTeamDestroy(s *terraform.State) error {
 			continue
 		}
 
-		team, resp, err := client.GetTeam(testOrganization, rs.Primary.ID)
+		team, resp, err := client.GetTeam(
+			rs.Primary.Attributes["organization"],
+			rs.Primary.ID,
+		)
 		if err == nil {
 			if team != nil {
 				return errors.New("Team still exists")
@@ -89,7 +92,10 @@ func testAccCheckSentryTeamExists(n string, team *Team) resource.TestCheckFunc {
 		}
 
 		client := testAccProvider.Meta().(*Client)
-		sentryTeam, _, err := client.GetTeam(testOrganization, rs.Primary.ID)
+		sentryTeam, _, err := client.GetTeam(
+			rs.Primary.Attributes["organization"],
+			rs.Primary.ID,
+		)
 		if err != nil {
 			return err
 		}
