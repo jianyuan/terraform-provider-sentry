@@ -1,3 +1,0 @@
-test:
-  override:
-    - TF_ACC=1 go test -v -race ./...
