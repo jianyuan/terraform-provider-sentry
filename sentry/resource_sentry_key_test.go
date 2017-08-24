@@ -7,10 +7,11 @@ import (
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
+	"github.com/jianyuan/go-sentry/sentry"
 )
 
 func TestAccSentryKey_basic(t *testing.T) {
-	var key Key
+	var key sentry.ProjectKey
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -46,21 +47,22 @@ func TestAccSentryKey_basic(t *testing.T) {
 }
 
 func testAccCheckSentryKeyDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*Client)
+	client := testAccProvider.Meta().(*sentry.Client)
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "sentry_key" {
 			continue
 		}
 
-		key, resp, err := client.GetKey(
+		keys, resp, err := client.ProjectKeys.List(
 			rs.Primary.Attributes["organization"],
 			rs.Primary.Attributes["project"],
-			rs.Primary.ID,
 		)
 		if err == nil {
-			if key != nil {
-				return errors.New("Key still exists")
+			for _, key := range keys {
+				if key.ID == rs.Primary.ID {
+					return errors.New("Key still exists")
+				}
 			}
 		}
 		if resp.StatusCode != 404 {
@@ -71,7 +73,7 @@ func testAccCheckSentryKeyDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckSentryKeyExists(n string, key *Key) resource.TestCheckFunc {
+func testAccCheckSentryKeyExists(n string, projectKey *sentry.ProjectKey) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -82,16 +84,21 @@ func testAccCheckSentryKeyExists(n string, key *Key) resource.TestCheckFunc {
 			return errors.New("No key ID is set")
 		}
 
-		client := testAccProvider.Meta().(*Client)
-		sentryKey, _, err := client.GetKey(
+		client := testAccProvider.Meta().(*sentry.Client)
+		keys, _, err := client.ProjectKeys.List(
 			rs.Primary.Attributes["organization"],
 			rs.Primary.Attributes["project"],
-			rs.Primary.ID,
 		)
 		if err != nil {
 			return err
 		}
-		*key = *sentryKey
+
+		for _, key := range keys {
+			if key.ID == rs.Primary.ID {
+				*projectKey = key
+				break
+			}
+		}
 		return nil
 	}
 }

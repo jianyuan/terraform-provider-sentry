@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/jianyuan/go-sentry/sentry"
 )
 
 func resourceSentryProject() *schema.Resource {
@@ -19,47 +20,85 @@ func resourceSentryProject() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"organization": &schema.Schema{
+			"organization": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The slug of the organization the project belongs to",
 			},
-			"team": &schema.Schema{
+			"team": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The slug of the team to create the project for",
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The name for the project",
 			},
-			"slug": &schema.Schema{
+			"slug": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The optional slug for this project",
 				Computed:    true,
 			},
-			"resolve_age": &schema.Schema{
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "Number of hours after issues are automatically resolved",
+			"project_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"is_public": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"is_bookmarked": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
+			"call_sign": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"color": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"features": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"status": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"options": {
+				Type:     schema.TypeMap,
+				Computed: true,
+			},
+			"digests_min_delay": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"digests_max_delay": {
+				Type:     schema.TypeInt,
+				Optional: true,
 			},
 		},
 	}
 }
 
 func resourceSentryProjectCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Client)
+	client := meta.(*sentry.Client)
 
 	org := d.Get("organization").(string)
 	team := d.Get("team").(string)
-	params := &CreateProjectParams{
+	params := &sentry.CreateProjectParams{
 		Name: d.Get("name").(string),
 		Slug: d.Get("slug").(string),
 	}
 
-	proj, _, err := client.CreateProject(org, team, params)
+	proj, _, err := client.Projects.Create(org, team, params)
 	if err != nil {
 		return err
 	}
@@ -69,41 +108,58 @@ func resourceSentryProjectCreate(d *schema.ResourceData, meta interface{}) error
 }
 
 func resourceSentryProjectRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Client)
+	client := meta.(*sentry.Client)
 
 	slug := d.Id()
 	org := d.Get("organization").(string)
 
-	proj, _, err := client.GetProject(org, slug)
+	proj, _, err := client.Projects.Get(org, slug)
 	if err != nil {
 		d.SetId("")
 		return nil
 	}
 
 	d.SetId(proj.Slug)
-	d.Set("internal_id", proj.ID)
-	d.Set("name", proj.Name)
-	d.Set("slug", proj.Slug)
 	d.Set("organization", proj.Organization.Slug)
 	d.Set("team", proj.Team.Slug)
-	d.Set("resolve_age", proj.Options.ResolveAge)
+	d.Set("name", proj.Name)
+	d.Set("slug", proj.Slug)
+	d.Set("project_id", proj.ID)
+	d.Set("is_public", proj.IsPublic)
+	d.Set("is_bookmarked", proj.IsBookmarked)
+	d.Set("call_sign", proj.CallSign)
+	d.Set("color", proj.Color)
+	d.Set("features", proj.Features)
+	d.Set("status", proj.Status)
+	d.Set("options", proj.Options)
+	d.Set("digests_min_delay", proj.DigestsMinDelay)
+	d.Set("digests_max_delay", proj.DigestsMaxDelay)
 	return nil
 }
 
 func resourceSentryProjectUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Client)
+	client := meta.(*sentry.Client)
 
 	slug := d.Id()
 	org := d.Get("organization").(string)
-	params := &UpdateProjectParams{
-		Name: d.Get("name").(string),
-		Slug: d.Get("slug").(string),
-		Options: UpdateProjectOptionsParams{
-			ResolveAge: d.Get("resolve_age").(int),
-		},
+	params := &sentry.UpdateProjectParams{
+		Name:            d.Get("name").(string),
+		Slug:            d.Get("slug").(string),
 	}
 
-	proj, _, err := client.UpdateProject(org, slug, params)
+	if v, ok := d.GetOk("is_bookmarked"); ok {
+		params.IsBookmarked = Bool(v.(bool))
+	}
+
+	if v, ok := d.GetOk("digests_min_delay"); ok {
+		params.DigestsMinDelay = Int(v.(int))
+	}
+
+	if v, ok := d.GetOk("digests_max_delay"); ok {
+		params.DigestsMaxDelay = Int(v.(int))
+	}
+
+	proj, _, err := client.Projects.Update(org, slug, params)
 	if err != nil {
 		return err
 	}
@@ -113,12 +169,12 @@ func resourceSentryProjectUpdate(d *schema.ResourceData, meta interface{}) error
 }
 
 func resourceSentryProjectDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Client)
+	client := meta.(*sentry.Client)
 
 	slug := d.Id()
 	org := d.Get("organization").(string)
 
-	_, err := client.DeleteProject(org, slug)
+	_, err := client.Projects.Delete(org, slug)
 	return err
 }
 

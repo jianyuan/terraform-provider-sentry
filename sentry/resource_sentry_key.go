@@ -1,11 +1,8 @@
 package sentry
 
 import (
-	"errors"
-	"log"
-	"strings"
-
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/jianyuan/go-sentry/sentry"
 )
 
 func resourceSentryKey() *schema.Resource {
@@ -15,42 +12,58 @@ func resourceSentryKey() *schema.Resource {
 		Update: resourceSentryKeyUpdate,
 		Delete: resourceSentryKeyDelete,
 		Importer: &schema.ResourceImporter{
-			State: resourceKeyImporter,
+			State: resourceKeyImport,
 		},
 
 		Schema: map[string]*schema.Schema{
-			"organization": &schema.Schema{
+			"organization": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The slug of the organization the key should be created for",
 			},
-			"project": &schema.Schema{
+			"project": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The slug of the project the key should be created for",
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The name of the key",
 			},
-			"public": &schema.Schema{
+			"public": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"secret": &schema.Schema{
+			"secret": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"dsn_secret": &schema.Schema{
+			"project_id": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+			"is_active": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"rate_limit_window": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+			"rate_limit_count": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+			"dsn_secret": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"dsn_public": &schema.Schema{
+			"dsn_public": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"dsn_csp": &schema.Schema{
+			"dsn_csp": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -59,15 +72,15 @@ func resourceSentryKey() *schema.Resource {
 }
 
 func resourceSentryKeyCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Client)
+	client := meta.(*sentry.Client)
 
 	org := d.Get("organization").(string)
 	project := d.Get("project").(string)
-	params := &CreateKeyParams{
+	params := &sentry.CreateProjectKeyParams{
 		Name: d.Get("name").(string),
 	}
 
-	key, _, err := client.CreateKey(org, project, params)
+	key, _, err := client.ProjectKeys.Create(org, project, params)
 	if err != nil {
 		return err
 	}
@@ -77,41 +90,61 @@ func resourceSentryKeyCreate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceSentryKeyRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Client)
+	client := meta.(*sentry.Client)
 
 	id := d.Id()
 	org := d.Get("organization").(string)
 	project := d.Get("project").(string)
 
-	log.Printf("[DEBUG] SentryKeyRead %s, %s, %s", org, project, id)
-
-	key, _, err := client.GetKey(org, project, id)
+	keys, _, err := client.ProjectKeys.List(org, project)
 	if err != nil {
-		d.SetId("")
-		return nil
+		return err
 	}
 
-	d.SetId(key.ID)
-	d.Set("name", key.Name)
-	d.Set("public", key.Public)
-	d.Set("secret", key.Secret)
-	d.Set("dsn_secret", key.DSN.Secret)
-	d.Set("dsn_public", key.DSN.Public)
-	d.Set("dsn_csp", key.DSN.CSP)
+	found := false
+
+	for _, key := range keys {
+		if key.ID == id {
+			d.SetId(key.ID)
+			d.Set("name", key.Name)
+			d.Set("public", key.Public)
+			d.Set("secret", key.Secret)
+			d.Set("project_id", key.ProjectID)
+			d.Set("is_active", key.IsActive)
+
+			if key.RateLimit != nil {
+				d.Set("rate_limit_window", key.RateLimit.Window)
+				d.Set("rate_limit_count", key.RateLimit.Count)
+			}
+
+			d.Set("dsn_secret", key.DSN.Secret)
+			d.Set("dsn_public", key.DSN.Public)
+			d.Set("dsn_csp", key.DSN.CSP)
+
+			found = true
+
+			break
+		}
+	}
+
+	if !found {
+		d.SetId("")
+	}
+
 	return nil
 }
 
 func resourceSentryKeyUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Client)
+	client := meta.(*sentry.Client)
 
 	id := d.Id()
 	org := d.Get("organization").(string)
 	project := d.Get("project").(string)
-	params := &UpdateKeyParams{
+	params := &sentry.UpdateProjectKeyParams{
 		Name: d.Get("name").(string),
 	}
 
-	key, _, err := client.UpdateKey(org, project, id, params)
+	key, _, err := client.ProjectKeys.Update(org, project, id, params)
 	if err != nil {
 		return err
 	}
@@ -121,30 +154,12 @@ func resourceSentryKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceSentryKeyDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Client)
+	client := meta.(*sentry.Client)
 
 	id := d.Id()
 	org := d.Get("organization").(string)
 	project := d.Get("project").(string)
 
-	_, err := client.DeleteKey(org, project, id)
+	_, err := client.ProjectKeys.Delete(org, project, id)
 	return err
-}
-
-func resourceKeyImporter(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-	addrID := d.Id()
-
-	log.Printf("[DEBUG] Importing key using ADDR ID %s", addrID)
-
-	parts := strings.Split(addrID, "/")
-
-	if len(parts) != 3 {
-		return nil, errors.New("Key import requires an ADDR ID of the following schema org-slug/project-slug/key-id")
-	}
-
-	d.Set("organization", parts[0])
-	d.Set("project", parts[1])
-	d.SetId(parts[2])
-
-	return []*schema.ResourceData{d}, nil
 }
