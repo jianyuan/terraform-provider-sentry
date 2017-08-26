@@ -72,18 +72,16 @@ func resourceSentryProject() *schema.Resource {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-			"options": {
-				Type:     schema.TypeMap,
-				Computed: true,
-			},
 			"digests_min_delay": {
 				Type:     schema.TypeInt,
-				Optional: true,
+				Computed: true,
 			},
 			"digests_max_delay": {
 				Type:     schema.TypeInt,
-				Optional: true,
+				Computed: true,
 			},
+
+			// TODO: Project options
 		},
 	}
 }
@@ -131,9 +129,11 @@ func resourceSentryProjectRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("color", proj.Color)
 	d.Set("features", proj.Features)
 	d.Set("status", proj.Status)
-	d.Set("options", proj.Options)
 	d.Set("digests_min_delay", proj.DigestsMinDelay)
 	d.Set("digests_max_delay", proj.DigestsMaxDelay)
+
+	// TODO: Project options
+
 	return nil
 }
 
@@ -143,8 +143,8 @@ func resourceSentryProjectUpdate(d *schema.ResourceData, meta interface{}) error
 	slug := d.Id()
 	org := d.Get("organization").(string)
 	params := &sentry.UpdateProjectParams{
-		Name:            d.Get("name").(string),
-		Slug:            d.Get("slug").(string),
+		Name: d.Get("name").(string),
+		Slug: d.Get("slug").(string),
 	}
 
 	if v, ok := d.GetOk("is_bookmarked"); ok {

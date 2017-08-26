@@ -1,6 +1,9 @@
 package sentry
 
-import "github.com/hashicorp/terraform/helper/schema"
+import (
+	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/jianyuan/go-sentry/sentry"
+)
 
 func resourceSentryOrganization() *schema.Resource {
 	return &schema.Resource{
@@ -13,12 +16,12 @@ func resourceSentryOrganization() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"name": &schema.Schema{
+			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The human readable name for the organization",
 			},
-			"slug": &schema.Schema{
+			"slug": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The unique URL slug for this organization",
@@ -29,14 +32,14 @@ func resourceSentryOrganization() *schema.Resource {
 }
 
 func resourceSentryOrganizationCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Client)
+	client := meta.(*sentry.Client)
 
-	params := &CreateOrganizationParams{
+	params := &sentry.CreateOrganizationParams{
 		Name: d.Get("name").(string),
 		Slug: d.Get("slug").(string),
 	}
 
-	org, _, err := client.CreateOrganization(params)
+	org, _, err := client.Organizations.Create(params)
 	if err != nil {
 		return err
 	}
@@ -46,11 +49,11 @@ func resourceSentryOrganizationCreate(d *schema.ResourceData, meta interface{}) 
 }
 
 func resourceSentryOrganizationRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Client)
+	client := meta.(*sentry.Client)
 
 	slug := d.Id()
 
-	org, _, err := client.GetOrganization(slug)
+	org, _, err := client.Organizations.Get(slug)
 	if err != nil {
 		d.SetId("")
 		return nil
@@ -64,15 +67,15 @@ func resourceSentryOrganizationRead(d *schema.ResourceData, meta interface{}) er
 }
 
 func resourceSentryOrganizationUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Client)
+	client := meta.(*sentry.Client)
 
 	slug := d.Id()
-	params := &UpdateOrganizationParams{
+	params := &sentry.UpdateOrganizationParams{
 		Name: d.Get("name").(string),
 		Slug: d.Get("slug").(string),
 	}
 
-	org, _, err := client.UpdateOrganization(slug, params)
+	org, _, err := client.Organizations.Update(slug, params)
 	if err != nil {
 		return err
 	}
@@ -82,10 +85,10 @@ func resourceSentryOrganizationUpdate(d *schema.ResourceData, meta interface{}) 
 }
 
 func resourceSentryOrganizationDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Client)
+	client := meta.(*sentry.Client)
 
 	slug := d.Id()
 
-	_, err := client.DeleteOrganization(slug)
+	_, err := client.Organizations.Delete(slug)
 	return err
 }

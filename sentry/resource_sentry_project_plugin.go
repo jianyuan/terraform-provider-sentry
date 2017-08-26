@@ -1,11 +1,10 @@
 package sentry
 
 import (
-	"errors"
 	"log"
-	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/jianyuan/go-sentry/sentry"
 )
 
 func resourceSentryPlugin() *schema.Resource {
@@ -19,22 +18,22 @@ func resourceSentryPlugin() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"organization": &schema.Schema{
+			"organization": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The slug of the organization the project belongs to",
 			},
-			"project": &schema.Schema{
+			"project": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The slug of the project to create the plugin for",
 			},
-			"plugin": &schema.Schema{
+			"plugin": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The id of the plugin",
+				Description: "Plugin ID",
 			},
-			"config": &schema.Schema{
+			"config": {
 				Type:        schema.TypeMap,
 				Optional:    true,
 				Description: "Plugin config",
@@ -44,7 +43,7 @@ func resourceSentryPlugin() *schema.Resource {
 }
 
 func resourceSentryPluginCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Client)
+	client := meta.(*sentry.Client)
 
 	plugin := d.Get("plugin").(string)
 	org := d.Get("organization").(string)
@@ -52,14 +51,14 @@ func resourceSentryPluginCreate(d *schema.ResourceData, meta interface{}) error 
 
 	log.Printf("%v, %v, %v", plugin, org, project)
 
-	if _, err := client.EnablePlugin(org, project, plugin); err != nil {
+	if _, err := client.ProjectPlugins.Enable(org, project, plugin); err != nil {
 		return err
 	}
 
 	d.SetId(plugin)
 
 	params := d.Get("config").(map[string]interface{})
-	if _, _, err := client.UpdatePlugin(org, project, plugin, params); err != nil {
+	if _, _, err := client.ProjectPlugins.Update(org, project, plugin, params); err != nil {
 		return err
 	}
 
@@ -67,13 +66,13 @@ func resourceSentryPluginCreate(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceSentryPluginRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Client)
+	client := meta.(*sentry.Client)
 
 	id := d.Id()
 	org := d.Get("organization").(string)
 	project := d.Get("project").(string)
 
-	plugin, _, err := client.GetPlugin(org, project, id)
+	plugin, _, err := client.ProjectPlugins.Get(org, project, id)
 	if err != nil {
 		d.SetId("")
 		return nil
@@ -83,7 +82,9 @@ func resourceSentryPluginRead(d *schema.ResourceData, meta interface{}) error {
 
 	pluginConfig := make(map[string]string)
 	for _, entry := range plugin.Config {
-		pluginConfig[entry.Name] = entry.Value
+		if v, ok := entry.Value.(string); ok {
+			pluginConfig[entry.Name] = v
+		}
 	}
 
 	config := make(map[string]string)
@@ -97,14 +98,14 @@ func resourceSentryPluginRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceSentryPluginUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Client)
+	client := meta.(*sentry.Client)
 
 	id := d.Id()
 	org := d.Get("organization").(string)
 	project := d.Get("project").(string)
 
 	params := d.Get("config").(map[string]interface{})
-	if _, _, err := client.UpdatePlugin(org, project, id, params); err != nil {
+	if _, _, err := client.ProjectPlugins.Update(org, project, id, params); err != nil {
 		return err
 	}
 
@@ -112,30 +113,12 @@ func resourceSentryPluginUpdate(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceSentryPluginDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Client)
+	client := meta.(*sentry.Client)
 
 	id := d.Id()
 	org := d.Get("organization").(string)
 	project := d.Get("project").(string)
 
-	_, err := client.DisablePlugin(org, project, id)
+	_, err := client.ProjectPlugins.Disable(org, project, id)
 	return err
-}
-
-func resourceSentryPluginImporter(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-	addrID := d.Id()
-
-	log.Printf("[DEBUG] Importing key using ADDR ID %s", addrID)
-
-	parts := strings.Split(addrID, "/")
-
-	if len(parts) != 3 {
-		return nil, errors.New("Project import requires an ADDR ID of the following schema org-slug/project-slug/plugin-id")
-	}
-
-	d.Set("organization", parts[0])
-	d.Set("project", parts[1])
-	d.SetId(parts[2])
-
-	return []*schema.ResourceData{d}, nil
 }

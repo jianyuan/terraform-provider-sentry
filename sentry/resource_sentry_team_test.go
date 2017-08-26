@@ -8,10 +8,11 @@ import (
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
+	"github.com/jianyuan/go-sentry/sentry"
 )
 
 func TestAccSentryTeam_basic(t *testing.T) {
-	var team Team
+	var team sentry.Team
 
 	random := acctest.RandInt()
 	newTeamSlug := fmt.Sprintf("test-team-changed-%d", random)
@@ -34,9 +35,8 @@ func TestAccSentryTeam_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSentryTeamExists("sentry_team.test_team", &team),
 					testAccCheckSentryTeamAttributes(&team, &testAccSentryTeamExpectedAttributes{
-						Name:         "Test team",
-						Organization: testOrganization,
-						SlugPresent:  true,
+						Name:        "Test team",
+						SlugPresent: true,
 					}),
 				),
 			},
@@ -45,9 +45,8 @@ func TestAccSentryTeam_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSentryTeamExists("sentry_team.test_team", &team),
 					testAccCheckSentryTeamAttributes(&team, &testAccSentryTeamExpectedAttributes{
-						Name:         "Test team changed",
-						Organization: testOrganization,
-						Slug:         newTeamSlug,
+						Name: "Test team changed",
+						Slug: newTeamSlug,
 					}),
 				),
 			},
@@ -56,14 +55,14 @@ func TestAccSentryTeam_basic(t *testing.T) {
 }
 
 func testAccCheckSentryTeamDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*Client)
+	client := testAccProvider.Meta().(*sentry.Client)
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "sentry_team" {
 			continue
 		}
 
-		team, resp, err := client.GetTeam(
+		team, resp, err := client.Teams.Get(
 			rs.Primary.Attributes["organization"],
 			rs.Primary.ID,
 		)
@@ -80,7 +79,7 @@ func testAccCheckSentryTeamDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckSentryTeamExists(n string, team *Team) resource.TestCheckFunc {
+func testAccCheckSentryTeamExists(n string, team *sentry.Team) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -91,8 +90,8 @@ func testAccCheckSentryTeamExists(n string, team *Team) resource.TestCheckFunc {
 			return errors.New("No team ID is set")
 		}
 
-		client := testAccProvider.Meta().(*Client)
-		sentryTeam, _, err := client.GetTeam(
+		client := testAccProvider.Meta().(*sentry.Client)
+		sentryTeam, _, err := client.Teams.Get(
 			rs.Primary.Attributes["organization"],
 			rs.Primary.ID,
 		)
@@ -105,21 +104,16 @@ func testAccCheckSentryTeamExists(n string, team *Team) resource.TestCheckFunc {
 }
 
 type testAccSentryTeamExpectedAttributes struct {
-	Name         string
-	Organization string
+	Name string
 
 	SlugPresent bool
 	Slug        string
 }
 
-func testAccCheckSentryTeamAttributes(team *Team, want *testAccSentryTeamExpectedAttributes) resource.TestCheckFunc {
+func testAccCheckSentryTeamAttributes(team *sentry.Team, want *testAccSentryTeamExpectedAttributes) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if team.Name != want.Name {
 			return fmt.Errorf("got team %q; want %q", team.Name, want.Name)
-		}
-
-		if team.Organization.Slug != want.Organization {
-			return fmt.Errorf("got organization %q; want %q", team.Organization.Slug, want.Organization)
 		}
 
 		if want.SlugPresent && team.Slug == "" {

@@ -8,27 +8,28 @@ import (
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
+	"github.com/jianyuan/go-sentry/sentry"
 )
 
 func TestAccSentryProject_basic(t *testing.T) {
-	var project Project
+	var project sentry.Project
 
 	random := acctest.RandInt()
 	newProjectSlug := fmt.Sprintf("test-project-%d", random)
 
 	testAccSentryProjectUpdateConfig := fmt.Sprintf(`
-    resource "sentry_team" "test_team" {
-      organization = "%s"
-      name = "Test team"
-    }
+	  resource "sentry_team" "test_team" {
+	    organization = "%s"
+	    name = "Test team"
+	  }
 
-    resource "sentry_project" "test_project" {
-      organization = "%s"
-      team = "${sentry_team.test_team.id}"
-      name = "Test project changed"
-      slug = "%s"
-    }
-  `, testOrganization, testOrganization, newProjectSlug)
+	  resource "sentry_project" "test_project" {
+	    organization = "%s"
+	    team = "${sentry_team.test_team.id}"
+	    name = "Test project changed"
+	    slug = "%s"
+	  }
+	`, testOrganization, testOrganization, newProjectSlug)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -64,14 +65,14 @@ func TestAccSentryProject_basic(t *testing.T) {
 }
 
 func testAccCheckSentryProjectDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*Client)
+	client := testAccProvider.Meta().(*sentry.Client)
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "sentry_project" {
 			continue
 		}
 
-		proj, resp, err := client.GetProject(testOrganization, rs.Primary.ID)
+		proj, resp, err := client.Projects.Get(testOrganization, rs.Primary.ID)
 		if err == nil {
 			if proj != nil {
 				return errors.New("Project still exists")
@@ -85,7 +86,7 @@ func testAccCheckSentryProjectDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckSentryProjectExists(n string, proj *Project) resource.TestCheckFunc {
+func testAccCheckSentryProjectExists(n string, proj *sentry.Project) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -96,8 +97,8 @@ func testAccCheckSentryProjectExists(n string, proj *Project) resource.TestCheck
 			return errors.New("No project ID is set")
 		}
 
-		client := testAccProvider.Meta().(*Client)
-		sentryProj, _, err := client.GetProject(
+		client := testAccProvider.Meta().(*sentry.Client)
+		sentryProj, _, err := client.Projects.Get(
 			rs.Primary.Attributes["organization"],
 			rs.Primary.ID,
 		)
@@ -118,7 +119,7 @@ type testAccSentryProjectExpectedAttributes struct {
 	Slug        string
 }
 
-func testAccCheckSentryProjectAttributes(proj *Project, want *testAccSentryProjectExpectedAttributes) resource.TestCheckFunc {
+func testAccCheckSentryProjectAttributes(proj *sentry.Project, want *testAccSentryProjectExpectedAttributes) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if proj.Name != want.Name {
 			return fmt.Errorf("got proj %q; want %q", proj.Name, want.Name)
