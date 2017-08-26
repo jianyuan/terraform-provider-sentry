@@ -1,3 +1,179 @@
+Release v1.10.33 (2017-08-25)
+===
+
+### Service Client Updates
+* `service/cloudformation`: Updates service API and documentation
+  * Rollback triggers enable you to have AWS CloudFormation monitor the state of your application during stack creation and updating, and to roll back that operation if the application breaches the threshold of any of the alarms you've specified.
+* `service/gamelift`: Updates service API
+  * Update spelling of MatchmakingTicket status values for internal consistency.
+* `service/rds`: Updates service API and documentation
+  * Option group options now contain additional properties that identify requirements for certain options. Check these properties to determine if your DB instance must be in a VPC or have auto minor upgrade turned on before you can use an option. Check to see if you can downgrade the version of an option after you have installed it.
+
+### SDK Enhancements
+* `example/service/ec2`: Add EC2 list instances example ([#1492](https://github.com/aws/aws-sdk-go/pull/1492))
+
+Release v1.10.32 (2017-08-25)
+===
+
+### Service Client Updates
+* `service/rekognition`: Updates service API, documentation, and examples
+  * Update the enum value of LandmarkType and GenderType to be consistent with service response
+
+Release v1.10.31 (2017-08-23)
+===
+
+### Service Client Updates
+* `service/appstream`: Updates service documentation
+  * Documentation updates for appstream
+* `aws/endpoints`: Updated Regions and Endpoints metadata.
+
+Release v1.10.30 (2017-08-22)
+===
+
+### Service Client Updates
+* `service/ssm`: Updates service API and documentation
+  * Changes to associations in Systems Manager State Manager can now be recorded. Previously, when you edited associations, you could not go back and review older association settings. Now, associations are versioned, and can be named using human-readable strings, allowing you to see a trail of association changes. You can also perform rate-based scheduling, which allows you to schedule associations more granularly.
+
+Release v1.10.29 (2017-08-21)
+===
+
+### Service Client Updates
+* `service/firehose`: Updates service API, documentation, and paginators
+  * This change will allow customers to attach a Firehose delivery stream to an existing Kinesis stream directly. You no longer need a forwarder to move data from a Kinesis stream to a Firehose delivery stream. You can now run your streaming applications on your Kinesis stream and easily attach a Firehose delivery stream to it for data delivery to S3, Redshift, or Elasticsearch concurrently.
+* `service/route53`: Updates service API and documentation
+  * Amazon Route 53 now supports CAA resource record type. A CAA record controls which certificate authorities are allowed to issue certificates for the domain or subdomain.
+
+Release v1.10.28 (2017-08-18)
+===
+
+### Service Client Updates
+* `aws/endpoints`: Updated Regions and Endpoints metadata.
+
+Release v1.10.27 (2017-08-16)
+===
+
+### Service Client Updates
+* `service/gamelift`: Updates service API and documentation
+  * The Matchmaking Grouping Service is a new feature that groups player match requests for a given game together into game sessions based on developer configured rules.
+
+### SDK Enhancements
+* `aws/arn`: aws/arn: Package for parsing and producing ARNs ([#1463](https://github.com/aws/aws-sdk-go/pull/1463))
+  * Adds the `arn` package for AWS ARN parsing and building. Use this package to build AWS ARNs for services such as outlined in the [documentation](http://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
+
+### SDK Bugs
+* `aws/signer/v4`: Correct V4 presign signature to include content sha25 in URL ([#1469](https://github.com/aws/aws-sdk-go/pull/1469))
+  * Updates the V4 signer so that when a Presign is generated the `X-Amz-Content-Sha256` header is added to the query string instead of being required to be in the header. This allows you to generate presigned URLs for GET requests, e.g S3.GetObject that do not require additional headers to be set by the downstream users of the presigned URL.
+  * Related To: [#1467](https://github.com/aws/aws-sdk-go/issues/1467)
+
+Release v1.10.26 (2017-08-15)
+===
+
+### Service Client Updates
+* `service/ec2`: Updates service API
+  * Fixed bug in EC2 clients preventing HostReservation from being set
+* `aws/endpoints`: Updated Regions and Endpoints metadata.
+
+Release v1.10.25 (2017-08-14)
+===
+
+### Service Client Updates
+* `service/AWS Glue`: Adds new service
+* `service/batch`: Updates service API and documentation
+  * This release enhances the DescribeJobs API to include the CloudWatch logStreamName attribute in ContainerDetail and ContainerDetailAttempt
+* `service/cloudhsmv2`: Adds new service
+  * CloudHSM provides hardware security modules for protecting sensitive data and cryptographic keys within an EC2 VPC, and enable the customer to maintain control over key access and use. This is a second-generation of the service that will improve security, lower cost and provide better customer usability.
+* `service/elasticfilesystem`: Updates service API, documentation, and paginators
+  * Customers can create encrypted EFS file systems and specify a KMS master key to encrypt it with.
+* `aws/endpoints`: Updated Regions and Endpoints metadata.
+* `service/mgh`: Adds new service
+  * AWS Migration Hub provides a single location to track migrations across multiple AWS and partner solutions. Using Migration Hub allows you to choose the AWS and partner migration tools that best fit your needs, while providing visibility into the status of your entire migration portfolio. Migration Hub also provides key metrics and progress for individual applications, regardless of which tools are being used to migrate them. For example, you might use AWS Database Migration Service, AWS Server Migration Service, and partner migration tools to migrate an application comprised of a database, virtualized web servers, and a bare metal server. Using Migration Hub will provide you with a single screen that shows the migration progress of all the resources in the application. This allows you to quickly get progress updates across all of your migrations, easily identify and troubleshoot any issues, and reduce the overall time and effort spent on your migration projects. Migration Hub is available to all AWS customers at no additional charge. You only pay for the cost of the migration tools you use, and any resources being consumed on AWS.
+* `service/ssm`: Updates service API and documentation
+  * Systems Manager Maintenance Windows include the following changes or enhancements: New task options using Systems Manager Automation, AWS Lambda, and AWS Step Functions; enhanced ability to edit the targets of a Maintenance Window, including specifying a target name and description, and ability to edit the owner field; enhanced ability to edits tasks; enhanced support for Run Command parameters; and you can now use a --safe flag when attempting to deregister a target. If this flag is enabled when you attempt to deregister a target, the system returns an error if the target is referenced by any task. Also, Systems Manager now includes Configuration Compliance to scan your fleet of managed instances for patch compliance and configuration inconsistencies. You can collect and aggregate data from multiple AWS accounts and Regions, and then drill down into specific resources that aren't compliant.
+* `service/storagegateway`: Updates service API and documentation
+  * Add optional field ForceDelete to DeleteFileShare api.
+
+Release v1.10.24 (2017-08-11)
+===
+
+### Service Client Updates
+* `service/codedeploy`: Updates service API and documentation
+  * Adds support for specifying Application Load Balancers in deployment groups, for both in-place and blue/green deployments.
+* `service/cognito-idp`: Updates service API and documentation
+* `service/ec2`: Updates service API and documentation
+  * Provides customers an opportunity to recover an EIP that was released
+
+Release v1.10.23 (2017-08-10)
+===
+
+### Service Client Updates
+* `service/clouddirectory`: Updates service API and documentation
+  * Enable BatchDetachPolicy
+* `service/codebuild`: Updates service API
+  * Supporting Bitbucket as source type in AWS CodeBuild.
+
+Release v1.10.22 (2017-08-09)
+===
+
+### Service Client Updates
+* `service/rds`: Updates service documentation
+  * Documentation updates for RDS.
+
+Release v1.10.21 (2017-08-09)
+===
+
+### Service Client Updates
+* `service/elasticbeanstalk`: Updates service API and documentation
+  * Add support for paginating the result of DescribeEnvironments     Include the ARN of described environments in DescribeEnvironments output
+
+### SDK Enhancements
+* `aws`: Add pointer conversion utilities to transform int64 to time.Time [#1433](https://github.com/aws/aws-sdk-go/pull/1433)
+  * Adds `SecondsTimeValue` and `MillisecondsTimeValue` utilities.
+
+Release v1.10.20 (2017-08-01)
+===
+
+### Service Client Updates
+* `service/codedeploy`: Updates service API and documentation
+  * AWS CodeDeploy now supports the use of multiple tag groups in a single deployment group (an intersection of tags) to identify the instances for a deployment. When you create or update a deployment group, use the new ec2TagSet and onPremisesTagSet structures to specify up to three groups of tags. Only instances that are identified by at least one tag in each of the tag groups are included in the deployment group.
+* `service/config`: Updates service API and documentation
+* `service/ec2`: Updates service waiters
+  * Ec2 SpotInstanceRequestFulfilled waiter update
+* `service/elasticloadbalancingv2`: Updates service waiters
+* `service/email`: Updates service API, documentation, paginators, and examples
+  * This update adds information about publishing email open and click events. This update also adds information about publishing email events to Amazon Simple Notification Service (Amazon SNS).
+* `service/pinpoint`: Updates service API and documentation
+  * This release of the Pinpoint SDK enables App management - create, delete, update operations, Raw Content delivery for APNs and GCM campaign messages and From Address override.
+
+Release v1.10.19 (2017-08-01)
+===
+
+### Service Client Updates
+* `aws/endpoints`: Updated Regions and Endpoints metadata.
+* `service/inspector`: Updates service API, documentation, and paginators
+  * Inspector's StopAssessmentRun API has been updated with a new input option - stopAction. This request parameter can be set to either START_EVALUATION or SKIP_EVALUATION. START_EVALUATION (the default value, and the previous behavior) stops the AWS agent data collection and begins the results evaluation for findings generation based on the data collected so far. SKIP_EVALUATION cancels the assessment run immediately, after which no findings are generated.
+* `service/ssm`: Updates service API and documentation
+  * Adds a SendAutomationSignal API to SSM Service. This API is used to send a signal to an automation execution to change the current behavior or status of the execution.
+
+Release v1.10.18 (2017-07-27)
+===
+
+### Service Client Updates
+* `service/ec2`: Updates service API and documentation
+  * The CreateDefaultVPC API enables you to create a new default VPC . You no longer need to contact AWS support, if your default VPC has been deleted.
+* `service/kinesisanalytics`: Updates service API and documentation
+  * Added additional exception types and clarified documentation.
+
+Release v1.10.17 (2017-07-27)
+===
+
+### Service Client Updates
+* `service/dynamodb`: Updates service documentation and examples
+  * Corrected a typo.
+* `service/ec2`: Updates service API and documentation
+  * Amazon EC2 Elastic GPUs allow you to easily attach low-cost graphics acceleration to current generation EC2 instances. With Amazon EC2 Elastic GPUs, you can configure the right amount of graphics acceleration to your particular workload without being constrained by fixed hardware configurations and limited GPU selection.
+* `service/monitoring`: Updates service documentation
+  * This release adds high resolution features to CloudWatch, with support for Custom Metrics down to 1 second and Alarms down to 10 seconds.
+
 Release v1.10.16 (2017-07-26)
 ===
 

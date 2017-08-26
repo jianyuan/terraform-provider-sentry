@@ -13,23 +13,145 @@ import (
 	"github.com/aws/aws-sdk-go/private/protocol/jsonrpc"
 )
 
+const opAcceptMatch = "AcceptMatch"
+
+// AcceptMatchRequest generates a "aws/request.Request" representing the
+// client's request for the AcceptMatch operation. The "output" return
+// value will be populated with the request's response once the request complets
+// successfuly.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See AcceptMatch for more information on using the AcceptMatch
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the AcceptMatchRequest method.
+//    req, resp := client.AcceptMatchRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/AcceptMatch
+func (c *GameLift) AcceptMatchRequest(input *AcceptMatchInput) (req *request.Request, output *AcceptMatchOutput) {
+	op := &request.Operation{
+		Name:       opAcceptMatch,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &AcceptMatchInput{}
+	}
+
+	output = &AcceptMatchOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// AcceptMatch API operation for Amazon GameLift.
+//
+// Registers a player's acceptance or rejection of a proposed FlexMatch match.
+// A matchmaking configuration may require player acceptance; if so, then matches
+// built with that configuration cannot be completed unless all players accept
+// the proposed match within a specified time limit.
+//
+// When FlexMatch builds a match, all the matchmaking tickets involved in the
+// proposed match are placed into status REQUIRES_ACCEPTANCE. This is a trigger
+// for your game to get acceptance from all players in the ticket. Acceptances
+// are only valid for tickets when they are in this status; all other acceptances
+// result in an error.
+//
+// To register acceptance, specify the ticket ID, a response, and one or more
+// players. Once all players have registered acceptance, the matchmaking tickets
+// advance to status PLACING, where a new game session is created for the match.
+//
+// If any player rejects the match, or if acceptances are not received before
+// a specified timeout, the proposed match is dropped. The matchmaking tickets
+// are then handled in one of two ways: For tickets where all players accepted
+// the match, the ticket status is returned to SEARCHING to find a new match.
+// For tickets where one or more players failed to accept the match, the ticket
+// status is set to FAILED, and processing is terminated. A new matchmaking
+// request for these players can be submitted as needed.
+//
+// Matchmaking-related operations include:
+//
+//    * StartMatchmaking
+//
+//    * DescribeMatchmaking
+//
+//    * StopMatchmaking
+//
+//    * AcceptMatch
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon GameLift's
+// API operation AcceptMatch for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeInvalidRequestException "InvalidRequestException"
+//   One or more parameter values in the request are invalid. Correct the invalid
+//   parameter values before retrying.
+//
+//   * ErrCodeNotFoundException "NotFoundException"
+//   A service resource associated with the request could not be found. Clients
+//   should not retry such requests.
+//
+//   * ErrCodeInternalServiceException "InternalServiceException"
+//   The service encountered an unrecoverable internal failure while processing
+//   the request. Clients can retry such requests immediately or after a waiting
+//   period.
+//
+//   * ErrCodeUnsupportedRegionException "UnsupportedRegionException"
+//   The requested operation is not supported in the region specified.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/AcceptMatch
+func (c *GameLift) AcceptMatch(input *AcceptMatchInput) (*AcceptMatchOutput, error) {
+	req, out := c.AcceptMatchRequest(input)
+	return out, req.Send()
+}
+
+// AcceptMatchWithContext is the same as AcceptMatch with the addition of
+// the ability to pass a context and additional request options.
+//
+// See AcceptMatch for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *GameLift) AcceptMatchWithContext(ctx aws.Context, input *AcceptMatchInput, opts ...request.Option) (*AcceptMatchOutput, error) {
+	req, out := c.AcceptMatchRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opCreateAlias = "CreateAlias"
 
 // CreateAliasRequest generates a "aws/request.Request" representing the
 // client's request for the CreateAlias operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See CreateAlias for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the CreateAlias method directly
-// instead.
+// See CreateAlias for more information on using the CreateAlias
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the CreateAliasRequest method.
 //    req, resp := client.CreateAliasRequest(params)
@@ -147,19 +269,18 @@ const opCreateBuild = "CreateBuild"
 
 // CreateBuildRequest generates a "aws/request.Request" representing the
 // client's request for the CreateBuild operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See CreateBuild for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the CreateBuild method directly
-// instead.
+// See CreateBuild for more information on using the CreateBuild
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the CreateBuildRequest method.
 //    req, resp := client.CreateBuildRequest(params)
@@ -270,19 +391,18 @@ const opCreateFleet = "CreateFleet"
 
 // CreateFleetRequest generates a "aws/request.Request" representing the
 // client's request for the CreateFleet operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See CreateFleet for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the CreateFleet method directly
-// instead.
+// See CreateFleet for more information on using the CreateFleet
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the CreateFleetRequest method.
 //    req, resp := client.CreateFleetRequest(params)
@@ -331,7 +451,7 @@ func (c *GameLift) CreateFleetRequest(input *CreateFleetInput) (req *request.Req
 //
 //    * Access permissions for inbound traffic
 //
-//    * Fleetwide game session protection
+//    * Fleet-wide game session protection
 //
 //    * Resource creation limit
 //
@@ -462,19 +582,18 @@ const opCreateGameSession = "CreateGameSession"
 
 // CreateGameSessionRequest generates a "aws/request.Request" representing the
 // client's request for the CreateGameSession operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See CreateGameSession for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the CreateGameSession method directly
-// instead.
+// See CreateGameSession for more information on using the CreateGameSession
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the CreateGameSessionRequest method.
 //    req, resp := client.CreateGameSessionRequest(params)
@@ -511,8 +630,8 @@ func (c *GameLift) CreateGameSessionRequest(input *CreateGameSessionInput) (req 
 // To create a game session, specify either fleet ID or alias ID and indicate
 // a maximum number of players to allow in the game session. You can also provide
 // a name and game-specific properties for this game session. If successful,
-// a GameSession object is returned containing game session properties, including
-// a game session ID with the custom string you provided.
+// a GameSession object is returned containing the game session properties and
+// other settings you specified.
 //
 // Idempotency tokens. You can add a token that uniquely identifies game session
 // requests. This is useful for ensuring that game session requests are idempotent.
@@ -525,8 +644,12 @@ func (c *GameLift) CreateGameSessionRequest(input *CreateGameSessionInput) (req 
 // ID. Without this ID, Amazon GameLift has no way to evaluate the policy for
 // this new game session request.
 //
-// By default, newly created game sessions allow new players to join. Use UpdateGameSession
+// Player acceptance policy. By default, newly created game sessions are open
+// to new players. You can restrict new player access by using UpdateGameSession
 // to change the game session's player session creation policy.
+//
+// Game session logs. Logs are retained for all active game sessions for 14
+// days. To access the logs, call GetGameSessionLogUrl to download the log files.
 //
 // Available in Amazon GameLift Local.
 //
@@ -631,19 +754,18 @@ const opCreateGameSessionQueue = "CreateGameSessionQueue"
 
 // CreateGameSessionQueueRequest generates a "aws/request.Request" representing the
 // client's request for the CreateGameSessionQueue operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See CreateGameSessionQueue for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the CreateGameSessionQueue method directly
-// instead.
+// See CreateGameSessionQueue for more information on using the CreateGameSessionQueue
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the CreateGameSessionQueueRequest method.
 //    req, resp := client.CreateGameSessionQueueRequest(params)
@@ -759,23 +881,285 @@ func (c *GameLift) CreateGameSessionQueueWithContext(ctx aws.Context, input *Cre
 	return out, req.Send()
 }
 
+const opCreateMatchmakingConfiguration = "CreateMatchmakingConfiguration"
+
+// CreateMatchmakingConfigurationRequest generates a "aws/request.Request" representing the
+// client's request for the CreateMatchmakingConfiguration operation. The "output" return
+// value will be populated with the request's response once the request complets
+// successfuly.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateMatchmakingConfiguration for more information on using the CreateMatchmakingConfiguration
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the CreateMatchmakingConfigurationRequest method.
+//    req, resp := client.CreateMatchmakingConfigurationRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateMatchmakingConfiguration
+func (c *GameLift) CreateMatchmakingConfigurationRequest(input *CreateMatchmakingConfigurationInput) (req *request.Request, output *CreateMatchmakingConfigurationOutput) {
+	op := &request.Operation{
+		Name:       opCreateMatchmakingConfiguration,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &CreateMatchmakingConfigurationInput{}
+	}
+
+	output = &CreateMatchmakingConfigurationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateMatchmakingConfiguration API operation for Amazon GameLift.
+//
+// Defines a new matchmaking configuration for use with FlexMatch. A matchmaking
+// configuration sets out guidelines for matching players and getting the matches
+// into games. You can set up multiple matchmaking configurations to handle
+// the scenarios needed for your game. Each matchmaking request (StartMatchmaking)
+// specifies a configuration for the match and provides player attributes to
+// support the configuration being used.
+//
+// To create a matchmaking configuration, at a minimum you must specify the
+// following: configuration name; a rule set that governs how to evaluate players
+// and find acceptable matches; a game session queue to use when placing a new
+// game session for the match; and the maximum time allowed for a matchmaking
+// attempt.
+//
+// Player acceptance -- In each configuration, you have the option to require
+// that all players accept participation in a proposed match. To enable this
+// feature, set AcceptanceRequired to true and specify a time limit for player
+// acceptance. Players have the option to accept or reject a proposed match,
+// and a match does not move ahead to game session placement unless all matched
+// players accept.
+//
+// Matchmaking status notification -- There are two ways to track the progress
+// of matchmaking tickets: (1) polling ticket status with DescribeMatchmaking;
+// or (2) receiving notifications with Amazon Simple Notification Service (SNS).
+// To use notifications, you first need to set up an SNS topic to receive the
+// notifications, and provide the topic ARN in the matchmaking configuration
+// (see  Setting up Notifications for Matchmaking (http://docs.aws.amazon.com/gamelift/latest/developerguide/match-notification.html)).
+// Since notifications promise only "best effort" delivery, we recommend calling
+// DescribeMatchmaking if no notifications are received within 30 seconds.
+//
+// Operations related to match configurations and rule sets include:
+//
+//    * CreateMatchmakingConfiguration
+//
+//    * DescribeMatchmakingConfigurations
+//
+//    * UpdateMatchmakingConfiguration
+//
+//    * DeleteMatchmakingConfiguration
+//
+//    * CreateMatchmakingRuleSet
+//
+//    * DescribeMatchmakingRuleSets
+//
+//    * ValidateMatchmakingRuleSet
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon GameLift's
+// API operation CreateMatchmakingConfiguration for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeInvalidRequestException "InvalidRequestException"
+//   One or more parameter values in the request are invalid. Correct the invalid
+//   parameter values before retrying.
+//
+//   * ErrCodeLimitExceededException "LimitExceededException"
+//   The requested operation would cause the resource to exceed the allowed service
+//   limit. Resolve the issue before retrying.
+//
+//   * ErrCodeNotFoundException "NotFoundException"
+//   A service resource associated with the request could not be found. Clients
+//   should not retry such requests.
+//
+//   * ErrCodeInternalServiceException "InternalServiceException"
+//   The service encountered an unrecoverable internal failure while processing
+//   the request. Clients can retry such requests immediately or after a waiting
+//   period.
+//
+//   * ErrCodeUnsupportedRegionException "UnsupportedRegionException"
+//   The requested operation is not supported in the region specified.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateMatchmakingConfiguration
+func (c *GameLift) CreateMatchmakingConfiguration(input *CreateMatchmakingConfigurationInput) (*CreateMatchmakingConfigurationOutput, error) {
+	req, out := c.CreateMatchmakingConfigurationRequest(input)
+	return out, req.Send()
+}
+
+// CreateMatchmakingConfigurationWithContext is the same as CreateMatchmakingConfiguration with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateMatchmakingConfiguration for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *GameLift) CreateMatchmakingConfigurationWithContext(ctx aws.Context, input *CreateMatchmakingConfigurationInput, opts ...request.Option) (*CreateMatchmakingConfigurationOutput, error) {
+	req, out := c.CreateMatchmakingConfigurationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opCreateMatchmakingRuleSet = "CreateMatchmakingRuleSet"
+
+// CreateMatchmakingRuleSetRequest generates a "aws/request.Request" representing the
+// client's request for the CreateMatchmakingRuleSet operation. The "output" return
+// value will be populated with the request's response once the request complets
+// successfuly.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateMatchmakingRuleSet for more information on using the CreateMatchmakingRuleSet
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the CreateMatchmakingRuleSetRequest method.
+//    req, resp := client.CreateMatchmakingRuleSetRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateMatchmakingRuleSet
+func (c *GameLift) CreateMatchmakingRuleSetRequest(input *CreateMatchmakingRuleSetInput) (req *request.Request, output *CreateMatchmakingRuleSetOutput) {
+	op := &request.Operation{
+		Name:       opCreateMatchmakingRuleSet,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &CreateMatchmakingRuleSetInput{}
+	}
+
+	output = &CreateMatchmakingRuleSetOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateMatchmakingRuleSet API operation for Amazon GameLift.
+//
+// Creates a new rule set for FlexMatch matchmaking. A rule set describes the
+// type of match to create, such as the number and size of teams, and sets the
+// parameters for acceptable player matches, such as minimum skill level or
+// character type. Rule sets are used in matchmaking configurations, which define
+// how matchmaking requests are handled. Each MatchmakingConfiguration uses
+// one rule set; you can set up multiple rule sets to handle the scenarios that
+// suit your game (such as for different game modes), and create a separate
+// matchmaking configuration for each rule set. See additional information on
+// rule set content in the MatchmakingRuleSet structure. For help creating rule
+// sets, including useful examples, see the topic  Adding FlexMatch to Your
+// Game (http://docs.aws.amazon.com/gamelift/latest/developerguide/match-intro.html).
+//
+// Once created, matchmaking rule sets cannot be changed or deleted, so we recommend
+// checking the rule set syntax using ValidateMatchmakingRuleSetbefore creating
+// the rule set.
+//
+// To create a matchmaking rule set, provide the set of rules and a unique name.
+// Rule sets must be defined in the same region as the matchmaking configuration
+// they will be used with. Rule sets cannot be edited or deleted. If you need
+// to change a rule set, create a new one with the necessary edits and then
+// update matchmaking configurations to use the new rule set.
+//
+// Operations related to match configurations and rule sets include:
+//
+//    * CreateMatchmakingConfiguration
+//
+//    * DescribeMatchmakingConfigurations
+//
+//    * UpdateMatchmakingConfiguration
+//
+//    * DeleteMatchmakingConfiguration
+//
+//    * CreateMatchmakingRuleSet
+//
+//    * DescribeMatchmakingRuleSets
+//
+//    * ValidateMatchmakingRuleSet
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon GameLift's
+// API operation CreateMatchmakingRuleSet for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeInvalidRequestException "InvalidRequestException"
+//   One or more parameter values in the request are invalid. Correct the invalid
+//   parameter values before retrying.
+//
+//   * ErrCodeInternalServiceException "InternalServiceException"
+//   The service encountered an unrecoverable internal failure while processing
+//   the request. Clients can retry such requests immediately or after a waiting
+//   period.
+//
+//   * ErrCodeUnsupportedRegionException "UnsupportedRegionException"
+//   The requested operation is not supported in the region specified.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateMatchmakingRuleSet
+func (c *GameLift) CreateMatchmakingRuleSet(input *CreateMatchmakingRuleSetInput) (*CreateMatchmakingRuleSetOutput, error) {
+	req, out := c.CreateMatchmakingRuleSetRequest(input)
+	return out, req.Send()
+}
+
+// CreateMatchmakingRuleSetWithContext is the same as CreateMatchmakingRuleSet with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateMatchmakingRuleSet for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *GameLift) CreateMatchmakingRuleSetWithContext(ctx aws.Context, input *CreateMatchmakingRuleSetInput, opts ...request.Option) (*CreateMatchmakingRuleSetOutput, error) {
+	req, out := c.CreateMatchmakingRuleSetRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opCreatePlayerSession = "CreatePlayerSession"
 
 // CreatePlayerSessionRequest generates a "aws/request.Request" representing the
 // client's request for the CreatePlayerSession operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See CreatePlayerSession for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the CreatePlayerSession method directly
-// instead.
+// See CreatePlayerSession for more information on using the CreatePlayerSession
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the CreatePlayerSessionRequest method.
 //    req, resp := client.CreatePlayerSessionRequest(params)
@@ -897,19 +1281,18 @@ const opCreatePlayerSessions = "CreatePlayerSessions"
 
 // CreatePlayerSessionsRequest generates a "aws/request.Request" representing the
 // client's request for the CreatePlayerSessions operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See CreatePlayerSessions for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the CreatePlayerSessions method directly
-// instead.
+// See CreatePlayerSessions for more information on using the CreatePlayerSessions
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the CreatePlayerSessionsRequest method.
 //    req, resp := client.CreatePlayerSessionsRequest(params)
@@ -1032,19 +1415,18 @@ const opDeleteAlias = "DeleteAlias"
 
 // DeleteAliasRequest generates a "aws/request.Request" representing the
 // client's request for the DeleteAlias operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See DeleteAlias for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the DeleteAlias method directly
-// instead.
+// See DeleteAlias for more information on using the DeleteAlias
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the DeleteAliasRequest method.
 //    req, resp := client.DeleteAliasRequest(params)
@@ -1143,19 +1525,18 @@ const opDeleteBuild = "DeleteBuild"
 
 // DeleteBuildRequest generates a "aws/request.Request" representing the
 // client's request for the DeleteBuild operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See DeleteBuild for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the DeleteBuild method directly
-// instead.
+// See DeleteBuild for more information on using the DeleteBuild
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the DeleteBuildRequest method.
 //    req, resp := client.DeleteBuildRequest(params)
@@ -1255,19 +1636,18 @@ const opDeleteFleet = "DeleteFleet"
 
 // DeleteFleetRequest generates a "aws/request.Request" representing the
 // client's request for the DeleteFleet operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See DeleteFleet for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the DeleteFleet method directly
-// instead.
+// See DeleteFleet for more information on using the DeleteFleet
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the DeleteFleetRequest method.
 //    req, resp := client.DeleteFleetRequest(params)
@@ -1403,19 +1783,18 @@ const opDeleteGameSessionQueue = "DeleteGameSessionQueue"
 
 // DeleteGameSessionQueueRequest generates a "aws/request.Request" representing the
 // client's request for the DeleteGameSessionQueue operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See DeleteGameSessionQueue for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the DeleteGameSessionQueue method directly
-// instead.
+// See DeleteGameSessionQueue for more information on using the DeleteGameSessionQueue
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the DeleteGameSessionQueueRequest method.
 //    req, resp := client.DeleteGameSessionQueueRequest(params)
@@ -1504,23 +1883,132 @@ func (c *GameLift) DeleteGameSessionQueueWithContext(ctx aws.Context, input *Del
 	return out, req.Send()
 }
 
+const opDeleteMatchmakingConfiguration = "DeleteMatchmakingConfiguration"
+
+// DeleteMatchmakingConfigurationRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteMatchmakingConfiguration operation. The "output" return
+// value will be populated with the request's response once the request complets
+// successfuly.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteMatchmakingConfiguration for more information on using the DeleteMatchmakingConfiguration
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the DeleteMatchmakingConfigurationRequest method.
+//    req, resp := client.DeleteMatchmakingConfigurationRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteMatchmakingConfiguration
+func (c *GameLift) DeleteMatchmakingConfigurationRequest(input *DeleteMatchmakingConfigurationInput) (req *request.Request, output *DeleteMatchmakingConfigurationOutput) {
+	op := &request.Operation{
+		Name:       opDeleteMatchmakingConfiguration,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteMatchmakingConfigurationInput{}
+	}
+
+	output = &DeleteMatchmakingConfigurationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DeleteMatchmakingConfiguration API operation for Amazon GameLift.
+//
+// Permanently removes a FlexMatch matchmaking configuration. To delete, specify
+// the configuration name. A matchmaking configuration cannot be deleted if
+// it is being used in any active matchmaking tickets.
+//
+// Operations related to match configurations and rule sets include:
+//
+//    * CreateMatchmakingConfiguration
+//
+//    * DescribeMatchmakingConfigurations
+//
+//    * UpdateMatchmakingConfiguration
+//
+//    * DeleteMatchmakingConfiguration
+//
+//    * CreateMatchmakingRuleSet
+//
+//    * DescribeMatchmakingRuleSets
+//
+//    * ValidateMatchmakingRuleSet
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon GameLift's
+// API operation DeleteMatchmakingConfiguration for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeInvalidRequestException "InvalidRequestException"
+//   One or more parameter values in the request are invalid. Correct the invalid
+//   parameter values before retrying.
+//
+//   * ErrCodeNotFoundException "NotFoundException"
+//   A service resource associated with the request could not be found. Clients
+//   should not retry such requests.
+//
+//   * ErrCodeInternalServiceException "InternalServiceException"
+//   The service encountered an unrecoverable internal failure while processing
+//   the request. Clients can retry such requests immediately or after a waiting
+//   period.
+//
+//   * ErrCodeUnsupportedRegionException "UnsupportedRegionException"
+//   The requested operation is not supported in the region specified.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteMatchmakingConfiguration
+func (c *GameLift) DeleteMatchmakingConfiguration(input *DeleteMatchmakingConfigurationInput) (*DeleteMatchmakingConfigurationOutput, error) {
+	req, out := c.DeleteMatchmakingConfigurationRequest(input)
+	return out, req.Send()
+}
+
+// DeleteMatchmakingConfigurationWithContext is the same as DeleteMatchmakingConfiguration with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteMatchmakingConfiguration for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *GameLift) DeleteMatchmakingConfigurationWithContext(ctx aws.Context, input *DeleteMatchmakingConfigurationInput, opts ...request.Option) (*DeleteMatchmakingConfigurationOutput, error) {
+	req, out := c.DeleteMatchmakingConfigurationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDeleteScalingPolicy = "DeleteScalingPolicy"
 
 // DeleteScalingPolicyRequest generates a "aws/request.Request" representing the
 // client's request for the DeleteScalingPolicy operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See DeleteScalingPolicy for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the DeleteScalingPolicy method directly
-// instead.
+// See DeleteScalingPolicy for more information on using the DeleteScalingPolicy
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the DeleteScalingPolicyRequest method.
 //    req, resp := client.DeleteScalingPolicyRequest(params)
@@ -1649,19 +2137,18 @@ const opDescribeAlias = "DescribeAlias"
 
 // DescribeAliasRequest generates a "aws/request.Request" representing the
 // client's request for the DescribeAlias operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See DescribeAlias for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the DescribeAlias method directly
-// instead.
+// See DescribeAlias for more information on using the DescribeAlias
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the DescribeAliasRequest method.
 //    req, resp := client.DescribeAliasRequest(params)
@@ -1760,19 +2247,18 @@ const opDescribeBuild = "DescribeBuild"
 
 // DescribeBuildRequest generates a "aws/request.Request" representing the
 // client's request for the DescribeBuild operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See DescribeBuild for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the DescribeBuild method directly
-// instead.
+// See DescribeBuild for more information on using the DescribeBuild
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the DescribeBuildRequest method.
 //    req, resp := client.DescribeBuildRequest(params)
@@ -1866,19 +2352,18 @@ const opDescribeEC2InstanceLimits = "DescribeEC2InstanceLimits"
 
 // DescribeEC2InstanceLimitsRequest generates a "aws/request.Request" representing the
 // client's request for the DescribeEC2InstanceLimits operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See DescribeEC2InstanceLimits for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the DescribeEC2InstanceLimits method directly
-// instead.
+// See DescribeEC2InstanceLimits for more information on using the DescribeEC2InstanceLimits
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the DescribeEC2InstanceLimitsRequest method.
 //    req, resp := client.DescribeEC2InstanceLimitsRequest(params)
@@ -2007,19 +2492,18 @@ const opDescribeFleetAttributes = "DescribeFleetAttributes"
 
 // DescribeFleetAttributesRequest generates a "aws/request.Request" representing the
 // client's request for the DescribeFleetAttributes operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See DescribeFleetAttributes for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the DescribeFleetAttributes method directly
-// instead.
+// See DescribeFleetAttributes for more information on using the DescribeFleetAttributes
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the DescribeFleetAttributesRequest method.
 //    req, resp := client.DescribeFleetAttributesRequest(params)
@@ -2154,19 +2638,18 @@ const opDescribeFleetCapacity = "DescribeFleetCapacity"
 
 // DescribeFleetCapacityRequest generates a "aws/request.Request" representing the
 // client's request for the DescribeFleetCapacity operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See DescribeFleetCapacity for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the DescribeFleetCapacity method directly
-// instead.
+// See DescribeFleetCapacity for more information on using the DescribeFleetCapacity
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the DescribeFleetCapacityRequest method.
 //    req, resp := client.DescribeFleetCapacityRequest(params)
@@ -2302,19 +2785,18 @@ const opDescribeFleetEvents = "DescribeFleetEvents"
 
 // DescribeFleetEventsRequest generates a "aws/request.Request" representing the
 // client's request for the DescribeFleetEvents operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See DescribeFleetEvents for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the DescribeFleetEvents method directly
-// instead.
+// See DescribeFleetEvents for more information on using the DescribeFleetEvents
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the DescribeFleetEventsRequest method.
 //    req, resp := client.DescribeFleetEventsRequest(params)
@@ -2442,19 +2924,18 @@ const opDescribeFleetPortSettings = "DescribeFleetPortSettings"
 
 // DescribeFleetPortSettingsRequest generates a "aws/request.Request" representing the
 // client's request for the DescribeFleetPortSettings operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See DescribeFleetPortSettings for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the DescribeFleetPortSettings method directly
-// instead.
+// See DescribeFleetPortSettings for more information on using the DescribeFleetPortSettings
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the DescribeFleetPortSettingsRequest method.
 //    req, resp := client.DescribeFleetPortSettingsRequest(params)
@@ -2584,19 +3065,18 @@ const opDescribeFleetUtilization = "DescribeFleetUtilization"
 
 // DescribeFleetUtilizationRequest generates a "aws/request.Request" representing the
 // client's request for the DescribeFleetUtilization operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See DescribeFleetUtilization for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the DescribeFleetUtilization method directly
-// instead.
+// See DescribeFleetUtilization for more information on using the DescribeFleetUtilization
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the DescribeFleetUtilizationRequest method.
 //    req, resp := client.DescribeFleetUtilizationRequest(params)
@@ -2730,19 +3210,18 @@ const opDescribeGameSessionDetails = "DescribeGameSessionDetails"
 
 // DescribeGameSessionDetailsRequest generates a "aws/request.Request" representing the
 // client's request for the DescribeGameSessionDetails operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See DescribeGameSessionDetails for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the DescribeGameSessionDetails method directly
-// instead.
+// See DescribeGameSessionDetails for more information on using the DescribeGameSessionDetails
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the DescribeGameSessionDetailsRequest method.
 //    req, resp := client.DescribeGameSessionDetailsRequest(params)
@@ -2862,19 +3341,18 @@ const opDescribeGameSessionPlacement = "DescribeGameSessionPlacement"
 
 // DescribeGameSessionPlacementRequest generates a "aws/request.Request" representing the
 // client's request for the DescribeGameSessionPlacement operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See DescribeGameSessionPlacement for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the DescribeGameSessionPlacement method directly
-// instead.
+// See DescribeGameSessionPlacement for more information on using the DescribeGameSessionPlacement
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the DescribeGameSessionPlacementRequest method.
 //    req, resp := client.DescribeGameSessionPlacementRequest(params)
@@ -2979,19 +3457,18 @@ const opDescribeGameSessionQueues = "DescribeGameSessionQueues"
 
 // DescribeGameSessionQueuesRequest generates a "aws/request.Request" representing the
 // client's request for the DescribeGameSessionQueues operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See DescribeGameSessionQueues for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the DescribeGameSessionQueues method directly
-// instead.
+// See DescribeGameSessionQueues for more information on using the DescribeGameSessionQueues
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the DescribeGameSessionQueuesRequest method.
 //    req, resp := client.DescribeGameSessionQueuesRequest(params)
@@ -3086,19 +3563,18 @@ const opDescribeGameSessions = "DescribeGameSessions"
 
 // DescribeGameSessionsRequest generates a "aws/request.Request" representing the
 // client's request for the DescribeGameSessions operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See DescribeGameSessions for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the DescribeGameSessions method directly
-// instead.
+// See DescribeGameSessions for more information on using the DescribeGameSessions
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the DescribeGameSessionsRequest method.
 //    req, resp := client.DescribeGameSessionsRequest(params)
@@ -3219,19 +3695,18 @@ const opDescribeInstances = "DescribeInstances"
 
 // DescribeInstancesRequest generates a "aws/request.Request" representing the
 // client's request for the DescribeInstances operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See DescribeInstances for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the DescribeInstances method directly
-// instead.
+// See DescribeInstances for more information on using the DescribeInstances
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the DescribeInstancesRequest method.
 //    req, resp := client.DescribeInstancesRequest(params)
@@ -3315,23 +3790,355 @@ func (c *GameLift) DescribeInstancesWithContext(ctx aws.Context, input *Describe
 	return out, req.Send()
 }
 
+const opDescribeMatchmaking = "DescribeMatchmaking"
+
+// DescribeMatchmakingRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeMatchmaking operation. The "output" return
+// value will be populated with the request's response once the request complets
+// successfuly.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeMatchmaking for more information on using the DescribeMatchmaking
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the DescribeMatchmakingRequest method.
+//    req, resp := client.DescribeMatchmakingRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeMatchmaking
+func (c *GameLift) DescribeMatchmakingRequest(input *DescribeMatchmakingInput) (req *request.Request, output *DescribeMatchmakingOutput) {
+	op := &request.Operation{
+		Name:       opDescribeMatchmaking,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DescribeMatchmakingInput{}
+	}
+
+	output = &DescribeMatchmakingOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeMatchmaking API operation for Amazon GameLift.
+//
+// Retrieves a set of one or more matchmaking tickets. Use this operation to
+// retrieve ticket information, including status and--once a successful match
+// is made--acquire connection information for the resulting new game session.
+//
+// You can use this operation to track the progress of matchmaking requests
+// (through polling) as an alternative to using event notifications. See more
+// details on tracking matchmaking requests through polling or notifications
+// in StartMatchmaking.
+//
+// You can request data for a one or a list of ticket IDs. If the request is
+// successful, a ticket object is returned for each requested ID. When specifying
+// a list of ticket IDs, objects are returned only for tickets that currently
+// exist.
+//
+// Matchmaking-related operations include:
+//
+//    * StartMatchmaking
+//
+//    * DescribeMatchmaking
+//
+//    * StopMatchmaking
+//
+//    * AcceptMatch
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon GameLift's
+// API operation DescribeMatchmaking for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeInvalidRequestException "InvalidRequestException"
+//   One or more parameter values in the request are invalid. Correct the invalid
+//   parameter values before retrying.
+//
+//   * ErrCodeInternalServiceException "InternalServiceException"
+//   The service encountered an unrecoverable internal failure while processing
+//   the request. Clients can retry such requests immediately or after a waiting
+//   period.
+//
+//   * ErrCodeUnsupportedRegionException "UnsupportedRegionException"
+//   The requested operation is not supported in the region specified.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeMatchmaking
+func (c *GameLift) DescribeMatchmaking(input *DescribeMatchmakingInput) (*DescribeMatchmakingOutput, error) {
+	req, out := c.DescribeMatchmakingRequest(input)
+	return out, req.Send()
+}
+
+// DescribeMatchmakingWithContext is the same as DescribeMatchmaking with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeMatchmaking for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *GameLift) DescribeMatchmakingWithContext(ctx aws.Context, input *DescribeMatchmakingInput, opts ...request.Option) (*DescribeMatchmakingOutput, error) {
+	req, out := c.DescribeMatchmakingRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDescribeMatchmakingConfigurations = "DescribeMatchmakingConfigurations"
+
+// DescribeMatchmakingConfigurationsRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeMatchmakingConfigurations operation. The "output" return
+// value will be populated with the request's response once the request complets
+// successfuly.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeMatchmakingConfigurations for more information on using the DescribeMatchmakingConfigurations
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the DescribeMatchmakingConfigurationsRequest method.
+//    req, resp := client.DescribeMatchmakingConfigurationsRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeMatchmakingConfigurations
+func (c *GameLift) DescribeMatchmakingConfigurationsRequest(input *DescribeMatchmakingConfigurationsInput) (req *request.Request, output *DescribeMatchmakingConfigurationsOutput) {
+	op := &request.Operation{
+		Name:       opDescribeMatchmakingConfigurations,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DescribeMatchmakingConfigurationsInput{}
+	}
+
+	output = &DescribeMatchmakingConfigurationsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeMatchmakingConfigurations API operation for Amazon GameLift.
+//
+// Retrieves the details of FlexMatch matchmaking configurations. with this
+// operation, you have the following options: (1) retrieve all existing configurations,
+// (2) provide the names of one or more configurations to retrieve, or (3) retrieve
+// all configurations that use a specified rule set name. When requesting multiple
+// items, use the pagination parameters to retrieve results as a set of sequential
+// pages. If successful, a configuration is returned for each requested name.
+// When specifying a list of names, only configurations that currently exist
+// are returned.
+//
+// Operations related to match configurations and rule sets include:
+//
+//    * CreateMatchmakingConfiguration
+//
+//    * DescribeMatchmakingConfigurations
+//
+//    * UpdateMatchmakingConfiguration
+//
+//    * DeleteMatchmakingConfiguration
+//
+//    * CreateMatchmakingRuleSet
+//
+//    * DescribeMatchmakingRuleSets
+//
+//    * ValidateMatchmakingRuleSet
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon GameLift's
+// API operation DescribeMatchmakingConfigurations for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeInvalidRequestException "InvalidRequestException"
+//   One or more parameter values in the request are invalid. Correct the invalid
+//   parameter values before retrying.
+//
+//   * ErrCodeInternalServiceException "InternalServiceException"
+//   The service encountered an unrecoverable internal failure while processing
+//   the request. Clients can retry such requests immediately or after a waiting
+//   period.
+//
+//   * ErrCodeUnsupportedRegionException "UnsupportedRegionException"
+//   The requested operation is not supported in the region specified.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeMatchmakingConfigurations
+func (c *GameLift) DescribeMatchmakingConfigurations(input *DescribeMatchmakingConfigurationsInput) (*DescribeMatchmakingConfigurationsOutput, error) {
+	req, out := c.DescribeMatchmakingConfigurationsRequest(input)
+	return out, req.Send()
+}
+
+// DescribeMatchmakingConfigurationsWithContext is the same as DescribeMatchmakingConfigurations with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeMatchmakingConfigurations for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *GameLift) DescribeMatchmakingConfigurationsWithContext(ctx aws.Context, input *DescribeMatchmakingConfigurationsInput, opts ...request.Option) (*DescribeMatchmakingConfigurationsOutput, error) {
+	req, out := c.DescribeMatchmakingConfigurationsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDescribeMatchmakingRuleSets = "DescribeMatchmakingRuleSets"
+
+// DescribeMatchmakingRuleSetsRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeMatchmakingRuleSets operation. The "output" return
+// value will be populated with the request's response once the request complets
+// successfuly.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeMatchmakingRuleSets for more information on using the DescribeMatchmakingRuleSets
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the DescribeMatchmakingRuleSetsRequest method.
+//    req, resp := client.DescribeMatchmakingRuleSetsRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeMatchmakingRuleSets
+func (c *GameLift) DescribeMatchmakingRuleSetsRequest(input *DescribeMatchmakingRuleSetsInput) (req *request.Request, output *DescribeMatchmakingRuleSetsOutput) {
+	op := &request.Operation{
+		Name:       opDescribeMatchmakingRuleSets,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DescribeMatchmakingRuleSetsInput{}
+	}
+
+	output = &DescribeMatchmakingRuleSetsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeMatchmakingRuleSets API operation for Amazon GameLift.
+//
+// Retrieves the details for FlexMatch matchmaking rule sets. You can request
+// all existing rule sets for the region, or provide a list of one or more rule
+// set names. When requesting multiple items, use the pagination parameters
+// to retrieve results as a set of sequential pages. If successful, a rule set
+// is returned for each requested name.
+//
+// Operations related to match configurations and rule sets include:
+//
+//    * CreateMatchmakingConfiguration
+//
+//    * DescribeMatchmakingConfigurations
+//
+//    * UpdateMatchmakingConfiguration
+//
+//    * DeleteMatchmakingConfiguration
+//
+//    * CreateMatchmakingRuleSet
+//
+//    * DescribeMatchmakingRuleSets
+//
+//    * ValidateMatchmakingRuleSet
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon GameLift's
+// API operation DescribeMatchmakingRuleSets for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeInvalidRequestException "InvalidRequestException"
+//   One or more parameter values in the request are invalid. Correct the invalid
+//   parameter values before retrying.
+//
+//   * ErrCodeInternalServiceException "InternalServiceException"
+//   The service encountered an unrecoverable internal failure while processing
+//   the request. Clients can retry such requests immediately or after a waiting
+//   period.
+//
+//   * ErrCodeNotFoundException "NotFoundException"
+//   A service resource associated with the request could not be found. Clients
+//   should not retry such requests.
+//
+//   * ErrCodeUnsupportedRegionException "UnsupportedRegionException"
+//   The requested operation is not supported in the region specified.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeMatchmakingRuleSets
+func (c *GameLift) DescribeMatchmakingRuleSets(input *DescribeMatchmakingRuleSetsInput) (*DescribeMatchmakingRuleSetsOutput, error) {
+	req, out := c.DescribeMatchmakingRuleSetsRequest(input)
+	return out, req.Send()
+}
+
+// DescribeMatchmakingRuleSetsWithContext is the same as DescribeMatchmakingRuleSets with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeMatchmakingRuleSets for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *GameLift) DescribeMatchmakingRuleSetsWithContext(ctx aws.Context, input *DescribeMatchmakingRuleSetsInput, opts ...request.Option) (*DescribeMatchmakingRuleSetsOutput, error) {
+	req, out := c.DescribeMatchmakingRuleSetsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDescribePlayerSessions = "DescribePlayerSessions"
 
 // DescribePlayerSessionsRequest generates a "aws/request.Request" representing the
 // client's request for the DescribePlayerSessions operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See DescribePlayerSessions for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the DescribePlayerSessions method directly
-// instead.
+// See DescribePlayerSessions for more information on using the DescribePlayerSessions
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the DescribePlayerSessionsRequest method.
 //    req, resp := client.DescribePlayerSessionsRequest(params)
@@ -3440,19 +4247,18 @@ const opDescribeRuntimeConfiguration = "DescribeRuntimeConfiguration"
 
 // DescribeRuntimeConfigurationRequest generates a "aws/request.Request" representing the
 // client's request for the DescribeRuntimeConfiguration operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See DescribeRuntimeConfiguration for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the DescribeRuntimeConfiguration method directly
-// instead.
+// See DescribeRuntimeConfiguration for more information on using the DescribeRuntimeConfiguration
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the DescribeRuntimeConfigurationRequest method.
 //    req, resp := client.DescribeRuntimeConfigurationRequest(params)
@@ -3579,19 +4385,18 @@ const opDescribeScalingPolicies = "DescribeScalingPolicies"
 
 // DescribeScalingPoliciesRequest generates a "aws/request.Request" representing the
 // client's request for the DescribeScalingPolicies operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See DescribeScalingPolicies for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the DescribeScalingPolicies method directly
-// instead.
+// See DescribeScalingPolicies for more information on using the DescribeScalingPolicies
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the DescribeScalingPoliciesRequest method.
 //    req, resp := client.DescribeScalingPoliciesRequest(params)
@@ -3721,19 +4526,18 @@ const opGetGameSessionLogUrl = "GetGameSessionLogUrl"
 
 // GetGameSessionLogUrlRequest generates a "aws/request.Request" representing the
 // client's request for the GetGameSessionLogUrl operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See GetGameSessionLogUrl for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the GetGameSessionLogUrl method directly
-// instead.
+// See GetGameSessionLogUrl for more information on using the GetGameSessionLogUrl
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the GetGameSessionLogUrlRequest method.
 //    req, resp := client.GetGameSessionLogUrlRequest(params)
@@ -3764,7 +4568,8 @@ func (c *GameLift) GetGameSessionLogUrlRequest(input *GetGameSessionLogUrlInput)
 //
 // Retrieves the location of stored game session logs for a specified game session.
 // When a game session is terminated, Amazon GameLift automatically stores the
-// logs in Amazon S3. Use this URL to download the logs.
+// logs in Amazon S3 and retains them for 14 days. Use this URL to download
+// the logs.
 //
 // See the AWS Service Limits (http://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html#limits_gamelift)
 // page for maximum log file sizes. Log files that exceed this limit are not
@@ -3842,19 +4647,18 @@ const opGetInstanceAccess = "GetInstanceAccess"
 
 // GetInstanceAccessRequest generates a "aws/request.Request" representing the
 // client's request for the GetInstanceAccess operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See GetInstanceAccess for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the GetInstanceAccess method directly
-// instead.
+// See GetInstanceAccess for more information on using the GetInstanceAccess
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the GetInstanceAccessRequest method.
 //    req, resp := client.GetInstanceAccessRequest(params)
@@ -3950,19 +4754,18 @@ const opListAliases = "ListAliases"
 
 // ListAliasesRequest generates a "aws/request.Request" representing the
 // client's request for the ListAliases operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See ListAliases for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the ListAliases method directly
-// instead.
+// See ListAliases for more information on using the ListAliases
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the ListAliasesRequest method.
 //    req, resp := client.ListAliasesRequest(params)
@@ -4057,19 +4860,18 @@ const opListBuilds = "ListBuilds"
 
 // ListBuildsRequest generates a "aws/request.Request" representing the
 // client's request for the ListBuilds operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See ListBuilds for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the ListBuilds method directly
-// instead.
+// See ListBuilds for more information on using the ListBuilds
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the ListBuildsRequest method.
 //    req, resp := client.ListBuildsRequest(params)
@@ -4163,19 +4965,18 @@ const opListFleets = "ListFleets"
 
 // ListFleetsRequest generates a "aws/request.Request" representing the
 // client's request for the ListFleets operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See ListFleets for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the ListFleets method directly
-// instead.
+// See ListFleets for more information on using the ListFleets
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the ListFleetsRequest method.
 //    req, resp := client.ListFleetsRequest(params)
@@ -4304,19 +5105,18 @@ const opPutScalingPolicy = "PutScalingPolicy"
 
 // PutScalingPolicyRequest generates a "aws/request.Request" representing the
 // client's request for the PutScalingPolicy operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See PutScalingPolicy for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the PutScalingPolicy method directly
-// instead.
+// See PutScalingPolicy for more information on using the PutScalingPolicy
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the PutScalingPolicyRequest method.
 //    req, resp := client.PutScalingPolicyRequest(params)
@@ -4462,19 +5262,18 @@ const opRequestUploadCredentials = "RequestUploadCredentials"
 
 // RequestUploadCredentialsRequest generates a "aws/request.Request" representing the
 // client's request for the RequestUploadCredentials operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See RequestUploadCredentials for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the RequestUploadCredentials method directly
-// instead.
+// See RequestUploadCredentials for more information on using the RequestUploadCredentials
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the RequestUploadCredentialsRequest method.
 //    req, resp := client.RequestUploadCredentialsRequest(params)
@@ -4557,19 +5356,18 @@ const opResolveAlias = "ResolveAlias"
 
 // ResolveAliasRequest generates a "aws/request.Request" representing the
 // client's request for the ResolveAlias operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See ResolveAlias for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the ResolveAlias method directly
-// instead.
+// See ResolveAlias for more information on using the ResolveAlias
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the ResolveAliasRequest method.
 //    req, resp := client.ResolveAliasRequest(params)
@@ -4671,19 +5469,18 @@ const opSearchGameSessions = "SearchGameSessions"
 
 // SearchGameSessionsRequest generates a "aws/request.Request" representing the
 // client's request for the SearchGameSessions operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See SearchGameSessions for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the SearchGameSessions method directly
-// instead.
+// See SearchGameSessions for more information on using the SearchGameSessions
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the SearchGameSessionsRequest method.
 //    req, resp := client.SearchGameSessionsRequest(params)
@@ -4835,19 +5632,18 @@ const opStartGameSessionPlacement = "StartGameSessionPlacement"
 
 // StartGameSessionPlacementRequest generates a "aws/request.Request" representing the
 // client's request for the StartGameSessionPlacement operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See StartGameSessionPlacement for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the StartGameSessionPlacement method directly
-// instead.
+// See StartGameSessionPlacement for more information on using the StartGameSessionPlacement
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the StartGameSessionPlacementRequest method.
 //    req, resp := client.StartGameSessionPlacementRequest(params)
@@ -4913,7 +5709,7 @@ func (c *GameLift) StartGameSessionPlacementRequest(input *StartGameSessionPlace
 // If successful, a new game session placement is created.
 //
 // To track the status of a placement request, call DescribeGameSessionPlacement
-// and check the request's status. If the status is Fulfilled, a new game session
+// and check the request's status. If the status is FULFILLED, a new game session
 // has been created and a game session ARN and region are referenced. If the
 // placement request times out, you can resubmit the request or retry it with
 // a different queue.
@@ -4986,23 +5782,184 @@ func (c *GameLift) StartGameSessionPlacementWithContext(ctx aws.Context, input *
 	return out, req.Send()
 }
 
+const opStartMatchmaking = "StartMatchmaking"
+
+// StartMatchmakingRequest generates a "aws/request.Request" representing the
+// client's request for the StartMatchmaking operation. The "output" return
+// value will be populated with the request's response once the request complets
+// successfuly.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See StartMatchmaking for more information on using the StartMatchmaking
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the StartMatchmakingRequest method.
+//    req, resp := client.StartMatchmakingRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/StartMatchmaking
+func (c *GameLift) StartMatchmakingRequest(input *StartMatchmakingInput) (req *request.Request, output *StartMatchmakingOutput) {
+	op := &request.Operation{
+		Name:       opStartMatchmaking,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &StartMatchmakingInput{}
+	}
+
+	output = &StartMatchmakingOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// StartMatchmaking API operation for Amazon GameLift.
+//
+// Uses FlexMatch to create a game match for a group of players based on custom
+// matchmaking rules, and starts a new game for the matched players. Each matchmaking
+// request specifies the type of match to build (team configuration, rules for
+// an acceptable match, etc.). The request also specifies the players to find
+// a match for and where to host the new game session for optimal performance.
+// A matchmaking request might start with a single player or a group of players
+// who want to play together. FlexMatch finds additional players as needed to
+// fill the match. Match type, rules, and the queue used to place a new game
+// session are defined in a MatchmakingConfiguration. For complete information
+// on setting up and using FlexMatch, see the topic  Adding FlexMatch to Your
+// Game (http://docs.aws.amazon.com/gamelift/latest/developerguide/match-intro.html).
+//
+// To start matchmaking, provide a unique ticket ID, specify a matchmaking configuration,
+// and include the players to be matched. You must also include a set of player
+// attributes relevant for the matchmaking configuration. If successful, a matchmaking
+// ticket is returned with status set to QUEUED. Track the status of the ticket
+// to respond as needed and acquire game session connection information for
+// sucessfully completed matches.
+//
+// Tracking ticket status -- A couple of options are available for tracking
+// the status of matchmaking requests:
+//
+//    * Polling -- Call DescribeMatchmaking. This operation returns the full
+//    ticket object, including current status and (for completed tickets) game
+//    session connection info. We recommend polling no more than once every
+//    10 seconds.
+//
+//    * Notifications -- Get event notifications for changes in ticket status
+//    using Amazon Simple Notification Service (SNS). Notifications are easy
+//    to set up (see CreateMatchmakingConfiguration) and typically deliver match
+//    status changes faster and more efficiently than polling. We recommend
+//    that you use polling to back up to notifications (since delivery is not
+//    guaranteed) and call DescribeMatchmaking only when notifications are not
+//    received within 30 seconds.
+//
+// Processing a matchmaking request -- FlexMatch handles a matchmaking request
+// as follows:
+//
+// Your client code submits a StartMatchmaking request for one or more players
+// and tracks the status of the request ticket.
+//
+// FlexMatch uses this ticket and others in process to build an acceptable match.
+// When a potential match is identified, all tickets in the proposed match are
+// advanced to the next status.
+//
+// If the match requires player acceptance (set in the matchmaking configuration),
+// the tickets move into status REQUIRES_ACCEPTANCE. This status triggers your
+// client code to solicit acceptance from all players in every ticket involved
+// in the match, and then call AcceptMatch for each player. If any player rejects
+// or fails to accept the match before a specified timeout, the proposed match
+// is dropped (see AcceptMatch for more details).
+//
+// Once a match is proposed and accepted, the matchmaking tickets move into
+// status PLACING. FlexMatch locates resources for a new game session using
+// the game session queue (set in the matchmaking configuration) and creates
+// the game session based on the match data.
+//
+// When the match is successfully placed, the matchmaking tickets move into
+// COMPLETED status. Connection information (including game session endpoint
+// and player session) is added to the matchmaking tickets. Matched players
+// can use the connection information to join the game.
+//
+// Matchmaking-related operations include:
+//
+//    * StartMatchmaking
+//
+//    * DescribeMatchmaking
+//
+//    * StopMatchmaking
+//
+//    * AcceptMatch
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon GameLift's
+// API operation StartMatchmaking for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeInvalidRequestException "InvalidRequestException"
+//   One or more parameter values in the request are invalid. Correct the invalid
+//   parameter values before retrying.
+//
+//   * ErrCodeNotFoundException "NotFoundException"
+//   A service resource associated with the request could not be found. Clients
+//   should not retry such requests.
+//
+//   * ErrCodeInternalServiceException "InternalServiceException"
+//   The service encountered an unrecoverable internal failure while processing
+//   the request. Clients can retry such requests immediately or after a waiting
+//   period.
+//
+//   * ErrCodeUnsupportedRegionException "UnsupportedRegionException"
+//   The requested operation is not supported in the region specified.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/StartMatchmaking
+func (c *GameLift) StartMatchmaking(input *StartMatchmakingInput) (*StartMatchmakingOutput, error) {
+	req, out := c.StartMatchmakingRequest(input)
+	return out, req.Send()
+}
+
+// StartMatchmakingWithContext is the same as StartMatchmaking with the addition of
+// the ability to pass a context and additional request options.
+//
+// See StartMatchmaking for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *GameLift) StartMatchmakingWithContext(ctx aws.Context, input *StartMatchmakingInput, opts ...request.Option) (*StartMatchmakingOutput, error) {
+	req, out := c.StartMatchmakingRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opStopGameSessionPlacement = "StopGameSessionPlacement"
 
 // StopGameSessionPlacementRequest generates a "aws/request.Request" representing the
 // client's request for the StopGameSessionPlacement operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See StopGameSessionPlacement for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the StopGameSessionPlacement method directly
-// instead.
+// See StopGameSessionPlacement for more information on using the StopGameSessionPlacement
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the StopGameSessionPlacementRequest method.
 //    req, resp := client.StopGameSessionPlacementRequest(params)
@@ -5031,9 +5988,9 @@ func (c *GameLift) StopGameSessionPlacementRequest(input *StopGameSessionPlaceme
 
 // StopGameSessionPlacement API operation for Amazon GameLift.
 //
-// Cancels a game session placement that is in Pending status. To stop a placement,
+// Cancels a game session placement that is in PENDING status. To stop a placement,
 // provide the placement ID values. If successful, the placement is moved to
-// Cancelled status.
+// CANCELLED status.
 //
 // Game-session-related operations include:
 //
@@ -5103,23 +6060,126 @@ func (c *GameLift) StopGameSessionPlacementWithContext(ctx aws.Context, input *S
 	return out, req.Send()
 }
 
+const opStopMatchmaking = "StopMatchmaking"
+
+// StopMatchmakingRequest generates a "aws/request.Request" representing the
+// client's request for the StopMatchmaking operation. The "output" return
+// value will be populated with the request's response once the request complets
+// successfuly.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See StopMatchmaking for more information on using the StopMatchmaking
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the StopMatchmakingRequest method.
+//    req, resp := client.StopMatchmakingRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/StopMatchmaking
+func (c *GameLift) StopMatchmakingRequest(input *StopMatchmakingInput) (req *request.Request, output *StopMatchmakingOutput) {
+	op := &request.Operation{
+		Name:       opStopMatchmaking,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &StopMatchmakingInput{}
+	}
+
+	output = &StopMatchmakingOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// StopMatchmaking API operation for Amazon GameLift.
+//
+// Cancels a matchmaking ticket that is currently being processed. To stop the
+// matchmaking operation, specify the ticket ID. If successful, work on the
+// ticket is stopped, and the ticket status is changed to CANCELLED.
+//
+// Matchmaking-related operations include:
+//
+//    * StartMatchmaking
+//
+//    * DescribeMatchmaking
+//
+//    * StopMatchmaking
+//
+//    * AcceptMatch
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon GameLift's
+// API operation StopMatchmaking for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeInvalidRequestException "InvalidRequestException"
+//   One or more parameter values in the request are invalid. Correct the invalid
+//   parameter values before retrying.
+//
+//   * ErrCodeNotFoundException "NotFoundException"
+//   A service resource associated with the request could not be found. Clients
+//   should not retry such requests.
+//
+//   * ErrCodeInternalServiceException "InternalServiceException"
+//   The service encountered an unrecoverable internal failure while processing
+//   the request. Clients can retry such requests immediately or after a waiting
+//   period.
+//
+//   * ErrCodeUnsupportedRegionException "UnsupportedRegionException"
+//   The requested operation is not supported in the region specified.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/StopMatchmaking
+func (c *GameLift) StopMatchmaking(input *StopMatchmakingInput) (*StopMatchmakingOutput, error) {
+	req, out := c.StopMatchmakingRequest(input)
+	return out, req.Send()
+}
+
+// StopMatchmakingWithContext is the same as StopMatchmaking with the addition of
+// the ability to pass a context and additional request options.
+//
+// See StopMatchmaking for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *GameLift) StopMatchmakingWithContext(ctx aws.Context, input *StopMatchmakingInput, opts ...request.Option) (*StopMatchmakingOutput, error) {
+	req, out := c.StopMatchmakingRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opUpdateAlias = "UpdateAlias"
 
 // UpdateAliasRequest generates a "aws/request.Request" representing the
 // client's request for the UpdateAlias operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See UpdateAlias for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the UpdateAlias method directly
-// instead.
+// See UpdateAlias for more information on using the UpdateAlias
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the UpdateAliasRequest method.
 //    req, resp := client.UpdateAliasRequest(params)
@@ -5217,19 +6277,18 @@ const opUpdateBuild = "UpdateBuild"
 
 // UpdateBuildRequest generates a "aws/request.Request" representing the
 // client's request for the UpdateBuild operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See UpdateBuild for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the UpdateBuild method directly
-// instead.
+// See UpdateBuild for more information on using the UpdateBuild
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the UpdateBuildRequest method.
 //    req, resp := client.UpdateBuildRequest(params)
@@ -5325,19 +6384,18 @@ const opUpdateFleetAttributes = "UpdateFleetAttributes"
 
 // UpdateFleetAttributesRequest generates a "aws/request.Request" representing the
 // client's request for the UpdateFleetAttributes operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See UpdateFleetAttributes for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the UpdateFleetAttributes method directly
-// instead.
+// See UpdateFleetAttributes for more information on using the UpdateFleetAttributes
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the UpdateFleetAttributesRequest method.
 //    req, resp := client.UpdateFleetAttributesRequest(params)
@@ -5478,19 +6536,18 @@ const opUpdateFleetCapacity = "UpdateFleetCapacity"
 
 // UpdateFleetCapacityRequest generates a "aws/request.Request" representing the
 // client's request for the UpdateFleetCapacity operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See UpdateFleetCapacity for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the UpdateFleetCapacity method directly
-// instead.
+// See UpdateFleetCapacity for more information on using the UpdateFleetCapacity
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the UpdateFleetCapacityRequest method.
 //    req, resp := client.UpdateFleetCapacityRequest(params)
@@ -5643,19 +6700,18 @@ const opUpdateFleetPortSettings = "UpdateFleetPortSettings"
 
 // UpdateFleetPortSettingsRequest generates a "aws/request.Request" representing the
 // client's request for the UpdateFleetPortSettings operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See UpdateFleetPortSettings for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the UpdateFleetPortSettings method directly
-// instead.
+// See UpdateFleetPortSettings for more information on using the UpdateFleetPortSettings
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the UpdateFleetPortSettingsRequest method.
 //    req, resp := client.UpdateFleetPortSettingsRequest(params)
@@ -5799,19 +6855,18 @@ const opUpdateGameSession = "UpdateGameSession"
 
 // UpdateGameSessionRequest generates a "aws/request.Request" representing the
 // client's request for the UpdateGameSession operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See UpdateGameSession for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the UpdateGameSession method directly
-// instead.
+// See UpdateGameSession for more information on using the UpdateGameSession
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the UpdateGameSessionRequest method.
 //    req, resp := client.UpdateGameSessionRequest(params)
@@ -5930,19 +6985,18 @@ const opUpdateGameSessionQueue = "UpdateGameSessionQueue"
 
 // UpdateGameSessionQueueRequest generates a "aws/request.Request" representing the
 // client's request for the UpdateGameSessionQueue operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See UpdateGameSessionQueue for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the UpdateGameSessionQueue method directly
-// instead.
+// See UpdateGameSessionQueue for more information on using the UpdateGameSessionQueue
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the UpdateGameSessionQueueRequest method.
 //    req, resp := client.UpdateGameSessionQueueRequest(params)
@@ -6032,23 +7086,131 @@ func (c *GameLift) UpdateGameSessionQueueWithContext(ctx aws.Context, input *Upd
 	return out, req.Send()
 }
 
+const opUpdateMatchmakingConfiguration = "UpdateMatchmakingConfiguration"
+
+// UpdateMatchmakingConfigurationRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateMatchmakingConfiguration operation. The "output" return
+// value will be populated with the request's response once the request complets
+// successfuly.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateMatchmakingConfiguration for more information on using the UpdateMatchmakingConfiguration
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the UpdateMatchmakingConfigurationRequest method.
+//    req, resp := client.UpdateMatchmakingConfigurationRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateMatchmakingConfiguration
+func (c *GameLift) UpdateMatchmakingConfigurationRequest(input *UpdateMatchmakingConfigurationInput) (req *request.Request, output *UpdateMatchmakingConfigurationOutput) {
+	op := &request.Operation{
+		Name:       opUpdateMatchmakingConfiguration,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &UpdateMatchmakingConfigurationInput{}
+	}
+
+	output = &UpdateMatchmakingConfigurationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdateMatchmakingConfiguration API operation for Amazon GameLift.
+//
+// Updates settings for a FlexMatch matchmaking configuration. To update settings,
+// specify the configuration name to be updated and provide the new settings.
+//
+// Operations related to match configurations and rule sets include:
+//
+//    * CreateMatchmakingConfiguration
+//
+//    * DescribeMatchmakingConfigurations
+//
+//    * UpdateMatchmakingConfiguration
+//
+//    * DeleteMatchmakingConfiguration
+//
+//    * CreateMatchmakingRuleSet
+//
+//    * DescribeMatchmakingRuleSets
+//
+//    * ValidateMatchmakingRuleSet
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon GameLift's
+// API operation UpdateMatchmakingConfiguration for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeInvalidRequestException "InvalidRequestException"
+//   One or more parameter values in the request are invalid. Correct the invalid
+//   parameter values before retrying.
+//
+//   * ErrCodeNotFoundException "NotFoundException"
+//   A service resource associated with the request could not be found. Clients
+//   should not retry such requests.
+//
+//   * ErrCodeInternalServiceException "InternalServiceException"
+//   The service encountered an unrecoverable internal failure while processing
+//   the request. Clients can retry such requests immediately or after a waiting
+//   period.
+//
+//   * ErrCodeUnsupportedRegionException "UnsupportedRegionException"
+//   The requested operation is not supported in the region specified.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateMatchmakingConfiguration
+func (c *GameLift) UpdateMatchmakingConfiguration(input *UpdateMatchmakingConfigurationInput) (*UpdateMatchmakingConfigurationOutput, error) {
+	req, out := c.UpdateMatchmakingConfigurationRequest(input)
+	return out, req.Send()
+}
+
+// UpdateMatchmakingConfigurationWithContext is the same as UpdateMatchmakingConfiguration with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateMatchmakingConfiguration for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *GameLift) UpdateMatchmakingConfigurationWithContext(ctx aws.Context, input *UpdateMatchmakingConfigurationInput, opts ...request.Option) (*UpdateMatchmakingConfigurationOutput, error) {
+	req, out := c.UpdateMatchmakingConfigurationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opUpdateRuntimeConfiguration = "UpdateRuntimeConfiguration"
 
 // UpdateRuntimeConfigurationRequest generates a "aws/request.Request" representing the
 // client's request for the UpdateRuntimeConfiguration operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See UpdateRuntimeConfiguration for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the UpdateRuntimeConfiguration method directly
-// instead.
+// See UpdateRuntimeConfiguration for more information on using the UpdateRuntimeConfiguration
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the UpdateRuntimeConfigurationRequest method.
 //    req, resp := client.UpdateRuntimeConfigurationRequest(params)
@@ -6189,6 +7351,200 @@ func (c *GameLift) UpdateRuntimeConfigurationWithContext(ctx aws.Context, input 
 	return out, req.Send()
 }
 
+const opValidateMatchmakingRuleSet = "ValidateMatchmakingRuleSet"
+
+// ValidateMatchmakingRuleSetRequest generates a "aws/request.Request" representing the
+// client's request for the ValidateMatchmakingRuleSet operation. The "output" return
+// value will be populated with the request's response once the request complets
+// successfuly.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ValidateMatchmakingRuleSet for more information on using the ValidateMatchmakingRuleSet
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the ValidateMatchmakingRuleSetRequest method.
+//    req, resp := client.ValidateMatchmakingRuleSetRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ValidateMatchmakingRuleSet
+func (c *GameLift) ValidateMatchmakingRuleSetRequest(input *ValidateMatchmakingRuleSetInput) (req *request.Request, output *ValidateMatchmakingRuleSetOutput) {
+	op := &request.Operation{
+		Name:       opValidateMatchmakingRuleSet,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ValidateMatchmakingRuleSetInput{}
+	}
+
+	output = &ValidateMatchmakingRuleSetOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ValidateMatchmakingRuleSet API operation for Amazon GameLift.
+//
+// Validates the syntax of a matchmaking rule or rule set. This operation checks
+// that the rule set uses syntactically correct JSON and that it conforms to
+// allowed property expressions. To validate syntax, provide a rule set string.
+//
+// Operations related to match configurations and rule sets include:
+//
+//    * CreateMatchmakingConfiguration
+//
+//    * DescribeMatchmakingConfigurations
+//
+//    * UpdateMatchmakingConfiguration
+//
+//    * DeleteMatchmakingConfiguration
+//
+//    * CreateMatchmakingRuleSet
+//
+//    * DescribeMatchmakingRuleSets
+//
+//    * ValidateMatchmakingRuleSet
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon GameLift's
+// API operation ValidateMatchmakingRuleSet for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeInternalServiceException "InternalServiceException"
+//   The service encountered an unrecoverable internal failure while processing
+//   the request. Clients can retry such requests immediately or after a waiting
+//   period.
+//
+//   * ErrCodeUnsupportedRegionException "UnsupportedRegionException"
+//   The requested operation is not supported in the region specified.
+//
+//   * ErrCodeInvalidRequestException "InvalidRequestException"
+//   One or more parameter values in the request are invalid. Correct the invalid
+//   parameter values before retrying.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ValidateMatchmakingRuleSet
+func (c *GameLift) ValidateMatchmakingRuleSet(input *ValidateMatchmakingRuleSetInput) (*ValidateMatchmakingRuleSetOutput, error) {
+	req, out := c.ValidateMatchmakingRuleSetRequest(input)
+	return out, req.Send()
+}
+
+// ValidateMatchmakingRuleSetWithContext is the same as ValidateMatchmakingRuleSet with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ValidateMatchmakingRuleSet for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *GameLift) ValidateMatchmakingRuleSetWithContext(ctx aws.Context, input *ValidateMatchmakingRuleSetInput, opts ...request.Option) (*ValidateMatchmakingRuleSetOutput, error) {
+	req, out := c.ValidateMatchmakingRuleSetRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/AcceptMatchInput
+type AcceptMatchInput struct {
+	_ struct{} `type:"structure"`
+
+	// Player response to the proposed match.
+	//
+	// AcceptanceType is a required field
+	AcceptanceType *string `type:"string" required:"true" enum:"AcceptanceType"`
+
+	// Unique identifier for a player delivering the response. This parameter can
+	// include one or multiple player IDs.
+	//
+	// PlayerIds is a required field
+	PlayerIds []*string `type:"list" required:"true"`
+
+	// Unique identifier for a matchmaking ticket. The ticket must be in status
+	// REQUIRES_ACCEPTANCE; otherwise this request will fail.
+	//
+	// TicketId is a required field
+	TicketId *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s AcceptMatchInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AcceptMatchInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AcceptMatchInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AcceptMatchInput"}
+	if s.AcceptanceType == nil {
+		invalidParams.Add(request.NewErrParamRequired("AcceptanceType"))
+	}
+	if s.PlayerIds == nil {
+		invalidParams.Add(request.NewErrParamRequired("PlayerIds"))
+	}
+	if s.TicketId == nil {
+		invalidParams.Add(request.NewErrParamRequired("TicketId"))
+	}
+	if s.TicketId != nil && len(*s.TicketId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("TicketId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAcceptanceType sets the AcceptanceType field's value.
+func (s *AcceptMatchInput) SetAcceptanceType(v string) *AcceptMatchInput {
+	s.AcceptanceType = &v
+	return s
+}
+
+// SetPlayerIds sets the PlayerIds field's value.
+func (s *AcceptMatchInput) SetPlayerIds(v []*string) *AcceptMatchInput {
+	s.PlayerIds = v
+	return s
+}
+
+// SetTicketId sets the TicketId field's value.
+func (s *AcceptMatchInput) SetTicketId(v string) *AcceptMatchInput {
+	s.TicketId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/AcceptMatchOutput
+type AcceptMatchOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s AcceptMatchOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AcceptMatchOutput) GoString() string {
+	return s.String()
+}
+
 // Properties describing a fleet alias.
 //
 // Alias-related operations include:
@@ -6285,20 +7641,92 @@ func (s *Alias) SetRoutingStrategy(v *RoutingStrategy) *Alias {
 	return s
 }
 
-// AWS access credentials sometimes used for uploading game build files to Amazon
+// Values for use in Player attribute type:value pairs. This object lets you
+// specify an attribute value using any of the valid data types: string, number,
+// string array or data map. Each AttributeValue object can use only one of
+// the available properties.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/AttributeValue
+type AttributeValue struct {
+	_ struct{} `type:"structure"`
+
+	// For number values, expressed as double.
+	N *float64 `type:"double"`
+
+	// For single string values. Maximum string length is 100 characters.
+	S *string `min:"1" type:"string"`
+
+	// For a map of up to 10 type:value pairs. Maximum length for each string value
+	// is 100 characters.
+	SDM map[string]*float64 `type:"map"`
+
+	// For a list of up to 10 strings. Maximum length for each string is 100 characters.
+	// Duplicate values are not recognized; all occurances of the the repeated value
+	// after the first of a repeated value are ignored.
+	SL []*string `type:"list"`
+}
+
+// String returns the string representation
+func (s AttributeValue) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AttributeValue) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AttributeValue) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AttributeValue"}
+	if s.S != nil && len(*s.S) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("S", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetN sets the N field's value.
+func (s *AttributeValue) SetN(v float64) *AttributeValue {
+	s.N = &v
+	return s
+}
+
+// SetS sets the S field's value.
+func (s *AttributeValue) SetS(v string) *AttributeValue {
+	s.S = &v
+	return s
+}
+
+// SetSDM sets the SDM field's value.
+func (s *AttributeValue) SetSDM(v map[string]*float64) *AttributeValue {
+	s.SDM = v
+	return s
+}
+
+// SetSL sets the SL field's value.
+func (s *AttributeValue) SetSL(v []*string) *AttributeValue {
+	s.SL = v
+	return s
+}
+
+// Temporary access credentials used for uploading game build files to Amazon
 // GameLift. They are valid for a limited time. If they expire before you upload
 // your game build, get a new set by calling RequestUploadCredentials.
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/AwsCredentials
 type AwsCredentials struct {
 	_ struct{} `type:"structure"`
 
-	// Access key for an AWS account.
+	// Temporary key allowing access to the Amazon GameLift S3 account.
 	AccessKeyId *string `min:"1" type:"string"`
 
-	// Secret key for an AWS account.
+	// Temporary secret key allowing access to the Amazon GameLift S3 account.
 	SecretAccessKey *string `min:"1" type:"string"`
 
-	// Token specific to a build ID.
+	// Token used to associate a specific build ID with the files uploaded using
+	// these credentials.
 	SessionToken *string `min:"1" type:"string"`
 }
 
@@ -6922,9 +8350,17 @@ type CreateGameSessionInput struct {
 	// reference either a fleet ID or alias ID, but not both.
 	FleetId *string `type:"string"`
 
-	// Set of developer-defined properties for a game session. These properties
-	// are passed to the server process hosting the game session.
+	// Set of developer-defined properties for a game session, formatted as a set
+	// of type:value pairs. These properties are included in the GameSession object,
+	// which is passed to the game server with a request to start a new game session
+	// (see Start a Game Session (http://docs.aws.amazon.com/gamelift/latest/developerguide/gamelift-sdk-server-api.html#gamelift-sdk-server-startsession)).
 	GameProperties []*GameProperty `type:"list"`
+
+	// Set of developer-defined game session properties, formatted as a single string
+	// value. This data is included in the GameSession object, which is passed to
+	// the game server with a request to start a new game session (see Start a Game
+	// Session (http://docs.aws.amazon.com/gamelift/latest/developerguide/gamelift-sdk-server-api.html#gamelift-sdk-server-startsession)).
+	GameSessionData *string `min:"1" type:"string"`
 
 	// This parameter is no longer preferred. Please use IdempotencyToken instead.
 	// Custom string that uniquely identifies a request for a new game session.
@@ -6938,7 +8374,9 @@ type CreateGameSessionInput struct {
 	// Maximum token length is 48 characters. If provided, this string is included
 	// in the new game session's ID. (A game session ID has the following format:
 	// arn:aws:gamelift:<region>::gamesession/<fleet ID>/<custom ID string or idempotency
-	// token>.)
+	// token>.) Idempotency tokens remain in use for 30 days after a game session
+	// has ended; game session objects are retained for this time period and then
+	// deleted.
 	IdempotencyToken *string `min:"1" type:"string"`
 
 	// Maximum number of players that can be connected simultaneously to the game
@@ -6967,6 +8405,9 @@ func (s *CreateGameSessionInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "CreateGameSessionInput"}
 	if s.CreatorId != nil && len(*s.CreatorId) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("CreatorId", 1))
+	}
+	if s.GameSessionData != nil && len(*s.GameSessionData) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GameSessionData", 1))
 	}
 	if s.GameSessionId != nil && len(*s.GameSessionId) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("GameSessionId", 1))
@@ -7018,6 +8459,12 @@ func (s *CreateGameSessionInput) SetFleetId(v string) *CreateGameSessionInput {
 // SetGameProperties sets the GameProperties field's value.
 func (s *CreateGameSessionInput) SetGameProperties(v []*GameProperty) *CreateGameSessionInput {
 	s.GameProperties = v
+	return s
+}
+
+// SetGameSessionData sets the GameSessionData field's value.
+func (s *CreateGameSessionInput) SetGameSessionData(v string) *CreateGameSessionInput {
+	s.GameSessionData = &v
 	return s
 }
 
@@ -7080,8 +8527,8 @@ type CreateGameSessionQueueInput struct {
 	// ARN. Destinations are listed in default preference order.
 	Destinations []*GameSessionQueueDestination `type:"list"`
 
-	// Descriptive label that is associated with queue. Queue names must be unique
-	// within each region.
+	// Descriptive label that is associated with game session queue. Queue names
+	// must be unique within each region.
 	//
 	// Name is a required field
 	Name *string `min:"1" type:"string" required:"true"`
@@ -7186,6 +8633,337 @@ func (s CreateGameSessionQueueOutput) GoString() string {
 // SetGameSessionQueue sets the GameSessionQueue field's value.
 func (s *CreateGameSessionQueueOutput) SetGameSessionQueue(v *GameSessionQueue) *CreateGameSessionQueueOutput {
 	s.GameSessionQueue = v
+	return s
+}
+
+// Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateMatchmakingConfigurationInput
+type CreateMatchmakingConfigurationInput struct {
+	_ struct{} `type:"structure"`
+
+	// Flag that determines whether or not a match that was created with this configuration
+	// must be accepted by the matched players. To require acceptance, set to TRUE.
+	//
+	// AcceptanceRequired is a required field
+	AcceptanceRequired *bool `type:"boolean" required:"true"`
+
+	// Length of time (in seconds) to wait for players to accept a proposed match.
+	// If any player rejects the match or fails to accept before the timeout, the
+	// ticket continues to look for an acceptable match.
+	AcceptanceTimeoutSeconds *int64 `min:"1" type:"integer"`
+
+	// Number of player slots in a match to keep open for future players. For example,
+	// if the configuration's rule set specifies a match for a single 12-person
+	// team, and the additional player count is set to 2, only 10 players are selected
+	// for the match.
+	AdditionalPlayerCount *int64 `type:"integer"`
+
+	// Information to attached to all events related to the matchmaking configuration.
+	CustomEventData *string `min:"1" type:"string"`
+
+	// Meaningful description of the matchmaking configuration.
+	Description *string `min:"1" type:"string"`
+
+	// Set of developer-defined properties for a game session, formatted as a set
+	// of type:value pairs. These properties are included in the GameSession object,
+	// which is passed to the game server with a request to start a new game session
+	// (see Start a Game Session (http://docs.aws.amazon.com/gamelift/latest/developerguide/gamelift-sdk-server-api.html#gamelift-sdk-server-startsession)).
+	// This information is added to the new GameSession object that is created for
+	// a successful match.
+	GameProperties []*GameProperty `type:"list"`
+
+	// Set of developer-defined game session properties, formatted as a single string
+	// value. This data is included in the GameSession object, which is passed to
+	// the game server with a request to start a new game session (see Start a Game
+	// Session (http://docs.aws.amazon.com/gamelift/latest/developerguide/gamelift-sdk-server-api.html#gamelift-sdk-server-startsession)).
+	// This information is added to the new GameSession object that is created for
+	// a successful match.
+	GameSessionData *string `min:"1" type:"string"`
+
+	// Amazon Resource Name (ARN (http://docs.aws.amazon.com/AmazonS3/latest/dev/s3-arn-format.html))
+	// that is assigned to a game session queue and uniquely identifies it. Format
+	// is arn:aws:gamelift:<region>::fleet/fleet-a1234567-b8c9-0d1e-2fa3-b45c6d7e8912.
+	// These queues are used when placing game sessions for matches that are created
+	// with this matchmaking configuration. Queues can be located in any region.
+	//
+	// GameSessionQueueArns is a required field
+	GameSessionQueueArns []*string `type:"list" required:"true"`
+
+	// Unique identifier for a matchmaking configuration. This name is used to identify
+	// the configuration associated with a matchmaking request or ticket.
+	//
+	// Name is a required field
+	Name *string `min:"1" type:"string" required:"true"`
+
+	// SNS topic ARN that is set up to receive matchmaking notifications.
+	NotificationTarget *string `min:"1" type:"string"`
+
+	// Maximum duration, in seconds, that a matchmaking ticket can remain in process
+	// before timing out. Requests that time out can be resubmitted as needed.
+	//
+	// RequestTimeoutSeconds is a required field
+	RequestTimeoutSeconds *int64 `min:"1" type:"integer" required:"true"`
+
+	// Unique identifier for a matchmaking rule set to use with this configuration.
+	// A matchmaking configuration can only use rule sets that are defined in the
+	// same region.
+	//
+	// RuleSetName is a required field
+	RuleSetName *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s CreateMatchmakingConfigurationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateMatchmakingConfigurationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateMatchmakingConfigurationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateMatchmakingConfigurationInput"}
+	if s.AcceptanceRequired == nil {
+		invalidParams.Add(request.NewErrParamRequired("AcceptanceRequired"))
+	}
+	if s.AcceptanceTimeoutSeconds != nil && *s.AcceptanceTimeoutSeconds < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("AcceptanceTimeoutSeconds", 1))
+	}
+	if s.CustomEventData != nil && len(*s.CustomEventData) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("CustomEventData", 1))
+	}
+	if s.Description != nil && len(*s.Description) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Description", 1))
+	}
+	if s.GameSessionData != nil && len(*s.GameSessionData) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GameSessionData", 1))
+	}
+	if s.GameSessionQueueArns == nil {
+		invalidParams.Add(request.NewErrParamRequired("GameSessionQueueArns"))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.NotificationTarget != nil && len(*s.NotificationTarget) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NotificationTarget", 1))
+	}
+	if s.RequestTimeoutSeconds == nil {
+		invalidParams.Add(request.NewErrParamRequired("RequestTimeoutSeconds"))
+	}
+	if s.RequestTimeoutSeconds != nil && *s.RequestTimeoutSeconds < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("RequestTimeoutSeconds", 1))
+	}
+	if s.RuleSetName == nil {
+		invalidParams.Add(request.NewErrParamRequired("RuleSetName"))
+	}
+	if s.RuleSetName != nil && len(*s.RuleSetName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RuleSetName", 1))
+	}
+	if s.GameProperties != nil {
+		for i, v := range s.GameProperties {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "GameProperties", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAcceptanceRequired sets the AcceptanceRequired field's value.
+func (s *CreateMatchmakingConfigurationInput) SetAcceptanceRequired(v bool) *CreateMatchmakingConfigurationInput {
+	s.AcceptanceRequired = &v
+	return s
+}
+
+// SetAcceptanceTimeoutSeconds sets the AcceptanceTimeoutSeconds field's value.
+func (s *CreateMatchmakingConfigurationInput) SetAcceptanceTimeoutSeconds(v int64) *CreateMatchmakingConfigurationInput {
+	s.AcceptanceTimeoutSeconds = &v
+	return s
+}
+
+// SetAdditionalPlayerCount sets the AdditionalPlayerCount field's value.
+func (s *CreateMatchmakingConfigurationInput) SetAdditionalPlayerCount(v int64) *CreateMatchmakingConfigurationInput {
+	s.AdditionalPlayerCount = &v
+	return s
+}
+
+// SetCustomEventData sets the CustomEventData field's value.
+func (s *CreateMatchmakingConfigurationInput) SetCustomEventData(v string) *CreateMatchmakingConfigurationInput {
+	s.CustomEventData = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *CreateMatchmakingConfigurationInput) SetDescription(v string) *CreateMatchmakingConfigurationInput {
+	s.Description = &v
+	return s
+}
+
+// SetGameProperties sets the GameProperties field's value.
+func (s *CreateMatchmakingConfigurationInput) SetGameProperties(v []*GameProperty) *CreateMatchmakingConfigurationInput {
+	s.GameProperties = v
+	return s
+}
+
+// SetGameSessionData sets the GameSessionData field's value.
+func (s *CreateMatchmakingConfigurationInput) SetGameSessionData(v string) *CreateMatchmakingConfigurationInput {
+	s.GameSessionData = &v
+	return s
+}
+
+// SetGameSessionQueueArns sets the GameSessionQueueArns field's value.
+func (s *CreateMatchmakingConfigurationInput) SetGameSessionQueueArns(v []*string) *CreateMatchmakingConfigurationInput {
+	s.GameSessionQueueArns = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateMatchmakingConfigurationInput) SetName(v string) *CreateMatchmakingConfigurationInput {
+	s.Name = &v
+	return s
+}
+
+// SetNotificationTarget sets the NotificationTarget field's value.
+func (s *CreateMatchmakingConfigurationInput) SetNotificationTarget(v string) *CreateMatchmakingConfigurationInput {
+	s.NotificationTarget = &v
+	return s
+}
+
+// SetRequestTimeoutSeconds sets the RequestTimeoutSeconds field's value.
+func (s *CreateMatchmakingConfigurationInput) SetRequestTimeoutSeconds(v int64) *CreateMatchmakingConfigurationInput {
+	s.RequestTimeoutSeconds = &v
+	return s
+}
+
+// SetRuleSetName sets the RuleSetName field's value.
+func (s *CreateMatchmakingConfigurationInput) SetRuleSetName(v string) *CreateMatchmakingConfigurationInput {
+	s.RuleSetName = &v
+	return s
+}
+
+// Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateMatchmakingConfigurationOutput
+type CreateMatchmakingConfigurationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Object that describes the newly created matchmaking configuration.
+	Configuration *MatchmakingConfiguration `type:"structure"`
+}
+
+// String returns the string representation
+func (s CreateMatchmakingConfigurationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateMatchmakingConfigurationOutput) GoString() string {
+	return s.String()
+}
+
+// SetConfiguration sets the Configuration field's value.
+func (s *CreateMatchmakingConfigurationOutput) SetConfiguration(v *MatchmakingConfiguration) *CreateMatchmakingConfigurationOutput {
+	s.Configuration = v
+	return s
+}
+
+// Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateMatchmakingRuleSetInput
+type CreateMatchmakingRuleSetInput struct {
+	_ struct{} `type:"structure"`
+
+	// Unique identifier for a matchmaking rule set. This name is used to identify
+	// the rule set associated with a matchmaking configuration.
+	//
+	// Name is a required field
+	Name *string `min:"1" type:"string" required:"true"`
+
+	// Collection of matchmaking rules, formatted as a JSON string. (Note that comments
+	// are not allowed in JSON, but most elements support a description field.)
+	//
+	// RuleSetBody is a required field
+	RuleSetBody *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s CreateMatchmakingRuleSetInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateMatchmakingRuleSetInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateMatchmakingRuleSetInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateMatchmakingRuleSetInput"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.RuleSetBody == nil {
+		invalidParams.Add(request.NewErrParamRequired("RuleSetBody"))
+	}
+	if s.RuleSetBody != nil && len(*s.RuleSetBody) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RuleSetBody", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetName sets the Name field's value.
+func (s *CreateMatchmakingRuleSetInput) SetName(v string) *CreateMatchmakingRuleSetInput {
+	s.Name = &v
+	return s
+}
+
+// SetRuleSetBody sets the RuleSetBody field's value.
+func (s *CreateMatchmakingRuleSetInput) SetRuleSetBody(v string) *CreateMatchmakingRuleSetInput {
+	s.RuleSetBody = &v
+	return s
+}
+
+// Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateMatchmakingRuleSetOutput
+type CreateMatchmakingRuleSetOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Object that describes the newly created matchmaking rule set.
+	//
+	// RuleSet is a required field
+	RuleSet *MatchmakingRuleSet `type:"structure" required:"true"`
+}
+
+// String returns the string representation
+func (s CreateMatchmakingRuleSetOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateMatchmakingRuleSetOutput) GoString() string {
+	return s.String()
+}
+
+// SetRuleSet sets the RuleSet field's value.
+func (s *CreateMatchmakingRuleSetOutput) SetRuleSet(v *MatchmakingRuleSet) *CreateMatchmakingRuleSetOutput {
+	s.RuleSet = v
 	return s
 }
 
@@ -7554,8 +9332,8 @@ func (s DeleteFleetOutput) GoString() string {
 type DeleteGameSessionQueueInput struct {
 	_ struct{} `type:"structure"`
 
-	// Descriptive label that is associated with queue. Queue names must be unique
-	// within each region.
+	// Descriptive label that is associated with game session queue. Queue names
+	// must be unique within each region.
 	//
 	// Name is a required field
 	Name *string `min:"1" type:"string" required:"true"`
@@ -7605,6 +9383,64 @@ func (s DeleteGameSessionQueueOutput) String() string {
 
 // GoString returns the string representation
 func (s DeleteGameSessionQueueOutput) GoString() string {
+	return s.String()
+}
+
+// Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteMatchmakingConfigurationInput
+type DeleteMatchmakingConfigurationInput struct {
+	_ struct{} `type:"structure"`
+
+	// Unique identifier for a matchmaking configuration
+	//
+	// Name is a required field
+	Name *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DeleteMatchmakingConfigurationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteMatchmakingConfigurationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteMatchmakingConfigurationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteMatchmakingConfigurationInput"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetName sets the Name field's value.
+func (s *DeleteMatchmakingConfigurationInput) SetName(v string) *DeleteMatchmakingConfigurationInput {
+	s.Name = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteMatchmakingConfigurationOutput
+type DeleteMatchmakingConfigurationOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s DeleteMatchmakingConfigurationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteMatchmakingConfigurationOutput) GoString() string {
 	return s.String()
 }
 
@@ -7882,9 +9718,9 @@ type DescribeFleetAttributesInput struct {
 	Limit *int64 `min:"1" type:"integer"`
 
 	// Token that indicates the start of the next sequential page of results. Use
-	// the token that is returned with a previous call to this action. To specify
-	// the start of the result set, do not specify a value. This parameter is ignored
-	// when the request specifies one or a list of fleet IDs.
+	// the token that is returned with a previous call to this action. To start
+	// at the beginning of the result set, do not specify a value. This parameter
+	// is ignored when the request specifies one or a list of fleet IDs.
 	NextToken *string `min:"1" type:"string"`
 }
 
@@ -7987,9 +9823,9 @@ type DescribeFleetCapacityInput struct {
 	Limit *int64 `min:"1" type:"integer"`
 
 	// Token that indicates the start of the next sequential page of results. Use
-	// the token that is returned with a previous call to this action. To specify
-	// the start of the result set, do not specify a value. This parameter is ignored
-	// when the request specifies one or a list of fleet IDs.
+	// the token that is returned with a previous call to this action. To start
+	// at the beginning of the result set, do not specify a value. This parameter
+	// is ignored when the request specifies one or a list of fleet IDs.
 	NextToken *string `min:"1" type:"string"`
 }
 
@@ -8098,8 +9934,8 @@ type DescribeFleetEventsInput struct {
 	Limit *int64 `min:"1" type:"integer"`
 
 	// Token that indicates the start of the next sequential page of results. Use
-	// the token that is returned with a previous call to this action. To specify
-	// the start of the result set, do not specify a value.
+	// the token that is returned with a previous call to this action. To start
+	// at the beginning of the result set, do not specify a value.
 	NextToken *string `min:"1" type:"string"`
 
 	// Earliest date to retrieve event logs for. If no start time is specified,
@@ -8284,9 +10120,9 @@ type DescribeFleetUtilizationInput struct {
 	Limit *int64 `min:"1" type:"integer"`
 
 	// Token that indicates the start of the next sequential page of results. Use
-	// the token that is returned with a previous call to this action. To specify
-	// the start of the result set, do not specify a value. This parameter is ignored
-	// when the request specifies one or a list of fleet IDs.
+	// the token that is returned with a previous call to this action. To start
+	// at the beginning of the result set, do not specify a value. This parameter
+	// is ignored when the request specifies one or a list of fleet IDs.
 	NextToken *string `min:"1" type:"string"`
 }
 
@@ -8395,8 +10231,8 @@ type DescribeGameSessionDetailsInput struct {
 	Limit *int64 `min:"1" type:"integer"`
 
 	// Token that indicates the start of the next sequential page of results. Use
-	// the token that is returned with a previous call to this action. To specify
-	// the start of the result set, do not specify a value.
+	// the token that is returned with a previous call to this action. To start
+	// at the beginning of the result set, do not specify a value.
 	NextToken *string `min:"1" type:"string"`
 
 	// Game session status to filter results on. Possible game session statuses
@@ -8592,8 +10428,8 @@ type DescribeGameSessionQueuesInput struct {
 	Names []*string `type:"list"`
 
 	// Token that indicates the start of the next sequential page of results. Use
-	// the token that is returned with a previous call to this action. To specify
-	// the start of the result set, do not specify a value.
+	// the token that is returned with a previous call to this action. To start
+	// at the beginning of the result set, do not specify a value.
 	NextToken *string `min:"1" type:"string"`
 }
 
@@ -8698,8 +10534,8 @@ type DescribeGameSessionsInput struct {
 	Limit *int64 `min:"1" type:"integer"`
 
 	// Token that indicates the start of the next sequential page of results. Use
-	// the token that is returned with a previous call to this action. To specify
-	// the start of the result set, do not specify a value.
+	// the token that is returned with a previous call to this action. To start
+	// at the beginning of the result set, do not specify a value.
 	NextToken *string `min:"1" type:"string"`
 
 	// Game session status to filter results on. Possible game session statuses
@@ -8832,8 +10668,8 @@ type DescribeInstancesInput struct {
 	Limit *int64 `min:"1" type:"integer"`
 
 	// Token that indicates the start of the next sequential page of results. Use
-	// the token that is returned with a previous call to this action. To specify
-	// the start of the result set, do not specify a value.
+	// the token that is returned with a previous call to this action. To start
+	// at the beginning of the result set, do not specify a value.
 	NextToken *string `min:"1" type:"string"`
 }
 
@@ -8927,6 +10763,288 @@ func (s *DescribeInstancesOutput) SetNextToken(v string) *DescribeInstancesOutpu
 }
 
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeMatchmakingConfigurationsInput
+type DescribeMatchmakingConfigurationsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Maximum number of results to return. Use this parameter with NextToken to
+	// get results as a set of sequential pages. This parameter is limited to 10.
+	Limit *int64 `min:"1" type:"integer"`
+
+	// Unique identifier for a matchmaking configuration(s) to retrieve. To request
+	// all existing configurations, leave this parameter empty.
+	Names []*string `type:"list"`
+
+	// Token that indicates the start of the next sequential page of results. Use
+	// the token that is returned with a previous call to this action. To start
+	// at the beginning of the result set, do not specify a value.
+	NextToken *string `min:"1" type:"string"`
+
+	// Unique identifier for a matchmaking rule set. Use this parameter to retrieve
+	// all matchmaking configurations that use this rule set.
+	RuleSetName *string `min:"1" type:"string"`
+}
+
+// String returns the string representation
+func (s DescribeMatchmakingConfigurationsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeMatchmakingConfigurationsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeMatchmakingConfigurationsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeMatchmakingConfigurationsInput"}
+	if s.Limit != nil && *s.Limit < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("Limit", 1))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+	if s.RuleSetName != nil && len(*s.RuleSetName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RuleSetName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetLimit sets the Limit field's value.
+func (s *DescribeMatchmakingConfigurationsInput) SetLimit(v int64) *DescribeMatchmakingConfigurationsInput {
+	s.Limit = &v
+	return s
+}
+
+// SetNames sets the Names field's value.
+func (s *DescribeMatchmakingConfigurationsInput) SetNames(v []*string) *DescribeMatchmakingConfigurationsInput {
+	s.Names = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeMatchmakingConfigurationsInput) SetNextToken(v string) *DescribeMatchmakingConfigurationsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetRuleSetName sets the RuleSetName field's value.
+func (s *DescribeMatchmakingConfigurationsInput) SetRuleSetName(v string) *DescribeMatchmakingConfigurationsInput {
+	s.RuleSetName = &v
+	return s
+}
+
+// Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeMatchmakingConfigurationsOutput
+type DescribeMatchmakingConfigurationsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Collection of requested matchmaking configuration objects.
+	Configurations []*MatchmakingConfiguration `type:"list"`
+
+	// Token that indicates where to resume retrieving results on the next call
+	// to this action. If no token is returned, these results represent the end
+	// of the list.
+	NextToken *string `min:"1" type:"string"`
+}
+
+// String returns the string representation
+func (s DescribeMatchmakingConfigurationsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeMatchmakingConfigurationsOutput) GoString() string {
+	return s.String()
+}
+
+// SetConfigurations sets the Configurations field's value.
+func (s *DescribeMatchmakingConfigurationsOutput) SetConfigurations(v []*MatchmakingConfiguration) *DescribeMatchmakingConfigurationsOutput {
+	s.Configurations = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeMatchmakingConfigurationsOutput) SetNextToken(v string) *DescribeMatchmakingConfigurationsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeMatchmakingInput
+type DescribeMatchmakingInput struct {
+	_ struct{} `type:"structure"`
+
+	// Unique identifier for a matchmaking ticket. To request all existing tickets,
+	// leave this parameter empty.
+	//
+	// TicketIds is a required field
+	TicketIds []*string `type:"list" required:"true"`
+}
+
+// String returns the string representation
+func (s DescribeMatchmakingInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeMatchmakingInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeMatchmakingInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeMatchmakingInput"}
+	if s.TicketIds == nil {
+		invalidParams.Add(request.NewErrParamRequired("TicketIds"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetTicketIds sets the TicketIds field's value.
+func (s *DescribeMatchmakingInput) SetTicketIds(v []*string) *DescribeMatchmakingInput {
+	s.TicketIds = v
+	return s
+}
+
+// Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeMatchmakingOutput
+type DescribeMatchmakingOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Collection of existing matchmaking ticket objects matching the request.
+	TicketList []*MatchmakingTicket `type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeMatchmakingOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeMatchmakingOutput) GoString() string {
+	return s.String()
+}
+
+// SetTicketList sets the TicketList field's value.
+func (s *DescribeMatchmakingOutput) SetTicketList(v []*MatchmakingTicket) *DescribeMatchmakingOutput {
+	s.TicketList = v
+	return s
+}
+
+// Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeMatchmakingRuleSetsInput
+type DescribeMatchmakingRuleSetsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Maximum number of results to return. Use this parameter with NextToken to
+	// get results as a set of sequential pages.
+	Limit *int64 `min:"1" type:"integer"`
+
+	// Unique identifier for a matchmaking rule set. This name is used to identify
+	// the rule set associated with a matchmaking configuration.
+	Names []*string `min:"1" type:"list"`
+
+	// Token that indicates the start of the next sequential page of results. Use
+	// the token that is returned with a previous call to this action. To start
+	// at the beginning of the result set, do not specify a value.
+	NextToken *string `min:"1" type:"string"`
+}
+
+// String returns the string representation
+func (s DescribeMatchmakingRuleSetsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeMatchmakingRuleSetsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeMatchmakingRuleSetsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeMatchmakingRuleSetsInput"}
+	if s.Limit != nil && *s.Limit < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("Limit", 1))
+	}
+	if s.Names != nil && len(s.Names) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Names", 1))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetLimit sets the Limit field's value.
+func (s *DescribeMatchmakingRuleSetsInput) SetLimit(v int64) *DescribeMatchmakingRuleSetsInput {
+	s.Limit = &v
+	return s
+}
+
+// SetNames sets the Names field's value.
+func (s *DescribeMatchmakingRuleSetsInput) SetNames(v []*string) *DescribeMatchmakingRuleSetsInput {
+	s.Names = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeMatchmakingRuleSetsInput) SetNextToken(v string) *DescribeMatchmakingRuleSetsInput {
+	s.NextToken = &v
+	return s
+}
+
+// Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeMatchmakingRuleSetsOutput
+type DescribeMatchmakingRuleSetsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Token that indicates where to resume retrieving results on the next call
+	// to this action. If no token is returned, these results represent the end
+	// of the list.
+	NextToken *string `min:"1" type:"string"`
+
+	// Collection of requested matchmaking rule set objects.
+	//
+	// RuleSets is a required field
+	RuleSets []*MatchmakingRuleSet `type:"list" required:"true"`
+}
+
+// String returns the string representation
+func (s DescribeMatchmakingRuleSetsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeMatchmakingRuleSetsOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeMatchmakingRuleSetsOutput) SetNextToken(v string) *DescribeMatchmakingRuleSetsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetRuleSets sets the RuleSets field's value.
+func (s *DescribeMatchmakingRuleSetsOutput) SetRuleSets(v []*MatchmakingRuleSet) *DescribeMatchmakingRuleSetsOutput {
+	s.RuleSets = v
+	return s
+}
+
+// Represents the input for a request action.
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribePlayerSessionsInput
 type DescribePlayerSessionsInput struct {
 	_ struct{} `type:"structure"`
@@ -8940,8 +11058,8 @@ type DescribePlayerSessionsInput struct {
 	Limit *int64 `min:"1" type:"integer"`
 
 	// Token that indicates the start of the next sequential page of results. Use
-	// the token that is returned with a previous call to this action. To specify
-	// the start of the result set, do not specify a value. If a player session
+	// the token that is returned with a previous call to this action. To start
+	// at the beginning of the result set, do not specify a value. If a player session
 	// ID is specified, this parameter is ignored.
 	NextToken *string `min:"1" type:"string"`
 
@@ -9157,8 +11275,8 @@ type DescribeScalingPoliciesInput struct {
 	Limit *int64 `min:"1" type:"integer"`
 
 	// Token that indicates the start of the next sequential page of results. Use
-	// the token that is returned with a previous call to this action. To specify
-	// the start of the result set, do not specify a value.
+	// the token that is returned with a previous call to this action. To start
+	// at the beginning of the result set, do not specify a value.
 	NextToken *string `min:"1" type:"string"`
 
 	// Scaling policy status to filter results on. A scaling policy is only in force
@@ -9529,37 +11647,35 @@ type Event struct {
 	//    from the uploaded build and saved to an instance. Failure at this stage
 	//    prevents a fleet from moving to ACTIVE status. Logs for this stage display
 	//    a list of the files that are extracted and saved on the instance. Access
-	//    the logs by using the URL in PreSignedLogUrl).
+	//    the logs by using the URL in PreSignedLogUrl.
 	//
 	// FLEET_CREATION_RUNNING_INSTALLER – The game server build files were successfully
 	//    extracted, and the Amazon GameLift is now running the build's install
 	//    script (if one is included). Failure in this stage prevents a fleet from
 	//    moving to ACTIVE status. Logs for this stage list the installation steps
-	//    and whether or not the install completed sucessfully. Access the logs
-	//    by using the URL in PreSignedLogUrl).
+	//    and whether or not the install completed successfully. Access the logs
+	//    by using the URL in PreSignedLogUrl.
 	//
 	// FLEET_CREATION_VALIDATING_RUNTIME_CONFIG – The build process was successful,
-	//    and the Amazon GameLift is now verifying that the game server launch path(s),
+	//    and the Amazon GameLift is now verifying that the game server launch paths,
 	//    which are specified in the fleet's run-time configuration, exist. If any
 	//    listed launch path exists, Amazon GameLift tries to launch a game server
 	//    process and waits for the process to report ready. Failures in this stage
 	//    prevent a fleet from moving to ACTIVE status. Logs for this stage list
 	//    the launch paths in the run-time configuration and indicate whether each
-	//    is found. Access the logs by using the URL in PreSignedLogUrl). Once the
-	//    game server is launched, failures and crashes are logged; these logs can
-	//    be downloaded from the Amazon GameLift console.
+	//    is found. Access the logs by using the URL in PreSignedLogUrl.
 	//
 	// FLEET_STATE_VALIDATING – Fleet status changed from DOWNLOADING to VALIDATING.
 	//
-	// FLEET_VALIDATION_LAUNCH_PATH_NOT_FOUND – Validation of the run-time validation
+	// FLEET_VALIDATION_LAUNCH_PATH_NOT_FOUND – Validation of the run-time configuration
 	//    failed because the executable specified in a launch path does not exist
 	//    on the instance.
 	//
 	// FLEET_STATE_BUILDING – Fleet status changed from VALIDATING to BUILDING.
 	//
-	// FLEET_VALIDATION_EXECUTABLE_RUNTIME_FAILURE – Validation of the runtime validation
-	//    failed because the executable specified in a launch path failed to run
-	//    on the fleet instance.
+	// FLEET_VALIDATION_EXECUTABLE_RUNTIME_FAILURE – Validation of the run-time
+	//    configuration failed because the executable specified in a launch path
+	//    failed to run on the fleet instance.
 	//
 	// FLEET_STATE_ACTIVATING – Fleet status changed from BUILDING to ACTIVATING.
 	//
@@ -9597,9 +11713,9 @@ type Event struct {
 	// Additional information related to the event.
 	Message *string `min:"1" type:"string"`
 
-	// Location of stored logs with additional detail related to the event, useful
-	// for debugging issues. The URL is valid for 15 minutes. Fleet creation logs
-	// can also be accessed through the Amazon GameLift console.
+	// Location of stored logs with additional detail that is related to the event.
+	// This is useful for debugging issues. The URL is valid for 15 minutes. You
+	// can also access fleet creation logs through the Amazon GameLift console.
 	PreSignedLogUrl *string `min:"1" type:"string"`
 
 	// Unique identifier for an event resource, such as a fleet ID.
@@ -10096,20 +12212,23 @@ func (s *FleetUtilization) SetMaximumPlayerSessionCount(v int64) *FleetUtilizati
 	return s
 }
 
-// Set of key-value pairs containing information a server process requires to
-// set up a game session. This object allows you to pass in any set of data
-// needed for your game. For more information, see the Amazon GameLift Developer
-// Guide (http://docs.aws.amazon.com/gamelift/latest/developerguide/).
+// Set of key-value pairs that contain information about a game session. When
+// included in a game session request, these properties communicate details
+// to be used when setting up the new game session, such as to specify a game
+// mode, level, or map. Game properties are passed to the game server process
+// when initiating a new game session; the server process uses the properties
+// as appropriate. For more information, see the  Amazon GameLift Developer
+// Guide (http://docs.aws.amazon.com/gamelift/latest/developerguide/gamelift-sdk-client-api.html#gamelift-sdk-client-api-create).
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/GameProperty
 type GameProperty struct {
 	_ struct{} `type:"structure"`
 
-	// TBD
+	// Game property identifier.
 	//
 	// Key is a required field
 	Key *string `type:"string" required:"true"`
 
-	// TBD
+	// Game property value.
 	//
 	// Value is a required field
 	Value *string `type:"string" required:"true"`
@@ -10155,6 +12274,13 @@ func (s *GameProperty) SetValue(v string) *GameProperty {
 
 // Properties describing a game session.
 //
+// A game session in ACTIVE status can host players. When a game session ends,
+// its status is set to TERMINATED.
+//
+// Once the session ends, the game session object is retained for 30 days. This
+// means you can reuse idempotency token values after this time. Game session
+// logs are retained for 14 days.
+//
 // Game-session-related operations include:
 //
 //    * CreateGameSession
@@ -10195,9 +12321,17 @@ type GameSession struct {
 	// Unique identifier for a fleet the game session is running on.
 	FleetId *string `type:"string"`
 
-	// Set of developer-defined properties for a game session. These properties
-	// are passed to the server process hosting the game session.
+	// Set of developer-defined properties for a game session, formatted as a set
+	// of type:value pairs. These properties are included in the GameSession object,
+	// which is passed to the game server with a request to start a new game session
+	// (see Start a Game Session (http://docs.aws.amazon.com/gamelift/latest/developerguide/gamelift-sdk-server-api.html#gamelift-sdk-server-startsession)).
 	GameProperties []*GameProperty `type:"list"`
+
+	// Set of developer-defined game session properties, formatted as a single string
+	// value. This data is included in the GameSession object, which is passed to
+	// the game server with a request to start a new game session (see Start a Game
+	// Session (http://docs.aws.amazon.com/gamelift/latest/developerguide/gamelift-sdk-server-api.html#gamelift-sdk-server-startsession)).
+	GameSessionData *string `min:"1" type:"string"`
 
 	// Unique identifier for the game session. A game session ID has the following
 	// format: arn:aws:gamelift:<region>::gamesession/<fleet ID>/<custom ID string
@@ -10272,6 +12406,12 @@ func (s *GameSession) SetGameProperties(v []*GameProperty) *GameSession {
 	return s
 }
 
+// SetGameSessionData sets the GameSessionData field's value.
+func (s *GameSession) SetGameSessionData(v string) *GameSession {
+	s.GameSessionData = &v
+	return s
+}
+
 // SetGameSessionId sets the GameSessionId field's value.
 func (s *GameSession) SetGameSessionId(v string) *GameSession {
 	s.GameSessionId = &v
@@ -10317,6 +12457,67 @@ func (s *GameSession) SetStatus(v string) *GameSession {
 // SetTerminationTime sets the TerminationTime field's value.
 func (s *GameSession) SetTerminationTime(v time.Time) *GameSession {
 	s.TerminationTime = &v
+	return s
+}
+
+// Connection information for the new game session that is created with matchmaking.
+// (with StartMatchmaking). Once a match is set, the FlexMatch engine places
+// the match and creates a new game session for it. This information, including
+// the game session endpoint and player sessions for each player in the original
+// matchmaking request, is added to the MatchmakingTicket, which can be retrieved
+// by calling DescribeMatchmaking.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/GameSessionConnectionInfo
+type GameSessionConnectionInfo struct {
+	_ struct{} `type:"structure"`
+
+	// Amazon Resource Name (ARN (http://docs.aws.amazon.com/AmazonS3/latest/dev/s3-arn-format.html))
+	// that is assigned to a game session and uniquely identifies it.
+	GameSessionArn *string `min:"1" type:"string"`
+
+	// IP address of the game session. To connect to a Amazon GameLift game server,
+	// an app needs both the IP address and port number.
+	IpAddress *string `type:"string"`
+
+	// Collection of player session IDs, one for each player ID that was included
+	// in the original matchmaking request.
+	MatchedPlayerSessions []*MatchedPlayerSession `type:"list"`
+
+	// Port number for the game session. To connect to a Amazon GameLift game server,
+	// an app needs both the IP address and port number.
+	Port *int64 `min:"1" type:"integer"`
+}
+
+// String returns the string representation
+func (s GameSessionConnectionInfo) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GameSessionConnectionInfo) GoString() string {
+	return s.String()
+}
+
+// SetGameSessionArn sets the GameSessionArn field's value.
+func (s *GameSessionConnectionInfo) SetGameSessionArn(v string) *GameSessionConnectionInfo {
+	s.GameSessionArn = &v
+	return s
+}
+
+// SetIpAddress sets the IpAddress field's value.
+func (s *GameSessionConnectionInfo) SetIpAddress(v string) *GameSessionConnectionInfo {
+	s.IpAddress = &v
+	return s
+}
+
+// SetMatchedPlayerSessions sets the MatchedPlayerSessions field's value.
+func (s *GameSessionConnectionInfo) SetMatchedPlayerSessions(v []*MatchedPlayerSession) *GameSessionConnectionInfo {
+	s.MatchedPlayerSessions = v
+	return s
+}
+
+// SetPort sets the Port field's value.
+func (s *GameSessionConnectionInfo) SetPort(v int64) *GameSessionConnectionInfo {
+	s.Port = &v
 	return s
 }
 
@@ -10379,36 +12580,44 @@ type GameSessionPlacement struct {
 	// out.
 	EndTime *time.Time `type:"timestamp" timestampFormat:"unix"`
 
-	// Set of developer-defined properties for a game session. These properties
-	// are passed to the server process hosting the game session.
+	// Set of developer-defined properties for a game session, formatted as a set
+	// of type:value pairs. These properties are included in the GameSession object,
+	// which is passed to the game server with a request to start a new game session
+	// (see Start a Game Session (http://docs.aws.amazon.com/gamelift/latest/developerguide/gamelift-sdk-server-api.html#gamelift-sdk-server-startsession)).
 	GameProperties []*GameProperty `type:"list"`
 
 	// Identifier for the game session created by this placement request. This value
-	// is set once the new game session is placed (placement status is Fulfilled).
+	// is set once the new game session is placed (placement status is FULFILLED).
 	// This identifier is unique across all regions. You can use this value as a
 	// GameSessionId value as needed.
 	GameSessionArn *string `min:"1" type:"string"`
 
+	// Set of developer-defined game session properties, formatted as a single string
+	// value. This data is included in the GameSession object, which is passed to
+	// the game server with a request to start a new game session (see Start a Game
+	// Session (http://docs.aws.amazon.com/gamelift/latest/developerguide/gamelift-sdk-server-api.html#gamelift-sdk-server-startsession)).
+	GameSessionData *string `min:"1" type:"string"`
+
 	// Unique identifier for the game session. This value is set once the new game
-	// session is placed (placement status is Fulfilled).
+	// session is placed (placement status is FULFILLED).
 	GameSessionId *string `min:"1" type:"string"`
 
 	// Descriptive label that is associated with a game session. Session names do
 	// not need to be unique.
 	GameSessionName *string `min:"1" type:"string"`
 
-	// Descriptive label that is associated with queue. Queue names must be unique
-	// within each region.
+	// Descriptive label that is associated with game session queue. Queue names
+	// must be unique within each region.
 	GameSessionQueueName *string `min:"1" type:"string"`
 
 	// Name of the region where the game session created by this placement request
 	// is running. This value is set once the new game session is placed (placement
-	// status is Fulfilled).
+	// status is FULFILLED).
 	GameSessionRegion *string `min:"1" type:"string"`
 
 	// IP address of the game session. To connect to a Amazon GameLift game server,
 	// an app needs both the IP address and port number. This value is set once
-	// the new game session is placed (placement status is Fulfilled).
+	// the new game session is placed (placement status is FULFILLED).
 	IpAddress *string `type:"string"`
 
 	// Maximum number of players that can be connected simultaneously to the game
@@ -10417,7 +12626,7 @@ type GameSessionPlacement struct {
 
 	// Collection of information on player sessions created in response to the game
 	// session placement request. These player sessions are created only once a
-	// new game session is successfully placed (placement status is Fulfilled).
+	// new game session is successfully placed (placement status is FULFILLED).
 	// This information includes the player ID (as provided in the placement request)
 	// and the corresponding player session ID. Retrieve full player sessions by
 	// calling DescribePlayerSessions with the player session ID.
@@ -10427,12 +12636,12 @@ type GameSessionPlacement struct {
 	PlacementId *string `min:"1" type:"string"`
 
 	// Set of values, expressed in milliseconds, indicating the amount of latency
-	// that players are experiencing when connected to AWS regions.
+	// that a player experiences when connected to AWS regions.
 	PlayerLatencies []*PlayerLatency `type:"list"`
 
 	// Port number for the game session. To connect to a Amazon GameLift game server,
 	// an app needs both the IP address and port number. This value is set once
-	// the new game session is placed (placement status is Fulfilled).
+	// the new game session is placed (placement status is FULFILLED).
 	Port *int64 `min:"1" type:"integer"`
 
 	// Time stamp indicating when this request was placed in the queue. Format is
@@ -10480,6 +12689,12 @@ func (s *GameSessionPlacement) SetGameProperties(v []*GameProperty) *GameSession
 // SetGameSessionArn sets the GameSessionArn field's value.
 func (s *GameSessionPlacement) SetGameSessionArn(v string) *GameSessionPlacement {
 	s.GameSessionArn = &v
+	return s
+}
+
+// SetGameSessionData sets the GameSessionData field's value.
+func (s *GameSessionPlacement) SetGameSessionData(v string) *GameSessionPlacement {
+	s.GameSessionData = &v
 	return s
 }
 
@@ -10558,16 +12773,6 @@ func (s *GameSessionPlacement) SetStatus(v string) *GameSessionPlacement {
 // Configuration of a queue that is used to process game session placement requests.
 // The queue configuration identifies several game features:
 //
-// Queue-related operations include:
-//
-//    * CreateGameSessionQueue
-//
-//    * DescribeGameSessionQueues
-//
-//    * UpdateGameSessionQueue
-//
-//    * DeleteGameSessionQueue
-//
 //    * The destinations where a new game session can potentially be hosted.
 //    Amazon GameLift tries these destinations in an order based on either the
 //    queue's default order or player latency information, if provided in a
@@ -10582,7 +12787,7 @@ func (s *GameSessionPlacement) SetStatus(v string) *GameSessionPlacement {
 //    high latencies, preventing game sessions from being placed where any individual
 //    player is reporting latency higher than a policy's maximum.
 //
-// Queue-related operations include the following:
+// Queue-related operations include:
 //
 //    * CreateGameSessionQueue
 //
@@ -10605,8 +12810,8 @@ type GameSessionQueue struct {
 	// is arn:aws:gamelift:<region>::fleet/fleet-a1234567-b8c9-0d1e-2fa3-b45c6d7e8912.
 	GameSessionQueueArn *string `min:"1" type:"string"`
 
-	// Descriptive label that is associated with queue. Queue names must be unique
-	// within each region.
+	// Descriptive label that is associated with game session queue. Queue names
+	// must be unique within each region.
 	Name *string `min:"1" type:"string"`
 
 	// Collection of latency policies to apply when processing game sessions placement
@@ -10870,7 +13075,7 @@ func (s *GetInstanceAccessOutput) SetInstanceAccess(v *InstanceAccess) *GetInsta
 }
 
 // Properties that describe an instance of a virtual computing resource that
-// hosts one or more game servers. A fleet contains zero or more instances.
+// hosts one or more game servers. A fleet may contain zero or more instances.
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/Instance
 type Instance struct {
 	_ struct{} `type:"structure"`
@@ -11171,8 +13376,8 @@ type ListAliasesInput struct {
 	Name *string `min:"1" type:"string"`
 
 	// Token that indicates the start of the next sequential page of results. Use
-	// the token that is returned with a previous call to this action. To specify
-	// the start of the result set, do not specify a value.
+	// the token that is returned with a previous call to this action. To start
+	// at the beginning of the result set, do not specify a value.
 	NextToken *string `min:"1" type:"string"`
 
 	// Type of routing to filter results on. Use this parameter to retrieve only
@@ -11289,8 +13494,8 @@ type ListBuildsInput struct {
 	Limit *int64 `min:"1" type:"integer"`
 
 	// Token that indicates the start of the next sequential page of results. Use
-	// the token that is returned with a previous call to this action. To specify
-	// the start of the result set, do not specify a value.
+	// the token that is returned with a previous call to this action. To start
+	// at the beginning of the result set, do not specify a value.
 	NextToken *string `min:"1" type:"string"`
 
 	// Build status to filter results by. To retrieve all builds, leave this parameter
@@ -11405,8 +13610,8 @@ type ListFleetsInput struct {
 	Limit *int64 `min:"1" type:"integer"`
 
 	// Token that indicates the start of the next sequential page of results. Use
-	// the token that is returned with a previous call to this action. To specify
-	// the start of the result set, do not specify a value.
+	// the token that is returned with a previous call to this action. To start
+	// at the beginning of the result set, do not specify a value.
 	NextToken *string `min:"1" type:"string"`
 }
 
@@ -11492,6 +13697,409 @@ func (s *ListFleetsOutput) SetNextToken(v string) *ListFleetsOutput {
 	return s
 }
 
+// New player session created as a result of a successful FlexMatch match. A
+// successful match automatically creates new player sessions for every player
+// ID in the original matchmaking request.
+//
+// When players connect to the match's game session, they must include both
+// player ID and player session ID in order to claim their assigned player slot.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/MatchedPlayerSession
+type MatchedPlayerSession struct {
+	_ struct{} `type:"structure"`
+
+	// Unique identifier for a player
+	PlayerId *string `min:"1" type:"string"`
+
+	// Unique identifier for a player session
+	PlayerSessionId *string `type:"string"`
+}
+
+// String returns the string representation
+func (s MatchedPlayerSession) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s MatchedPlayerSession) GoString() string {
+	return s.String()
+}
+
+// SetPlayerId sets the PlayerId field's value.
+func (s *MatchedPlayerSession) SetPlayerId(v string) *MatchedPlayerSession {
+	s.PlayerId = &v
+	return s
+}
+
+// SetPlayerSessionId sets the PlayerSessionId field's value.
+func (s *MatchedPlayerSession) SetPlayerSessionId(v string) *MatchedPlayerSession {
+	s.PlayerSessionId = &v
+	return s
+}
+
+// Guidelines for use with FlexMatch to match players into games. All matchmaking
+// requests must specify a matchmaking configuration.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/MatchmakingConfiguration
+type MatchmakingConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// Flag that determines whether or not a match that was created with this configuration
+	// must be accepted by the matched players. To require acceptance, set to TRUE.
+	AcceptanceRequired *bool `type:"boolean"`
+
+	// Length of time (in seconds) to wait for players to accept a proposed match.
+	// If any player rejects the match or fails to accept before the timeout, the
+	// ticket continues to look for an acceptable match.
+	AcceptanceTimeoutSeconds *int64 `min:"1" type:"integer"`
+
+	// Number of player slots in a match to keep open for future players. For example,
+	// if the configuration's rule set specifies a match for a single 12-person
+	// team, and the additional player count is set to 2, only 10 players are selected
+	// for the match.
+	AdditionalPlayerCount *int64 `type:"integer"`
+
+	// Time stamp indicating when this data object was created. Format is a number
+	// expressed in Unix time as milliseconds (for example "1469498468.057").
+	CreationTime *time.Time `type:"timestamp" timestampFormat:"unix"`
+
+	// Information to attached to all events related to the matchmaking configuration.
+	CustomEventData *string `min:"1" type:"string"`
+
+	// Descriptive label that is associated with matchmaking configuration.
+	Description *string `min:"1" type:"string"`
+
+	// Set of developer-defined properties for a game session, formatted as a set
+	// of type:value pairs. These properties are included in the GameSession object,
+	// which is passed to the game server with a request to start a new game session
+	// (see Start a Game Session (http://docs.aws.amazon.com/gamelift/latest/developerguide/gamelift-sdk-server-api.html#gamelift-sdk-server-startsession)).
+	// This information is added to the new GameSession object that is created for
+	// a successful match.
+	GameProperties []*GameProperty `type:"list"`
+
+	// Set of developer-defined game session properties, formatted as a single string
+	// value. This data is included in the GameSession object, which is passed to
+	// the game server with a request to start a new game session (see Start a Game
+	// Session (http://docs.aws.amazon.com/gamelift/latest/developerguide/gamelift-sdk-server-api.html#gamelift-sdk-server-startsession)).
+	// This information is added to the new GameSession object that is created for
+	// a successful match.
+	GameSessionData *string `min:"1" type:"string"`
+
+	// Amazon Resource Name (ARN (http://docs.aws.amazon.com/AmazonS3/latest/dev/s3-arn-format.html))
+	// that is assigned to a game session queue and uniquely identifies it. Format
+	// is arn:aws:gamelift:<region>::fleet/fleet-a1234567-b8c9-0d1e-2fa3-b45c6d7e8912.
+	// These queues are used when placing game sessions for matches that are created
+	// with this matchmaking configuration. Queues can be located in any region.
+	GameSessionQueueArns []*string `type:"list"`
+
+	// Unique identifier for a matchmaking configuration. This name is used to identify
+	// the configuration associated with a matchmaking request or ticket.
+	Name *string `min:"1" type:"string"`
+
+	// SNS topic ARN that is set up to receive matchmaking notifications.
+	NotificationTarget *string `min:"1" type:"string"`
+
+	// Maximum duration, in seconds, that a matchmaking ticket can remain in process
+	// before timing out. Requests that time out can be resubmitted as needed.
+	RequestTimeoutSeconds *int64 `min:"1" type:"integer"`
+
+	// Unique identifier for a matchmaking rule set to use with this configuration.
+	// A matchmaking configuration can only use rule sets that are defined in the
+	// same region.
+	RuleSetName *string `min:"1" type:"string"`
+}
+
+// String returns the string representation
+func (s MatchmakingConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s MatchmakingConfiguration) GoString() string {
+	return s.String()
+}
+
+// SetAcceptanceRequired sets the AcceptanceRequired field's value.
+func (s *MatchmakingConfiguration) SetAcceptanceRequired(v bool) *MatchmakingConfiguration {
+	s.AcceptanceRequired = &v
+	return s
+}
+
+// SetAcceptanceTimeoutSeconds sets the AcceptanceTimeoutSeconds field's value.
+func (s *MatchmakingConfiguration) SetAcceptanceTimeoutSeconds(v int64) *MatchmakingConfiguration {
+	s.AcceptanceTimeoutSeconds = &v
+	return s
+}
+
+// SetAdditionalPlayerCount sets the AdditionalPlayerCount field's value.
+func (s *MatchmakingConfiguration) SetAdditionalPlayerCount(v int64) *MatchmakingConfiguration {
+	s.AdditionalPlayerCount = &v
+	return s
+}
+
+// SetCreationTime sets the CreationTime field's value.
+func (s *MatchmakingConfiguration) SetCreationTime(v time.Time) *MatchmakingConfiguration {
+	s.CreationTime = &v
+	return s
+}
+
+// SetCustomEventData sets the CustomEventData field's value.
+func (s *MatchmakingConfiguration) SetCustomEventData(v string) *MatchmakingConfiguration {
+	s.CustomEventData = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *MatchmakingConfiguration) SetDescription(v string) *MatchmakingConfiguration {
+	s.Description = &v
+	return s
+}
+
+// SetGameProperties sets the GameProperties field's value.
+func (s *MatchmakingConfiguration) SetGameProperties(v []*GameProperty) *MatchmakingConfiguration {
+	s.GameProperties = v
+	return s
+}
+
+// SetGameSessionData sets the GameSessionData field's value.
+func (s *MatchmakingConfiguration) SetGameSessionData(v string) *MatchmakingConfiguration {
+	s.GameSessionData = &v
+	return s
+}
+
+// SetGameSessionQueueArns sets the GameSessionQueueArns field's value.
+func (s *MatchmakingConfiguration) SetGameSessionQueueArns(v []*string) *MatchmakingConfiguration {
+	s.GameSessionQueueArns = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *MatchmakingConfiguration) SetName(v string) *MatchmakingConfiguration {
+	s.Name = &v
+	return s
+}
+
+// SetNotificationTarget sets the NotificationTarget field's value.
+func (s *MatchmakingConfiguration) SetNotificationTarget(v string) *MatchmakingConfiguration {
+	s.NotificationTarget = &v
+	return s
+}
+
+// SetRequestTimeoutSeconds sets the RequestTimeoutSeconds field's value.
+func (s *MatchmakingConfiguration) SetRequestTimeoutSeconds(v int64) *MatchmakingConfiguration {
+	s.RequestTimeoutSeconds = &v
+	return s
+}
+
+// SetRuleSetName sets the RuleSetName field's value.
+func (s *MatchmakingConfiguration) SetRuleSetName(v string) *MatchmakingConfiguration {
+	s.RuleSetName = &v
+	return s
+}
+
+// Set of rule statements, used with FlexMatch, that determine how to build
+// a certain kind of player match. Each rule set describes a type of group to
+// be created and defines the parameters for acceptable player matches. Rule
+// sets are used in MatchmakingConfiguration objects.
+//
+// A rule set may define the following elements for a match. For detailed information
+// and examples showing how to construct a rule set, see Create Matchmaking
+// Rules for Your Game (http://docs.aws.amazon.com/gamelift/latest/developerguide/match-rules.html).
+//
+//    * Teams -- Required. A rule set must define one or multiple teams for
+//    the match and set minimum and maximum team sizes. For example, a rule
+//    set might describe a 4x4 match that requires all eight slots to be filled.
+//
+//
+//    * Player attributes -- Optional. These attributes specify a set of player
+//    characteristics to evaluate when looking for a match. Matchmaking requests
+//    that use a rule set with player attributes must provide the corresponding
+//    attribute values. For example, an attribute might specify a player's skill
+//    or level.
+//
+//    * Rules -- Optional. Rules define how to evaluate potential players for
+//    a match based on player attributes. A rule might specify minimum requirements
+//    for individual players--such as each player must meet a certain skill
+//    level, or may describe an entire group--such as all teams must be evenly
+//    matched or have at least one player in a certain role.
+//
+//    * Expansions -- Optional. Expansions allow you to relax the rules after
+//    a period of time if no acceptable matches are found. This feature lets
+//    you balance getting players into games in a reasonable amount of time
+//    instead of making them wait indefinitely for the best possible match.
+//    For example, you might use an expansion to increase the maximum skill
+//    variance between players after 30 seconds.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/MatchmakingRuleSet
+type MatchmakingRuleSet struct {
+	_ struct{} `type:"structure"`
+
+	// Time stamp indicating when this data object was created. Format is a number
+	// expressed in Unix time as milliseconds (for example "1469498468.057").
+	CreationTime *time.Time `type:"timestamp" timestampFormat:"unix"`
+
+	// Collection of matchmaking rules, formatted as a JSON string. (Note that comments14
+	// are not allowed in JSON, but most elements support a description field.)
+	//
+	// RuleSetBody is a required field
+	RuleSetBody *string `min:"1" type:"string" required:"true"`
+
+	// Unique identifier for a matchmaking rule set
+	RuleSetName *string `min:"1" type:"string"`
+}
+
+// String returns the string representation
+func (s MatchmakingRuleSet) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s MatchmakingRuleSet) GoString() string {
+	return s.String()
+}
+
+// SetCreationTime sets the CreationTime field's value.
+func (s *MatchmakingRuleSet) SetCreationTime(v time.Time) *MatchmakingRuleSet {
+	s.CreationTime = &v
+	return s
+}
+
+// SetRuleSetBody sets the RuleSetBody field's value.
+func (s *MatchmakingRuleSet) SetRuleSetBody(v string) *MatchmakingRuleSet {
+	s.RuleSetBody = &v
+	return s
+}
+
+// SetRuleSetName sets the RuleSetName field's value.
+func (s *MatchmakingRuleSet) SetRuleSetName(v string) *MatchmakingRuleSet {
+	s.RuleSetName = &v
+	return s
+}
+
+// Ticket generated to track the progress of a matchmaking request. Each ticket
+// is uniquely identified by a ticket ID, supplied by the requester, when creating
+// a matchmaking request with StartMatchmaking. Tickets can be retrieved by
+// calling DescribeMatchmaking with the ticket ID.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/MatchmakingTicket
+type MatchmakingTicket struct {
+	_ struct{} `type:"structure"`
+
+	// Name of the MatchmakingConfiguration that is used with this ticket. Matchmaking
+	// configurations determine how players are grouped into a match and how a new
+	// game session is created for the match.
+	ConfigurationName *string `min:"1" type:"string"`
+
+	// Identifier and connection information of the game session created for the
+	// match. This information is added to the ticket only after the matchmaking
+	// request has been successfully completed.
+	GameSessionConnectionInfo *GameSessionConnectionInfo `type:"structure"`
+
+	// A set of Player objects, each representing a player to find matches for.
+	// Players are identified by a unique player ID and may include latency data
+	// for use during matchmaking. If the ticket is in status COMPLETED, the Player
+	// objects include the team the players were assigned to in the resulting match.
+	Players []*Player `type:"list"`
+
+	// Time stamp indicating when this matchmaking request was received. Format
+	// is a number expressed in Unix time as milliseconds (for example "1469498468.057").
+	StartTime *time.Time `type:"timestamp" timestampFormat:"unix"`
+
+	// Current status of the matchmaking request.
+	//
+	//    * QUEUED – The matchmaking request has been received and is currently
+	//    waiting to be processed.
+	//
+	//    * SEARCHING – The matchmaking request is currently being processed.
+	//
+	//    * REQUIRES_ACCEPTANCE – A match has been proposed and the players must
+	//    accept the match (see AcceptMatch). This status is used only with requests
+	//    that use a matchmaking configuration with a player acceptance requirement.
+	//
+	//    * PLACING – The FlexMatch engine has matched players and is in the process
+	//    of placing a new game session for the match.
+	//
+	//    * COMPLETED – Players have been matched and a game session is ready to
+	//    host the players. A ticket in this state contains the necessary connection
+	//    information for players.
+	//
+	//    * FAILED – The matchmaking request was not completed. Tickets with players
+	//    who fail to accept a proposed match are placed in FAILED status; new matchmaking
+	//    requests can be submitted for these players.
+	//
+	//    * CANCELLED – The matchmaking request was canceled with a call to StopMatchmaking.
+	//
+	//    * TIMED_OUT – The matchmaking request was not completed within the duration
+	//    specified in the matchmaking configuration. Matchmaking requests that
+	//    time out can be resubmitted.
+	Status *string `type:"string" enum:"MatchmakingConfigurationStatus"`
+
+	// Additional information about the current status.
+	StatusMessage *string `type:"string"`
+
+	// Code to explain the current status. For example, a status reason may indicate
+	// when a ticket has returned to SEARCHING status after a proposed match fails
+	// to receive player acceptances.
+	StatusReason *string `type:"string"`
+
+	// Unique identifier for a matchmaking ticket.
+	TicketId *string `min:"1" type:"string"`
+}
+
+// String returns the string representation
+func (s MatchmakingTicket) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s MatchmakingTicket) GoString() string {
+	return s.String()
+}
+
+// SetConfigurationName sets the ConfigurationName field's value.
+func (s *MatchmakingTicket) SetConfigurationName(v string) *MatchmakingTicket {
+	s.ConfigurationName = &v
+	return s
+}
+
+// SetGameSessionConnectionInfo sets the GameSessionConnectionInfo field's value.
+func (s *MatchmakingTicket) SetGameSessionConnectionInfo(v *GameSessionConnectionInfo) *MatchmakingTicket {
+	s.GameSessionConnectionInfo = v
+	return s
+}
+
+// SetPlayers sets the Players field's value.
+func (s *MatchmakingTicket) SetPlayers(v []*Player) *MatchmakingTicket {
+	s.Players = v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *MatchmakingTicket) SetStartTime(v time.Time) *MatchmakingTicket {
+	s.StartTime = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *MatchmakingTicket) SetStatus(v string) *MatchmakingTicket {
+	s.Status = &v
+	return s
+}
+
+// SetStatusMessage sets the StatusMessage field's value.
+func (s *MatchmakingTicket) SetStatusMessage(v string) *MatchmakingTicket {
+	s.StatusMessage = &v
+	return s
+}
+
+// SetStatusReason sets the StatusReason field's value.
+func (s *MatchmakingTicket) SetStatusReason(v string) *MatchmakingTicket {
+	s.StatusReason = &v
+	return s
+}
+
+// SetTicketId sets the TicketId field's value.
+func (s *MatchmakingTicket) SetTicketId(v string) *MatchmakingTicket {
+	s.TicketId = &v
+	return s
+}
+
 // Information about a player session that was created as part of a StartGameSessionPlacement
 // request. This object contains only the player ID and player session ID. To
 // retrieve full details on a player session, call DescribePlayerSessions with
@@ -11542,6 +14150,98 @@ func (s *PlacedPlayerSession) SetPlayerId(v string) *PlacedPlayerSession {
 // SetPlayerSessionId sets the PlayerSessionId field's value.
 func (s *PlacedPlayerSession) SetPlayerSessionId(v string) *PlacedPlayerSession {
 	s.PlayerSessionId = &v
+	return s
+}
+
+// Object used in matchmaking to represent a player. When starting a matchmaking
+// request, a player has a player ID and may have latency data. Team information
+// is added after a match has been successfully completed.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/Player
+type Player struct {
+	_ struct{} `type:"structure"`
+
+	// Set of values, expressed in milliseconds, indicating the amount of latency
+	// that a player experiences when connected to AWS regions. If this property
+	// is present, FlexMatch considers placing the match only in regions that are
+	// included in the object map. If not present (that is, null), FlexMatch ignores
+	// latency issues and may place the match in any region in the queue.
+	//
+	// If this property contains an empty map, FlexMatch assumes that no regions
+	// are available to the player. In this scenario, the ticket is not matchable
+	// and always times out unless canceled.
+	LatencyInMs map[string]*int64 `type:"map"`
+
+	// Collection of name:value pairs containing player information for use in matchmaking.
+	// Player attribute names need to match playerAttributes names in the rule set
+	// being used. Example: "PlayerAttributes": {"skill": {"N": "23"}, "gameMode":
+	// {"S": "deathmatch"}}.
+	PlayerAttributes map[string]*AttributeValue `type:"map"`
+
+	// Unique identifier for a player
+	PlayerId *string `min:"1" type:"string"`
+
+	// Name of the team that the player is assigned to in a match. Team names are
+	// defined in a matchmaking rule set.
+	Team *string `min:"1" type:"string"`
+}
+
+// String returns the string representation
+func (s Player) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s Player) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *Player) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "Player"}
+	if s.PlayerId != nil && len(*s.PlayerId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("PlayerId", 1))
+	}
+	if s.Team != nil && len(*s.Team) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Team", 1))
+	}
+	if s.PlayerAttributes != nil {
+		for i, v := range s.PlayerAttributes {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "PlayerAttributes", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetLatencyInMs sets the LatencyInMs field's value.
+func (s *Player) SetLatencyInMs(v map[string]*int64) *Player {
+	s.LatencyInMs = v
+	return s
+}
+
+// SetPlayerAttributes sets the PlayerAttributes field's value.
+func (s *Player) SetPlayerAttributes(v map[string]*AttributeValue) *Player {
+	s.PlayerAttributes = v
+	return s
+}
+
+// SetPlayerId sets the PlayerId field's value.
+func (s *Player) SetPlayerId(v string) *Player {
+	s.PlayerId = &v
+	return s
+}
+
+// SetTeam sets the Team field's value.
+func (s *Player) SetTeam(v string) *Player {
+	s.Team = &v
 	return s
 }
 
@@ -11661,11 +14361,17 @@ func (s *PlayerLatencyPolicy) SetPolicyDurationSeconds(v int64) *PlayerLatencyPo
 	return s
 }
 
-// Properties describing a player session. A player session represents either
-// a player reservation for a game session or actual player activity in a game
-// session. A player session object (including player data) is automatically
-// passed to a game session when the player connects to the game session and
-// is validated.
+// Properties describing a player session. Player session objects are created
+// either by creating a player session for a specific game session, or as part
+// of a game session placement. A player session represents either a player
+// reservation for a game session (status RESERVED) or actual player activity
+// in a game session (status ACTIVE). A player session object (including player
+// data) is automatically passed to a game session when the player connects
+// to the game session and is validated.
+//
+// When a player disconnects, the player session status changes to COMPLETED.
+// Once the session ends, the player session object is retained for 30 days
+// and then removed.
 //
 // Player-session-related operations include:
 //
@@ -12293,7 +14999,7 @@ func (s *RoutingStrategy) SetType(v string) *RoutingStrategy {
 }
 
 // A collection of server process configurations that describe what processes
-// to run on each instance in a fleet. All fleets must have a runtime configuration.
+// to run on each instance in a fleet. All fleets must have a run-time configuration.
 // Each instance in the fleet launches the server processes specified in the
 // run-time configuration and launches new ones as existing processes end. Each
 // instance regularly checks for an updated run-time configuration and follows
@@ -12750,8 +15456,8 @@ type SearchGameSessionsInput struct {
 	Limit *int64 `min:"1" type:"integer"`
 
 	// Token that indicates the start of the next sequential page of results. Use
-	// the token that is returned with a previous call to this action. To specify
-	// the start of the result set, do not specify a value.
+	// the token that is returned with a previous call to this action. To start
+	// at the beginning of the result set, do not specify a value.
 	NextToken *string `min:"1" type:"string"`
 
 	// Instructions on how to sort the search results. If no sort expression is
@@ -12965,9 +15671,17 @@ type StartGameSessionPlacementInput struct {
 	// Set of information on each player to create a player session for.
 	DesiredPlayerSessions []*DesiredPlayerSession `type:"list"`
 
-	// Set of developer-defined properties for a game session. These properties
-	// are passed to the server process hosting the game session.
+	// Set of developer-defined properties for a game session, formatted as a set
+	// of type:value pairs. These properties are included in the GameSession object,
+	// which is passed to the game server with a request to start a new game session
+	// (see Start a Game Session (http://docs.aws.amazon.com/gamelift/latest/developerguide/gamelift-sdk-server-api.html#gamelift-sdk-server-startsession)).
 	GameProperties []*GameProperty `type:"list"`
+
+	// Set of developer-defined game session properties, formatted as a single string
+	// value. This data is included in the GameSession object, which is passed to
+	// the game server with a request to start a new game session (see Start a Game
+	// Session (http://docs.aws.amazon.com/gamelift/latest/developerguide/gamelift-sdk-server-api.html#gamelift-sdk-server-startsession)).
+	GameSessionData *string `min:"1" type:"string"`
 
 	// Descriptive label that is associated with a game session. Session names do
 	// not need to be unique.
@@ -12992,7 +15706,7 @@ type StartGameSessionPlacementInput struct {
 	PlacementId *string `min:"1" type:"string" required:"true"`
 
 	// Set of values, expressed in milliseconds, indicating the amount of latency
-	// that players are experiencing when connected to AWS regions. This information
+	// that a player experiences when connected to AWS regions. This information
 	// is used to try to place the new game session where it can offer the best
 	// possible gameplay experience for the players.
 	PlayerLatencies []*PlayerLatency `type:"list"`
@@ -13011,6 +15725,9 @@ func (s StartGameSessionPlacementInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *StartGameSessionPlacementInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "StartGameSessionPlacementInput"}
+	if s.GameSessionData != nil && len(*s.GameSessionData) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GameSessionData", 1))
+	}
 	if s.GameSessionName != nil && len(*s.GameSessionName) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("GameSessionName", 1))
 	}
@@ -13078,6 +15795,12 @@ func (s *StartGameSessionPlacementInput) SetGameProperties(v []*GameProperty) *S
 	return s
 }
 
+// SetGameSessionData sets the GameSessionData field's value.
+func (s *StartGameSessionPlacementInput) SetGameSessionData(v string) *StartGameSessionPlacementInput {
+	s.GameSessionData = &v
+	return s
+}
+
 // SetGameSessionName sets the GameSessionName field's value.
 func (s *StartGameSessionPlacementInput) SetGameSessionName(v string) *StartGameSessionPlacementInput {
 	s.GameSessionName = &v
@@ -13136,6 +15859,117 @@ func (s *StartGameSessionPlacementOutput) SetGameSessionPlacement(v *GameSession
 }
 
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/StartMatchmakingInput
+type StartMatchmakingInput struct {
+	_ struct{} `type:"structure"`
+
+	// Name of the matchmaking configuration to use for this request. Matchmaking
+	// configurations must exist in the same region as this request.
+	//
+	// ConfigurationName is a required field
+	ConfigurationName *string `min:"1" type:"string" required:"true"`
+
+	// Information on each player to be matched. This information must include a
+	// player ID, and may contain player attributes and latency data to be used
+	// in the matchmaking process. After a successful match, Player objects contain
+	// the name of the team the player is assigned to.
+	//
+	// Players is a required field
+	Players []*Player `type:"list" required:"true"`
+
+	// Unique identifier for a matchmaking ticket. Use this identifier to track
+	// the matchmaking ticket status and retrieve match results.
+	TicketId *string `min:"1" type:"string"`
+}
+
+// String returns the string representation
+func (s StartMatchmakingInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s StartMatchmakingInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *StartMatchmakingInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "StartMatchmakingInput"}
+	if s.ConfigurationName == nil {
+		invalidParams.Add(request.NewErrParamRequired("ConfigurationName"))
+	}
+	if s.ConfigurationName != nil && len(*s.ConfigurationName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ConfigurationName", 1))
+	}
+	if s.Players == nil {
+		invalidParams.Add(request.NewErrParamRequired("Players"))
+	}
+	if s.TicketId != nil && len(*s.TicketId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("TicketId", 1))
+	}
+	if s.Players != nil {
+		for i, v := range s.Players {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Players", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetConfigurationName sets the ConfigurationName field's value.
+func (s *StartMatchmakingInput) SetConfigurationName(v string) *StartMatchmakingInput {
+	s.ConfigurationName = &v
+	return s
+}
+
+// SetPlayers sets the Players field's value.
+func (s *StartMatchmakingInput) SetPlayers(v []*Player) *StartMatchmakingInput {
+	s.Players = v
+	return s
+}
+
+// SetTicketId sets the TicketId field's value.
+func (s *StartMatchmakingInput) SetTicketId(v string) *StartMatchmakingInput {
+	s.TicketId = &v
+	return s
+}
+
+// Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/StartMatchmakingOutput
+type StartMatchmakingOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Ticket representing the matchmaking request. This object include the information
+	// included in the request, ticket status, and match results as generated during
+	// the matchmaking process.
+	MatchmakingTicket *MatchmakingTicket `type:"structure"`
+}
+
+// String returns the string representation
+func (s StartMatchmakingOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s StartMatchmakingOutput) GoString() string {
+	return s.String()
+}
+
+// SetMatchmakingTicket sets the MatchmakingTicket field's value.
+func (s *StartMatchmakingOutput) SetMatchmakingTicket(v *MatchmakingTicket) *StartMatchmakingOutput {
+	s.MatchmakingTicket = v
+	return s
+}
+
+// Represents the input for a request action.
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/StopGameSessionPlacementInput
 type StopGameSessionPlacementInput struct {
 	_ struct{} `type:"structure"`
@@ -13183,7 +16017,7 @@ func (s *StopGameSessionPlacementInput) SetPlacementId(v string) *StopGameSessio
 type StopGameSessionPlacementOutput struct {
 	_ struct{} `type:"structure"`
 
-	// Object that describes the canceled game session placement, with Cancelled
+	// Object that describes the canceled game session placement, with CANCELLED
 	// status and an end time stamp.
 	GameSessionPlacement *GameSessionPlacement `type:"structure"`
 }
@@ -13202,6 +16036,64 @@ func (s StopGameSessionPlacementOutput) GoString() string {
 func (s *StopGameSessionPlacementOutput) SetGameSessionPlacement(v *GameSessionPlacement) *StopGameSessionPlacementOutput {
 	s.GameSessionPlacement = v
 	return s
+}
+
+// Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/StopMatchmakingInput
+type StopMatchmakingInput struct {
+	_ struct{} `type:"structure"`
+
+	// Unique identifier for a matchmaking ticket.
+	//
+	// TicketId is a required field
+	TicketId *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s StopMatchmakingInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s StopMatchmakingInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *StopMatchmakingInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "StopMatchmakingInput"}
+	if s.TicketId == nil {
+		invalidParams.Add(request.NewErrParamRequired("TicketId"))
+	}
+	if s.TicketId != nil && len(*s.TicketId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("TicketId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetTicketId sets the TicketId field's value.
+func (s *StopMatchmakingInput) SetTicketId(v string) *StopMatchmakingInput {
+	s.TicketId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/StopMatchmakingOutput
+type StopMatchmakingOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s StopMatchmakingOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s StopMatchmakingOutput) GoString() string {
+	return s.String()
 }
 
 // Represents the input for a request action.
@@ -13847,8 +16739,8 @@ type UpdateGameSessionQueueInput struct {
 	// list, provide a complete list of destinations.
 	Destinations []*GameSessionQueueDestination `type:"list"`
 
-	// Descriptive label that is associated with queue. Queue names must be unique
-	// within each region.
+	// Descriptive label that is associated with game session queue. Queue names
+	// must be unique within each region.
 	//
 	// Name is a required field
 	Name *string `min:"1" type:"string" required:"true"`
@@ -13956,6 +16848,229 @@ func (s *UpdateGameSessionQueueOutput) SetGameSessionQueue(v *GameSessionQueue) 
 }
 
 // Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateMatchmakingConfigurationInput
+type UpdateMatchmakingConfigurationInput struct {
+	_ struct{} `type:"structure"`
+
+	// Flag that determines whether or not a match that was created with this configuration
+	// must be accepted by the matched players. To require acceptance, set to TRUE.
+	AcceptanceRequired *bool `type:"boolean"`
+
+	// Length of time (in seconds) to wait for players to accept a proposed match.
+	// If any player rejects the match or fails to accept before the timeout, the
+	// ticket continues to look for an acceptable match.
+	AcceptanceTimeoutSeconds *int64 `min:"1" type:"integer"`
+
+	// Number of player slots in a match to keep open for future players. For example,
+	// if the configuration's rule set specifies a match for a single 12-person
+	// team, and the additional player count is set to 2, only 10 players are selected
+	// for the match.
+	AdditionalPlayerCount *int64 `type:"integer"`
+
+	// Information to attached to all events related to the matchmaking configuration.
+	CustomEventData *string `min:"1" type:"string"`
+
+	// Descriptive label that is associated with matchmaking configuration.
+	Description *string `min:"1" type:"string"`
+
+	// Set of developer-defined properties for a game session, formatted as a set
+	// of type:value pairs. These properties are included in the GameSession object,
+	// which is passed to the game server with a request to start a new game session
+	// (see Start a Game Session (http://docs.aws.amazon.com/gamelift/latest/developerguide/gamelift-sdk-server-api.html#gamelift-sdk-server-startsession)).
+	// This information is added to the new GameSession object that is created for
+	// a successful match.
+	GameProperties []*GameProperty `type:"list"`
+
+	// Set of developer-defined game session properties, formatted as a single string
+	// value. This data is included in the GameSession object, which is passed to
+	// the game server with a request to start a new game session (see Start a Game
+	// Session (http://docs.aws.amazon.com/gamelift/latest/developerguide/gamelift-sdk-server-api.html#gamelift-sdk-server-startsession)).
+	// This information is added to the new GameSession object that is created for
+	// a successful match.
+	GameSessionData *string `min:"1" type:"string"`
+
+	// Amazon Resource Name (ARN (http://docs.aws.amazon.com/AmazonS3/latest/dev/s3-arn-format.html))
+	// that is assigned to a game session queue and uniquely identifies it. Format
+	// is arn:aws:gamelift:<region>::fleet/fleet-a1234567-b8c9-0d1e-2fa3-b45c6d7e8912.
+	// These queues are used when placing game sessions for matches that are created
+	// with this matchmaking configuration. Queues can be located in any region.
+	GameSessionQueueArns []*string `type:"list"`
+
+	// Unique identifier for a matchmaking configuration to update.
+	//
+	// Name is a required field
+	Name *string `min:"1" type:"string" required:"true"`
+
+	// SNS topic ARN that is set up to receive matchmaking notifications. See  Setting
+	// up Notifications for Matchmaking (http://docs.aws.amazon.com/gamelift/latest/developerguide/match-notification.html)
+	// for more information.
+	NotificationTarget *string `min:"1" type:"string"`
+
+	// Maximum duration, in seconds, that a matchmaking ticket can remain in process
+	// before timing out. Requests that time out can be resubmitted as needed.
+	RequestTimeoutSeconds *int64 `min:"1" type:"integer"`
+
+	// Unique identifier for a matchmaking rule set to use with this configuration.
+	// A matchmaking configuration can only use rule sets that are defined in the
+	// same region.
+	RuleSetName *string `min:"1" type:"string"`
+}
+
+// String returns the string representation
+func (s UpdateMatchmakingConfigurationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s UpdateMatchmakingConfigurationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateMatchmakingConfigurationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateMatchmakingConfigurationInput"}
+	if s.AcceptanceTimeoutSeconds != nil && *s.AcceptanceTimeoutSeconds < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("AcceptanceTimeoutSeconds", 1))
+	}
+	if s.CustomEventData != nil && len(*s.CustomEventData) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("CustomEventData", 1))
+	}
+	if s.Description != nil && len(*s.Description) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Description", 1))
+	}
+	if s.GameSessionData != nil && len(*s.GameSessionData) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GameSessionData", 1))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.NotificationTarget != nil && len(*s.NotificationTarget) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NotificationTarget", 1))
+	}
+	if s.RequestTimeoutSeconds != nil && *s.RequestTimeoutSeconds < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("RequestTimeoutSeconds", 1))
+	}
+	if s.RuleSetName != nil && len(*s.RuleSetName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RuleSetName", 1))
+	}
+	if s.GameProperties != nil {
+		for i, v := range s.GameProperties {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "GameProperties", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAcceptanceRequired sets the AcceptanceRequired field's value.
+func (s *UpdateMatchmakingConfigurationInput) SetAcceptanceRequired(v bool) *UpdateMatchmakingConfigurationInput {
+	s.AcceptanceRequired = &v
+	return s
+}
+
+// SetAcceptanceTimeoutSeconds sets the AcceptanceTimeoutSeconds field's value.
+func (s *UpdateMatchmakingConfigurationInput) SetAcceptanceTimeoutSeconds(v int64) *UpdateMatchmakingConfigurationInput {
+	s.AcceptanceTimeoutSeconds = &v
+	return s
+}
+
+// SetAdditionalPlayerCount sets the AdditionalPlayerCount field's value.
+func (s *UpdateMatchmakingConfigurationInput) SetAdditionalPlayerCount(v int64) *UpdateMatchmakingConfigurationInput {
+	s.AdditionalPlayerCount = &v
+	return s
+}
+
+// SetCustomEventData sets the CustomEventData field's value.
+func (s *UpdateMatchmakingConfigurationInput) SetCustomEventData(v string) *UpdateMatchmakingConfigurationInput {
+	s.CustomEventData = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *UpdateMatchmakingConfigurationInput) SetDescription(v string) *UpdateMatchmakingConfigurationInput {
+	s.Description = &v
+	return s
+}
+
+// SetGameProperties sets the GameProperties field's value.
+func (s *UpdateMatchmakingConfigurationInput) SetGameProperties(v []*GameProperty) *UpdateMatchmakingConfigurationInput {
+	s.GameProperties = v
+	return s
+}
+
+// SetGameSessionData sets the GameSessionData field's value.
+func (s *UpdateMatchmakingConfigurationInput) SetGameSessionData(v string) *UpdateMatchmakingConfigurationInput {
+	s.GameSessionData = &v
+	return s
+}
+
+// SetGameSessionQueueArns sets the GameSessionQueueArns field's value.
+func (s *UpdateMatchmakingConfigurationInput) SetGameSessionQueueArns(v []*string) *UpdateMatchmakingConfigurationInput {
+	s.GameSessionQueueArns = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *UpdateMatchmakingConfigurationInput) SetName(v string) *UpdateMatchmakingConfigurationInput {
+	s.Name = &v
+	return s
+}
+
+// SetNotificationTarget sets the NotificationTarget field's value.
+func (s *UpdateMatchmakingConfigurationInput) SetNotificationTarget(v string) *UpdateMatchmakingConfigurationInput {
+	s.NotificationTarget = &v
+	return s
+}
+
+// SetRequestTimeoutSeconds sets the RequestTimeoutSeconds field's value.
+func (s *UpdateMatchmakingConfigurationInput) SetRequestTimeoutSeconds(v int64) *UpdateMatchmakingConfigurationInput {
+	s.RequestTimeoutSeconds = &v
+	return s
+}
+
+// SetRuleSetName sets the RuleSetName field's value.
+func (s *UpdateMatchmakingConfigurationInput) SetRuleSetName(v string) *UpdateMatchmakingConfigurationInput {
+	s.RuleSetName = &v
+	return s
+}
+
+// Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateMatchmakingConfigurationOutput
+type UpdateMatchmakingConfigurationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Object that describes the updated matchmaking configuration.
+	Configuration *MatchmakingConfiguration `type:"structure"`
+}
+
+// String returns the string representation
+func (s UpdateMatchmakingConfigurationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s UpdateMatchmakingConfigurationOutput) GoString() string {
+	return s.String()
+}
+
+// SetConfiguration sets the Configuration field's value.
+func (s *UpdateMatchmakingConfigurationOutput) SetConfiguration(v *MatchmakingConfiguration) *UpdateMatchmakingConfigurationOutput {
+	s.Configuration = v
+	return s
+}
+
+// Represents the input for a request action.
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateRuntimeConfigurationInput
 type UpdateRuntimeConfigurationInput struct {
 	_ struct{} `type:"structure"`
@@ -14044,6 +17159,82 @@ func (s *UpdateRuntimeConfigurationOutput) SetRuntimeConfiguration(v *RuntimeCon
 	s.RuntimeConfiguration = v
 	return s
 }
+
+// Represents the input for a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ValidateMatchmakingRuleSetInput
+type ValidateMatchmakingRuleSetInput struct {
+	_ struct{} `type:"structure"`
+
+	// Collection of matchmaking rules to validate, formatted as a JSON string.
+	//
+	// RuleSetBody is a required field
+	RuleSetBody *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s ValidateMatchmakingRuleSetInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ValidateMatchmakingRuleSetInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ValidateMatchmakingRuleSetInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ValidateMatchmakingRuleSetInput"}
+	if s.RuleSetBody == nil {
+		invalidParams.Add(request.NewErrParamRequired("RuleSetBody"))
+	}
+	if s.RuleSetBody != nil && len(*s.RuleSetBody) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RuleSetBody", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetRuleSetBody sets the RuleSetBody field's value.
+func (s *ValidateMatchmakingRuleSetInput) SetRuleSetBody(v string) *ValidateMatchmakingRuleSetInput {
+	s.RuleSetBody = &v
+	return s
+}
+
+// Represents the returned data in response to a request action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ValidateMatchmakingRuleSetOutput
+type ValidateMatchmakingRuleSetOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Response indicating whether or not the rule set is valid.
+	Valid *bool `type:"boolean"`
+}
+
+// String returns the string representation
+func (s ValidateMatchmakingRuleSetOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ValidateMatchmakingRuleSetOutput) GoString() string {
+	return s.String()
+}
+
+// SetValid sets the Valid field's value.
+func (s *ValidateMatchmakingRuleSetOutput) SetValid(v bool) *ValidateMatchmakingRuleSetOutput {
+	s.Valid = &v
+	return s
+}
+
+const (
+	// AcceptanceTypeAccept is a AcceptanceType enum value
+	AcceptanceTypeAccept = "ACCEPT"
+
+	// AcceptanceTypeReject is a AcceptanceType enum value
+	AcceptanceTypeReject = "REJECT"
+)
 
 const (
 	// BuildStatusInitialized is a BuildStatus enum value
@@ -14322,6 +17513,32 @@ const (
 
 	// IpProtocolUdp is a IpProtocol enum value
 	IpProtocolUdp = "UDP"
+)
+
+const (
+	// MatchmakingConfigurationStatusCancelled is a MatchmakingConfigurationStatus enum value
+	MatchmakingConfigurationStatusCancelled = "CANCELLED"
+
+	// MatchmakingConfigurationStatusCompleted is a MatchmakingConfigurationStatus enum value
+	MatchmakingConfigurationStatusCompleted = "COMPLETED"
+
+	// MatchmakingConfigurationStatusFailed is a MatchmakingConfigurationStatus enum value
+	MatchmakingConfigurationStatusFailed = "FAILED"
+
+	// MatchmakingConfigurationStatusPlacing is a MatchmakingConfigurationStatus enum value
+	MatchmakingConfigurationStatusPlacing = "PLACING"
+
+	// MatchmakingConfigurationStatusQueued is a MatchmakingConfigurationStatus enum value
+	MatchmakingConfigurationStatusQueued = "QUEUED"
+
+	// MatchmakingConfigurationStatusRequiresAcceptance is a MatchmakingConfigurationStatus enum value
+	MatchmakingConfigurationStatusRequiresAcceptance = "REQUIRES_ACCEPTANCE"
+
+	// MatchmakingConfigurationStatusSearching is a MatchmakingConfigurationStatus enum value
+	MatchmakingConfigurationStatusSearching = "SEARCHING"
+
+	// MatchmakingConfigurationStatusTimedOut is a MatchmakingConfigurationStatus enum value
+	MatchmakingConfigurationStatusTimedOut = "TIMED_OUT"
 )
 
 const (

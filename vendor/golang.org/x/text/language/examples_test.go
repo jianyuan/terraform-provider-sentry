@@ -274,7 +274,7 @@ func ExampleMatcher() {
 
 	fmt.Println("----")
 
-	// Croatian speakers will likely understand Serbian written in Latin script.
+	// Someone specifying sr-Latn is probably fine with getting Croatian.
 	fmt.Println(m.Match(language.Make("sr-Latn")))
 
 	// We match SimplifiedChinese, but with Low confidence.
@@ -331,11 +331,13 @@ func ExampleMatcher() {
 	// af 3 High
 	// ----
 	// iw 9 Exact
-	// iw-IL 8 Exact
+	// he 10 Exact
 	// ----
 	// fr-u-cu-frf 2 Exact
 	// fr-u-cu-frf 2 High
 	// en-u-co-phonebk 0 No
+
+	// TODO: "he" should be "he-u-rg-IL High"
 }
 
 func ExampleComprehends() {

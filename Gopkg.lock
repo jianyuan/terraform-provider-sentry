@@ -10,8 +10,8 @@
 [[projects]]
   name = "github.com/aws/aws-sdk-go"
   packages = ["aws","aws/awserr","aws/awsutil","aws/client","aws/client/metadata","aws/corehandlers","aws/credentials","aws/credentials/ec2rolecreds","aws/credentials/endpointcreds","aws/credentials/stscreds","aws/defaults","aws/ec2metadata","aws/endpoints","aws/request","aws/session","aws/signer/v4","internal/shareddefaults","private/protocol","private/protocol/query","private/protocol/query/queryutil","private/protocol/rest","private/protocol/restxml","private/protocol/xml/xmlutil","service/s3","service/sts"]
-  revision = "61b379ef486ea3baa55e10c358f3217f06e7b5ad"
-  version = "v1.10.16"
+  revision = "e63027ac6e05f6d4ae9f97ce0294d7468ca652da"
+  version = "v1.10.33"
 
 [[projects]]
   branch = "master"
@@ -34,14 +34,14 @@
 [[projects]]
   name = "github.com/go-ini/ini"
   packages = ["."]
-  revision = "d3de07a94d22b4a0972deb4b96d790c2c0ce8333"
-  version = "v1.28.0"
+  revision = "20b96f641a5ea98f2f8619ff4f3e061cff4833bd"
+  version = "v1.28.2"
 
 [[projects]]
   branch = "master"
   name = "github.com/golang/protobuf"
   packages = ["proto","ptypes/any"]
-  revision = "0a4f71a498b7c4812f64969510bcb4eca251e33a"
+  revision = "ab9f9a6dab164b7d1246e0e688b0ab7b94d8553e"
 
 [[projects]]
   branch = "master"
@@ -77,7 +77,7 @@
   branch = "master"
   name = "github.com/hashicorp/go-plugin"
   packages = ["."]
-  revision = "4e5a3725c607a756be8d35bf3a521c0f9c422666"
+  revision = "a5174f84d7f8ff00fb07ab4ef1f380d32eee0e63"
 
 [[projects]]
   branch = "master"
@@ -95,7 +95,7 @@
   branch = "master"
   name = "github.com/hashicorp/hcl"
   packages = [".","hcl/ast","hcl/parser","hcl/scanner","hcl/strconv","hcl/token","json/parser","json/scanner","json/token"]
-  revision = "392dba7d905ed5d04a5794ba89f558b27e2ba1ca"
+  revision = "8f6b1344a92ff8877cf24a5de9177bf7d0a2a187"
 
 [[projects]]
   branch = "master"
@@ -122,6 +122,12 @@
   revision = "d1caa6c97c9fc1cc9e83bbe34d0603f9ff0ce8bd"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/jianyuan/go-sentry"
+  packages = ["sentry"]
+  revision = "2fc87c88e935239a7bcdf3886b2932e0d0d2ee3d"
+
+[[projects]]
   name = "github.com/jmespath/go-jmespath"
   packages = ["."]
   revision = "3433f3ea46d9f8019119e7dd41274e112a2359a9"
@@ -143,7 +149,7 @@
   branch = "master"
   name = "github.com/mitchellh/go-testing-interface"
   packages = ["."]
-  revision = "e1449340a7b207d8ca90d41466272ece75cbb5b5"
+  revision = "9a441910b16872f7b8283682619b3761a9aa2222"
 
 [[projects]]
   branch = "master"
@@ -161,7 +167,7 @@
   branch = "master"
   name = "github.com/mitchellh/reflectwalk"
   packages = ["."]
-  revision = "8d802ff4ae93611b807597f639c19f76074df5c6"
+  revision = "63d60e9d0dbc60cf9164e6510889b0db6683d98c"
 
 [[projects]]
   name = "github.com/satori/go.uuid"
@@ -179,35 +185,35 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["bcrypt","blowfish","curve25519","ed25519","ed25519/internal/edwards25519","ssh"]
-  revision = "8c55ac71e05f0f9c5570ea47328f41a0ddd8d63d"
+  revision = "81e90905daefcd6fd217b62423c0908922eadb30"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
   packages = ["context","http2","http2/hpack","idna","internal/timeseries","lex/httplex","trace"]
-  revision = "f5079bd7f6f74e23c4d65efa0f4ce14cbd6a3c0f"
+  revision = "57efc9c3d9f91fb3277f8da1cff370539c4d3dc5"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/text"
   packages = ["internal/gen","internal/triegen","internal/ucd","secure/bidirule","transform","unicode/bidi","unicode/cldr","unicode/norm","unicode/rangetable"]
-  revision = "836efe42bb4aa16aaa17b9c155d8813d336ed720"
+  revision = "ac87088df8ef557f1e32cd00ed0b6fbc3f7ddafb"
 
 [[projects]]
   branch = "master"
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
-  revision = "b0a3dcfcd1a9bd48e63634bd8802960804cf8315"
+  revision = "ee236bd376b077c7a89f260c026c4735b195e459"
 
 [[projects]]
   name = "google.golang.org/grpc"
-  packages = [".","codes","credentials","grpclb/grpc_lb_v1","grpclog","health","health/grpc_health_v1","internal","keepalive","metadata","naming","peer","stats","status","tap","transport"]
-  revision = "172ccacff3cfbddedcf1ba5ea06cda943bc976c1"
-  version = "v1.5.0"
+  packages = [".","codes","connectivity","credentials","grpclb/grpc_lb_v1","grpclog","health","health/grpc_health_v1","internal","keepalive","metadata","naming","peer","stats","status","tap","transport"]
+  revision = "b3ddf786825de56a4178401b7e174ee332173b66"
+  version = "v1.5.2"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "df69153298dc5456f031a5bb65098dac40b74fe45b42f7f5e44a8dfbd3e997e3"
+  inputs-digest = "d0ffb5afbd8247906ba75c46373a01fd87a5567f09f97b1e198398eab56fa623"
   solver-name = "gps-cdcl"
   solver-version = 1

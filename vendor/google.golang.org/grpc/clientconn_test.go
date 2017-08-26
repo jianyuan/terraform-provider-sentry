@@ -19,17 +19,70 @@
 package grpc
 
 import (
+	"math"
 	"net"
 	"testing"
 	"time"
 
 	"golang.org/x/net/context"
 
+	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
+	"google.golang.org/grpc/naming"
 )
 
 const tlsDir = "testdata/"
+
+func assertState(wantState connectivity.State, cc *ClientConn) (connectivity.State, bool) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	var state connectivity.State
+	for state = cc.GetState(); state != wantState && cc.WaitForStateChange(ctx, state); state = cc.GetState() {
+	}
+	return state, state == wantState
+}
+
+func TestConnectivityStates(t *testing.T) {
+	servers, resolver := startServers(t, 2, math.MaxUint32)
+	defer func() {
+		for i := 0; i < 2; i++ {
+			servers[i].stop()
+		}
+	}()
+
+	cc, err := Dial("foo.bar.com", WithBalancer(RoundRobin(resolver)), WithInsecure())
+	if err != nil {
+		t.Fatalf("Dial(\"foo.bar.com\", WithBalancer(_)) = _, %v, want _ <nil>", err)
+	}
+	defer cc.Close()
+	wantState := connectivity.Ready
+	if state, ok := assertState(wantState, cc); !ok {
+		t.Fatalf("asserState(%s) = %s, false, want %s, true", wantState, state, wantState)
+	}
+	// Send an update to delete the server connection (tearDown addrConn).
+	update := []*naming.Update{
+		{
+			Op:   naming.Delete,
+			Addr: "localhost:" + servers[0].port,
+		},
+	}
+	resolver.w.inject(update)
+	wantState = connectivity.TransientFailure
+	if state, ok := assertState(wantState, cc); !ok {
+		t.Fatalf("asserState(%s) = %s, false, want %s, true", wantState, state, wantState)
+	}
+	update[0] = &naming.Update{
+		Op:   naming.Add,
+		Addr: "localhost:" + servers[1].port,
+	}
+	resolver.w.inject(update)
+	wantState = connectivity.Ready
+	if state, ok := assertState(wantState, cc); !ok {
+		t.Fatalf("asserState(%s) = %s, false, want %s, true", wantState, state, wantState)
+	}
+
+}
 
 func TestDialTimeout(t *testing.T) {
 	conn, err := Dial("Non-Existent.Server:80", WithTimeout(time.Millisecond), WithBlock(), WithInsecure())

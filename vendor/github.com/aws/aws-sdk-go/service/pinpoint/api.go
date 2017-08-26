@@ -8,23 +8,107 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 )
 
+const opCreateApp = "CreateApp"
+
+// CreateAppRequest generates a "aws/request.Request" representing the
+// client's request for the CreateApp operation. The "output" return
+// value will be populated with the request's response once the request complets
+// successfuly.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateApp for more information on using the CreateApp
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the CreateAppRequest method.
+//    req, resp := client.CreateAppRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+func (c *Pinpoint) CreateAppRequest(input *CreateAppInput) (req *request.Request, output *CreateAppOutput) {
+	op := &request.Operation{
+		Name:       opCreateApp,
+		HTTPMethod: "POST",
+		HTTPPath:   "/v1/apps",
+	}
+
+	if input == nil {
+		input = &CreateAppInput{}
+	}
+
+	output = &CreateAppOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateApp API operation for Amazon Pinpoint.
+//
+// Used to create an app.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Pinpoint's
+// API operation CreateApp for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeBadRequestException "BadRequestException"
+//
+//   * ErrCodeInternalServerErrorException "InternalServerErrorException"
+//
+//   * ErrCodeForbiddenException "ForbiddenException"
+//
+//   * ErrCodeNotFoundException "NotFoundException"
+//
+//   * ErrCodeMethodNotAllowedException "MethodNotAllowedException"
+//
+//   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//
+func (c *Pinpoint) CreateApp(input *CreateAppInput) (*CreateAppOutput, error) {
+	req, out := c.CreateAppRequest(input)
+	return out, req.Send()
+}
+
+// CreateAppWithContext is the same as CreateApp with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateApp for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Pinpoint) CreateAppWithContext(ctx aws.Context, input *CreateAppInput, opts ...request.Option) (*CreateAppOutput, error) {
+	req, out := c.CreateAppRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opCreateCampaign = "CreateCampaign"
 
 // CreateCampaignRequest generates a "aws/request.Request" representing the
 // client's request for the CreateCampaign operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See CreateCampaign for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the CreateCampaign method directly
-// instead.
+// See CreateCampaign for more information on using the CreateCampaign
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the CreateCampaignRequest method.
 //    req, resp := client.CreateCampaignRequest(params)
@@ -98,19 +182,18 @@ const opCreateImportJob = "CreateImportJob"
 
 // CreateImportJobRequest generates a "aws/request.Request" representing the
 // client's request for the CreateImportJob operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See CreateImportJob for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the CreateImportJob method directly
-// instead.
+// See CreateImportJob for more information on using the CreateImportJob
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the CreateImportJobRequest method.
 //    req, resp := client.CreateImportJobRequest(params)
@@ -184,19 +267,18 @@ const opCreateSegment = "CreateSegment"
 
 // CreateSegmentRequest generates a "aws/request.Request" representing the
 // client's request for the CreateSegment operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See CreateSegment for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the CreateSegment method directly
-// instead.
+// See CreateSegment for more information on using the CreateSegment
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the CreateSegmentRequest method.
 //    req, resp := client.CreateSegmentRequest(params)
@@ -270,19 +352,18 @@ const opDeleteApnsChannel = "DeleteApnsChannel"
 
 // DeleteApnsChannelRequest generates a "aws/request.Request" representing the
 // client's request for the DeleteApnsChannel operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See DeleteApnsChannel for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the DeleteApnsChannel method directly
-// instead.
+// See DeleteApnsChannel for more information on using the DeleteApnsChannel
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the DeleteApnsChannelRequest method.
 //    req, resp := client.DeleteApnsChannelRequest(params)
@@ -356,19 +437,18 @@ const opDeleteApnsSandboxChannel = "DeleteApnsSandboxChannel"
 
 // DeleteApnsSandboxChannelRequest generates a "aws/request.Request" representing the
 // client's request for the DeleteApnsSandboxChannel operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See DeleteApnsSandboxChannel for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the DeleteApnsSandboxChannel method directly
-// instead.
+// See DeleteApnsSandboxChannel for more information on using the DeleteApnsSandboxChannel
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the DeleteApnsSandboxChannelRequest method.
 //    req, resp := client.DeleteApnsSandboxChannelRequest(params)
@@ -438,23 +518,107 @@ func (c *Pinpoint) DeleteApnsSandboxChannelWithContext(ctx aws.Context, input *D
 	return out, req.Send()
 }
 
+const opDeleteApp = "DeleteApp"
+
+// DeleteAppRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteApp operation. The "output" return
+// value will be populated with the request's response once the request complets
+// successfuly.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteApp for more information on using the DeleteApp
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the DeleteAppRequest method.
+//    req, resp := client.DeleteAppRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+func (c *Pinpoint) DeleteAppRequest(input *DeleteAppInput) (req *request.Request, output *DeleteAppOutput) {
+	op := &request.Operation{
+		Name:       opDeleteApp,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/v1/apps/{application-id}",
+	}
+
+	if input == nil {
+		input = &DeleteAppInput{}
+	}
+
+	output = &DeleteAppOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DeleteApp API operation for Amazon Pinpoint.
+//
+// Deletes an app.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Pinpoint's
+// API operation DeleteApp for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeBadRequestException "BadRequestException"
+//
+//   * ErrCodeInternalServerErrorException "InternalServerErrorException"
+//
+//   * ErrCodeForbiddenException "ForbiddenException"
+//
+//   * ErrCodeNotFoundException "NotFoundException"
+//
+//   * ErrCodeMethodNotAllowedException "MethodNotAllowedException"
+//
+//   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//
+func (c *Pinpoint) DeleteApp(input *DeleteAppInput) (*DeleteAppOutput, error) {
+	req, out := c.DeleteAppRequest(input)
+	return out, req.Send()
+}
+
+// DeleteAppWithContext is the same as DeleteApp with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteApp for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Pinpoint) DeleteAppWithContext(ctx aws.Context, input *DeleteAppInput, opts ...request.Option) (*DeleteAppOutput, error) {
+	req, out := c.DeleteAppRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDeleteCampaign = "DeleteCampaign"
 
 // DeleteCampaignRequest generates a "aws/request.Request" representing the
 // client's request for the DeleteCampaign operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See DeleteCampaign for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the DeleteCampaign method directly
-// instead.
+// See DeleteCampaign for more information on using the DeleteCampaign
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the DeleteCampaignRequest method.
 //    req, resp := client.DeleteCampaignRequest(params)
@@ -528,19 +692,18 @@ const opDeleteEmailChannel = "DeleteEmailChannel"
 
 // DeleteEmailChannelRequest generates a "aws/request.Request" representing the
 // client's request for the DeleteEmailChannel operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See DeleteEmailChannel for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the DeleteEmailChannel method directly
-// instead.
+// See DeleteEmailChannel for more information on using the DeleteEmailChannel
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the DeleteEmailChannelRequest method.
 //    req, resp := client.DeleteEmailChannelRequest(params)
@@ -614,19 +777,18 @@ const opDeleteEventStream = "DeleteEventStream"
 
 // DeleteEventStreamRequest generates a "aws/request.Request" representing the
 // client's request for the DeleteEventStream operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See DeleteEventStream for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the DeleteEventStream method directly
-// instead.
+// See DeleteEventStream for more information on using the DeleteEventStream
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the DeleteEventStreamRequest method.
 //    req, resp := client.DeleteEventStreamRequest(params)
@@ -700,19 +862,18 @@ const opDeleteGcmChannel = "DeleteGcmChannel"
 
 // DeleteGcmChannelRequest generates a "aws/request.Request" representing the
 // client's request for the DeleteGcmChannel operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See DeleteGcmChannel for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the DeleteGcmChannel method directly
-// instead.
+// See DeleteGcmChannel for more information on using the DeleteGcmChannel
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the DeleteGcmChannelRequest method.
 //    req, resp := client.DeleteGcmChannelRequest(params)
@@ -786,19 +947,18 @@ const opDeleteSegment = "DeleteSegment"
 
 // DeleteSegmentRequest generates a "aws/request.Request" representing the
 // client's request for the DeleteSegment operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See DeleteSegment for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the DeleteSegment method directly
-// instead.
+// See DeleteSegment for more information on using the DeleteSegment
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the DeleteSegmentRequest method.
 //    req, resp := client.DeleteSegmentRequest(params)
@@ -872,19 +1032,18 @@ const opDeleteSmsChannel = "DeleteSmsChannel"
 
 // DeleteSmsChannelRequest generates a "aws/request.Request" representing the
 // client's request for the DeleteSmsChannel operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See DeleteSmsChannel for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the DeleteSmsChannel method directly
-// instead.
+// See DeleteSmsChannel for more information on using the DeleteSmsChannel
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the DeleteSmsChannelRequest method.
 //    req, resp := client.DeleteSmsChannelRequest(params)
@@ -958,19 +1117,18 @@ const opGetApnsChannel = "GetApnsChannel"
 
 // GetApnsChannelRequest generates a "aws/request.Request" representing the
 // client's request for the GetApnsChannel operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See GetApnsChannel for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the GetApnsChannel method directly
-// instead.
+// See GetApnsChannel for more information on using the GetApnsChannel
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the GetApnsChannelRequest method.
 //    req, resp := client.GetApnsChannelRequest(params)
@@ -1044,19 +1202,18 @@ const opGetApnsSandboxChannel = "GetApnsSandboxChannel"
 
 // GetApnsSandboxChannelRequest generates a "aws/request.Request" representing the
 // client's request for the GetApnsSandboxChannel operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See GetApnsSandboxChannel for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the GetApnsSandboxChannel method directly
-// instead.
+// See GetApnsSandboxChannel for more information on using the GetApnsSandboxChannel
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the GetApnsSandboxChannelRequest method.
 //    req, resp := client.GetApnsSandboxChannelRequest(params)
@@ -1126,23 +1283,107 @@ func (c *Pinpoint) GetApnsSandboxChannelWithContext(ctx aws.Context, input *GetA
 	return out, req.Send()
 }
 
+const opGetApp = "GetApp"
+
+// GetAppRequest generates a "aws/request.Request" representing the
+// client's request for the GetApp operation. The "output" return
+// value will be populated with the request's response once the request complets
+// successfuly.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetApp for more information on using the GetApp
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the GetAppRequest method.
+//    req, resp := client.GetAppRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+func (c *Pinpoint) GetAppRequest(input *GetAppInput) (req *request.Request, output *GetAppOutput) {
+	op := &request.Operation{
+		Name:       opGetApp,
+		HTTPMethod: "GET",
+		HTTPPath:   "/v1/apps/{application-id}",
+	}
+
+	if input == nil {
+		input = &GetAppInput{}
+	}
+
+	output = &GetAppOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetApp API operation for Amazon Pinpoint.
+//
+// Returns information about an app.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Pinpoint's
+// API operation GetApp for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeBadRequestException "BadRequestException"
+//
+//   * ErrCodeInternalServerErrorException "InternalServerErrorException"
+//
+//   * ErrCodeForbiddenException "ForbiddenException"
+//
+//   * ErrCodeNotFoundException "NotFoundException"
+//
+//   * ErrCodeMethodNotAllowedException "MethodNotAllowedException"
+//
+//   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//
+func (c *Pinpoint) GetApp(input *GetAppInput) (*GetAppOutput, error) {
+	req, out := c.GetAppRequest(input)
+	return out, req.Send()
+}
+
+// GetAppWithContext is the same as GetApp with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetApp for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Pinpoint) GetAppWithContext(ctx aws.Context, input *GetAppInput, opts ...request.Option) (*GetAppOutput, error) {
+	req, out := c.GetAppRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opGetApplicationSettings = "GetApplicationSettings"
 
 // GetApplicationSettingsRequest generates a "aws/request.Request" representing the
 // client's request for the GetApplicationSettings operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See GetApplicationSettings for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the GetApplicationSettings method directly
-// instead.
+// See GetApplicationSettings for more information on using the GetApplicationSettings
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the GetApplicationSettingsRequest method.
 //    req, resp := client.GetApplicationSettingsRequest(params)
@@ -1212,23 +1453,107 @@ func (c *Pinpoint) GetApplicationSettingsWithContext(ctx aws.Context, input *Get
 	return out, req.Send()
 }
 
+const opGetApps = "GetApps"
+
+// GetAppsRequest generates a "aws/request.Request" representing the
+// client's request for the GetApps operation. The "output" return
+// value will be populated with the request's response once the request complets
+// successfuly.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetApps for more information on using the GetApps
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the GetAppsRequest method.
+//    req, resp := client.GetAppsRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+func (c *Pinpoint) GetAppsRequest(input *GetAppsInput) (req *request.Request, output *GetAppsOutput) {
+	op := &request.Operation{
+		Name:       opGetApps,
+		HTTPMethod: "GET",
+		HTTPPath:   "/v1/apps",
+	}
+
+	if input == nil {
+		input = &GetAppsInput{}
+	}
+
+	output = &GetAppsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetApps API operation for Amazon Pinpoint.
+//
+// Returns information about your apps.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Pinpoint's
+// API operation GetApps for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeBadRequestException "BadRequestException"
+//
+//   * ErrCodeInternalServerErrorException "InternalServerErrorException"
+//
+//   * ErrCodeForbiddenException "ForbiddenException"
+//
+//   * ErrCodeNotFoundException "NotFoundException"
+//
+//   * ErrCodeMethodNotAllowedException "MethodNotAllowedException"
+//
+//   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//
+func (c *Pinpoint) GetApps(input *GetAppsInput) (*GetAppsOutput, error) {
+	req, out := c.GetAppsRequest(input)
+	return out, req.Send()
+}
+
+// GetAppsWithContext is the same as GetApps with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetApps for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Pinpoint) GetAppsWithContext(ctx aws.Context, input *GetAppsInput, opts ...request.Option) (*GetAppsOutput, error) {
+	req, out := c.GetAppsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opGetCampaign = "GetCampaign"
 
 // GetCampaignRequest generates a "aws/request.Request" representing the
 // client's request for the GetCampaign operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See GetCampaign for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the GetCampaign method directly
-// instead.
+// See GetCampaign for more information on using the GetCampaign
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the GetCampaignRequest method.
 //    req, resp := client.GetCampaignRequest(params)
@@ -1302,19 +1627,18 @@ const opGetCampaignActivities = "GetCampaignActivities"
 
 // GetCampaignActivitiesRequest generates a "aws/request.Request" representing the
 // client's request for the GetCampaignActivities operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See GetCampaignActivities for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the GetCampaignActivities method directly
-// instead.
+// See GetCampaignActivities for more information on using the GetCampaignActivities
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the GetCampaignActivitiesRequest method.
 //    req, resp := client.GetCampaignActivitiesRequest(params)
@@ -1388,19 +1712,18 @@ const opGetCampaignVersion = "GetCampaignVersion"
 
 // GetCampaignVersionRequest generates a "aws/request.Request" representing the
 // client's request for the GetCampaignVersion operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See GetCampaignVersion for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the GetCampaignVersion method directly
-// instead.
+// See GetCampaignVersion for more information on using the GetCampaignVersion
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the GetCampaignVersionRequest method.
 //    req, resp := client.GetCampaignVersionRequest(params)
@@ -1474,19 +1797,18 @@ const opGetCampaignVersions = "GetCampaignVersions"
 
 // GetCampaignVersionsRequest generates a "aws/request.Request" representing the
 // client's request for the GetCampaignVersions operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See GetCampaignVersions for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the GetCampaignVersions method directly
-// instead.
+// See GetCampaignVersions for more information on using the GetCampaignVersions
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the GetCampaignVersionsRequest method.
 //    req, resp := client.GetCampaignVersionsRequest(params)
@@ -1560,19 +1882,18 @@ const opGetCampaigns = "GetCampaigns"
 
 // GetCampaignsRequest generates a "aws/request.Request" representing the
 // client's request for the GetCampaigns operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See GetCampaigns for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the GetCampaigns method directly
-// instead.
+// See GetCampaigns for more information on using the GetCampaigns
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the GetCampaignsRequest method.
 //    req, resp := client.GetCampaignsRequest(params)
@@ -1646,19 +1967,18 @@ const opGetEmailChannel = "GetEmailChannel"
 
 // GetEmailChannelRequest generates a "aws/request.Request" representing the
 // client's request for the GetEmailChannel operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See GetEmailChannel for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the GetEmailChannel method directly
-// instead.
+// See GetEmailChannel for more information on using the GetEmailChannel
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the GetEmailChannelRequest method.
 //    req, resp := client.GetEmailChannelRequest(params)
@@ -1732,19 +2052,18 @@ const opGetEndpoint = "GetEndpoint"
 
 // GetEndpointRequest generates a "aws/request.Request" representing the
 // client's request for the GetEndpoint operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See GetEndpoint for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the GetEndpoint method directly
-// instead.
+// See GetEndpoint for more information on using the GetEndpoint
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the GetEndpointRequest method.
 //    req, resp := client.GetEndpointRequest(params)
@@ -1818,19 +2137,18 @@ const opGetEventStream = "GetEventStream"
 
 // GetEventStreamRequest generates a "aws/request.Request" representing the
 // client's request for the GetEventStream operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See GetEventStream for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the GetEventStream method directly
-// instead.
+// See GetEventStream for more information on using the GetEventStream
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the GetEventStreamRequest method.
 //    req, resp := client.GetEventStreamRequest(params)
@@ -1904,19 +2222,18 @@ const opGetGcmChannel = "GetGcmChannel"
 
 // GetGcmChannelRequest generates a "aws/request.Request" representing the
 // client's request for the GetGcmChannel operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See GetGcmChannel for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the GetGcmChannel method directly
-// instead.
+// See GetGcmChannel for more information on using the GetGcmChannel
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the GetGcmChannelRequest method.
 //    req, resp := client.GetGcmChannelRequest(params)
@@ -1990,19 +2307,18 @@ const opGetImportJob = "GetImportJob"
 
 // GetImportJobRequest generates a "aws/request.Request" representing the
 // client's request for the GetImportJob operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See GetImportJob for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the GetImportJob method directly
-// instead.
+// See GetImportJob for more information on using the GetImportJob
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the GetImportJobRequest method.
 //    req, resp := client.GetImportJobRequest(params)
@@ -2076,19 +2392,18 @@ const opGetImportJobs = "GetImportJobs"
 
 // GetImportJobsRequest generates a "aws/request.Request" representing the
 // client's request for the GetImportJobs operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See GetImportJobs for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the GetImportJobs method directly
-// instead.
+// See GetImportJobs for more information on using the GetImportJobs
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the GetImportJobsRequest method.
 //    req, resp := client.GetImportJobsRequest(params)
@@ -2162,19 +2477,18 @@ const opGetSegment = "GetSegment"
 
 // GetSegmentRequest generates a "aws/request.Request" representing the
 // client's request for the GetSegment operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See GetSegment for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the GetSegment method directly
-// instead.
+// See GetSegment for more information on using the GetSegment
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the GetSegmentRequest method.
 //    req, resp := client.GetSegmentRequest(params)
@@ -2248,19 +2562,18 @@ const opGetSegmentImportJobs = "GetSegmentImportJobs"
 
 // GetSegmentImportJobsRequest generates a "aws/request.Request" representing the
 // client's request for the GetSegmentImportJobs operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See GetSegmentImportJobs for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the GetSegmentImportJobs method directly
-// instead.
+// See GetSegmentImportJobs for more information on using the GetSegmentImportJobs
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the GetSegmentImportJobsRequest method.
 //    req, resp := client.GetSegmentImportJobsRequest(params)
@@ -2334,19 +2647,18 @@ const opGetSegmentVersion = "GetSegmentVersion"
 
 // GetSegmentVersionRequest generates a "aws/request.Request" representing the
 // client's request for the GetSegmentVersion operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See GetSegmentVersion for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the GetSegmentVersion method directly
-// instead.
+// See GetSegmentVersion for more information on using the GetSegmentVersion
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the GetSegmentVersionRequest method.
 //    req, resp := client.GetSegmentVersionRequest(params)
@@ -2420,19 +2732,18 @@ const opGetSegmentVersions = "GetSegmentVersions"
 
 // GetSegmentVersionsRequest generates a "aws/request.Request" representing the
 // client's request for the GetSegmentVersions operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See GetSegmentVersions for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the GetSegmentVersions method directly
-// instead.
+// See GetSegmentVersions for more information on using the GetSegmentVersions
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the GetSegmentVersionsRequest method.
 //    req, resp := client.GetSegmentVersionsRequest(params)
@@ -2506,19 +2817,18 @@ const opGetSegments = "GetSegments"
 
 // GetSegmentsRequest generates a "aws/request.Request" representing the
 // client's request for the GetSegments operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See GetSegments for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the GetSegments method directly
-// instead.
+// See GetSegments for more information on using the GetSegments
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the GetSegmentsRequest method.
 //    req, resp := client.GetSegmentsRequest(params)
@@ -2592,19 +2902,18 @@ const opGetSmsChannel = "GetSmsChannel"
 
 // GetSmsChannelRequest generates a "aws/request.Request" representing the
 // client's request for the GetSmsChannel operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See GetSmsChannel for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the GetSmsChannel method directly
-// instead.
+// See GetSmsChannel for more information on using the GetSmsChannel
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the GetSmsChannelRequest method.
 //    req, resp := client.GetSmsChannelRequest(params)
@@ -2678,19 +2987,18 @@ const opPutEventStream = "PutEventStream"
 
 // PutEventStreamRequest generates a "aws/request.Request" representing the
 // client's request for the PutEventStream operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See PutEventStream for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the PutEventStream method directly
-// instead.
+// See PutEventStream for more information on using the PutEventStream
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the PutEventStreamRequest method.
 //    req, resp := client.PutEventStreamRequest(params)
@@ -2764,19 +3072,18 @@ const opSendMessages = "SendMessages"
 
 // SendMessagesRequest generates a "aws/request.Request" representing the
 // client's request for the SendMessages operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See SendMessages for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the SendMessages method directly
-// instead.
+// See SendMessages for more information on using the SendMessages
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the SendMessagesRequest method.
 //    req, resp := client.SendMessagesRequest(params)
@@ -2850,19 +3157,18 @@ const opUpdateApnsChannel = "UpdateApnsChannel"
 
 // UpdateApnsChannelRequest generates a "aws/request.Request" representing the
 // client's request for the UpdateApnsChannel operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See UpdateApnsChannel for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the UpdateApnsChannel method directly
-// instead.
+// See UpdateApnsChannel for more information on using the UpdateApnsChannel
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the UpdateApnsChannelRequest method.
 //    req, resp := client.UpdateApnsChannelRequest(params)
@@ -2936,19 +3242,18 @@ const opUpdateApnsSandboxChannel = "UpdateApnsSandboxChannel"
 
 // UpdateApnsSandboxChannelRequest generates a "aws/request.Request" representing the
 // client's request for the UpdateApnsSandboxChannel operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See UpdateApnsSandboxChannel for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the UpdateApnsSandboxChannel method directly
-// instead.
+// See UpdateApnsSandboxChannel for more information on using the UpdateApnsSandboxChannel
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the UpdateApnsSandboxChannelRequest method.
 //    req, resp := client.UpdateApnsSandboxChannelRequest(params)
@@ -3022,19 +3327,18 @@ const opUpdateApplicationSettings = "UpdateApplicationSettings"
 
 // UpdateApplicationSettingsRequest generates a "aws/request.Request" representing the
 // client's request for the UpdateApplicationSettings operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See UpdateApplicationSettings for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the UpdateApplicationSettings method directly
-// instead.
+// See UpdateApplicationSettings for more information on using the UpdateApplicationSettings
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the UpdateApplicationSettingsRequest method.
 //    req, resp := client.UpdateApplicationSettingsRequest(params)
@@ -3108,19 +3412,18 @@ const opUpdateCampaign = "UpdateCampaign"
 
 // UpdateCampaignRequest generates a "aws/request.Request" representing the
 // client's request for the UpdateCampaign operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See UpdateCampaign for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the UpdateCampaign method directly
-// instead.
+// See UpdateCampaign for more information on using the UpdateCampaign
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the UpdateCampaignRequest method.
 //    req, resp := client.UpdateCampaignRequest(params)
@@ -3194,19 +3497,18 @@ const opUpdateEmailChannel = "UpdateEmailChannel"
 
 // UpdateEmailChannelRequest generates a "aws/request.Request" representing the
 // client's request for the UpdateEmailChannel operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See UpdateEmailChannel for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the UpdateEmailChannel method directly
-// instead.
+// See UpdateEmailChannel for more information on using the UpdateEmailChannel
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the UpdateEmailChannelRequest method.
 //    req, resp := client.UpdateEmailChannelRequest(params)
@@ -3280,19 +3582,18 @@ const opUpdateEndpoint = "UpdateEndpoint"
 
 // UpdateEndpointRequest generates a "aws/request.Request" representing the
 // client's request for the UpdateEndpoint operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See UpdateEndpoint for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the UpdateEndpoint method directly
-// instead.
+// See UpdateEndpoint for more information on using the UpdateEndpoint
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the UpdateEndpointRequest method.
 //    req, resp := client.UpdateEndpointRequest(params)
@@ -3366,19 +3667,18 @@ const opUpdateEndpointsBatch = "UpdateEndpointsBatch"
 
 // UpdateEndpointsBatchRequest generates a "aws/request.Request" representing the
 // client's request for the UpdateEndpointsBatch operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See UpdateEndpointsBatch for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the UpdateEndpointsBatch method directly
-// instead.
+// See UpdateEndpointsBatch for more information on using the UpdateEndpointsBatch
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the UpdateEndpointsBatchRequest method.
 //    req, resp := client.UpdateEndpointsBatchRequest(params)
@@ -3452,19 +3752,18 @@ const opUpdateGcmChannel = "UpdateGcmChannel"
 
 // UpdateGcmChannelRequest generates a "aws/request.Request" representing the
 // client's request for the UpdateGcmChannel operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See UpdateGcmChannel for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the UpdateGcmChannel method directly
-// instead.
+// See UpdateGcmChannel for more information on using the UpdateGcmChannel
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the UpdateGcmChannelRequest method.
 //    req, resp := client.UpdateGcmChannelRequest(params)
@@ -3538,19 +3837,18 @@ const opUpdateSegment = "UpdateSegment"
 
 // UpdateSegmentRequest generates a "aws/request.Request" representing the
 // client's request for the UpdateSegment operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See UpdateSegment for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the UpdateSegment method directly
-// instead.
+// See UpdateSegment for more information on using the UpdateSegment
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the UpdateSegmentRequest method.
 //    req, resp := client.UpdateSegmentRequest(params)
@@ -3624,19 +3922,18 @@ const opUpdateSmsChannel = "UpdateSmsChannel"
 
 // UpdateSmsChannelRequest generates a "aws/request.Request" representing the
 // client's request for the UpdateSmsChannel operation. The "output" return
-// value can be used to capture response data after the request's "Send" method
-// is called.
+// value will be populated with the request's response once the request complets
+// successfuly.
 //
-// See UpdateSmsChannel for usage and error information.
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
 //
-// Creating a request object using this method should be used when you want to inject
-// custom logic into the request's lifecycle using a custom handler, or if you want to
-// access properties on the request object before or after sending the request. If
-// you just want the service response, call the UpdateSmsChannel method directly
-// instead.
+// See UpdateSmsChannel for more information on using the UpdateSmsChannel
+// API call, and error handling.
 //
-// Note: You must call the "Send" method on the returned request object in order
-// to execute the request.
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
 //
 //    // Example sending a request using the UpdateSmsChannelRequest method.
 //    req, resp := client.UpdateSmsChannelRequest(params)
@@ -3761,7 +4058,7 @@ type APNSChannelResponse struct {
 	// If the channel is enabled for sending messages.
 	Enabled *bool `type:"boolean"`
 
-	// Channel ID. Not used, only for backwards compatibility.
+	// Channel ID. Not used. Present only for backwards compatibility.
 	Id *string `type:"string"`
 
 	// Is this channel archived
@@ -4059,7 +4356,7 @@ type APNSSandboxChannelResponse struct {
 	// Last date this was updated
 	LastModifiedDate *string `type:"string"`
 
-	// The platform type. Will be APNS.
+	// The platform type. Will be APNS_SANDBOX.
 	Platform *string `type:"string"`
 
 	// Version of channel
@@ -4296,7 +4593,7 @@ type AddressConfiguration struct {
 	// Body override. If specified will override default body.
 	BodyOverride *string `type:"string"`
 
-	// Type of channel of this address
+	// The channel type.Valid values: GCM | APNS | SMS | EMAIL
 	ChannelType *string `type:"string" enum:"ChannelType"`
 
 	Context map[string]*string `type:"map"`
@@ -4357,6 +4654,39 @@ func (s *AddressConfiguration) SetTitleOverride(v string) *AddressConfiguration 
 	return s
 }
 
+// Application Response.
+type ApplicationResponse struct {
+	_ struct{} `type:"structure"`
+
+	// The unique application ID.
+	Id *string `type:"string"`
+
+	// The display name of the application.
+	Name *string `type:"string"`
+}
+
+// String returns the string representation
+func (s ApplicationResponse) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ApplicationResponse) GoString() string {
+	return s.String()
+}
+
+// SetId sets the Id field's value.
+func (s *ApplicationResponse) SetId(v string) *ApplicationResponse {
+	s.Id = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *ApplicationResponse) SetName(v string) *ApplicationResponse {
+	s.Name = &v
+	return s
+}
+
 // Application settings.
 type ApplicationSettingsResource struct {
 	_ struct{} `type:"structure"`
@@ -4412,6 +4742,40 @@ func (s *ApplicationSettingsResource) SetQuietTime(v *QuietTime) *ApplicationSet
 	return s
 }
 
+// Get Applications Result.
+type ApplicationsResponse struct {
+	_ struct{} `type:"structure"`
+
+	// List of applications returned in this page.
+	Item []*ApplicationResponse `type:"list"`
+
+	// The string that you use in a subsequent request to get the next page of results
+	// in a paginated response.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation
+func (s ApplicationsResponse) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ApplicationsResponse) GoString() string {
+	return s.String()
+}
+
+// SetItem sets the Item field's value.
+func (s *ApplicationsResponse) SetItem(v []*ApplicationResponse) *ApplicationsResponse {
+	s.Item = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ApplicationsResponse) SetNextToken(v string) *ApplicationsResponse {
+	s.NextToken = &v
+	return s
+}
+
 // Custom attibute dimension
 type AttributeDimension struct {
 	_ struct{} `type:"structure"`
@@ -4453,6 +4817,10 @@ type CampaignEmailMessage struct {
 	// The email text body.
 	Body *string `type:"string"`
 
+	// The email address used to send the email from. Defaults to use FromAddress
+	// specified in the Email Channel.
+	FromAddress *string `type:"string"`
+
 	// The email html body.
 	HtmlBody *string `type:"string"`
 
@@ -4473,6 +4841,12 @@ func (s CampaignEmailMessage) GoString() string {
 // SetBody sets the Body field's value.
 func (s *CampaignEmailMessage) SetBody(v string) *CampaignEmailMessage {
 	s.Body = &v
+	return s
+}
+
+// SetFromAddress sets the FromAddress field's value.
+func (s *CampaignEmailMessage) SetFromAddress(v string) *CampaignEmailMessage {
+	s.FromAddress = &v
 	return s
 }
 
@@ -4811,6 +5185,93 @@ func (s *CampaignsResponse) SetItem(v []*CampaignResponse) *CampaignsResponse {
 // SetNextToken sets the NextToken field's value.
 func (s *CampaignsResponse) SetNextToken(v string) *CampaignsResponse {
 	s.NextToken = &v
+	return s
+}
+
+type CreateAppInput struct {
+	_ struct{} `type:"structure" payload:"CreateApplicationRequest"`
+
+	// Application Request.
+	//
+	// CreateApplicationRequest is a required field
+	CreateApplicationRequest *CreateApplicationRequest `type:"structure" required:"true"`
+}
+
+// String returns the string representation
+func (s CreateAppInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateAppInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateAppInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateAppInput"}
+	if s.CreateApplicationRequest == nil {
+		invalidParams.Add(request.NewErrParamRequired("CreateApplicationRequest"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCreateApplicationRequest sets the CreateApplicationRequest field's value.
+func (s *CreateAppInput) SetCreateApplicationRequest(v *CreateApplicationRequest) *CreateAppInput {
+	s.CreateApplicationRequest = v
+	return s
+}
+
+type CreateAppOutput struct {
+	_ struct{} `type:"structure" payload:"ApplicationResponse"`
+
+	// Application Response.
+	//
+	// ApplicationResponse is a required field
+	ApplicationResponse *ApplicationResponse `type:"structure" required:"true"`
+}
+
+// String returns the string representation
+func (s CreateAppOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateAppOutput) GoString() string {
+	return s.String()
+}
+
+// SetApplicationResponse sets the ApplicationResponse field's value.
+func (s *CreateAppOutput) SetApplicationResponse(v *ApplicationResponse) *CreateAppOutput {
+	s.ApplicationResponse = v
+	return s
+}
+
+// Application Request.
+type CreateApplicationRequest struct {
+	_ struct{} `type:"structure"`
+
+	// The display name of the application. Used in the Amazon Pinpoint console.
+	Name *string `type:"string"`
+}
+
+// String returns the string representation
+func (s CreateApplicationRequest) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateApplicationRequest) GoString() string {
+	return s.String()
+}
+
+// SetName sets the Name field's value.
+func (s *CreateApplicationRequest) SetName(v string) *CreateApplicationRequest {
+	s.Name = &v
 	return s
 }
 
@@ -5270,6 +5731,67 @@ func (s DeleteApnsSandboxChannelOutput) GoString() string {
 // SetAPNSSandboxChannelResponse sets the APNSSandboxChannelResponse field's value.
 func (s *DeleteApnsSandboxChannelOutput) SetAPNSSandboxChannelResponse(v *APNSSandboxChannelResponse) *DeleteApnsSandboxChannelOutput {
 	s.APNSSandboxChannelResponse = v
+	return s
+}
+
+type DeleteAppInput struct {
+	_ struct{} `type:"structure"`
+
+	// ApplicationId is a required field
+	ApplicationId *string `location:"uri" locationName:"application-id" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DeleteAppInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteAppInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteAppInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteAppInput"}
+	if s.ApplicationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationId sets the ApplicationId field's value.
+func (s *DeleteAppInput) SetApplicationId(v string) *DeleteAppInput {
+	s.ApplicationId = &v
+	return s
+}
+
+type DeleteAppOutput struct {
+	_ struct{} `type:"structure" payload:"ApplicationResponse"`
+
+	// Application Response.
+	//
+	// ApplicationResponse is a required field
+	ApplicationResponse *ApplicationResponse `type:"structure" required:"true"`
+}
+
+// String returns the string representation
+func (s DeleteAppOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteAppOutput) GoString() string {
+	return s.String()
+}
+
+// SetApplicationResponse sets the ApplicationResponse field's value.
+func (s *DeleteAppOutput) SetApplicationResponse(v *ApplicationResponse) *DeleteAppOutput {
+	s.ApplicationResponse = v
 	return s
 }
 
@@ -5781,7 +6303,7 @@ func (s *EmailChannelRequest) SetRoleArn(v string) *EmailChannelRequest {
 type EmailChannelResponse struct {
 	_ struct{} `type:"structure"`
 
-	// Application id
+	// The unique ID of the application to which the email channel belongs.
 	ApplicationId *string `type:"string"`
 
 	// The date that the settings were last updated in ISO 8601 format.
@@ -5911,7 +6433,7 @@ type EndpointBatchItem struct {
 
 	Attributes map[string][]*string `type:"map"`
 
-	// The channel type.Valid values: APNS, GCM
+	// The channel type.Valid values: GCM | APNS | SMS | EMAIL
 	ChannelType *string `type:"string" enum:"ChannelType"`
 
 	// The endpoint demographic attributes.
@@ -5933,8 +6455,8 @@ type EndpointBatchItem struct {
 	Metrics map[string]*float64 `type:"map"`
 
 	// Indicates whether a user has opted out of receiving messages with one of
-	// the following values:ALL – User receives all messages.NONE – User receives
-	// no messages.
+	// the following values:ALL - User has opted out of all messages.NONE - Users
+	// has not opted out and receives all messages.
 	OptOut *string `type:"string"`
 
 	// The unique ID for the most recent request to update the endpoint.
@@ -6220,7 +6742,7 @@ type EndpointRequest struct {
 
 	Attributes map[string][]*string `type:"map"`
 
-	// The channel type.Valid values: APNS, GCM
+	// The channel type.Valid values: GCM | APNS | SMS | EMAIL
 	ChannelType *string `type:"string" enum:"ChannelType"`
 
 	// The endpoint demographic attributes.
@@ -6239,8 +6761,8 @@ type EndpointRequest struct {
 	Metrics map[string]*float64 `type:"map"`
 
 	// Indicates whether a user has opted out of receiving messages with one of
-	// the following values:ALL – User receives all messages.NONE – User receives
-	// no messages.
+	// the following values:ALL - User has opted out of all messages.NONE - Users
+	// has not opted out and receives all messages.
 	OptOut *string `type:"string"`
 
 	// The unique ID for the most recent request to update the endpoint.
@@ -6339,7 +6861,7 @@ type EndpointResponse struct {
 
 	Attributes map[string][]*string `type:"map"`
 
-	// The channel type.Valid values: APNS, GCM
+	// The channel type.Valid values: GCM | APNS | SMS | EMAIL
 	ChannelType *string `type:"string" enum:"ChannelType"`
 
 	// A number from 0 - 99 that represents the cohort the endpoint is assigned
@@ -6372,8 +6894,8 @@ type EndpointResponse struct {
 	Metrics map[string]*float64 `type:"map"`
 
 	// Indicates whether a user has opted out of receiving messages with one of
-	// the following values:ALL – User receives all messages.NONE – User receives
-	// no messages.
+	// the following values:ALL - User has opted out of all messages.NONE - Users
+	// has not opted out and receives all messages.
 	OptOut *string `type:"string"`
 
 	// The unique ID for the most recent request to update the endpoint.
@@ -6645,7 +7167,7 @@ type GCMChannelResponse struct {
 	// If the channel is enabled for sending messages.
 	Enabled *bool `type:"boolean"`
 
-	// Channel ID. Not used, only for backwards compatibility.
+	// Channel ID. Not used. Present only for backwards compatibility.
 	Id *string `type:"string"`
 
 	// Is this channel archived
@@ -7022,6 +7544,67 @@ func (s *GetApnsSandboxChannelOutput) SetAPNSSandboxChannelResponse(v *APNSSandb
 	return s
 }
 
+type GetAppInput struct {
+	_ struct{} `type:"structure"`
+
+	// ApplicationId is a required field
+	ApplicationId *string `location:"uri" locationName:"application-id" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s GetAppInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GetAppInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetAppInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetAppInput"}
+	if s.ApplicationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationId sets the ApplicationId field's value.
+func (s *GetAppInput) SetApplicationId(v string) *GetAppInput {
+	s.ApplicationId = &v
+	return s
+}
+
+type GetAppOutput struct {
+	_ struct{} `type:"structure" payload:"ApplicationResponse"`
+
+	// Application Response.
+	//
+	// ApplicationResponse is a required field
+	ApplicationResponse *ApplicationResponse `type:"structure" required:"true"`
+}
+
+// String returns the string representation
+func (s GetAppOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GetAppOutput) GoString() string {
+	return s.String()
+}
+
+// SetApplicationResponse sets the ApplicationResponse field's value.
+func (s *GetAppOutput) SetApplicationResponse(v *ApplicationResponse) *GetAppOutput {
+	s.ApplicationResponse = v
+	return s
+}
+
 type GetApplicationSettingsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7080,6 +7663,61 @@ func (s GetApplicationSettingsOutput) GoString() string {
 // SetApplicationSettingsResource sets the ApplicationSettingsResource field's value.
 func (s *GetApplicationSettingsOutput) SetApplicationSettingsResource(v *ApplicationSettingsResource) *GetApplicationSettingsOutput {
 	s.ApplicationSettingsResource = v
+	return s
+}
+
+type GetAppsInput struct {
+	_ struct{} `type:"structure"`
+
+	PageSize *string `location:"querystring" locationName:"page-size" type:"string"`
+
+	Token *string `location:"querystring" locationName:"token" type:"string"`
+}
+
+// String returns the string representation
+func (s GetAppsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GetAppsInput) GoString() string {
+	return s.String()
+}
+
+// SetPageSize sets the PageSize field's value.
+func (s *GetAppsInput) SetPageSize(v string) *GetAppsInput {
+	s.PageSize = &v
+	return s
+}
+
+// SetToken sets the Token field's value.
+func (s *GetAppsInput) SetToken(v string) *GetAppsInput {
+	s.Token = &v
+	return s
+}
+
+type GetAppsOutput struct {
+	_ struct{} `type:"structure" payload:"ApplicationsResponse"`
+
+	// Get Applications Result.
+	//
+	// ApplicationsResponse is a required field
+	ApplicationsResponse *ApplicationsResponse `type:"structure" required:"true"`
+}
+
+// String returns the string representation
+func (s GetAppsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GetAppsOutput) GoString() string {
+	return s.String()
+}
+
+// SetApplicationsResponse sets the ApplicationsResponse field's value.
+func (s *GetAppsOutput) SetApplicationsResponse(v *ApplicationsResponse) *GetAppsOutput {
+	s.ApplicationsResponse = v
 	return s
 }
 
@@ -8766,6 +9404,10 @@ type Message struct {
 	// The URL that points to the media resource, for example a .mp4 or .gif file.
 	MediaUrl *string `type:"string"`
 
+	// The Raw JSON formatted string to be used as the payload. This value overrides
+	// the message.
+	RawContent *string `type:"string"`
+
 	// Indicates if the message should display on the users device.Silent pushes
 	// can be used for Remote Configuration and Phone Home use cases.
 	SilentPush *bool `type:"boolean"`
@@ -8827,6 +9469,12 @@ func (s *Message) SetJsonBody(v string) *Message {
 // SetMediaUrl sets the MediaUrl field's value.
 func (s *Message) SetMediaUrl(v string) *Message {
 	s.MediaUrl = &v
+	return s
+}
+
+// SetRawContent sets the RawContent field's value.
+func (s *Message) SetRawContent(v string) *Message {
+	s.RawContent = &v
 	return s
 }
 
@@ -9263,7 +9911,7 @@ func (s *SMSChannelRequest) SetSenderId(v string) *SMSChannelRequest {
 type SMSChannelResponse struct {
 	_ struct{} `type:"structure"`
 
-	// Application id
+	// The unique ID of the application to which the SMS channel belongs.
 	ApplicationId *string `type:"string"`
 
 	// The date that the settings were last updated in ISO 8601 format.
