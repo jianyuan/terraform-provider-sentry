@@ -125,7 +125,7 @@
   branch = "master"
   name = "github.com/jianyuan/go-sentry"
   packages = ["sentry"]
-  revision = "2fc87c88e935239a7bcdf3886b2932e0d0d2ee3d"
+  revision = "00e788ad4469dbc25f09d8a5ac63295dd4bdde83"
 
 [[projects]]
   name = "github.com/jmespath/go-jmespath"
