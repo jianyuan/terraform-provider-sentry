@@ -245,16 +245,22 @@ func TestConvert(t *testing.T) {
 	scale2.SetScale(2)
 	scale2away := RoundingContext{Mode: AwayFromZero}
 	scale2away.SetScale(2)
-	inc0_05 := RoundingContext{Increment: 5}
+	inc0_05 := RoundingContext{Increment: 5, IncrementScale: 2}
 	inc0_05.SetScale(2)
 	inc50 := RoundingContext{Increment: 50}
 	prec3 := RoundingContext{}
 	prec3.SetPrecision(3)
+	roundShift := RoundingContext{DigitShift: 2, MaxFractionDigits: 2}
 	testCases := []struct {
 		x   interface{}
 		rc  RoundingContext
 		out string
 	}{
+		{-0.001, scale2, "-0.00"},
+		{0.1234, prec3, "0.123"},
+		{1234.0, prec3, "1230"},
+		{1.2345e10, prec3, "12300000000"},
+
 		{int8(-34), scale2, "-34"},
 		{int16(-234), scale2, "-234"},
 		{int32(-234), scale2, "-234"},
@@ -265,25 +271,44 @@ func TestConvert(t *testing.T) {
 		{uint32(234), scale2, "234"},
 		{uint64(234), scale2, "234"},
 		{uint(234), scale2, "234"},
-		{-0.001, scale2, "-0"},
 		{-1e9, scale2, "-1000000000.00"},
-		{0.234, scale2, "0.23"},
-		{0.234, scale2away, "0.24"},
-		{0.1234, prec3, "0.123"},
-		{1234.0, prec3, "1230"},
-		{1.2345e10, prec3, "12300000000"},
+		// The following two causes this result to have a lot of digits:
+		// 1) 0.234 cannot be accurately represented as a float64, and
+		// 2) as strconv does not support the rounding AwayFromZero, Convert
+		//    leaves the rounding to caller.
+		{0.234, scale2away,
+			"0.2340000000000000135447209004269097931683063507080078125"},
 
+		{0.0249, inc0_05, "0.00"},
+		{0.025, inc0_05, "0.00"},
+		{0.0251, inc0_05, "0.05"},
 		{0.03, inc0_05, "0.05"},
-		{0.025, inc0_05, "0"},
+		{0.049, inc0_05, "0.05"},
+		{0.05, inc0_05, "0.05"},
+		{0.051, inc0_05, "0.05"},
+		{0.0749, inc0_05, "0.05"},
 		{0.075, inc0_05, "0.10"},
+		{0.0751, inc0_05, "0.10"},
+		{324, inc50, "300"},
 		{325, inc50, "300"},
+		{326, inc50, "350"},
+		{349, inc50, "350"},
+		{350, inc50, "350"},
+		{351, inc50, "350"},
+		{374, inc50, "350"},
 		{375, inc50, "400"},
+		{376, inc50, "400"},
+
+		// Here the scale is 2, but the digits get shifted left. As we use
+		// AppendFloat to do the rounding an exta 0 gets added.
+		{0.123, roundShift, "0.1230"},
 
 		{converter(3), scale2, "100"},
 
 		{math.Inf(1), inc50, "Inf"},
 		{math.Inf(-1), inc50, "-Inf"},
 		{math.NaN(), inc50, "NaN"},
+		{"clearly not a number", scale2, "NaN"},
 	}
 	for _, tc := range testCases {
 		var d Decimal

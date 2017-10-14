@@ -389,6 +389,46 @@ func TestTest_preCheck(t *testing.T) {
 	}
 }
 
+func TestTest_skipFunc(t *testing.T) {
+	preCheckCalled := false
+	skipped := false
+
+	mp := testProvider()
+	mp.ApplyReturn = &terraform.InstanceState{
+		ID: "foo",
+	}
+
+	checkStepFn := func(*terraform.State) error {
+		return fmt.Errorf("error")
+	}
+
+	mt := new(mockT)
+	Test(mt, TestCase{
+		Providers: map[string]terraform.ResourceProvider{
+			"test": mp,
+		},
+		PreCheck: func() { preCheckCalled = true },
+		Steps: []TestStep{
+			{
+				Config:   testConfigStr,
+				Check:    checkStepFn,
+				SkipFunc: func() (bool, error) { skipped = true; return true, nil },
+			},
+		},
+	})
+
+	if mt.failed() {
+		t.Fatal("Expected check to be skipped")
+	}
+
+	if !preCheckCalled {
+		t.Fatal("precheck should be called")
+	}
+	if !skipped {
+		t.Fatal("SkipFunc should be called")
+	}
+}
+
 func TestTest_stepError(t *testing.T) {
 	mp := testProvider()
 	mp.ApplyReturn = &terraform.InstanceState{
@@ -619,10 +659,6 @@ func testProvider() *terraform.MockResourceProvider {
 	return mp
 }
 
-const testConfigStr = `
-resource "test_instance" "foo" {}
-`
-
 func TestTest_Main(t *testing.T) {
 	flag.Parse()
 	if *flagSweep == "" {
@@ -777,3 +813,11 @@ func TestTest_Main(t *testing.T) {
 func mockSweeperFunc(s string) error {
 	return nil
 }
+
+const testConfigStr = `
+resource "test_instance" "foo" {}
+`
+
+const testConfigStrProvider = `
+provider "test" {}
+`

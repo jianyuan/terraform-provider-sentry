@@ -27,4 +27,4 @@
 
 [[constraint]]
   name = "github.com/hashicorp/terraform"
-  version = "0.9.11"
+  version = "0.10.7"
