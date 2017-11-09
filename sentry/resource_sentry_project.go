@@ -50,8 +50,9 @@ func resourceSentryProject() *schema.Resource {
 				Computed: true,
 			},
 			"is_bookmarked": {
-				Type:     schema.TypeBool,
-				Optional: true,
+				Type:       schema.TypeBool,
+				Computed:   true,
+				Deprecated: "is_bookmarked is no longer used",
 			},
 			"call_sign": {
 				Type:     schema.TypeString,
@@ -124,7 +125,6 @@ func resourceSentryProjectRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("slug", proj.Slug)
 	d.Set("project_id", proj.ID)
 	d.Set("is_public", proj.IsPublic)
-	d.Set("is_bookmarked", proj.IsBookmarked)
 	d.Set("call_sign", proj.CallSign)
 	d.Set("color", proj.Color)
 	d.Set("features", proj.Features)
@@ -145,10 +145,6 @@ func resourceSentryProjectUpdate(d *schema.ResourceData, meta interface{}) error
 	params := &sentry.UpdateProjectParams{
 		Name: d.Get("name").(string),
 		Slug: d.Get("slug").(string),
-	}
-
-	if v, ok := d.GetOk("is_bookmarked"); ok {
-		params.IsBookmarked = Bool(v.(bool))
 	}
 
 	if v, ok := d.GetOk("digests_min_delay"); ok {
