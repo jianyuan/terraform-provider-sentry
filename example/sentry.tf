@@ -18,8 +18,20 @@ resource "sentry_project" "web_app" {
     name = "Web App"
 }
 
-resource "sentry_project" "worker_app" {
-    organization = "${sentry_team.engineering.organization}"
-    team = "${sentry_team.engineering.id}"
-    name = "Worker App"
+// Using the first parameter
+data "sentry_key" "via_first" {
+    organization = "${sentry_project.web_app.organization}"
+    project = "${sentry_project.web_app.id}"
+    first = true
+}
+
+// Using the name parameter
+data "sentry_key" "via_name" {
+    organization = "${sentry_project.web_app.organization}"
+    project = "${sentry_project.web_app.id}"
+    name = "Default"
+}
+
+output "sentry_key_dsn_secret" {
+    value = "${data.sentry_key.via_name.dsn_secret}"
 }
