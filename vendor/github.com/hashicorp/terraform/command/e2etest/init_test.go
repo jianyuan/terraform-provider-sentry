@@ -50,6 +50,37 @@ func TestInitProviders(t *testing.T) {
 
 }
 
+func TestInitProvidersInternal(t *testing.T) {
+	t.Parallel()
+
+	// This test should _not_ reach out anywhere because the "terraform"
+	// provider is internal to the core terraform binary.
+
+	fixturePath := filepath.Join("test-fixtures", "terraform-provider")
+	tf := e2e.NewBinary(terraformBin, fixturePath)
+	defer tf.Close()
+
+	stdout, stderr, err := tf.Run("init")
+	if err != nil {
+		t.Errorf("unexpected error: %s", err)
+	}
+
+	if stderr != "" {
+		t.Errorf("unexpected stderr output:\n%s", stderr)
+	}
+
+	if !strings.Contains(stdout, "Terraform has been successfully initialized!") {
+		t.Errorf("success message is missing from output:\n%s", stdout)
+	}
+
+	if strings.Contains(stdout, "Downloading plugin for provider") {
+		// Shouldn't have downloaded anything with this config, because the
+		// provider is built in.
+		t.Errorf("provider download message appeared in output:\n%s", stdout)
+	}
+
+}
+
 func TestInitProviders_pluginCache(t *testing.T) {
 	t.Parallel()
 
@@ -99,5 +130,39 @@ func TestInitProviders_pluginCache(t *testing.T) {
 
 	if !tf.FileExists(fmt.Sprintf("cache/%s_%s/terraform-provider-null_v0.1.0_x4", runtime.GOOS, runtime.GOARCH)) {
 		t.Errorf("null plugin is not in cache after install")
+	}
+}
+
+func TestInit_fromModule(t *testing.T) {
+	t.Parallel()
+
+	// This test reaches out to registry.terraform.io and github.com to lookup
+	// and fetch a module.
+	skipIfCannotAccessNetwork(t)
+
+	fixturePath := filepath.Join("test-fixtures", "empty")
+	tf := e2e.NewBinary(terraformBin, fixturePath)
+	defer tf.Close()
+
+	cmd := tf.Cmd("init", "-from-module=hashicorp/vault/aws")
+	cmd.Stdin = nil
+	cmd.Stderr = &bytes.Buffer{}
+
+	err := cmd.Run()
+	if err != nil {
+		t.Errorf("unexpected error: %s", err)
+	}
+
+	stderr := cmd.Stderr.(*bytes.Buffer).String()
+	if stderr != "" {
+		t.Errorf("unexpected stderr output:\n%s", stderr)
+	}
+
+	content, err := tf.ReadFile("main.tf")
+	if err != nil {
+		t.Fatalf("failed to read main.tf: %s", err)
+	}
+	if !bytes.Contains(content, []byte("vault")) {
+		t.Fatalf("main.tf doesn't appear to be a vault configuration: \n%s", content)
 	}
 }

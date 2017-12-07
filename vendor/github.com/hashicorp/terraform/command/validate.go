@@ -46,6 +46,12 @@ func (c *ValidateCommand) Run(args []string) int {
 			"Unable to locate directory %v\n", err.Error()))
 	}
 
+	// Check for user-supplied plugin path
+	if c.pluginPath, err = c.loadPluginPath(); err != nil {
+		c.Ui.Error(fmt.Sprintf("Error loading plugin path: %s", err))
+		return 1
+	}
+
 	rtnCode := c.validate(dir, checkVars)
 
 	return rtnCode
@@ -91,21 +97,20 @@ Options:
 func (c *ValidateCommand) validate(dir string, checkVars bool) int {
 	cfg, err := config.LoadDir(dir)
 	if err != nil {
-		c.Ui.Error(fmt.Sprintf(
-			"Error loading files %v\n", err.Error()))
+		c.showDiagnostics(err)
 		return 1
 	}
-	err = cfg.Validate()
-	if err != nil {
-		c.Ui.Error(fmt.Sprintf(
-			"Error validating: %v\n", err.Error()))
-		return 1
+	if diags := cfg.Validate(); len(diags) != 0 {
+		c.showDiagnostics(diags)
+		if diags.HasErrors() {
+			return 1
+		}
 	}
 
 	if checkVars {
 		mod, err := c.Module(dir)
 		if err != nil {
-			c.Ui.Error(fmt.Sprintf("Failed to load root config module: %s", err))
+			c.showDiagnostics(err)
 			return 1
 		}
 
@@ -114,11 +119,11 @@ func (c *ValidateCommand) validate(dir string, checkVars bool) int {
 
 		tfCtx, err := terraform.NewContext(opts)
 		if err != nil {
-			c.Ui.Error(fmt.Sprintf("Error: %v\n", err.Error()))
+			c.showDiagnostics(err)
 			return 1
 		}
 
-		if !validateContext(tfCtx, c.Ui) {
+		if !c.validateContext(tfCtx) {
 			return 1
 		}
 	}

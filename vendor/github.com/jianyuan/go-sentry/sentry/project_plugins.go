@@ -23,7 +23,7 @@ type ProjectPluginConfig struct {
 	Placeholder  string          `json:"placeholder"`
 	Choices      json.RawMessage `json:"choices"`
 	ReadOnly     bool            `json:"readonly"`
-	DefaultValue bool            `json:"defaultValue"`
+	DefaultValue interface{}     `json:"defaultValue"`
 	Value        interface{}     `json:"value"`
 }
 

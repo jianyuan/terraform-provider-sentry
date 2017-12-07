@@ -11,11 +11,13 @@ import (
 	"reflect"
 	"regexp"
 	"strings"
+	"syscall"
 	"testing"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/hashicorp/go-getter"
+	"github.com/hashicorp/errwrap"
 	"github.com/hashicorp/go-multierror"
+	"github.com/hashicorp/logutils"
 	"github.com/hashicorp/terraform/config/module"
 	"github.com/hashicorp/terraform/helper/logging"
 	"github.com/hashicorp/terraform/terraform"
@@ -359,6 +361,49 @@ type TestStep struct {
 	ImportStateVerifyIgnore []string
 }
 
+// Set to a file mask in sprintf format where %s is test name
+const EnvLogPathMask = "TF_LOG_PATH_MASK"
+
+func LogOutput(t TestT) (logOutput io.Writer, err error) {
+	logOutput = ioutil.Discard
+
+	logLevel := logging.LogLevel()
+	if logLevel == "" {
+		return
+	}
+
+	logOutput = os.Stderr
+
+	if logPath := os.Getenv(logging.EnvLogFile); logPath != "" {
+		var err error
+		logOutput, err = os.OpenFile(logPath, syscall.O_CREAT|syscall.O_RDWR|syscall.O_APPEND, 0666)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if logPathMask := os.Getenv(EnvLogPathMask); logPathMask != "" {
+		// Escape special characters which may appear if we have subtests
+		testName := strings.Replace(t.Name(), "/", "__", -1)
+
+		logPath := fmt.Sprintf(logPathMask, testName)
+		var err error
+		logOutput, err = os.OpenFile(logPath, syscall.O_CREAT|syscall.O_RDWR|syscall.O_APPEND, 0666)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// This was the default since the beginning
+	logOutput = &logutils.LevelFilter{
+		Levels:   logging.ValidLevels,
+		MinLevel: logutils.LogLevel(logLevel),
+		Writer:   logOutput,
+	}
+
+	return
+}
+
 // Test performs an acceptance test on a resource.
 //
 // Tests are not run unless an environmental variable "TF_ACC" is
@@ -380,7 +425,7 @@ func Test(t TestT, c TestCase) {
 		return
 	}
 
-	logWriter, err := logging.LogOutput()
+	logWriter, err := LogOutput(t)
 	if err != nil {
 		t.Error(fmt.Errorf("error setting up logging: %s", err))
 	}
@@ -618,18 +663,12 @@ func testIDOnlyRefresh(c TestCase, opts terraform.ContextOpts, step TestStep, r 
 	if err != nil {
 		return err
 	}
-	if ws, es := ctx.Validate(); len(ws) > 0 || len(es) > 0 {
-		if len(es) > 0 {
-			estrs := make([]string, len(es))
-			for i, e := range es {
-				estrs[i] = e.Error()
-			}
-			return fmt.Errorf(
-				"Configuration is invalid.\n\nWarnings: %#v\n\nErrors: %#v",
-				ws, estrs)
+	if diags := ctx.Validate(); len(diags) > 0 {
+		if diags.HasErrors() {
+			return errwrap.Wrapf("config is invalid: {{err}}", diags.Err())
 		}
 
-		log.Printf("[WARN] Config warnings: %#v", ws)
+		log.Printf("[WARN] Config warnings:\n%s", diags.Err().Error())
 	}
 
 	// Refresh!
@@ -718,10 +757,11 @@ func testModule(
 	}
 
 	// Load the modules
-	modStorage := &getter.FolderStorage{
+	modStorage := &module.Storage{
 		StorageDir: filepath.Join(cfgPath, ".tfmodules"),
+		Mode:       module.GetModeGet,
 	}
-	err = mod.Load(modStorage, module.GetModeGet)
+	err = mod.Load(modStorage)
 	if err != nil {
 		return nil, fmt.Errorf("Error downloading modules: %s", err)
 	}
@@ -961,6 +1001,7 @@ type TestT interface {
 	Error(args ...interface{})
 	Fatal(args ...interface{})
 	Skip(args ...interface{})
+	Name() string
 }
 
 // This is set to true by unit tests to alter some behavior

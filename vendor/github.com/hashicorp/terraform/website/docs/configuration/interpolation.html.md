@@ -215,7 +215,7 @@ The supported built-in functions are:
      Example: `concat(aws_instance.db.*.tags.Name, aws_instance.web.*.tags.Name)`
 
   * `contains(list, element)` - Returns *true* if a list contains the given element
-     and returns *false* otherwise. Examples: `element(var.list_of_strings, "an_element")`
+     and returns *false* otherwise. Examples: `contains(var.list_of_strings, "an_element")`
 
   * `dirname(path)` - Returns all but the last element of path, typically the path's directory.
 
@@ -229,6 +229,11 @@ The supported built-in functions are:
       This function only works on flat lists. Examples:
       * `element(aws_subnet.foo.*.id, count.index)`
       * `element(var.list_of_strings, 2)`
+
+  * `chunklist(list, size)` - Returns the `list` items chunked by `size`.
+      Examples:
+      * `chunklist(aws_subnet.foo.*.id, 1)`: will outputs `[["id1"], ["id2"], ["id3"]]`
+      * `chunklist(var.list_of_strings, 2)`: will outputs `[["id1", "id2"], ["id3", "id4"], ["id5"]]`
 
   * `file(path)` - Reads the contents of a file into the string. Variables
       in this file are _not_ interpolated. The contents of the file are

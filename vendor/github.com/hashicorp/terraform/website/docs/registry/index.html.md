@@ -25,13 +25,13 @@ module "consul" {
 }
 ```
 
-~> **Note:** Module registry integration was added in Terraform v0.10.6
+~> **Note:** Module registry integration was added in Terraform v0.10.6, and full versioning support in v0.11.0.
 
 You can also publish your own modules on the Terraform Registry. You may
 use the [public registry](https://registry.terraform.io) for public modules.
-For private modules, you must use [Terraform Enterprise](https://www.hashicorp.com/products/terraform).
-You can use modules without a registry by
-[sourcing modules directly](/docs/modules/sources.html), however non-registry
-modules do not support versioning, documentation generation, and more.
+For private modules, you can use a [Private Registry](/docs/registry/private.html),
+or [reference repositories and other sources directly](/docs/modules/sources.html).
+Some features are available only for registry modules, such as versioning
+and documentation generation.
 
 Use the navigation to the left to learn more about using the registry.
