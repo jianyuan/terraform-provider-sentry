@@ -2,7 +2,13 @@
 [![CircleCI](https://circleci.com/gh/jianyuan/terraform-provider-sentry/tree/master.svg?style=svg)](https://circleci.com/gh/jianyuan/terraform-provider-sentry/tree/master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/jianyuan/terraform-provider-sentry)](https://goreportcard.com/report/github.com/jianyuan/terraform-provider-sentry)
 
-Terraform provider for [Sentry](https://sentry.io)
+Terraform provider for [Sentry](https://sentry.io).
+
+## Installation
+
+See the [the Provider Configuration page of the Terraform documentation](https://www.terraform.io/docs/configuration/providers.html#third-party-plugins) for instructions.
+
+Pre-compiled binaries are available from the [Releases](https://github.com/jianyuan/terraform-provider-sentry/releases) page.
 
 ## Usage
 
@@ -36,6 +42,7 @@ The following arguments are supported:
 resource "sentry_organization" "default" {
     name = "My Organization"
     slug = "my-organization"
+    agree_terms = true
 }
 ```
 
@@ -45,6 +52,7 @@ The following arguments are supported:
 
 * `name` - (Required) The human readable name for the organization.
 * `slug` - (Optional) The unique URL slug for this organization. If this is not provided a slug is automatically generated based on the name.
+* `agree_terms` - (Required) You agree to the applicable terms of service and privacy policy.
 
 ##### Attributes Reference
 
