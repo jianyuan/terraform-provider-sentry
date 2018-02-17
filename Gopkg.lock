@@ -164,10 +164,10 @@
   revision = "f5742cb6b85602e7fa834e9d5d91a7d7fa850824"
 
 [[projects]]
-  branch = "master"
   name = "github.com/jianyuan/go-sentry"
   packages = ["sentry"]
-  revision = "488ee3ff571671db9892ce1a5cccc67b3d95223f"
+  revision = "cee92e3de7af2ea0e4d847abce2add2170ae9dbd"
+  version = "v1.1.0"
 
 [[projects]]
   name = "github.com/jmespath/go-jmespath"

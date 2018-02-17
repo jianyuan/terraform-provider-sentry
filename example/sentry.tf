@@ -5,6 +5,7 @@ provider "sentry" {
 
 resource "sentry_organization" "my_organization" {
     name = "My Organization"
+    agree_terms = true
 }
 
 resource "sentry_team" "engineering" {
