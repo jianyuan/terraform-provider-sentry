@@ -92,8 +92,9 @@ func (s *OrganizationService) List(params *ListOrganizationParams) ([]Organizati
 
 // CreateOrganizationParams are the parameters for OrganizationService.Create.
 type CreateOrganizationParams struct {
-	Name string `json:"name,omitempty"`
-	Slug string `json:"slug,omitempty"`
+	Name       string `json:"name,omitempty"`
+	Slug       string `json:"slug,omitempty"`
+	AgreeTerms *bool  `json:"agreeTerms,omitempty"`
 }
 
 // Get a Sentry organization.

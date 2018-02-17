@@ -29,6 +29,11 @@ func resourceSentryOrganization() *schema.Resource {
 				Description: "The unique URL slug for this organization",
 				Computed:    true,
 			},
+			"agree_terms": {
+				Type:        schema.TypeBool,
+				Required:    true,
+				Description: "You agree to the applicable terms of service and privacy policy",
+			},
 		},
 	}
 }
@@ -37,14 +42,14 @@ func resourceSentryOrganizationCreate(d *schema.ResourceData, meta interface{}) 
 	client := meta.(*sentry.Client)
 
 	params := &sentry.CreateOrganizationParams{
-		Name: d.Get("name").(string),
-		Slug: d.Get("slug").(string),
+		Name:       d.Get("name").(string),
+		Slug:       d.Get("slug").(string),
+		AgreeTerms: sentry.Bool(d.Get("agree_terms").(bool)),
 	}
 	log.Printf("[DEBUG] Creating Sentry organization %s", params.Name)
 
 	org, _, err := client.Organizations.Create(params)
 	if err != nil {
-		log.Printf("[DEBUG] HELLO")
 		return err
 	}
 

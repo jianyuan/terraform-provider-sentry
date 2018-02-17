@@ -303,6 +303,41 @@ func TestOrganizationService_Create(t *testing.T) {
 	assert.Equal(t, expected, organization)
 }
 
+func TestOrganizationService_Create_AgreeTerms(t *testing.T) {
+	httpClient, mux, server := testServer()
+	defer server.Close()
+
+	mux.HandleFunc("/api/0/organizations/", func(w http.ResponseWriter, r *http.Request) {
+		assertMethod(t, "POST", r)
+		assertPostJSON(t, map[string]interface{}{
+			"name":       "The Interstellar Jurisdiction",
+			"slug":       "the-interstellar-jurisdiction",
+			"agreeTerms": true,
+		}, r)
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{
+			"name": "The Interstellar Jurisdiction",
+			"slug": "the-interstellar-jurisdiction",
+			"id": "2"
+		}`)
+	})
+
+	client := NewClient(httpClient, nil, "")
+	params := &CreateOrganizationParams{
+		Name:       "The Interstellar Jurisdiction",
+		Slug:       "the-interstellar-jurisdiction",
+		AgreeTerms: Bool(true),
+	}
+	organization, _, err := client.Organizations.Create(params)
+	assert.NoError(t, err)
+	expected := &Organization{
+		ID:   "2",
+		Name: "The Interstellar Jurisdiction",
+		Slug: "the-interstellar-jurisdiction",
+	}
+	assert.Equal(t, expected, organization)
+}
+
 func TestOrganizationService_Update(t *testing.T) {
 	httpClient, mux, server := testServer()
 	defer server.Close()
