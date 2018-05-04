@@ -1,6 +1,7 @@
 # terraform-provider-sentry
 [![CircleCI](https://circleci.com/gh/jianyuan/terraform-provider-sentry/tree/master.svg?style=svg)](https://circleci.com/gh/jianyuan/terraform-provider-sentry/tree/master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/jianyuan/terraform-provider-sentry)](https://goreportcard.com/report/github.com/jianyuan/terraform-provider-sentry)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fjianyuan%2Fterraform-provider-sentry.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fjianyuan%2Fterraform-provider-sentry?ref=badge_shield)
 
 Terraform provider for [Sentry](https://sentry.io).
 
@@ -152,3 +153,7 @@ The following attributes are exported:
 You can import existing resources using [terraform import](https://www.terraform.io/docs/import/index.html).
 
 Organization are directly importable using `terraform import sentry_organization.default org-slug`. Teams and project via `terraform import sentry_team.default org-slug/team-slug` and `terraform import sentry_project.default org-slug/project-slug` respectively.
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fjianyuan%2Fterraform-provider-sentry.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fjianyuan%2Fterraform-provider-sentry?ref=badge_large)
