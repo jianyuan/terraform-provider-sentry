@@ -149,6 +149,22 @@ The following attributes are exported:
 
 ### Import
 
-You can import existing resources using [terraform import](https://www.terraform.io/docs/import/index.html).
+You can import existing resources using the [`terraform import`](https://www.terraform.io/docs/import/usage.html) command.
 
-Organization are directly importable using `terraform import sentry_organization.default org-slug`. Teams and project via `terraform import sentry_team.default org-slug/team-slug` and `terraform import sentry_project.default org-slug/project-slug` respectively.
+To import an organization:
+
+```bash
+$ terraform import sentry_organization.default org-slug
+```
+
+To import a team:
+
+```bash
+$ terraform import sentry_team.default org-slug/team-slug
+```
+
+To import a project:
+
+```bash
+$ terraform import sentry_project.default org-slug/project-slug`
+```
