@@ -1,12 +1,10 @@
-GOFILES = $(shell find . -name '*.go' -not -path './vendor/*')
-GOPACKAGES = $(shell go list ./...  | grep -v /vendor/)
-
 .PHONE: all
 all: test
 
-.PHONY: test
-test: test-all
+.PHONY: deps
+deps:
+	@go mod download
 
-.PHONY: test-all
-test-all:
-	@TF_ACC=1 go test -v -race $(GOPACKAGES)
+.PHONY: test
+test:
+	@TF_ACC=1 go test -race -v ./...

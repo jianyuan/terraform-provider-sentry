@@ -2,9 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/golang:1.9
-
-    working_directory: /go/src/github.com/jianyuan/terraform-provider-sentry
+      - image: circleci/golang:1.11
 
     environment:
       TEST_RESULTS: /tmp/test-results
@@ -14,6 +12,8 @@ jobs:
       - run: mkdir -p $TEST_RESULTS
 
       - run: go get -u github.com/jstemmer/go-junit-report
+
+      - run: make deps
 
       - run:
           name: Run unit tests
