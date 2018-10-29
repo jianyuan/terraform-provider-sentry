@@ -6,9 +6,7 @@ require (
 	github.com/aws/aws-sdk-go v1.15.46 // indirect
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
-	github.com/dghubble/sling v1.1.0 // indirect
 	github.com/go-ini/ini v1.38.3 // indirect
-	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/gopherjs/gopherjs v0.0.0-20180825215210-0210a2f0f73c // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.0 // indirect
 	github.com/hashicorp/go-getter v0.0.0-20180809191950-4bda8fa99001 // indirect
@@ -21,9 +19,9 @@ require (
 	github.com/hashicorp/hcl2 v0.0.0-20181001210626-3e4b7e0eb20e // indirect
 	github.com/hashicorp/hil v0.0.0-20170627220502-fa9f258a9250 // indirect
 	github.com/hashicorp/logutils v1.0.0 // indirect
-	github.com/hashicorp/terraform v0.11.8
+	github.com/hashicorp/terraform v0.11.10
 	github.com/hashicorp/yamux v0.0.0-20180917205041-7221087c3d28 // indirect
-	github.com/jianyuan/go-sentry v1.1.0
+	github.com/jianyuan/go-sentry v1.2.0
 	github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af // indirect
 	github.com/jtolds/gls v4.2.1+incompatible // indirect
 	github.com/mattn/go-isatty v0.0.4 // indirect
