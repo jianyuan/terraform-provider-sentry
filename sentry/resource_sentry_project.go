@@ -54,10 +54,6 @@ func resourceSentryProject() *schema.Resource {
 				Computed:   true,
 				Deprecated: "is_bookmarked is no longer used",
 			},
-			"call_sign": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 			"color": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -125,7 +121,6 @@ func resourceSentryProjectRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("slug", proj.Slug)
 	d.Set("project_id", proj.ID)
 	d.Set("is_public", proj.IsPublic)
-	d.Set("call_sign", proj.CallSign)
 	d.Set("color", proj.Color)
 	d.Set("features", proj.Features)
 	d.Set("status", proj.Status)
