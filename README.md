@@ -166,5 +166,5 @@ $ terraform import sentry_team.default org-slug/team-slug
 To import a project:
 
 ```bash
-$ terraform import sentry_project.default org-slug/project-slug`
+$ terraform import sentry_project.default org-slug/project-slug
 ```
