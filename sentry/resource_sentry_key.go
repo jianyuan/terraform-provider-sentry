@@ -5,6 +5,8 @@ import (
 	"github.com/jianyuan/go-sentry/sentry"
 )
 
+const errProjectNotFound = "sentry: The requested resource does not exist"
+
 func resourceSentryKey() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceSentryKeyCreate,
@@ -97,7 +99,10 @@ func resourceSentryKeyRead(d *schema.ResourceData, meta interface{}) error {
 	project := d.Get("project").(string)
 
 	keys, _, err := client.ProjectKeys.List(org, project)
-	if err != nil {
+	if err != nil && err.Error() == errProjectNotFound {
+		d.SetId("")
+		return nil
+	} else if err != nil {
 		return err
 	}
 
