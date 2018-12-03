@@ -1,11 +1,11 @@
 package sentry
 
 import (
+	"net/http"
+
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/jianyuan/go-sentry/sentry"
 )
-
-const errProjectNotFound = "sentry: The requested resource does not exist"
 
 func resourceSentryKey() *schema.Resource {
 	return &schema.Resource{
@@ -98,8 +98,8 @@ func resourceSentryKeyRead(d *schema.ResourceData, meta interface{}) error {
 	org := d.Get("organization").(string)
 	project := d.Get("project").(string)
 
-	keys, _, err := client.ProjectKeys.List(org, project)
-	if err != nil && err.Error() == errProjectNotFound {
+	keys, resp, err := client.ProjectKeys.List(org, project)
+	if err != nil && resp.StatusCode == http.StatusNotFound {
 		d.SetId("")
 		return nil
 	} else if err != nil {
