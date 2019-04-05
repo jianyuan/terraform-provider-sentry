@@ -46,6 +46,34 @@ func TestAccSentryKey_basic(t *testing.T) {
 	})
 }
 
+func TestAccSentryKey_RateLimit(t *testing.T) {
+	var key sentry.ProjectKey
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckSentryKeyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccSentryKeyConfig,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSentryKeyExists("sentry_key.test_key_rate_limit", &key),
+					resource.TestCheckResourceAttr("sentry_key.test_key_rate_limit", "rate_limit_window", "86400"),
+					resource.TestCheckResourceAttr("sentry_key.test_key_rate_limit", "rate_limit_count", "1000"),
+				),
+			},
+			{
+				Config: testAccSentryKeyUpdateConfig,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSentryKeyExists("sentry_key.test_key_rate_limit", &key),
+					resource.TestCheckResourceAttr("sentry_key.test_key_rate_limit", "rate_limit_window", "100"),
+					resource.TestCheckResourceAttr("sentry_key.test_key_rate_limit", "rate_limit_count", "100"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckSentryKeyDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*sentry.Client)
 
@@ -105,38 +133,54 @@ func testAccCheckSentryKeyExists(n string, projectKey *sentry.ProjectKey) resour
 
 var testAccSentryKeyConfig = fmt.Sprintf(`
 	resource "sentry_team" "test_team" {
-		organization = "%s"
+		organization = "%[1]s"
 		name = "Test team"
 	}
 
 	resource "sentry_project" "test_project" {
-		organization = "%s"
+		organization = "%[1]s"
 		team = "${sentry_team.test_team.id}"
 		name = "Test project"
 	}
 
 	resource "sentry_key" "test_key" {
-		organization = "%s"
+		organization = "%[1]s"
 		project = "${sentry_project.test_project.id}"
 		name = "Test key"
 	}
-`, testOrganization, testOrganization, testOrganization)
+
+	resource "sentry_key" "test_key_rate_limit" {
+		organization = "%[1]s"
+		project = "${sentry_project.test_project.id}"
+		name = "Test key"
+		rate_limit_window = 86400
+		rate_limit_count = 1000
+	}
+`, testOrganization)
 
 var testAccSentryKeyUpdateConfig = fmt.Sprintf(`
 	resource "sentry_team" "test_team" {
-		organization = "%s"
+		organization = "%[1]s"
 		name = "Test team"
 	}
 
 	resource "sentry_project" "test_project" {
-		organization = "%s"
+		organization = "%[1]s"
 		team = "${sentry_team.test_team.id}"
 		name = "Test project"
 	}
 
 	resource "sentry_key" "test_key" {
-		organization = "%s"
+		organization = "%[1]s"
 		project = "${sentry_project.test_project.id}"
 		name = "Test key changed"
 	}
-`, testOrganization, testOrganization, testOrganization)
+
+	resource "sentry_key" "test_key_rate_limit" {
+		organization = "%[1]s"
+		project = "${sentry_project.test_project.id}"
+		name = "Test key"
+		rate_limit_window = 100
+		rate_limit_count = 100
+	}
+`, testOrganization)
