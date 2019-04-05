@@ -82,6 +82,10 @@ func resourceSentryKeyCreate(d *schema.ResourceData, meta interface{}) error {
 	project := d.Get("project").(string)
 	params := &sentry.CreateProjectKeyParams{
 		Name: d.Get("name").(string),
+		RateLimit: &sentry.ProjectKeyRateLimit{
+			Window: d.Get("rate_limit_window").(int),
+			Count:  d.Get("rate_limit_count").(int),
+		},
 	}
 
 	key, _, err := client.ProjectKeys.Create(org, project, params)
