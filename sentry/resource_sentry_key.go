@@ -95,15 +95,6 @@ func resourceSentryKeyCreate(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId(key.ID)
 
-	if params.RateLimit != nil {
-		// RateLimit is currently only supported in an Update API call
-		err := resourceSentryKeyUpdate(d, meta)
-
-		if err != nil {
-			return err
-		}
-	}
-
 	return resourceSentryKeyRead(d, meta)
 }
 
