@@ -4,21 +4,6 @@
 
 Terraform provider for [Sentry](https://sentry.io).
 
-## Development
-
-### Test
-
-Test the provider by running `make test`.
-
-Make sure to set the following environment variables:
-
-- `SENTRY_TEST_ORGANIZATION`
-- `SENTRY_TOKEN`
-
-### Build
-
-See the [Writing Custom Providers page of the Terraform documentation](https://www.terraform.io/docs/extend/writing-custom-providers.html#building-the-plugin) for instructions.
-
 ## Installation
 
 See the [the Provider Configuration page of the Terraform documentation](https://www.terraform.io/docs/configuration/providers.html#third-party-plugins) for instructions.
@@ -258,3 +243,18 @@ To import a project:
 ```bash
 $ terraform import sentry_project.default org-slug/project-slug
 ```
+
+## Development
+
+### Test
+
+Test the provider by running `make test`.
+
+Make sure to set the following environment variables:
+
+- `SENTRY_TEST_ORGANIZATION`
+- `SENTRY_TOKEN`
+
+### Build
+
+See the [Writing Custom Providers page of the Terraform documentation](https://www.terraform.io/docs/extend/writing-custom-providers.html#building-the-plugin) for instructions.
