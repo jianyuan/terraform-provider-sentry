@@ -7,3 +7,5 @@ require (
 	github.com/jianyuan/go-sentry v1.2.0
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 )
+
+replace git.apache.org/thrift.git => github.com/apache/thrift v0.0.0-20180902110319-2566ecd5d999 // indirect
