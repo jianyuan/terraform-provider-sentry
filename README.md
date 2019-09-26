@@ -95,9 +95,10 @@ The following attributes are exported:
 # Create a project
 resource "sentry_project" "default" {
     organization = "my-organization"
-    team = "my-team"
-    name = "Web App"
-    slug = "web-app"
+    team     = "my-team"
+    name     = "Web App"
+    slug     = "web-app"
+    platform = "javascript"
 }
 ```
 
@@ -109,6 +110,7 @@ The following arguments are supported:
 * `team` - (Required) The slug of the team the project should be created for.
 * `name` - (Required) The human readable name for the project.
 * `slug` - (Optional) The unique URL slug for this project. If this is not provided a slug is automatically generated based on the name.
+* `platform` - (Optional) The integration platform.
 
 ##### Attributes Reference
 
