@@ -2,7 +2,7 @@ package sentry
 
 import (
 	"errors"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"log"
 	"strings"
 )
