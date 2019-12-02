@@ -8,11 +8,13 @@ require (
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/hcl2 v0.0.0-20190909202536-66c59f909e25 // indirect
 	github.com/hashicorp/hil v0.0.0-20190212132231-97b3a9cdfa93 // indirect
+	github.com/hashicorp/terraform v0.12.9
 	github.com/hashicorp/terraform-plugin-sdk v1.0.0
 	github.com/hashicorp/yamux v0.0.0-20190923154419-df201c70410d // indirect
-	github.com/jianyuan/go-sentry v1.2.0
+	github.com/jianyuan/go-sentry v1.2.1-0.20190908221954-a2cc36d4dbf5
 	github.com/mattn/go-colorable v0.1.2 // indirect
 	github.com/mattn/go-isatty v0.0.9 // indirect
+	github.com/mitchellh/mapstructure v1.1.2
 	github.com/stretchr/testify v1.4.0 // indirect
 	github.com/ulikunitz/xz v0.5.6 // indirect
 	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
@@ -31,3 +33,5 @@ require (
 )
 
 replace git.apache.org/thrift.git => github.com/apache/thrift v0.0.0-20180902110319-2566ecd5d999 // indirect
+
+go 1.13

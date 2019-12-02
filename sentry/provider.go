@@ -29,6 +29,7 @@ func Provider() terraform.ResourceProvider {
 			"sentry_project":      resourceSentryProject(),
 			"sentry_key":          resourceSentryKey(),
 			"sentry_plugin":       resourceSentryPlugin(),
+			"sentry_rule":         resourceSentryRule(),
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
