@@ -51,10 +51,12 @@ func resourceSentryKey() *schema.Resource {
 			},
 			"rate_limit_window": {
 				Type:     schema.TypeInt,
+				Optional: true,
 				Computed: true,
 			},
 			"rate_limit_count": {
 				Type:     schema.TypeInt,
+				Optional: true,
 				Computed: true,
 			},
 			"dsn_secret": {
@@ -80,6 +82,10 @@ func resourceSentryKeyCreate(d *schema.ResourceData, meta interface{}) error {
 	project := d.Get("project").(string)
 	params := &sentry.CreateProjectKeyParams{
 		Name: d.Get("name").(string),
+		RateLimit: &sentry.ProjectKeyRateLimit{
+			Window: d.Get("rate_limit_window").(int),
+			Count:  d.Get("rate_limit_count").(int),
+		},
 	}
 
 	key, _, err := client.ProjectKeys.Create(org, project, params)
@@ -88,6 +94,7 @@ func resourceSentryKeyCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId(key.ID)
+
 	return resourceSentryKeyRead(d, meta)
 }
 
@@ -147,6 +154,10 @@ func resourceSentryKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 	project := d.Get("project").(string)
 	params := &sentry.UpdateProjectKeyParams{
 		Name: d.Get("name").(string),
+		RateLimit: &sentry.ProjectKeyRateLimit{
+			Window: d.Get("rate_limit_window").(int),
+			Count:  d.Get("rate_limit_count").(int),
+		},
 	}
 
 	key, _, err := client.ProjectKeys.Update(org, project, id, params)
