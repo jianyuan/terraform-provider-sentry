@@ -2,9 +2,8 @@ package sentry
 
 import (
 	"errors"
-	"log"
 
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/jianyuan/go-sentry/sentry"
 	"github.com/mitchellh/mapstructure"
 )
@@ -107,8 +106,6 @@ func resourceSentryRuleCreate(d *schema.ResourceData, meta interface{}) error {
 		actions[i] = &action
 	}
 
-	log.Printf("%v, %v, %v", name, org, project)
-
 	params := &sentry.CreateRuleParams{
 		ActionMatch: actionMatch,
 		Environment: environment,
@@ -198,8 +195,6 @@ func resourceSentryRuleUpdate(d *schema.ResourceData, meta interface{}) error {
 		mapstructure.Decode(ia, &action)
 		actions[i] = action
 	}
-
-	log.Printf("%v, %v, %v, %v", id, name, org, project)
 
 	params := &sentry.Rule{
 		ID:          id,
