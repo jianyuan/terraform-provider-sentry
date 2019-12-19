@@ -5,7 +5,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func resourceSentryRuleImporter(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
