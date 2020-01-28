@@ -19,8 +19,8 @@ Pre-compiled binaries are available from the [Releases](https://github.com/jiany
 ```
 # Configure the Sentry Provider
 provider "sentry" {
-    token = "${var.sentry_token}"
-    base_url = "${var.sentry_base_url}"
+    token = var.sentry_token
+    base_url = var.sentry_base_url
 }
 ```
 
