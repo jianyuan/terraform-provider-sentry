@@ -1,8 +1,6 @@
 package sentry
 
 import (
-	"errors"
-
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/jianyuan/go-sentry/sentry"
 	"github.com/mitchellh/mapstructure"
@@ -150,7 +148,8 @@ func resourceSentryRuleRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if rule == nil {
-		return errors.New("Could not find rule with ID " + id)
+		d.SetId("")
+		return nil
 	}
 
 	d.SetId(rule.ID)
