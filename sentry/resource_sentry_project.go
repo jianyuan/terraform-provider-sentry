@@ -83,6 +83,10 @@ func resourceSentryProject() *schema.Resource {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
+			"resolve_age": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
 
 			// TODO: Project options
 		},
@@ -133,6 +137,7 @@ func resourceSentryProjectRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("status", proj.Status)
 	d.Set("digests_min_delay", proj.DigestsMinDelay)
 	d.Set("digests_max_delay", proj.DigestsMaxDelay)
+	d.Set("resolve_age", proj.ResolveAge)
 
 	// TODO: Project options
 
@@ -160,6 +165,10 @@ func resourceSentryProjectUpdate(d *schema.ResourceData, meta interface{}) error
 
 	if v, ok := d.GetOk("digests_max_delay"); ok {
 		params.DigestsMaxDelay = Int(v.(int))
+	}
+
+	if v, ok := d.GetOk("resolve_age"); ok {
+		params.ResolveAge = Int(v.(int))
 	}
 
 	proj, _, err := client.Projects.Update(org, slug, params)
