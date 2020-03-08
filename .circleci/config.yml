@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/golang:1.11
+      - image: circleci/golang:1.14
 
     environment:
       TEST_RESULTS: /tmp/test-results
@@ -10,6 +10,10 @@ jobs:
     steps:
       - checkout
       - run: mkdir -p $TEST_RESULTS
+
+      - restore_cache:
+          keys:
+            - v1-pkg-cache
 
       - run: go get -u github.com/jstemmer/go-junit-report
 
@@ -20,6 +24,11 @@ jobs:
           command: |
             trap "go-junit-report <${TEST_RESULTS}/go-test.out > ${TEST_RESULTS}/go-test-report.xml" EXIT
             make test | tee ${TEST_RESULTS}/go-test.out
+
+      - save_cache:
+          key: v1-pkg-cache
+          paths:
+            - /go/pkg
 
       - store_artifacts:
           path: /tmp/test-results
