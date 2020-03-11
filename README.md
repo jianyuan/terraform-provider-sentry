@@ -198,14 +198,22 @@ resource "sentry_rule" "default" {
     frequency    = 30
     environment  = "production"
 
-    actions = [{
-        id = "sentry.rules.actions.notify_event.NotifyEventAction"
-    }]
+    conditions = [
+      {
+        id       = "sentry.rules.conditions.event_frequency.EventFrequencyCondition"
+        value    = 500
+        interval = "1h"
+      }
+    ]
 
-    conditions = [{
-        id = "sentry.rules.conditions.first_seen_event.FirstSeenEventCondition"
-    }]
-}
+    actions = [
+      {
+        id        = "sentry.integrations.slack.notify_action.SlackNotifyServiceAction"
+        channel   = "#alerts"
+        workspace = "12345"
+      }
+    ]
+  }
 ```
 
 ##### Argument Reference
