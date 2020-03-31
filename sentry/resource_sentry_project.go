@@ -105,7 +105,7 @@ func resourceSentryProjectCreate(d *schema.ResourceData, meta interface{}) error
 	}
 
 	d.SetId(proj.Slug)
-	return resourceSentryProjectRead(d, meta)
+	return resourceSentryProjectUpdate(d, meta)
 }
 
 func resourceSentryProjectRead(d *schema.ResourceData, meta interface{}) error {

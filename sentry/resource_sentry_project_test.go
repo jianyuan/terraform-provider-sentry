@@ -28,6 +28,7 @@ func TestAccSentryProject_basic(t *testing.T) {
 	    team = "${sentry_team.test_team.id}"
 	    name = "Test project changed"
 	    slug = "%s"
+	    platform = "go"
 	  }
 	`, testOrganization, testOrganization, newProjectSlug)
 
@@ -45,6 +46,7 @@ func TestAccSentryProject_basic(t *testing.T) {
 						Organization: testOrganization,
 						Team:         "Test team",
 						SlugPresent:  true,
+						Platform:     "go",
 					}),
 				),
 			},
@@ -57,6 +59,7 @@ func TestAccSentryProject_basic(t *testing.T) {
 						Organization: testOrganization,
 						Team:         "Test team",
 						Slug:         newProjectSlug,
+						Platform:     "go",
 					}),
 				),
 			},
@@ -117,6 +120,7 @@ type testAccSentryProjectExpectedAttributes struct {
 
 	SlugPresent bool
 	Slug        string
+	Platform    string
 }
 
 func testAccCheckSentryProjectAttributes(proj *sentry.Project, want *testAccSentryProjectExpectedAttributes) resource.TestCheckFunc {
@@ -141,6 +145,10 @@ func testAccCheckSentryProjectAttributes(proj *sentry.Project, want *testAccSent
 			return fmt.Errorf("got slug %q; want %q", proj.Slug, want.Slug)
 		}
 
+		if want.Platform != "" && proj.Platform != want.Platform {
+			return fmt.Errorf("got Platform %q; want %q", proj.Platform, want.Platform)
+		}
+
 		return nil
 	}
 }
@@ -155,5 +163,6 @@ var testAccSentryProjectConfig = fmt.Sprintf(`
     organization = "%s"
     team = "${sentry_team.test_team.id}"
     name = "Test project"
+    platform = "go"
   }
 `, testOrganization, testOrganization)
