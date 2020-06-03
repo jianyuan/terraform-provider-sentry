@@ -80,10 +80,9 @@ func resourceSentryTeamRead(d *schema.ResourceData, meta interface{}) error {
 	org := d.Get("organization").(string)
 	log.Printf("[DEBUG] Reading Sentry team %s (Organization: %s)", slug, org)
 
-	team, _, err := client.Teams.Get(org, slug)
-	if err != nil {
-		d.SetId("")
-		return nil
+	team, resp, err := client.Teams.Get(org, slug)
+	if found, err := checkClientGet(resp, err, d); !found {
+		return err
 	}
 
 	d.SetId(team.Slug)
