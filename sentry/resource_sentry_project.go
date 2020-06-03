@@ -114,10 +114,9 @@ func resourceSentryProjectRead(d *schema.ResourceData, meta interface{}) error {
 	slug := d.Id()
 	org := d.Get("organization").(string)
 
-	proj, _, err := client.Projects.Get(org, slug)
-	if err != nil {
-		d.SetId("")
-		return nil
+	proj, resp, err := client.Projects.Get(org, slug)
+	if found, err := checkClientGet(resp, err, d); !found {
+		return err
 	}
 
 	d.SetId(proj.Slug)
