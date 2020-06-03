@@ -72,10 +72,9 @@ func resourceSentryPluginRead(d *schema.ResourceData, meta interface{}) error {
 	org := d.Get("organization").(string)
 	project := d.Get("project").(string)
 
-	plugin, _, err := client.ProjectPlugins.Get(org, project, id)
-	if err != nil {
-		d.SetId("")
-		return nil
+	plugin, resp, err := client.ProjectPlugins.Get(org, project, id)
+	if found, err := checkClientGet(resp, err, d); !found {
+		return err
 	}
 
 	d.SetId(plugin.ID)

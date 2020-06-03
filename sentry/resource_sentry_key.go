@@ -1,8 +1,6 @@
 package sentry
 
 import (
-	"net/http"
-
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/jianyuan/go-sentry/sentry"
 )
@@ -106,10 +104,7 @@ func resourceSentryKeyRead(d *schema.ResourceData, meta interface{}) error {
 	project := d.Get("project").(string)
 
 	keys, resp, err := client.ProjectKeys.List(org, project)
-	if err != nil && resp.StatusCode == http.StatusNotFound {
-		d.SetId("")
-		return nil
-	} else if err != nil {
+	if found, err := checkClientGet(resp, err, d); !found {
 		return err
 	}
 

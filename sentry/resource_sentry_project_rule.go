@@ -135,10 +135,9 @@ func resourceSentryRuleRead(d *schema.ResourceData, meta interface{}) error {
 	project := d.Get("project").(string)
 	id := d.Id()
 
-	rules, _, err := client.Rules.List(org, project)
-	if err != nil {
-		d.SetId("")
-		return nil
+	rules, resp, err := client.Rules.List(org, project)
+	if found, err := checkClientGet(resp, err, d); !found {
+		return err
 	}
 
 	var rule *sentry.Rule
