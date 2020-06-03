@@ -85,7 +85,7 @@ func resourceSentryProject() *schema.Resource {
 			},
 			"resolve_age": {
 				Type:        schema.TypeInt,
-				Optional:    true
+				Optional:    true,
 				Description: "Hours in which an issue is automatically resolve if not seen after this amount of time.",
 				Computed:    true,
 			},
