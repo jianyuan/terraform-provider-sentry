@@ -303,6 +303,12 @@ To import a project:
 $ terraform import sentry_project.default org-slug/project-slug
 ```
 
+To import a key:
+
+```bash
+$ terraform import sentry_key.default org-slug/project-slug/key-id
+```
+
 ## Development
 
 ### Test
