@@ -5,9 +5,11 @@
 
 Terraform provider for [Sentry](https://sentry.io).
 
+[This package is also published on the official Terraform registry](https://registry.terraform.io/providers/jianyuan/sentry/latest).
+
 ## Usage
 
-[See the docs for usage information](./docs/index.md).
+[See the docs for usage information](./docs).
 
 ## Installation
 
