@@ -1,10 +1,10 @@
-.PHONE: all
-all: test
+default: testacc
 
 .PHONY: deps
 deps:
-	@go mod download
+	go mod download
 
-.PHONY: test
-test:
-	@TF_ACC=1 go test -race -v ./...
+# Run acceptance tests
+.PHONY: testacc
+testacc:
+	TF_ACC=1 go test ./... -v $(TESTARGS) -timeout 120m
