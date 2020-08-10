@@ -26,15 +26,6 @@ archives:
 checksum:
   name_template: "{{ .ProjectName }}_{{ .Version }}_SHA256SUMS"
   algorithm: sha256
-signs:
-  - artifacts: checksum
-    args:
-      - "--local-user"
-      - "28C93998EF68D65A"
-      - "--output"
-      - "${signature}"
-      - "--detach-sign"
-      - "${artifact}"
 release:
   # Visit your project's GitHub Releases page to publish this release.
   draft: true
