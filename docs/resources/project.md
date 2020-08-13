@@ -26,6 +26,7 @@ The following arguments are supported:
 - `slug` - (Optional) The unique URL slug for this project. If this is not provided a slug is automatically generated based on the name.
 - `platform` - (Optional) The integration platform.
 - `resolve_age` - (Optional) Hours in which an issue is automatically resolve if not seen after this amount of time.
+- `remove_default_key` - (Optional) Whether or not to remove the default key Sentry creates for a new project. Note: this only works at resource creation time.
 
 ## Attribute Reference
 

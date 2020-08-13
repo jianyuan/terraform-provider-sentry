@@ -9,6 +9,11 @@ import (
 	"github.com/jianyuan/go-sentry/sentry"
 )
 
+var defaultKey = sentry.ProjectKey{
+	Name:  "Default",
+	Label: "Default",
+}
+
 func resourceSentryProject() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceSentryProjectCreate,
@@ -89,6 +94,14 @@ func resourceSentryProject() *schema.Resource {
 				Description: "Hours in which an issue is automatically resolve if not seen after this amount of time.",
 				Computed:    true,
 			},
+			"remove_default_key": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Remove the default project key that Sentry creates for new projects.",
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					return true
+				},
+			},
 
 			// TODO: Project options
 		},
@@ -111,6 +124,25 @@ func resourceSentryProjectCreate(d *schema.ResourceData, meta interface{}) error
 	}
 
 	d.SetId(proj.Slug)
+
+	if d.Get("remove_default_key").(bool) {
+		keys, _, err := client.ProjectKeys.List(org, proj.Slug)
+		if err != nil {
+			return err
+		}
+
+		for _, key := range keys {
+			if key.Name == defaultKey.Name && key.Label == defaultKey.Label {
+				_, err := client.ProjectKeys.Delete(org, proj.Slug, key.ID)
+				if err != nil {
+					return err
+				}
+
+				break
+			}
+		}
+	}
+
 	return resourceSentryProjectUpdate(d, meta)
 }
 
