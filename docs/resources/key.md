@@ -30,7 +30,7 @@ The following attributes are exported:
 - `secret` - Secret key portion of the client key.
 - `project_id` - The ID of the project that the key belongs to.
 - `is_active` - Flag indicating the key is active.
-- `rate_limit_window` - Length of time that will be considered when checking the rate limit.
+- `rate_limit_window` - Length of time, in seconds, that will be considered when checking the rate limit.
 - `rate_limit_count` - Number of events that can be reported within the rate limit window.
 - `dsn_secret` - DSN (Deprecated) for the key.
 - `dsn_public` - DSN for the key.
