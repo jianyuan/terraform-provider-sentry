@@ -14,6 +14,7 @@ type Config struct {
 	BaseURL string
 }
 
+// Client to connect to Sentry.
 func (c *Config) Client() (interface{}, error) {
 	var baseURL *url.URL
 	var err error
