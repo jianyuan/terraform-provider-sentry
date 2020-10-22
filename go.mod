@@ -13,7 +13,7 @@ require (
 	github.com/dghubble/sling v1.3.0 // indirect
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/go-git/go-git/v5 v5.2.0 // indirect
-	github.com/hashicorp/errwrap v1.1.0
+	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-hclog v0.14.1 // indirect
 	github.com/hashicorp/go-multierror v1.1.0 // indirect
 	github.com/hashicorp/go-uuid v1.0.2 // indirect

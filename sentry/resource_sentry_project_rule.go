@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/hashicorp/errwrap"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/sentry"
 	"github.com/mitchellh/mapstructure"
@@ -68,7 +67,7 @@ func resourceSentryRule() *schema.Resource {
 			},
 			"filters": {
 				Type:     schema.TypeList,
-				Required: true,
+				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeMap,
 				},
@@ -195,15 +194,6 @@ func resourceSentryRuleRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId(rule.ID)
 	d.Set("name", rule.Name)
-	if err := d.Set("actions", rule.Actions); err != nil {
-		return errwrap.Wrapf("Unable to store rule 'actions' attribute: {{err}}", err)
-	}
-	if err := d.Set("conditions", rule.Conditions); err != nil {
-		return errwrap.Wrapf("Unable to store rule 'conditions' attribute: {{err}}", err)
-	}
-	if err := d.Set("filters", rule.Filters); err != nil {
-		return errwrap.Wrapf("Unable to store rule 'filters' attribute: {{err}}", err)
-	}
 	d.Set("frequency", rule.Frequency)
 	d.Set("environment", rule.Environment)
 
@@ -238,13 +228,13 @@ func resourceSentryRuleUpdate(d *schema.ResourceData, meta interface{}) error {
 	conditions := make([]sentry.ConditionType, len(inputConditions))
 	for i, ic := range inputConditions {
 		var condition sentry.ConditionType
-		mapstructure.Decode(ic, &condition)
+		mapstructure.WeakDecode(ic, &condition)
 		conditions[i] = condition
 	}
 	actions := make([]sentry.ActionType, len(inputActions))
 	for i, ia := range inputActions {
 		var action sentry.ActionType
-		mapstructure.Decode(ia, &action)
+		mapstructure.WeakDecode(ia, &action)
 		actions[i] = action
 	}
 	filters := make([]sentry.FilterType, len(inputFilters))

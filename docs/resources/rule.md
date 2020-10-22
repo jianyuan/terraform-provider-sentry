@@ -1,6 +1,6 @@
 # sentry_rule Resource
 
-Sentry Rule resource.
+Sentry Rule resource. Note that there's no public documentation for the values of conditions, filters, and actions. You can either inspect the request payload sent when creating or editing an alert rule on Sentry or inspect [Sentry's rules registry in the source code](https://github.com/getsentry/sentry/tree/master/src/sentry/rules).
 
 ## Example Usage
 
@@ -15,17 +15,24 @@ resource "sentry_rule" "default" {
 
   conditions = [
     {
-      id       = "sentry.rules.conditions.event_frequency.EventFrequencyCondition"
-      value    = 500
-      interval = "1h"
+      id   = "sentry.rules.conditions.first_seen_event.FirstSeenEventCondition"
+      name = "A new issue is created"
+    }
+  ]
+
+  filters = [
+    {
+      id         = "sentry.rules.filters.assigned_to.AssignedToFilter"
+      targetType = "Unassigned"
     }
   ]
 
   actions = [
     {
-      id        = "sentry.integrations.slack.notify_action.SlackNotifyServiceAction"
-      channel   = "#alerts"
-      workspace = "12345"
+      id               = "sentry.mail.actions.NotifyEmailAction"
+      name             = "Send an email to IssueOwners"
+      targetIdentifier = ""
+      targetType       = "IssueOwners"
     }
   ]
 }
@@ -37,11 +44,13 @@ The following arguments are supported:
 
 - `organization` - (Required) The slug of the organization the plugin should be enabled for.
 - `project` - (Required) The slug of the project the plugin should be enabled for.
-- `action_match` - (Optional) Use `all` to trigger alerting when all conditions are met, and `any` when at least a condition is met. Defaults to `any`.
+- `name` - (Required) Name for this alert.
+- `action_match` - (Optional) Use `all` to trigger alerting when all conditions are met, and `any` when at. least a condition is met. Defaults to `any`.
 - `frequency` - (Optional) Perform actions at most once every `X` minutes for this issue. Defaults to `30`.
-- `environment` - (Optional) Environment name
-- `actions` - (Required) List of actions
-- `conditions` - (Required) List of conditions
+- `environment` - (Optional) Environment for these conditions to apply to.
+- `conditions` - (Required) List of conditions.
+- `filters` - (Optional) List of filters.
+- `actions` - (Required) List of actions.
 
 ## Attribute Reference
 
@@ -49,7 +58,5 @@ The following attributes are exported:
 
 - `id` - The ID of the created rule.
 - `name` - The name of the created rule.
-- `actions` - The rule's actions.
-- `conditions` - The rule's conditions.
 - `frequency` - The rule's frequency.
 - `environment` - The rule's environment.
