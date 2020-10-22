@@ -2,7 +2,9 @@ package sentry
 
 import (
 	"errors"
+	"fmt"
 
+	"github.com/hashicorp/errwrap"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/jianyuan/go-sentry/sentry"
 	"github.com/mitchellh/mapstructure"
@@ -10,6 +12,7 @@ import (
 
 const (
 	defaultActionMatch = "any"
+	defaultFilterMatch = "any"
 	defaultFrequency   = 30
 )
 
@@ -44,6 +47,11 @@ func resourceSentryRule() *schema.Resource {
 				Optional: true,
 				Computed: true,
 			},
+			"filter_match": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+			},
 			"actions": {
 				Type:     schema.TypeList,
 				Required: true,
@@ -52,6 +60,13 @@ func resourceSentryRule() *schema.Resource {
 				},
 			},
 			"conditions": {
+				Type:     schema.TypeList,
+				Required: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeMap,
+				},
+			},
+			"filters": {
 				Type:     schema.TypeList,
 				Required: true,
 				Elem: &schema.Schema{
@@ -82,37 +97,50 @@ func resourceSentryRuleCreate(d *schema.ResourceData, meta interface{}) error {
 	project := d.Get("project").(string)
 	environment := d.Get("environment").(string)
 	actionMatch := d.Get("action_match").(string)
+	filterMatch := d.Get("filter_match").(string)
 	inputConditions := d.Get("conditions").([]interface{})
 	inputActions := d.Get("actions").([]interface{})
+	inputFilters := d.Get("filters").([]interface{})
 	frequency := d.Get("frequency").(int)
 
 	if actionMatch == "" {
 		actionMatch = defaultActionMatch
 	}
+	if filterMatch == "" {
+		filterMatch = defaultFilterMatch
+	}
 	if frequency == 0 {
 		frequency = defaultFrequency
 	}
 
-	conditions := make([]*sentry.CreateRuleConditionParams, len(inputConditions))
+	conditions := make([]sentry.ConditionType, len(inputConditions))
 	for i, ic := range inputConditions {
-		var condition sentry.CreateRuleConditionParams
+		var condition sentry.ConditionType
 		mapstructure.WeakDecode(ic, &condition)
-		conditions[i] = &condition
+		conditions[i] = condition
 	}
-	actions := make([]*sentry.CreateRuleActionParams, len(inputActions))
+	actions := make([]sentry.ActionType, len(inputActions))
 	for i, ia := range inputActions {
-		var action sentry.CreateRuleActionParams
+		var action sentry.ActionType
 		mapstructure.WeakDecode(ia, &action)
-		actions[i] = &action
+		actions[i] = action
+	}
+	filters := make([]sentry.FilterType, len(inputFilters))
+	for i, ia := range inputFilters {
+		var filter sentry.FilterType
+		mapstructure.WeakDecode(ia, &filter)
+		filters[i] = filter
 	}
 
 	params := &sentry.CreateRuleParams{
 		ActionMatch: actionMatch,
+		FilterMatch: filterMatch,
 		Environment: environment,
 		Frequency:   frequency,
 		Name:        name,
 		Conditions:  conditions,
 		Actions:     actions,
+		Filters:     filters,
 	}
 
 	if environment != "" {
@@ -152,10 +180,30 @@ func resourceSentryRuleRead(d *schema.ResourceData, meta interface{}) error {
 		return errors.New("Could not find rule with ID " + id)
 	}
 
+	// workaround for
+	// https://github.com/hashicorp/terraform-plugin-sdk/issues/62
+	// as the data sent by Sentry is integer
+	for _, f := range rule.Filters {
+		for k, v := range f {
+			switch vv := v.(type) {
+			case float64:
+				// unparseable so forcing this to be int
+				f[k] = fmt.Sprintf("%.0f", vv)
+			}
+		}
+	}
+
 	d.SetId(rule.ID)
 	d.Set("name", rule.Name)
-	d.Set("actions", rule.Actions)
-	d.Set("conditions", rule.Conditions)
+	if err := d.Set("actions", rule.Actions); err != nil {
+		return errwrap.Wrapf("Unable to store rule 'actions' attribute: {{err}}", err)
+	}
+	if err := d.Set("conditions", rule.Conditions); err != nil {
+		return errwrap.Wrapf("Unable to store rule 'conditions' attribute: {{err}}", err)
+	}
+	if err := d.Set("filters", rule.Filters); err != nil {
+		return errwrap.Wrapf("Unable to store rule 'filters' attribute: {{err}}", err)
+	}
 	d.Set("frequency", rule.Frequency)
 	d.Set("environment", rule.Environment)
 
@@ -171,38 +219,50 @@ func resourceSentryRuleUpdate(d *schema.ResourceData, meta interface{}) error {
 	project := d.Get("project").(string)
 	environment := d.Get("environment").(string)
 	actionMatch := d.Get("action_match").(string)
+	filterMatch := d.Get("filter_match").(string)
 	inputConditions := d.Get("conditions").([]interface{})
 	inputActions := d.Get("actions").([]interface{})
+	inputFilters := d.Get("filters").([]interface{})
 	frequency := d.Get("frequency").(int)
 
 	if actionMatch == "" {
 		actionMatch = defaultActionMatch
 	}
+	if filterMatch == "" {
+		filterMatch = defaultFilterMatch
+	}
 	if frequency == 0 {
 		frequency = defaultFrequency
 	}
 
-	conditions := make([]sentry.RuleCondition, len(inputConditions))
+	conditions := make([]sentry.ConditionType, len(inputConditions))
 	for i, ic := range inputConditions {
-		var condition sentry.RuleCondition
+		var condition sentry.ConditionType
 		mapstructure.Decode(ic, &condition)
 		conditions[i] = condition
 	}
-	actions := make([]sentry.RuleAction, len(inputActions))
+	actions := make([]sentry.ActionType, len(inputActions))
 	for i, ia := range inputActions {
-		var action sentry.RuleAction
+		var action sentry.ActionType
 		mapstructure.Decode(ia, &action)
 		actions[i] = action
+	}
+	filters := make([]sentry.FilterType, len(inputFilters))
+	for i, ia := range inputFilters {
+		var filter sentry.FilterType
+		mapstructure.WeakDecode(ia, &filter)
+		filters[i] = filter
 	}
 
 	params := &sentry.Rule{
 		ID:          id,
 		ActionMatch: actionMatch,
-		Environment: &environment,
+		FilterMatch: filterMatch,
 		Frequency:   frequency,
 		Name:        name,
 		Conditions:  conditions,
 		Actions:     actions,
+		Filters:     filters,
 	}
 
 	if environment != "" {

@@ -9,16 +9,16 @@ import (
 func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
-			"token": &schema.Schema{
+			"token": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("SENTRY_TOKEN", nil),
 				Description: "The authentication token used to connect to Sentry",
 			},
-			"base_url": &schema.Schema{
+			"base_url": {
 				Type:        schema.TypeString,
 				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("SENTRY_BASE_URL", "https://app.getsentry.com/api/"),
+				DefaultFunc: schema.EnvDefaultFunc("SENTRY_BASE_URL", "https://sentry.io/api/"),
 				Description: "The Sentry Base API URL",
 			},
 		},
@@ -46,6 +46,5 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		Token:   d.Get("token").(string),
 		BaseURL: d.Get("base_url").(string),
 	}
-
 	return config.Client()
 }
