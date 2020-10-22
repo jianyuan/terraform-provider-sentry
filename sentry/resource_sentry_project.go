@@ -5,7 +5,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/sentry"
 )
 
@@ -72,7 +72,7 @@ func resourceSentryProject() *schema.Resource {
 				},
 			},
 			"status": {
-				Type:     schema.TypeBool,
+				Type:     schema.TypeString,
 				Computed: true,
 			},
 			"digests_min_delay": {

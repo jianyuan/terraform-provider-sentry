@@ -3,7 +3,7 @@ package sentry
 import (
 	"net/http"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 // Bool returns a pointer to the bool value.
