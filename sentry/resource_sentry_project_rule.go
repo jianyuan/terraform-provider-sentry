@@ -186,7 +186,6 @@ func resourceSentryRuleRead(d *schema.ResourceData, meta interface{}) error {
 		for k, v := range f {
 			switch vv := v.(type) {
 			case float64:
-				// unparseable so forcing this to be int
 				f[k] = fmt.Sprintf("%.0f", vv)
 			}
 		}
@@ -196,6 +195,11 @@ func resourceSentryRuleRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("name", rule.Name)
 	d.Set("frequency", rule.Frequency)
 	d.Set("environment", rule.Environment)
+	d.Set("filters", rule.Filters)
+	d.Set("actions", rule.Actions)
+	d.Set("conditions", rule.Conditions)
+	d.Set("action_match", rule.ActionMatch)
+	d.Set("filter_match", rule.FilterMatch)
 
 	return nil
 }
