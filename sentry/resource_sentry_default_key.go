@@ -3,6 +3,7 @@ package sentry
 import (
 	"fmt"
 	"log"
+	"sort"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/sentry"
@@ -18,6 +19,7 @@ func resourceSentryDefaultKey() *schema.Resource {
 	dKey.Schema["name"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Computed:    true,
+		Optional:    true,
 		Description: "The name of the key",
 	}
 
@@ -35,9 +37,13 @@ func resourceSentryDefaultKeyCreate(d *schema.ResourceData, meta interface{}) er
 		return err
 	}
 
-	if len(keys) != 1 {
+	if len(keys) < 1 {
 		return fmt.Errorf("Default key not found on the project")
 	}
+
+	sort.Slice(keys, func(i, j int) bool {
+		return keys[i].DateCreated.Before(keys[j].DateCreated)
+	})
 
 	id := keys[0].ID
 	params := &sentry.UpdateProjectKeyParams{
