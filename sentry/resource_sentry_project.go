@@ -89,8 +89,39 @@ func resourceSentryProject() *schema.Resource {
 				Description: "Hours in which an issue is automatically resolve if not seen after this amount of time.",
 				Computed:    true,
 			},
-
-			// TODO: Project options
+			"options": {
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Computed:    true,
+				Description: "The options for this project",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"inbound_filters": {
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Computed:    true,
+							Description: "Inbound data filters allow you to determine which errors, if any, Sentry should ignore.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"error_messages": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "Filter events by error messages. Separate multiple entries with a newline.",
+										DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+											return strings.Trim(old, "\n") == strings.Trim(new, "\n")
+										},
+									},
+									// TODO: implement more inbound filters options. ref. https://docs.sentry.io/product/data-management-settings/filtering/
+								},
+							},
+						},
+						// TODO: implement more project options.
+					},
+				},
+			},
 		},
 	}
 }
@@ -139,8 +170,7 @@ func resourceSentryProjectRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("digests_min_delay", proj.DigestsMinDelay)
 	d.Set("digests_max_delay", proj.DigestsMaxDelay)
 	d.Set("resolve_age", proj.ResolveAge)
-
-	// TODO: Project options
+	d.Set("options", expandProjectOptions(proj.Options))
 
 	return nil
 }
@@ -170,6 +200,12 @@ func resourceSentryProjectUpdate(d *schema.ResourceData, meta interface{}) error
 
 	if v, ok := d.GetOk("resolve_age"); ok {
 		params.ResolveAge = Int(v.(int))
+	}
+
+	if o, ok := d.GetOk("options"); ok {
+		if v := flattenProjectOptions(o); v != nil {
+			params.Options = v
+		}
 	}
 
 	proj, _, err := client.Projects.Update(org, slug, params)
@@ -206,4 +242,39 @@ func resourceSentryProjectImporter(d *schema.ResourceData, meta interface{}) ([]
 	d.SetId(parts[1])
 
 	return []*schema.ResourceData{d}, nil
+}
+
+func flattenProjectOptions(v interface{}) map[string]interface{} {
+	l := v.([]interface{})
+	if len(l) == 0 {
+		return nil
+	}
+	config := l[0].(map[string]interface{})
+	inboundFilters := flattenInboundFilters(config["inbound_filters"])
+	return map[string]interface{}{
+		"filters:error_messages": inboundFilters["error_messages"],
+	}
+}
+
+func flattenInboundFilters(v interface{}) map[string]interface{} {
+	l := v.([]interface{})
+	if len(l) == 0 {
+		return nil
+	}
+	config := l[0].(map[string]interface{})
+	return map[string]interface{}{
+		"error_messages": config["error_messages"],
+	}
+}
+
+func expandProjectOptions(v map[string]interface{}) []map[string]interface{} {
+	return []map[string]interface{}{
+		{
+			"inbound_filters": []map[string]interface{}{
+				{
+					"error_messages": v["filters:error_messages"],
+				},
+			},
+		},
+	}
 }
