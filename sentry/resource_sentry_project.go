@@ -76,12 +76,16 @@ func resourceSentryProject() *schema.Resource {
 				Computed: true,
 			},
 			"digests_min_delay": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The minimum amount of time (in seconds) to wait between scheduling digests for delivery after the initial scheduling.",
+				Optional:    true,
 			},
 			"digests_max_delay": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The maximum amount of time (in seconds) to wait between scheduling digests for delivery.",
+				Optional:    true,
 			},
 			"resolve_age": {
 				Type:        schema.TypeInt,
