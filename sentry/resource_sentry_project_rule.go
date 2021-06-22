@@ -182,11 +182,29 @@ func resourceSentryRuleRead(d *schema.ResourceData, meta interface{}) error {
 	// workaround for
 	// https://github.com/hashicorp/terraform-plugin-sdk/issues/62
 	// as the data sent by Sentry is integer
-	for _, f := range rule.Filters {
+	for _, f := range rule.Actions {
 		for k, v := range f {
 			switch vv := v.(type) {
 			case float64:
 				// unparseable so forcing this to be int
+				f[k] = fmt.Sprintf("%.0f", vv)
+			}
+		}
+	}
+
+	for _, f := range rule.Conditions {
+		for k, v := range f {
+			switch vv := v.(type) {
+			case float64:
+				f[k] = fmt.Sprintf("%.0f", vv)
+			}
+		}
+	}
+
+	for _, f := range rule.Filters {
+		for k, v := range f {
+			switch vv := v.(type) {
+			case float64:
 				f[k] = fmt.Sprintf("%.0f", vv)
 			}
 		}

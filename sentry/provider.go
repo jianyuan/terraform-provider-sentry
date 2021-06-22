@@ -27,6 +27,7 @@ func Provider() *schema.Provider {
 			"sentry_team":         resourceSentryTeam(),
 			"sentry_project":      resourceSentryProject(),
 			"sentry_key":          resourceSentryKey(),
+			"sentry_default_key":  resourceSentryDefaultKey(),
 			"sentry_plugin":       resourceSentryPlugin(),
 			"sentry_rule":         resourceSentryRule(),
 		},
