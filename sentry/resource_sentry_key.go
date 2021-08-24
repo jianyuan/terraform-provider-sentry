@@ -1,6 +1,8 @@
 package sentry
 
 import (
+	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/sentry"
 )
@@ -78,6 +80,12 @@ func resourceSentryKeyCreate(d *schema.ResourceData, meta interface{}) error {
 
 	org := d.Get("organization").(string)
 	project := d.Get("project").(string)
+
+	_, resp, err := client.Projects.Get(org, project)
+	if found, err := checkClientGet(resp, err, d); !found {
+		return fmt.Errorf("project not found \"%v\": %w", project, err)
+	}
+
 	params := &sentry.CreateProjectKeyParams{
 		Name: d.Get("name").(string),
 		RateLimit: &sentry.ProjectKeyRateLimit{
