@@ -14,16 +14,9 @@ import (
 func TestAccSentryTeam_basic(t *testing.T) {
 	var team sentry.Team
 
-	random := acctest.RandInt()
-	newTeamSlug := fmt.Sprintf("test-team-changed-%d", random)
-
-	testAccSentryTeamUpdateConfig := fmt.Sprintf(`
-    resource "sentry_team" "test_team" {
-      organization = "%s"
-      name = "Test team changed"
-      slug = "%s"
-    }
-	`, testOrganization, newTeamSlug)
+	random := acctest.RandString(4)
+	teamSlug := fmt.Sprintf("test-%s", random)
+	newTeamSlug := fmt.Sprintf("test-%s-changed", random)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -31,21 +24,19 @@ func TestAccSentryTeam_basic(t *testing.T) {
 		CheckDestroy: testAccCheckSentryTeamDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSentryTeamConfig,
+				Config: buildTestAccSentryTeamConfig(teamSlug),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSentryTeamExists("sentry_team.test_team", &team),
 					testAccCheckSentryTeamAttributes(&team, &testAccSentryTeamExpectedAttributes{
-						Name:        "Test team",
-						SlugPresent: true,
+						Slug: teamSlug,
 					}),
 				),
 			},
 			{
-				Config: testAccSentryTeamUpdateConfig,
+				Config: buildTestAccSentryTeamConfig(newTeamSlug),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSentryTeamExists("sentry_team.test_team", &team),
 					testAccCheckSentryTeamAttributes(&team, &testAccSentryTeamExpectedAttributes{
-						Name: "Test team changed",
 						Slug: newTeamSlug,
 					}),
 				),
@@ -104,22 +95,11 @@ func testAccCheckSentryTeamExists(n string, team *sentry.Team) resource.TestChec
 }
 
 type testAccSentryTeamExpectedAttributes struct {
-	Name string
-
-	SlugPresent bool
-	Slug        string
+	Slug string
 }
 
 func testAccCheckSentryTeamAttributes(team *sentry.Team, want *testAccSentryTeamExpectedAttributes) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if team.Name != want.Name {
-			return fmt.Errorf("got team %q; want %q", team.Name, want.Name)
-		}
-
-		if want.SlugPresent && team.Slug == "" {
-			return errors.New("got empty slug; want non-empty slug")
-		}
-
 		if want.Slug != "" && team.Slug != want.Slug {
 			return fmt.Errorf("got slug %q; want %q", team.Slug, want.Slug)
 		}
@@ -128,9 +108,11 @@ func testAccCheckSentryTeamAttributes(team *sentry.Team, want *testAccSentryTeam
 	}
 }
 
-var testAccSentryTeamConfig = fmt.Sprintf(`
-  resource "sentry_team" "test_team" {
-    organization = "%s"
-    name = "Test team"
-  }
-`, testOrganization)
+func buildTestAccSentryTeamConfig(slug string) string {
+	return fmt.Sprintf(`
+		resource "sentry_team" "test_team" {
+			organization = "%s"
+			slug = "%s"
+		}
+	`, testOrganization, slug)
+}

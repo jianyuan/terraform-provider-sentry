@@ -24,15 +24,16 @@ func resourceSentryTeam() *schema.Resource {
 				Description: "The slug of the organization the team should be created for",
 			},
 			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The name of the team",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "The name of the team",
+				Computed:     true,
+				ComputedWhen: []string{"slug"},
 			},
 			"slug": {
 				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The optional slug for this team",
-				Computed:    true,
+				Required:    true,
+				Description: "The unique slug for this team",
 			},
 			"team_id": {
 				Type:     schema.TypeString,
