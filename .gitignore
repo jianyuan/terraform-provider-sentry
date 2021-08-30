@@ -25,6 +25,10 @@ website/node_modules
 *.test
 *.iml
 
+#binaries
+terraform-provider-sentry
+main
+
 website/vendor
 
 # Test exclusions
