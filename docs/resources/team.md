@@ -26,3 +26,11 @@ The following arguments are supported:
 The following attributes are exported:
 
 - `id` - The ID of the created team.
+
+## Import
+
+This resource can be imported using an ID made up of the organization slug and project slug:
+
+```bash
+$ terraform import sentry_team.default org-slug/team-slug
+```
