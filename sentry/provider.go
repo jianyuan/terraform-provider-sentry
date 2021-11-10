@@ -10,13 +10,13 @@ func Provider() *schema.Provider {
 		Schema: map[string]*schema.Schema{
 			"token": {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("SENTRY_TOKEN", nil),
 				Description: "The authentication token used to connect to Sentry",
 			},
 			"base_url": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("SENTRY_BASE_URL", "https://sentry.io/api/"),
 				Description: "The Sentry Base API URL",
 			},
