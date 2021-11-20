@@ -21,6 +21,8 @@ jobs:
             goos: darwin
           - goarch: arm
             goos: darwin
+          - goarch: arm64
+            goos: darwin
           - goarch: arm
             goos: openbsd
           - goarch: arm64
