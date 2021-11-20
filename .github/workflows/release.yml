@@ -1,6 +1,6 @@
 on:
   release:
-    types: [ created ]
+    types: [created]
 
 jobs:
   releases-matrix:
@@ -8,10 +8,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        goos: [ freebsd, openbsd, solaris, windows, linux, darwin ]
-        goarch: [ amd64, "386", arm, arm64 ]
+        goos: [freebsd, openbsd, solaris, windows, linux, darwin]
+        goarch: [amd64, "386", arm, arm64]
 
-    steps:,uses: actions/checkout@v2
+    steps:
+      - uses: actions/checkout@v2
       - uses: wangyoucao577/go-release-action@v1.20
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
