@@ -15,10 +15,16 @@ jobs:
             goos: solaris
           - goarch: arm
             goos: solaris
+          - goarch: arm64
+            goos: solaris
           - goarch: "386"
             goos: darwin
           - goarch: arm
             goos: darwin
+          - goarch: arm
+            goos: openbsd
+          - goarch: arm64
+            goos: openbsd
 
     steps:
       - uses: actions/checkout@v2
