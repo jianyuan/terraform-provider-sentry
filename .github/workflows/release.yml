@@ -10,6 +10,15 @@ jobs:
       matrix:
         goos: [freebsd, openbsd, solaris, windows, linux, darwin]
         goarch: [amd64, "386", arm, arm64]
+        exclude:
+          - goarch: "386"
+            goos: solaris
+          - goarch: arm
+            goos: solaris
+          - goarch: "386"
+            goos: darwin
+          - goarch: arm
+            goos: darwin
 
     steps:
       - uses: actions/checkout@v2
