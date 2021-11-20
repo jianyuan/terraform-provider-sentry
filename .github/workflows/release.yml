@@ -1,41 +1,33 @@
+name: release
+
 on:
-  release:
-    types: [created]
+  push:
+    tags:
+      - "v*"
 
 jobs:
-  releases-matrix:
-    name: Release Go Binary
+  goreleaser:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        goos: [freebsd, openbsd, solaris, windows, linux, darwin]
-        goarch: [amd64, "386", arm, arm64]
-        exclude:
-          - goarch: "386"
-            goos: solaris
-          - goarch: arm
-            goos: solaris
-          - goarch: arm64
-            goos: solaris
-          - goarch: "386"
-            goos: darwin
-          - goarch: arm
-            goos: darwin
-          - goarch: arm64
-            goos: darwin
-          - goarch: arm
-            goos: openbsd
-          - goarch: arm64
-            goos: openbsd
-          - goarch: 386
-            goos: openbsd
-          - goarch: arm
-            goos: freebsd
-
     steps:
-      - uses: actions/checkout@v2
-      - uses: wangyoucao577/go-release-action@v1.20
+      - name: Checkout
+        uses: actions/checkout@v2.4.0
+      - name: Unshallow
+        run: git fetch --prune --unshallow
+      - name: Set up Go
+        uses: actions/setup-go@v2
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          goos: ${{ matrix.goos }}
-          goarch: ${{ matrix.goarch }}
+          go-version: 1.17
+      - name: Import GPG key
+        id: import_gpg
+        uses: hashicorp/ghaction-import-gpg@v2.1.0
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          PASSPHRASE: ${{ secrets.PASSPHRASE }}
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v2.8.0
+        with:
+          version: latest
+          args: release --rm-dist
+        env:
+          GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
