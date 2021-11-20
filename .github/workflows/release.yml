@@ -27,6 +27,8 @@ jobs:
             goos: openbsd
           - goarch: arm64
             goos: openbsd
+          - goarch: arm
+            goos: freebsd
 
     steps:
       - uses: actions/checkout@v2
