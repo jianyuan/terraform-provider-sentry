@@ -179,27 +179,6 @@ func resourceSentryRuleRead(d *schema.ResourceData, meta interface{}) error {
 		return errors.New("Could not find rule with ID " + id)
 	}
 
-	// workaround for
-	// https://github.com/hashicorp/terraform-plugin-sdk/issues/62
-	// as the data sent by Sentry is integer
-	for _, f := range rule.Actions {
-		for k, v := range f {
-			switch vv := v.(type) {
-			case float64:
-				f[k] = fmt.Sprintf("%.0f", vv)
-			}
-		}
-	}
-
-	for _, f := range rule.Conditions {
-		for k, v := range f {
-			switch vv := v.(type) {
-			case float64:
-				f[k] = fmt.Sprintf("%.0f", vv)
-			}
-		}
-	}
-
 	for _, f := range rule.Filters {
 		for k, v := range f {
 			switch vv := v.(type) {
@@ -213,11 +192,6 @@ func resourceSentryRuleRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("name", rule.Name)
 	d.Set("frequency", rule.Frequency)
 	d.Set("environment", rule.Environment)
-	d.Set("filters", rule.Filters)
-	d.Set("actions", rule.Actions)
-	d.Set("conditions", rule.Conditions)
-	d.Set("action_match", rule.ActionMatch)
-	d.Set("filter_match", rule.FilterMatch)
 
 	return nil
 }
