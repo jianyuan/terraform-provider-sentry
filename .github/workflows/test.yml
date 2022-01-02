@@ -71,5 +71,8 @@ jobs:
         
     - name: TF acceptance tests
       timeout-minutes: 10
+      env:
+        SENTRY_TEST_ORGANIZATION: ${{ secrets.SENTRY_TEST_ORGANIZATION }}
+        SENTRY_TOKEN: ${{ secrets.SENTRY_TOKEN }}
       run: |
         make testacc
