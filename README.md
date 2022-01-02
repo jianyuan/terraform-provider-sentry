@@ -18,15 +18,15 @@ Pre-compiled binaries are available from the [Releases](https://github.com/jiany
 
 ## Development
 
+If you wish to work on the provider, you will need to install [Go](https://go.dev/doc/install) (We use >= 1.17) on your machine.
+
 ### Test
 
-Test the provider by running `make test`.
+In order to run the full suite of acceptance tests, run `make testacc`.
 
-Make sure to set the following environment variables:
+Make sure to set the following environment variables beforehand:
 
 - `SENTRY_TEST_ORGANIZATION`
 - `SENTRY_TOKEN`
 
-### Build
-
-See the [Writing Custom Providers page of the Terraform documentation](https://www.terraform.io/docs/extend/writing-custom-providers.html#building-the-plugin) for instructions.
+*Note:* Acceptance tests create real resources, and often cost money to run.
