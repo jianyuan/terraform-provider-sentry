@@ -93,14 +93,14 @@ resource "sentry_team" "test_team" {
 
 resource "sentry_project" "test_project" {
 	organization = "%s"
-	team         = "${sentry_team.test_team.id}"
+	team         = sentry_team.test_team.id
 	name         = "Test project"
 	platform     = "go"
 }
 
 resource "sentry_rule" "test_rule" {
 	organization = "%s"
-	project      = "${sentry_project.test_project.id}"
+	project      = sentry_project.test_project.id
 	name         = "Test rule"
 
 	conditions = [
@@ -112,15 +112,17 @@ resource "sentry_rule" "test_rule" {
 
 	filters = [
 		{
-			id         = "sentry.rules.filters.assigned_to.AssignedToFilter"
-			targetType = "Unassigned"
+			id               = "sentry.rules.filters.assigned_to.AssignedToFilter"
+			name             = "The issue is assigned to Unassigned"
+			targetIdentifier = ""
+			targetType       = "Unassigned"
 		}
 	]
 
 	actions = [
 		{
 			id               = "sentry.mail.actions.NotifyEmailAction"
-			name             = "Send an email to IssueOwners"
+			name             = "Send a notification to IssueOwners"
 			targetIdentifier = ""
 			targetType       = "IssueOwners"
 		}
