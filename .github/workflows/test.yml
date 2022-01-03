@@ -71,6 +71,6 @@ jobs:
         timeout-minutes: 10
         env:
           SENTRY_TEST_ORGANIZATION: ${{ secrets.SENTRY_TEST_ORGANIZATION }}
-          SENTRY_TOKEN: ${{ secrets.SENTRY_TOKEN }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: |
           make testacc

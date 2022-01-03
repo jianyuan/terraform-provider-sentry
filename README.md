@@ -27,6 +27,6 @@ In order to run the full suite of acceptance tests, run `make testacc`.
 Make sure to set the following environment variables beforehand:
 
 - `SENTRY_TEST_ORGANIZATION`
-- `SENTRY_TOKEN`
+- `SENTRY_AUTH_TOKEN`
 
-*Note:* Acceptance tests create real resources, and often cost money to run.
+_Note:_ Acceptance tests create real resources, and often cost money to run.

@@ -26,8 +26,8 @@ func TestProvider(t *testing.T) {
 }
 
 func testAccPreCheck(t *testing.T) {
-	if v := os.Getenv("SENTRY_TOKEN"); v == "" {
-		t.Fatal("SENTRY_TOKEN must be set for acceptance tests")
+	if v := os.Getenv("SENTRY_AUTH_TOKEN"); v == "" {
+		t.Fatal("SENTRY_AUTH_TOKEN must be set for acceptance tests")
 	}
 	if v := os.Getenv("SENTRY_TEST_ORGANIZATION"); v == "" {
 		t.Fatal("SENTRY_TEST_ORGANIZATION must be set for acceptance tests")

@@ -11,7 +11,7 @@ func Provider() *schema.Provider {
 			"token": {
 				Type:        schema.TypeString,
 				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("SENTRY_TOKEN", nil),
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"SENTRY_AUTH_TOKEN", "SENTRY_TOKEN"}, nil),
 				Description: "The authentication token used to connect to Sentry",
 			},
 			"base_url": {
