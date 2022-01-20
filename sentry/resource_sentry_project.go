@@ -2,11 +2,11 @@ package sentry
 
 import (
 	"errors"
-	"log"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/logging"
 )
 
 func resourceSentryProject() *schema.Resource {
@@ -109,6 +109,8 @@ func resourceSentryProjectCreate(d *schema.ResourceData, meta interface{}) error
 		Slug: d.Get("slug").(string),
 	}
 
+	logging.Debugf("Creating Sentry project for team %s in org %s", team, org)
+
 	proj, _, err := client.Projects.Create(org, team, params)
 	if err != nil {
 		return err
@@ -123,6 +125,8 @@ func resourceSentryProjectRead(d *schema.ResourceData, meta interface{}) error {
 
 	slug := d.Id()
 	org := d.Get("organization").(string)
+
+	logging.Debugf("Reading Sentry project with id %s in org %s", slug, org)
 
 	proj, resp, err := client.Projects.Get(org, slug)
 	if found, err := checkClientGet(resp, err, d); !found {
@@ -176,6 +180,8 @@ func resourceSentryProjectUpdate(d *schema.ResourceData, meta interface{}) error
 		params.ResolveAge = Int(v.(int))
 	}
 
+	logging.Debugf("Updating Sentry project with id %s in org %s", slug, org)
+
 	proj, _, err := client.Projects.Update(org, slug, params)
 	if err != nil {
 		return err
@@ -191,6 +197,8 @@ func resourceSentryProjectDelete(d *schema.ResourceData, meta interface{}) error
 	slug := d.Id()
 	org := d.Get("organization").(string)
 
+	logging.Debugf("Deleting Sentry project with id %s in org %s", slug, org)
+
 	_, err := client.Projects.Delete(org, slug)
 	return err
 }
@@ -198,7 +206,7 @@ func resourceSentryProjectDelete(d *schema.ResourceData, meta interface{}) error
 func resourceSentryProjectImporter(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	addrID := d.Id()
 
-	log.Printf("[DEBUG] Importing key using ADDR ID %s", addrID)
+	logging.Debugf("Importing key using ADDR ID %s", addrID)
 
 	parts := strings.Split(addrID, "/")
 

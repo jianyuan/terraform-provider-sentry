@@ -2,15 +2,16 @@ package sentry
 
 import (
 	"errors"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"log"
 	"strings"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/jianyuan/terraform-provider-sentry/logging"
 )
 
 func resourceKeyImport(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	id := d.Id()
 
-	log.Printf("[DEBUG] Importing key using ADDR ID %s", id)
+	logging.Debugf("Importing key using ADDR ID %s", id)
 
 	parts := strings.Split(id, "/")
 

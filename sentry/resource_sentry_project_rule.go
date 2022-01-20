@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/logging"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -146,6 +147,8 @@ func resourceSentryRuleCreate(d *schema.ResourceData, meta interface{}) error {
 		params.Environment = environment
 	}
 
+	logging.Debugf("Creating rule with name %v in org %v for project %v", name, org, project)
+
 	rule, _, err := client.Rules.Create(org, project, params)
 	if err != nil {
 		return err
@@ -162,6 +165,8 @@ func resourceSentryRuleRead(d *schema.ResourceData, meta interface{}) error {
 	project := d.Get("project").(string)
 	id := d.Id()
 
+	logging.Debugf("Reading rule with ID %v in org %v for project %v", id, org, project)
+
 	rules, resp, err := client.Rules.List(org, project)
 	if found, err := checkClientGet(resp, err, d); !found {
 		return err
@@ -176,6 +181,9 @@ func resourceSentryRuleRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if rule == nil {
+		if id == "" {
+			logging.Error("The rule ID was never set ('')")
+		}
 		return errors.New("Could not find rule with ID " + id)
 	}
 
@@ -281,6 +289,8 @@ func resourceSentryRuleUpdate(d *schema.ResourceData, meta interface{}) error {
 		params.Environment = &environment
 	}
 
+	logging.Debugf("Updating rule with ID %v in org %v for project %v", id, org, project)
+
 	_, _, err := client.Rules.Update(org, project, id, params)
 	if err != nil {
 		return err
@@ -295,6 +305,8 @@ func resourceSentryRuleDelete(d *schema.ResourceData, meta interface{}) error {
 	id := d.Id()
 	org := d.Get("organization").(string)
 	project := d.Get("project").(string)
+
+	logging.Debugf("Deleting rule with ID %v in org %v for project %v", id, org, project)
 
 	_, err := client.Rules.Delete(org, project, id)
 	return err

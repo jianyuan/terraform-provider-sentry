@@ -1,10 +1,9 @@
 package sentry
 
 import (
-	"log"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/logging"
 )
 
 func resourceSentryOrganization() *schema.Resource {
@@ -46,7 +45,7 @@ func resourceSentryOrganizationCreate(d *schema.ResourceData, meta interface{}) 
 		Slug:       d.Get("slug").(string),
 		AgreeTerms: sentry.Bool(d.Get("agree_terms").(bool)),
 	}
-	log.Printf("[DEBUG] Creating Sentry organization %s", params.Name)
+	logging.Debugf("Creating Sentry organization %s", params.Name)
 
 	org, _, err := client.Organizations.Create(params)
 	if err != nil {
@@ -61,7 +60,7 @@ func resourceSentryOrganizationRead(d *schema.ResourceData, meta interface{}) er
 	client := meta.(*sentry.Client)
 
 	slug := d.Id()
-	log.Printf("[DEBUG] Reading Sentry organization %s", slug)
+	logging.Debugf("Reading Sentry organization %s", slug)
 
 	org, resp, err := client.Organizations.Get(slug)
 	if found, err := checkClientGet(resp, err, d); !found {
@@ -79,7 +78,7 @@ func resourceSentryOrganizationUpdate(d *schema.ResourceData, meta interface{}) 
 	client := meta.(*sentry.Client)
 
 	slug := d.Id()
-	log.Printf("[DEBUG] Updating Sentry organization %s", slug)
+	logging.Debugf("Updating Sentry organization %s", slug)
 	params := &sentry.UpdateOrganizationParams{
 		Name: d.Get("name").(string),
 		Slug: d.Get("slug").(string),
@@ -98,7 +97,7 @@ func resourceSentryOrganizationDelete(d *schema.ResourceData, meta interface{}) 
 	client := meta.(*sentry.Client)
 
 	slug := d.Id()
-	log.Printf("[DEBUG] Deleting Sentry organization %s", slug)
+	logging.Debugf("Deleting Sentry organization %s", slug)
 
 	_, err := client.Organizations.Delete(slug)
 	return err

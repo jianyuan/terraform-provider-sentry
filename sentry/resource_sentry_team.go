@@ -1,10 +1,9 @@
 package sentry
 
 import (
-	"log"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/logging"
 )
 
 func resourceSentryTeam() *schema.Resource {
@@ -62,7 +61,7 @@ func resourceSentryTeamCreate(d *schema.ResourceData, meta interface{}) error {
 		Name: d.Get("name").(string),
 		Slug: d.Get("slug").(string),
 	}
-	log.Printf("[DEBUG] Creating Sentry team %s (Organization: %s)", params.Name, org)
+	logging.Debugf("Creating Sentry team %s in org %s", params.Name, org)
 
 	team, _, err := client.Teams.Create(org, params)
 	if err != nil {
@@ -78,7 +77,7 @@ func resourceSentryTeamRead(d *schema.ResourceData, meta interface{}) error {
 
 	slug := d.Id()
 	org := d.Get("organization").(string)
-	log.Printf("[DEBUG] Reading Sentry team %s (Organization: %s)", slug, org)
+	logging.Debugf("Reading Sentry team %s in org %s", slug, org)
 
 	team, resp, err := client.Teams.Get(org, slug)
 	if found, err := checkClientGet(resp, err, d); !found {
@@ -105,7 +104,7 @@ func resourceSentryTeamUpdate(d *schema.ResourceData, meta interface{}) error {
 		Name: d.Get("name").(string),
 		Slug: d.Get("slug").(string),
 	}
-	log.Printf("[DEBUG] Updating Sentry team %s (Organization: %s)", slug, org)
+	logging.Debugf("Updating Sentry team %s in org %s", slug, org)
 
 	team, _, err := client.Teams.Update(org, slug, params)
 	if err != nil {
@@ -121,7 +120,7 @@ func resourceSentryTeamDelete(d *schema.ResourceData, meta interface{}) error {
 
 	slug := d.Id()
 	org := d.Get("organization").(string)
-	log.Printf("[DEBUG] Deleting Sentry team %s (Organization: %s)", slug, org)
+	logging.Debugf("Deleting Sentry team %s in org %s", slug, org)
 
 	_, err := client.Teams.Delete(org, slug)
 	return err

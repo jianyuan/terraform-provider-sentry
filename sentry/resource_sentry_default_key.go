@@ -2,11 +2,11 @@ package sentry
 
 import (
 	"fmt"
-	"log"
 	"sort"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/logging"
 )
 
 func resourceSentryDefaultKey() *schema.Resource {
@@ -54,6 +54,7 @@ func resourceSentryDefaultKeyCreate(d *schema.ResourceData, meta interface{}) er
 		},
 	}
 
+	logging.Debugf("Updating project keys for org/project %s/%s with %s", org, project, id)
 	if _, _, err = client.ProjectKeys.Update(org, project, id, params); err != nil {
 		return err
 	}
@@ -63,6 +64,6 @@ func resourceSentryDefaultKeyCreate(d *schema.ResourceData, meta interface{}) er
 }
 
 func resourceAwsDefaultVpcDelete(d *schema.ResourceData, meta interface{}) error {
-	log.Printf("[WARN] Cannot destroy Default Key. Terraform will remove this resource from the state file, however resources may remain.")
+	logging.Warning("Cannot destroy Default Key. Terraform will remove this resource from the state file, however resources may remain.")
 	return nil
 }

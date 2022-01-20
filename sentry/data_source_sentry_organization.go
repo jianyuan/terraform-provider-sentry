@@ -3,6 +3,7 @@ package sentry
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/logging"
 )
 
 func dataSourceSentryOrganization() *schema.Resource {
@@ -37,6 +38,7 @@ func dataSourceSentryOrganizationRead(d *schema.ResourceData, meta interface{}) 
 		return err
 	}
 
+	logging.Debugf("Received org named %s with ID: %s and internal_id: %s", org.Name, org.Slug, org.ID)
 	d.SetId(org.Slug)
 	d.Set("internal_id", org.ID)
 	d.Set("name", org.Name)

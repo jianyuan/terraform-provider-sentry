@@ -2,11 +2,11 @@ package sentry
 
 import (
 	"fmt"
-	"log"
 	"sort"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/logging"
 )
 
 func dataSourceSentryKey() *schema.Resource {
@@ -100,18 +100,19 @@ func dataSourceSentryKeyRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if len(keys) == 1 {
-		log.Printf("[DEBUG] sentry_key - single key found: %s", keys[0].ID)
+		logging.Debugf("sentry_key - single key named %s found: %s", keys[0].Name, keys[0].ID)
 		return sentryKeyAttributes(d, &keys[0])
 	}
 
 	first := d.Get("first").(bool)
-	log.Printf("[DEBUG] sentry_key - multiple results found and `first` is set to: %t", first)
+	logging.Debugf("sentry_key - multiple results found and `first` is set to: %t", first)
 	if first {
 		// Sort keys by date created
 		sort.Slice(keys, func(i, j int) bool {
 			return keys[i].DateCreated.Before(keys[j].DateCreated)
 		})
 
+		logging.Debugf("sentry_key - choosing key named %s id: %s", keys[0].Name, keys[0].ID)
 		return sentryKeyAttributes(d, &keys[0])
 	}
 

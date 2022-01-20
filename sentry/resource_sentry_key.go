@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/logging"
 )
 
 func resourceSentryKey() *schema.Resource {
@@ -98,7 +99,7 @@ func resourceSentryKeyCreate(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-
+	logging.Debugf("Created Sentry key with id %s", key.ID)
 	d.SetId(key.ID)
 
 	return resourceSentryKeyRead(d, meta)
@@ -120,6 +121,7 @@ func resourceSentryKeyRead(d *schema.ResourceData, meta interface{}) error {
 
 	for _, key := range keys {
 		if key.ID == id {
+			logging.Debugf("Found the sentry key with id %s", id)
 			d.SetId(key.ID)
 			d.Set("name", key.Name)
 			d.Set("public", key.Public)
@@ -143,6 +145,7 @@ func resourceSentryKeyRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if !found {
+		logging.Debugf("Sentry key with id %s could not be found...", id)
 		d.SetId("")
 	}
 
@@ -168,6 +171,7 @@ func resourceSentryKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
+	logging.Debugf("Updating current Sentry key id to %s", key.ID)
 	d.SetId(key.ID)
 	return resourceSentryKeyRead(d, meta)
 }
@@ -180,5 +184,6 @@ func resourceSentryKeyDelete(d *schema.ResourceData, meta interface{}) error {
 	project := d.Get("project").(string)
 
 	_, err := client.ProjectKeys.Delete(org, project, id)
+	logging.Debugf("Deleted Sentry key with id %s", id)
 	return err
 }
