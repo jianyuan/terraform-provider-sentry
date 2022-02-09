@@ -1,9 +1,11 @@
 package sentry
 
 import (
-	"errors"
+	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/sentry"
 	"github.com/mitchellh/mapstructure"
@@ -17,12 +19,12 @@ const (
 
 func resourceSentryRule() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceSentryRuleCreate,
-		Read:   resourceSentryRuleRead,
-		Update: resourceSentryRuleUpdate,
-		Delete: resourceSentryRuleDelete,
+		CreateContext: resourceSentryRuleCreate,
+		ReadContext:   resourceSentryRuleRead,
+		UpdateContext: resourceSentryRuleUpdate,
+		DeleteContext: resourceSentryRuleDelete,
 		Importer: &schema.ResourceImporter{
-			State: resourceSentryRuleImporter,
+			StateContext: resourceSentryRuleImporter,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -88,7 +90,7 @@ func resourceSentryRule() *schema.Resource {
 	}
 }
 
-func resourceSentryRuleCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceSentryRuleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
 	name := d.Get("name").(string)
@@ -146,26 +148,30 @@ func resourceSentryRuleCreate(d *schema.ResourceData, meta interface{}) error {
 		params.Environment = environment
 	}
 
+	tflog.Debug(ctx, "Creating Sentry rule", "ruleName", name, "org", org, "project", project)
 	rule, _, err := client.Rules.Create(org, project, params)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
+	tflog.Debug(ctx, "Created Sentry rule", "ruleName", rule.Name, "ruleID", rule.ID, "org", org, "project", project)
 
 	d.SetId(rule.ID)
 
-	return resourceSentryRuleRead(d, meta)
+	return resourceSentryRuleRead(ctx, d, meta)
 }
 
-func resourceSentryRuleRead(d *schema.ResourceData, meta interface{}) error {
+func resourceSentryRuleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 	org := d.Get("organization").(string)
 	project := d.Get("project").(string)
 	id := d.Id()
 
+	tflog.Debug(ctx, "Reading Sentry rule", "ruleID", id, "org", org, "project", project)
 	rules, resp, err := client.Rules.List(org, project)
 	if found, err := checkClientGet(resp, err, d); !found {
-		return err
+		return diag.FromErr(err)
 	}
+	tflog.Trace(ctx, "Read Sentry rules", "ruleCount", len(rules), "rules", rules)
 
 	var rule *sentry.Rule
 	for _, r := range rules {
@@ -176,8 +182,9 @@ func resourceSentryRuleRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if rule == nil {
-		return errors.New("Could not find rule with ID " + id)
+		return diag.Errorf("Could not find rule with ID " + id)
 	}
+	tflog.Debug(ctx, "Read Sentry rule", "ruleID", rule.ID, "org", org, "project", project)
 
 	// workaround for
 	// https://github.com/hashicorp/terraform-plugin-sdk/issues/62
@@ -222,7 +229,7 @@ func resourceSentryRuleRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceSentryRuleUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceSentryRuleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
 	id := d.Id()
@@ -281,21 +288,26 @@ func resourceSentryRuleUpdate(d *schema.ResourceData, meta interface{}) error {
 		params.Environment = &environment
 	}
 
-	_, _, err := client.Rules.Update(org, project, id, params)
+	tflog.Debug(ctx, "Updating Sentry rule", "ruleID", id, "org", org, "project", project)
+	rule, _, err := client.Rules.Update(org, project, id, params)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
+	tflog.Debug(ctx, "Updated Sentry rule", "ruleID", rule.ID, "org", org, "project", project)
 
-	return resourceSentryRuleRead(d, meta)
+	return resourceSentryRuleRead(ctx, d, meta)
 }
 
-func resourceSentryRuleDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceSentryRuleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
 	id := d.Id()
 	org := d.Get("organization").(string)
 	project := d.Get("project").(string)
 
+	tflog.Debug(ctx, "Deleting Sentry rule", "ruleID", id, "org", org, "project", project)
 	_, err := client.Rules.Delete(org, project, id)
-	return err
+	tflog.Debug(ctx, "Deleted Sentry rule", "ruleID", id, "org", org, "project", project)
+
+	return diag.FromErr(err)
 }

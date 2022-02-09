@@ -1,10 +1,11 @@
 package sentry
 
 import (
-	"fmt"
-	"log"
+	"context"
 	"sort"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/sentry"
 )
@@ -12,8 +13,8 @@ import (
 func resourceSentryDefaultKey() *schema.Resource {
 	// reuse read and update operations
 	dKey := resourceSentryKey()
-	dKey.Create = resourceSentryDefaultKeyCreate
-	dKey.Delete = resourceAwsDefaultVpcDelete
+	dKey.CreateContext = resourceSentryDefaultKeyCreate
+	dKey.DeleteContext = resourceAwsDefaultVpcDelete
 
 	// Key name is a computed resource for default key
 	dKey.Schema["name"] = &schema.Schema{
@@ -26,7 +27,7 @@ func resourceSentryDefaultKey() *schema.Resource {
 	return dKey
 }
 
-func resourceSentryDefaultKeyCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceSentryDefaultKeyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
 	org := d.Get("organization").(string)
@@ -34,11 +35,11 @@ func resourceSentryDefaultKeyCreate(d *schema.ResourceData, meta interface{}) er
 
 	keys, resp, err := client.ProjectKeys.List(org, project)
 	if found, err := checkClientGet(resp, err, d); !found {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if len(keys) < 1 {
-		return fmt.Errorf("Default key not found on the project")
+		return diag.Errorf("Default key not found on the project")
 	}
 
 	sort.Slice(keys, func(i, j int) bool {
@@ -54,15 +55,17 @@ func resourceSentryDefaultKeyCreate(d *schema.ResourceData, meta interface{}) er
 		},
 	}
 
-	if _, _, err = client.ProjectKeys.Update(org, project, id, params); err != nil {
-		return err
+	tflog.Debug(ctx, "Creating Sentry default key", "org", org, "project", project, "keyID", id)
+	if _, _, err := client.ProjectKeys.Update(org, project, id, params); err != nil {
+		return diag.FromErr(err)
 	}
+	tflog.Debug(ctx, "Created Sentry default key", "org", org, "project", project, "keyID", id)
 
 	d.SetId(id)
-	return resourceSentryKeyRead(d, meta)
+	return resourceSentryKeyRead(ctx, d, meta)
 }
 
-func resourceAwsDefaultVpcDelete(d *schema.ResourceData, meta interface{}) error {
-	log.Printf("[WARN] Cannot destroy Default Key. Terraform will remove this resource from the state file, however resources may remain.")
+func resourceAwsDefaultVpcDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	tflog.Warn(ctx, "Cannot destroy Default Key. Terraform will remove this resource from the state file, however resources may remain.")
 	return nil
 }

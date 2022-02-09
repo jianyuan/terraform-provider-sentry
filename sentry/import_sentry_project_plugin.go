@@ -1,17 +1,18 @@
 package sentry
 
 import (
+	"context"
 	"errors"
-	"log"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourceSentryPluginImporter(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+func resourceSentryPluginImporter(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	addrID := d.Id()
 
-	log.Printf("[DEBUG] Importing key using ADDR ID %s", addrID)
+	tflog.Debug(ctx, "Importing Sentry plugin", "pluginID", addrID)
 
 	parts := strings.Split(addrID, "/")
 
