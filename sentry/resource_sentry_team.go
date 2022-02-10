@@ -1,20 +1,22 @@
 package sentry
 
 import (
-	"log"
+	"context"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/sentry"
 )
 
 func resourceSentryTeam() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceSentryTeamCreate,
-		Read:   resourceSentryTeamRead,
-		Update: resourceSentryTeamUpdate,
-		Delete: resourceSentryTeamDelete,
+		CreateContext: resourceSentryTeamCreate,
+		ReadContext:   resourceSentryTeamRead,
+		UpdateContext: resourceSentryTeamUpdate,
+		DeleteContext: resourceSentryTeamDelete,
 		Importer: &schema.ResourceImporter{
-			State: resourceSentryTeamImport,
+			StateContext: resourceSentryTeamImport,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -54,7 +56,7 @@ func resourceSentryTeam() *schema.Resource {
 	}
 }
 
-func resourceSentryTeamCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceSentryTeamCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
 	org := d.Get("organization").(string)
@@ -62,28 +64,30 @@ func resourceSentryTeamCreate(d *schema.ResourceData, meta interface{}) error {
 		Name: d.Get("name").(string),
 		Slug: d.Get("slug").(string),
 	}
-	log.Printf("[DEBUG] Creating Sentry team %s (Organization: %s)", params.Name, org)
 
+	tflog.Debug(ctx, "Creating Sentry team", "teamName", params.Name, "org", org)
 	team, _, err := client.Teams.Create(org, params)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
+	tflog.Debug(ctx, "Created Sentry team", "teamName", team.Name, "org", org)
 
 	d.SetId(team.Slug)
-	return resourceSentryTeamRead(d, meta)
+	return resourceSentryTeamRead(ctx, d, meta)
 }
 
-func resourceSentryTeamRead(d *schema.ResourceData, meta interface{}) error {
+func resourceSentryTeamRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
 	slug := d.Id()
 	org := d.Get("organization").(string)
-	log.Printf("[DEBUG] Reading Sentry team %s (Organization: %s)", slug, org)
 
+	tflog.Debug(ctx, "Reading Sentry team", "teamSlug", slug, "org", org)
 	team, resp, err := client.Teams.Get(org, slug)
 	if found, err := checkClientGet(resp, err, d); !found {
-		return err
+		return diag.FromErr(err)
 	}
+	tflog.Debug(ctx, "Read Sentry team", "teamSlug", team.Slug, "teamID", team.ID, "org", org)
 
 	d.SetId(team.Slug)
 	d.Set("team_id", team.ID)
@@ -96,7 +100,7 @@ func resourceSentryTeamRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceSentryTeamUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceSentryTeamUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
 	slug := d.Id()
@@ -105,24 +109,27 @@ func resourceSentryTeamUpdate(d *schema.ResourceData, meta interface{}) error {
 		Name: d.Get("name").(string),
 		Slug: d.Get("slug").(string),
 	}
-	log.Printf("[DEBUG] Updating Sentry team %s (Organization: %s)", slug, org)
 
+	tflog.Debug(ctx, "Updating Sentry team", "teamSlug", slug, "org", org)
 	team, _, err := client.Teams.Update(org, slug, params)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
+	tflog.Debug(ctx, "Updated Sentry team", "teamSlug", team.Slug, "teamID", team.ID, "org", org)
 
 	d.SetId(team.Slug)
-	return resourceSentryTeamRead(d, meta)
+	return resourceSentryTeamRead(ctx, d, meta)
 }
 
-func resourceSentryTeamDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceSentryTeamDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
 	slug := d.Id()
 	org := d.Get("organization").(string)
-	log.Printf("[DEBUG] Deleting Sentry team %s (Organization: %s)", slug, org)
 
+	tflog.Debug(ctx, "Deleting Sentry team", "teamSlug", slug, "org", org)
 	_, err := client.Teams.Delete(org, slug)
-	return err
+	tflog.Debug(ctx, "Deleted Sentry team", "teamSlug", slug, "org", org)
+
+	return diag.FromErr(err)
 }
