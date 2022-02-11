@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/logging"
 )
 
 func dataSourceSentryOrganization() *schema.Resource {
@@ -37,7 +38,8 @@ func dataSourceSentryOrganizationRead(ctx context.Context, d *schema.ResourceDat
 	slug := d.Get("slug").(string)
 
 	tflog.Debug(ctx, "Reading Sentry org", "orgSlug", slug)
-	org, _, err := client.Organizations.Get(slug)
+	org, resp, err := client.Organizations.Get(slug)
+	ctx = logging.AttachHttpResponse(ctx, resp)
 	if err != nil {
 		return diag.FromErr(err)
 	}

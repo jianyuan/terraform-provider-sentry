@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/logging"
 )
 
 func resourceSentryKey() *schema.Resource {
@@ -84,6 +85,7 @@ func resourceSentryKeyCreate(ctx context.Context, d *schema.ResourceData, meta i
 	project := d.Get("project").(string)
 
 	_, resp, err := client.Projects.Get(org, project)
+	ctx = logging.AttachHttpResponse(ctx, resp)
 	if found, err := checkClientGet(resp, err, d); !found {
 		return diag.Errorf("project not found \"%v\": %v", project, err)
 	}
@@ -97,7 +99,8 @@ func resourceSentryKeyCreate(ctx context.Context, d *schema.ResourceData, meta i
 	}
 
 	tflog.Debug(ctx, "Creating Sentry key", "keyName", params.Name, "org", org, "project", project)
-	key, _, err := client.ProjectKeys.Create(org, project, params)
+	key, resp, err := client.ProjectKeys.Create(org, project, params)
+	ctx = logging.AttachHttpResponse(ctx, resp)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -116,6 +119,7 @@ func resourceSentryKeyRead(ctx context.Context, d *schema.ResourceData, meta int
 
 	tflog.Debug(ctx, "Reading Sentry key", "keyID", id, "org", org, "project", project)
 	keys, resp, err := client.ProjectKeys.List(org, project)
+	ctx = logging.AttachHttpResponse(ctx, resp)
 	if found, err := checkClientGet(resp, err, d); !found {
 		return diag.FromErr(err)
 	}
@@ -171,7 +175,8 @@ func resourceSentryKeyUpdate(ctx context.Context, d *schema.ResourceData, meta i
 	}
 
 	tflog.Debug(ctx, "Updating Sentry key", "keyID", id)
-	key, _, err := client.ProjectKeys.Update(org, project, id, params)
+	key, resp, err := client.ProjectKeys.Update(org, project, id, params)
+	ctx = logging.AttachHttpResponse(ctx, resp)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -189,7 +194,8 @@ func resourceSentryKeyDelete(ctx context.Context, d *schema.ResourceData, meta i
 	project := d.Get("project").(string)
 
 	tflog.Debug(ctx, "Deleting Sentry key", "keyID", id)
-	_, err := client.ProjectKeys.Delete(org, project, id)
+	resp, err := client.ProjectKeys.Delete(org, project, id)
+	ctx = logging.AttachHttpResponse(ctx, resp)
 	tflog.Debug(ctx, "Deleted Sentry key", "keyID", id)
 	return diag.FromErr(err)
 }
