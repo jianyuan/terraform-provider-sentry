@@ -54,7 +54,7 @@ func resourceSentryPluginCreate(ctx context.Context, d *schema.ResourceData, met
 
 	tflog.Debug(ctx, "Creating Sentry plugin", "pluginName", plugin, "org", org, "project", project)
 	resp, err := client.ProjectPlugins.Enable(org, project, plugin)
-	ctx = logging.AttachHttpResponse(ctx, resp)
+	tflog.Debug(ctx, "Sentry plugin create http response data", logging.ExtractHttpResponse(resp)...)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -64,7 +64,6 @@ func resourceSentryPluginCreate(ctx context.Context, d *schema.ResourceData, met
 
 	params := d.Get("config").(map[string]interface{})
 	_, resp, err = client.ProjectPlugins.Update(org, project, plugin, params)
-	ctx = logging.AttachHttpResponse(ctx, resp)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -81,7 +80,7 @@ func resourceSentryPluginRead(ctx context.Context, d *schema.ResourceData, meta 
 
 	tflog.Debug(ctx, "Reading Sentry plugin", "pluginID", id, "org", org, "project", project)
 	plugin, resp, err := client.ProjectPlugins.Get(org, project, id)
-	ctx = logging.AttachHttpResponse(ctx, resp)
+	tflog.Debug(ctx, "Sentry plugin read http response data", logging.ExtractHttpResponse(resp)...)
 	if found, err := checkClientGet(resp, err, d); !found {
 		return diag.FromErr(err)
 	}
@@ -116,7 +115,7 @@ func resourceSentryPluginUpdate(ctx context.Context, d *schema.ResourceData, met
 	tflog.Debug(ctx, "Updating Sentry plugin", "pluginID", id, "org", org, "project", project)
 	params := d.Get("config").(map[string]interface{})
 	plugin, resp, err := client.ProjectPlugins.Update(org, project, id, params)
-	ctx = logging.AttachHttpResponse(ctx, resp)
+	tflog.Debug(ctx, "Sentry plugin update http response data", logging.ExtractHttpResponse(resp)...)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -134,7 +133,7 @@ func resourceSentryPluginDelete(ctx context.Context, d *schema.ResourceData, met
 
 	tflog.Debug(ctx, "Deleting Sentry plugin", "pluginID", id, "org", org, "project", project)
 	resp, err := client.ProjectPlugins.Disable(org, project, id)
-	ctx = logging.AttachHttpResponse(ctx, resp)
+	tflog.Debug(ctx, "Sentry plugin delete http response data", logging.ExtractHttpResponse(resp)...)
 	tflog.Debug(ctx, "Deleted Sentry plugin", "pluginID", id, "org", org, "project", project)
 
 	return diag.FromErr(err)

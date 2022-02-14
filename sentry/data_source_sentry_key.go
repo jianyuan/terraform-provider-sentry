@@ -88,7 +88,7 @@ func dataSourceSentryKeyRead(ctx context.Context, d *schema.ResourceData, meta i
 
 	tflog.Debug(ctx, "Reading Sentry project keys", "org", org, "project", project)
 	keys, resp, err := client.ProjectKeys.List(org, project)
-	ctx = logging.AttachHttpResponse(ctx, resp)
+	tflog.Debug(ctx, "Sentry key read http response data", logging.ExtractHttpResponse(resp)...)
 	if err != nil {
 		return diag.FromErr(err)
 	}

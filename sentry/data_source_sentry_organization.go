@@ -39,7 +39,7 @@ func dataSourceSentryOrganizationRead(ctx context.Context, d *schema.ResourceDat
 
 	tflog.Debug(ctx, "Reading Sentry org", "orgSlug", slug)
 	org, resp, err := client.Organizations.Get(slug)
-	ctx = logging.AttachHttpResponse(ctx, resp)
+	tflog.Debug(ctx, "Sentry organisation read http response data", logging.ExtractHttpResponse(resp)...)
 	if err != nil {
 		return diag.FromErr(err)
 	}

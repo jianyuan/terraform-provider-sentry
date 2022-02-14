@@ -85,7 +85,6 @@ func resourceSentryKeyCreate(ctx context.Context, d *schema.ResourceData, meta i
 	project := d.Get("project").(string)
 
 	_, resp, err := client.Projects.Get(org, project)
-	ctx = logging.AttachHttpResponse(ctx, resp)
 	if found, err := checkClientGet(resp, err, d); !found {
 		return diag.Errorf("project not found \"%v\": %v", project, err)
 	}
@@ -100,7 +99,7 @@ func resourceSentryKeyCreate(ctx context.Context, d *schema.ResourceData, meta i
 
 	tflog.Debug(ctx, "Creating Sentry key", "keyName", params.Name, "org", org, "project", project)
 	key, resp, err := client.ProjectKeys.Create(org, project, params)
-	ctx = logging.AttachHttpResponse(ctx, resp)
+	tflog.Debug(ctx, "Sentry key create http response data", logging.ExtractHttpResponse(resp)...)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -119,7 +118,7 @@ func resourceSentryKeyRead(ctx context.Context, d *schema.ResourceData, meta int
 
 	tflog.Debug(ctx, "Reading Sentry key", "keyID", id, "org", org, "project", project)
 	keys, resp, err := client.ProjectKeys.List(org, project)
-	ctx = logging.AttachHttpResponse(ctx, resp)
+	tflog.Debug(ctx, "Sentry key read http response data", logging.ExtractHttpResponse(resp)...)
 	if found, err := checkClientGet(resp, err, d); !found {
 		return diag.FromErr(err)
 	}
@@ -176,7 +175,7 @@ func resourceSentryKeyUpdate(ctx context.Context, d *schema.ResourceData, meta i
 
 	tflog.Debug(ctx, "Updating Sentry key", "keyID", id)
 	key, resp, err := client.ProjectKeys.Update(org, project, id, params)
-	ctx = logging.AttachHttpResponse(ctx, resp)
+	tflog.Debug(ctx, "Sentry key update http response data", logging.ExtractHttpResponse(resp)...)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -195,7 +194,7 @@ func resourceSentryKeyDelete(ctx context.Context, d *schema.ResourceData, meta i
 
 	tflog.Debug(ctx, "Deleting Sentry key", "keyID", id)
 	resp, err := client.ProjectKeys.Delete(org, project, id)
-	ctx = logging.AttachHttpResponse(ctx, resp)
+	tflog.Debug(ctx, "Sentry key delete http response data", logging.ExtractHttpResponse(resp)...)
 	tflog.Debug(ctx, "Deleted Sentry key", "keyID", id)
 	return diag.FromErr(err)
 }

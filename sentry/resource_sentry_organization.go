@@ -52,7 +52,7 @@ func resourceSentryOrganizationCreate(ctx context.Context, d *schema.ResourceDat
 
 	tflog.Debug(ctx, "Creating Sentry organization", "orgName", params.Name)
 	org, resp, err := client.Organizations.Create(params)
-	ctx = logging.AttachHttpResponse(ctx, resp)
+	tflog.Debug(ctx, "Sentry organization create http response data", logging.ExtractHttpResponse(resp)...)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -69,7 +69,7 @@ func resourceSentryOrganizationRead(ctx context.Context, d *schema.ResourceData,
 
 	tflog.Debug(ctx, "Reading Sentry organization", "orgSlug", slug)
 	org, resp, err := client.Organizations.Get(slug)
-	ctx = logging.AttachHttpResponse(ctx, resp)
+	tflog.Debug(ctx, "Sentry organization read http response data", logging.ExtractHttpResponse(resp)...)
 	if found, err := checkClientGet(resp, err, d); !found {
 		return diag.FromErr(err)
 	}
@@ -93,7 +93,7 @@ func resourceSentryOrganizationUpdate(ctx context.Context, d *schema.ResourceDat
 
 	tflog.Debug(ctx, "Updating Sentry organization", "orgSlug", slug)
 	org, resp, err := client.Organizations.Update(slug, params)
-	ctx = logging.AttachHttpResponse(ctx, resp)
+	tflog.Debug(ctx, "Sentry Organization update http response data", logging.ExtractHttpResponse(resp)...)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -110,7 +110,7 @@ func resourceSentryOrganizationDelete(ctx context.Context, d *schema.ResourceDat
 
 	tflog.Debug(ctx, "Deleting Sentry organization", "orgSlug", slug)
 	resp, err := client.Organizations.Delete(slug)
-	ctx = logging.AttachHttpResponse(ctx, resp)
+	tflog.Debug(ctx, "Sentry organization delete http response data", logging.ExtractHttpResponse(resp)...)
 	tflog.Debug(ctx, "Deleted Sentry organization", "orgSlug", slug)
 
 	return diag.FromErr(err)
