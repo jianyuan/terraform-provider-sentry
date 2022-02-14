@@ -123,7 +123,7 @@ func resourceSentryKeyRead(ctx context.Context, d *schema.ResourceData, meta int
 	if found, err := checkClientGet(resp, err, d); !found {
 		return diag.FromErr(err)
 	}
-	tflog.Trace(ctx, "Read Sentry keys", "keyCount", len(keys), "keys", keys)
+	tflog.Trace(ctx, "Read Sentry keys", "keyCount", len(keys), "keys", logging.TryJsonify(keys))
 
 	found := false
 

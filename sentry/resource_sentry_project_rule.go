@@ -174,7 +174,7 @@ func resourceSentryRuleRead(ctx context.Context, d *schema.ResourceData, meta in
 	if found, err := checkClientGet(resp, err, d); !found {
 		return diag.FromErr(err)
 	}
-	tflog.Trace(ctx, "Read Sentry rules", "ruleCount", len(rules), "rules", rules)
+	tflog.Trace(ctx, "Read Sentry rules", "ruleCount", len(rules), "rules", logging.TryJsonify(rules))
 
 	var rule *sentry.Rule
 	for _, r := range rules {
