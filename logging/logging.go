@@ -35,7 +35,8 @@ func TryJsonify(object interface{}) interface{} {
 // extractHttpResponseElements is an indirection for if it is ever needed to add more elements.
 func extractHttpResponseElements(resp *http.Response) []logKeyValuePair {
 	return []logKeyValuePair{
-		makePair("responseHeaders", TryJsonify(resp.Header)),
+		makePair("responseContentType", resp.Header.Get("content-type")),
+		makePair("responseContentLength", resp.Header.Get("content-length")),
 		makePair("responseStatus", resp.Status),
 		makePair("requestUrl", resp.Request.URL.String()),
 	}
