@@ -6,7 +6,7 @@ import (
 )
 
 // logKeyValuePair is a helper struct to help organise the use of tflog. tflog
-// uses pairs to print key-value items/args, so this just to help visualize the
+// uses pairs to print key-value items/args, so this is just to help visualize the
 // way the logging works
 type logKeyValuePair struct {
 	// Key is what will appear next to the value, e.g. keyID=...
