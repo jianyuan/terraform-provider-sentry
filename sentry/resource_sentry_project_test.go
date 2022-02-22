@@ -3,7 +3,7 @@ package sentry
 import (
 	"errors"
 	"fmt"
-    "sort"
+	"sort"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -67,14 +67,14 @@ func TestAccSentryProject_basic(t *testing.T) {
 					}),
 				),
 			},
-            {
-                Config: testAccSentryProjectRemoveKeyConfig,
-                Check:  testAccCheckSentryKeyRemoved("sentry_project.test_project_remove_key"),
-            },
-            {
-                Config: testAccSentryProjectRemoveRuleConfig,
-                Check:  testAccCheckSentryRuleRemoved("sentry_project.test_project_remove_rule"),
-            },
+			{
+				Config: testAccSentryProjectRemoveKeyConfig,
+				Check:  testAccCheckSentryKeyRemoved("sentry_project.test_project_remove_key"),
+			},
+			{
+				Config: testAccSentryProjectRemoveRuleConfig,
+				Check:  testAccCheckSentryRuleRemoved("sentry_project.test_project_remove_rule"),
+			},
 		},
 	})
 }
@@ -156,14 +156,14 @@ func testAccCheckSentryRuleRemoved(n string) resource.TestCheckFunc {
 }
 
 type testAccSentryProjectExpectedAttributes struct {
-	Name            string
-	Organization    string
-	Team            string
+	Name         string
+	Organization string
+	Team         string
 
-	SlugPresent     bool
-	Slug            string
-	AllowedDomains  []string
-	Platform        string
+	SlugPresent    bool
+	Slug           string
+	AllowedDomains []string
+	Platform       string
 }
 
 func testAccCheckSentryProjectAttributes(proj *sentry.Project, want *testAccSentryProjectExpectedAttributes) resource.TestCheckFunc {
@@ -192,17 +192,17 @@ func testAccCheckSentryProjectAttributes(proj *sentry.Project, want *testAccSent
 			return fmt.Errorf("got Platform %q; want %q", proj.Platform, want.Platform)
 		}
 
-        if len(want.AllowedDomains) == len(proj.AllowedDomains) {
-            sort.Strings(want.AllowedDomains)
-            sort.Strings(proj.AllowedDomains)
-            for index := range want.AllowedDomains {
-                if want.AllowedDomains[index] != proj.AllowedDomains[index] {
-                    return fmt.Errorf("want: %v, get: %v", want.AllowedDomains, proj.AllowedDomains)
-                }
-            }
-        } else {
-            return fmt.Errorf("want: %v, get: %v", want.AllowedDomains, proj.AllowedDomains)
-        }
+		if len(want.AllowedDomains) == len(proj.AllowedDomains) {
+			sort.Strings(want.AllowedDomains)
+			sort.Strings(proj.AllowedDomains)
+			for index := range want.AllowedDomains {
+				if want.AllowedDomains[index] != proj.AllowedDomains[index] {
+					return fmt.Errorf("want: %v, get: %v", want.AllowedDomains, proj.AllowedDomains)
+				}
+			}
+		} else {
+			return fmt.Errorf("want: %v, get: %v", want.AllowedDomains, proj.AllowedDomains)
+		}
 
 		return nil
 	}
