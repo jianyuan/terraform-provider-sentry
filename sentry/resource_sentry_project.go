@@ -95,6 +95,27 @@ func resourceSentryProject() *schema.Resource {
 				Description: "Hours in which an issue is automatically resolve if not seen after this amount of time.",
 				Computed:    true,
 			},
+            "allowed_domains": {
+                Type:        schema.TypeList,
+                Computed:    true,
+                Description: "The domains which Sentry will allow errors to be reported from",
+                Optional:    true,
+                Elem: &schema.Schema{
+                    Type: schema.TypeString,
+                },
+            },
+			"remove_default_key": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Whether to remove the default key",
+				Default:     false,
+			},
+			"remove_default_rule": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Whether to remove the default rule",
+				Default:     false,
+			},
 
 			// TODO: Project options
 		},
@@ -117,6 +138,20 @@ func resourceSentryProjectCreate(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 	tflog.Debug(ctx, "Created Sentry project", "projectSlug", proj.Slug, "projectID", proj.ID, "team", team, "org", org)
+
+    if d.Get("remove_default_key").(bool) {
+        err = removeDefaultKey(client, org, proj.Slug)
+        if err != nil {
+            return diag.FromErr(err)
+        }
+    }
+
+    if d.Get("remove_default_rule").(bool) {
+        err = removeDefaultRule(client, org, proj.Slug)
+        if err != nil {
+            return diag.FromErr(err)
+        }
+    }
 
 	d.SetId(proj.Slug)
 	return resourceSentryProjectUpdate(ctx, d, meta)
@@ -149,6 +184,7 @@ func resourceSentryProjectRead(ctx context.Context, d *schema.ResourceData, meta
 	d.Set("digests_min_delay", proj.DigestsMinDelay)
 	d.Set("digests_max_delay", proj.DigestsMaxDelay)
 	d.Set("resolve_age", proj.ResolveAge)
+	d.Set("allowed_domains", proj.AllowedDomains)
 
 	// TODO: Project options
 
@@ -181,6 +217,14 @@ func resourceSentryProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 	if v, ok := d.GetOk("resolve_age"); ok {
 		params.ResolveAge = Int(v.(int))
 	}
+
+    allowedDomains := []string{}
+    for _, url := range d.Get("allowed_domains").([]interface{}) {
+        allowedDomains = append(allowedDomains, url.(string))
+    }
+    if len(allowedDomains) > 0 {
+        params.AllowedDomains = allowedDomains
+    }
 
 	tflog.Debug(ctx, "Updating Sentry project", "projectSlug", slug, "org", org)
 	proj, _, err := client.Projects.Update(org, slug, params)
@@ -221,4 +265,38 @@ func resourceSentryProjectImporter(ctx context.Context, d *schema.ResourceData, 
 	d.SetId(parts[1])
 
 	return []*schema.ResourceData{d}, nil
+}
+
+func removeDefaultKey(client *sentry.Client, org, projSlug string) error {
+	keys, _, err := client.ProjectKeys.List(org, projSlug)
+	if err != nil {
+		return err
+	}
+	var defaultKeyID string
+	for _, key := range keys {
+		if key.Name == "Default" {
+			defaultKeyID = key.ID
+			break
+		}
+	}
+
+	client.ProjectKeys.Delete(org, projSlug, defaultKeyID)
+	return nil
+}
+
+func removeDefaultRule(client *sentry.Client, org, projSlug string) error {
+	rules, _, err := client.Rules.List(org, projSlug)
+	if err != nil {
+		return err
+	}
+	var defaultRuleID string
+	for _, rule := range rules {
+		if rule.Name == "Send a notification for new issues" {
+			defaultRuleID = rule.ID
+			break
+		}
+	}
+
+	client.Rules.Delete(org, projSlug, defaultRuleID)
+	return nil
 }

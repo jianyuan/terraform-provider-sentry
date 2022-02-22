@@ -3,6 +3,7 @@ package sentry
 import (
 	"errors"
 	"fmt"
+    "sort"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -28,6 +29,7 @@ func TestAccSentryProject_basic(t *testing.T) {
 	    team = "${sentry_team.test_team.id}"
 	    name = "Test project changed"
 	    slug = "%s"
+        allowed_domains = ["www.example.com",]
 	    platform = "go"
 	  }
 	`, testOrganization, testOrganization, newProjectSlug)
@@ -42,11 +44,12 @@ func TestAccSentryProject_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSentryProjectExists("sentry_project.test_project", &project),
 					testAccCheckSentryProjectAttributes(&project, &testAccSentryProjectExpectedAttributes{
-						Name:         "Test project",
-						Organization: testOrganization,
-						Team:         "Test team",
-						SlugPresent:  true,
-						Platform:     "go",
+						Name:           "Test project",
+						Organization:   testOrganization,
+						Team:           "Test team",
+						SlugPresent:    true,
+						AllowedDomains: []string{"*"},
+						Platform:       "go",
 					}),
 				),
 			},
@@ -55,14 +58,23 @@ func TestAccSentryProject_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSentryProjectExists("sentry_project.test_project", &project),
 					testAccCheckSentryProjectAttributes(&project, &testAccSentryProjectExpectedAttributes{
-						Name:         "Test project changed",
-						Organization: testOrganization,
-						Team:         "Test team",
-						Slug:         newProjectSlug,
-						Platform:     "go",
+						Name:           "Test project changed",
+						Organization:   testOrganization,
+						Team:           "Test team",
+						Slug:           newProjectSlug,
+						AllowedDomains: []string{"www.example.com"},
+						Platform:       "go",
 					}),
 				),
 			},
+            {
+                Config: testAccSentryProjectRemoveKeyConfig,
+                Check:  testAccCheckSentryKeyRemoved("sentry_project.test_project_remove_key"),
+            },
+            {
+                Config: testAccSentryProjectRemoveRuleConfig,
+                Check:  testAccCheckSentryRuleRemoved("sentry_project.test_project_remove_rule"),
+            },
 		},
 	})
 }
@@ -113,14 +125,45 @@ func testAccCheckSentryProjectExists(n string, proj *sentry.Project) resource.Te
 	}
 }
 
-type testAccSentryProjectExpectedAttributes struct {
-	Name         string
-	Organization string
-	Team         string
+func testAccCheckSentryKeyRemoved(n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs := s.RootModule().Resources[n]
+		client := testAccProvider.Meta().(*sentry.Client)
+		keys, _, err := client.ProjectKeys.List(rs.Primary.Attributes["organization"], rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+		if len(keys) != 0 {
+			return fmt.Errorf("Default key not removed")
+		}
+		return nil
+	}
+}
 
-	SlugPresent bool
-	Slug        string
-	Platform    string
+func testAccCheckSentryRuleRemoved(n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs := s.RootModule().Resources[n]
+		client := testAccProvider.Meta().(*sentry.Client)
+		keys, _, err := client.Rules.List(rs.Primary.Attributes["organization"], rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+		if len(keys) != 0 {
+			return fmt.Errorf("Default rule not removed")
+		}
+		return nil
+	}
+}
+
+type testAccSentryProjectExpectedAttributes struct {
+	Name            string
+	Organization    string
+	Team            string
+
+	SlugPresent     bool
+	Slug            string
+	AllowedDomains  []string
+	Platform        string
 }
 
 func testAccCheckSentryProjectAttributes(proj *sentry.Project, want *testAccSentryProjectExpectedAttributes) resource.TestCheckFunc {
@@ -149,6 +192,18 @@ func testAccCheckSentryProjectAttributes(proj *sentry.Project, want *testAccSent
 			return fmt.Errorf("got Platform %q; want %q", proj.Platform, want.Platform)
 		}
 
+        if len(want.AllowedDomains) == len(proj.AllowedDomains) {
+            sort.Strings(want.AllowedDomains)
+            sort.Strings(proj.AllowedDomains)
+            for index := range want.AllowedDomains {
+                if want.AllowedDomains[index] != proj.AllowedDomains[index] {
+                    return fmt.Errorf("want: %v, get: %v", want.AllowedDomains, proj.AllowedDomains)
+                }
+            }
+        } else {
+            return fmt.Errorf("want: %v, get: %v", want.AllowedDomains, proj.AllowedDomains)
+        }
+
 		return nil
 	}
 }
@@ -164,5 +219,31 @@ var testAccSentryProjectConfig = fmt.Sprintf(`
     team = "${sentry_team.test_team.id}"
     name = "Test project"
     platform = "go"
+  }
+`, testOrganization, testOrganization)
+
+var testAccSentryProjectRemoveKeyConfig = fmt.Sprintf(`
+  resource "sentry_team" "test_team" {
+    organization = "%s"
+    name = "Test team"
+  }
+  resource "sentry_project" "test_project_remove_key" {
+    organization = "%s"
+    team = "${sentry_team.test_team.id}"
+	name = "Test project"
+	remove_default_key = true
+  }
+`, testOrganization, testOrganization)
+
+var testAccSentryProjectRemoveRuleConfig = fmt.Sprintf(`
+  resource "sentry_team" "test_team" {
+    organization = "%s"
+    name = "Test team"
+  }
+  resource "sentry_project" "test_project_remove_rule" {
+    organization = "%s"
+    team = "${sentry_team.test_team.id}"
+	name = "Test project"
+	remove_default_rule = true
   }
 `, testOrganization, testOrganization)
