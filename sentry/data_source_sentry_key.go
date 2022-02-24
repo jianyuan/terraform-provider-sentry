@@ -1,16 +1,18 @@
 package sentry
 
 import (
-	"fmt"
-	"log"
+	"context"
+	"sort"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/sentry"
 )
 
 func dataSourceSentryKey() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceSentryKeyRead,
+		ReadContext: dataSourceSentryKeyRead,
 
 		Schema: map[string]*schema.Schema{
 			"organization": {
@@ -77,39 +79,46 @@ func dataSourceSentryKey() *schema.Resource {
 	}
 }
 
-func dataSourceSentryKeyRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceSentryKeyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
 	org := d.Get("organization").(string)
 	project := d.Get("project").(string)
 
+	tflog.Debug(ctx, "Reading Sentry project keys", "org", org, "project", project)
 	keys, _, err := client.ProjectKeys.List(org, project)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if v, ok := d.GetOk("name"); ok {
 		name := v.(string)
 		for _, key := range keys {
 			if key.Name == name {
-				return sentryKeyAttributes(d, &key)
+				return diag.FromErr(sentryKeyAttributes(d, &key))
 			}
 		}
-		return fmt.Errorf("Can't find Sentry key: %s", v)
+		return diag.Errorf("Can't find Sentry key: %s", v)
 	}
 
 	if len(keys) == 1 {
-		log.Printf("[DEBUG] sentry_key - single key found: %s", keys[0].ID)
-		return sentryKeyAttributes(d, &keys[0])
+		tflog.Debug(ctx, "sentry_key - single key", "keyName", keys[0].Name, "keyID", keys[0].ID)
+		return diag.FromErr(sentryKeyAttributes(d, &keys[0]))
 	}
 
 	first := d.Get("first").(bool)
-	log.Printf("[DEBUG] sentry_key - multiple results found and `first` is set to: %t", first)
+	tflog.Debug(ctx, "sentry_key - multiple results found", "first", first)
 	if first {
-		return sentryKeyAttributes(d, &keys[0])
+		// Sort keys by date created
+		sort.Slice(keys, func(i, j int) bool {
+			return keys[i].DateCreated.Before(keys[j].DateCreated)
+		})
+
+		tflog.Debug(ctx, "sentry_key - Found more than one key. Returning the oldest (`first`) key.", "keyName", keys[0].Name, "keyID", keys[0].ID)
+		return diag.FromErr(sentryKeyAttributes(d, &keys[0]))
 	}
 
-	return fmt.Errorf("There are %d keys associate to this project. "+
+	return diag.Errorf("There are %d keys associate to this project. "+
 		"To avoid ambiguity, please set `first` to true or filter the keys by specifying a `name`.",
 		len(keys))
 }

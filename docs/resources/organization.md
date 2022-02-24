@@ -26,3 +26,11 @@ The following arguments are supported:
 The following attributes are exported:
 
 - `id` - The ID of the created organization.
+
+## Import
+
+This resource can be imported using an ID made up of the organization slug:
+
+```bash
+$ terraform import sentry_organization.default org-slug
+```

@@ -1,20 +1,22 @@
 package sentry
 
 import (
-	"log"
+	"context"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/sentry"
 )
 
 func resourceSentryOrganization() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceSentryOrganizationCreate,
-		Read:   resourceSentryOrganizationRead,
-		Update: resourceSentryOrganizationUpdate,
-		Delete: resourceSentryOrganizationDelete,
+		CreateContext: resourceSentryOrganizationCreate,
+		ReadContext:   resourceSentryOrganizationRead,
+		UpdateContext: resourceSentryOrganizationUpdate,
+		DeleteContext: resourceSentryOrganizationDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -38,7 +40,7 @@ func resourceSentryOrganization() *schema.Resource {
 	}
 }
 
-func resourceSentryOrganizationCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceSentryOrganizationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
 	params := &sentry.CreateOrganizationParams{
@@ -46,27 +48,29 @@ func resourceSentryOrganizationCreate(d *schema.ResourceData, meta interface{}) 
 		Slug:       d.Get("slug").(string),
 		AgreeTerms: sentry.Bool(d.Get("agree_terms").(bool)),
 	}
-	log.Printf("[DEBUG] Creating Sentry organization %s", params.Name)
 
+	tflog.Debug(ctx, "Creating Sentry organization", "orgName", params.Name)
 	org, _, err := client.Organizations.Create(params)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
+	tflog.Debug(ctx, "Created Sentry organization", "orgName", org.Name, "orgID", org.ID)
 
 	d.SetId(org.Slug)
-	return resourceSentryOrganizationRead(d, meta)
+	return resourceSentryOrganizationRead(ctx, d, meta)
 }
 
-func resourceSentryOrganizationRead(d *schema.ResourceData, meta interface{}) error {
+func resourceSentryOrganizationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
 	slug := d.Id()
-	log.Printf("[DEBUG] Reading Sentry organization %s", slug)
 
+	tflog.Debug(ctx, "Reading Sentry organization", "orgSlug", slug)
 	org, resp, err := client.Organizations.Get(slug)
 	if found, err := checkClientGet(resp, err, d); !found {
-		return err
+		return diag.FromErr(err)
 	}
+	tflog.Debug(ctx, "Read Sentry organization", "orgSlug", org.Slug, "orgID", org.ID)
 
 	d.SetId(org.Slug)
 	d.Set("internal_id", org.ID)
@@ -75,31 +79,34 @@ func resourceSentryOrganizationRead(d *schema.ResourceData, meta interface{}) er
 	return nil
 }
 
-func resourceSentryOrganizationUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceSentryOrganizationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
 	slug := d.Id()
-	log.Printf("[DEBUG] Updating Sentry organization %s", slug)
 	params := &sentry.UpdateOrganizationParams{
 		Name: d.Get("name").(string),
 		Slug: d.Get("slug").(string),
 	}
 
+	tflog.Debug(ctx, "Updating Sentry organization", "orgSlug", slug)
 	org, _, err := client.Organizations.Update(slug, params)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
+	tflog.Debug(ctx, "Updated Sentry organization", "orgSlug", org.Slug, "orgID", org.ID)
 
 	d.SetId(org.Slug)
-	return resourceSentryOrganizationRead(d, meta)
+	return resourceSentryOrganizationRead(ctx, d, meta)
 }
 
-func resourceSentryOrganizationDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceSentryOrganizationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
 	slug := d.Id()
-	log.Printf("[DEBUG] Deleting Sentry organization %s", slug)
 
+	tflog.Debug(ctx, "Deleting Sentry organization", "orgSlug", slug)
 	_, err := client.Organizations.Delete(slug)
-	return err
+	tflog.Debug(ctx, "Deleted Sentry organization", "orgSlug", slug)
+
+	return diag.FromErr(err)
 }

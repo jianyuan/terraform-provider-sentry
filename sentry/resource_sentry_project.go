@@ -1,22 +1,24 @@
 package sentry
 
 import (
+	"context"
 	"errors"
-	"log"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/sentry"
 )
 
 func resourceSentryProject() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceSentryProjectCreate,
-		Read:   resourceSentryProjectRead,
-		Update: resourceSentryProjectUpdate,
-		Delete: resourceSentryProjectDelete,
+		CreateContext: resourceSentryProjectCreate,
+		ReadContext:   resourceSentryProjectRead,
+		UpdateContext: resourceSentryProjectUpdate,
+		DeleteContext: resourceSentryProjectDelete,
 		Importer: &schema.ResourceImporter{
-			State: resourceSentryProjectImporter,
+			StateContext: resourceSentryProjectImporter,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -72,16 +74,20 @@ func resourceSentryProject() *schema.Resource {
 				},
 			},
 			"status": {
-				Type:     schema.TypeBool,
+				Type:     schema.TypeString,
 				Computed: true,
 			},
 			"digests_min_delay": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The minimum amount of time (in seconds) to wait between scheduling digests for delivery after the initial scheduling.",
+				Optional:    true,
 			},
 			"digests_max_delay": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The maximum amount of time (in seconds) to wait between scheduling digests for delivery.",
+				Optional:    true,
 			},
 			"resolve_age": {
 				Type:        schema.TypeInt,
@@ -95,7 +101,7 @@ func resourceSentryProject() *schema.Resource {
 	}
 }
 
-func resourceSentryProjectCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceSentryProjectCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
 	org := d.Get("organization").(string)
@@ -105,25 +111,29 @@ func resourceSentryProjectCreate(d *schema.ResourceData, meta interface{}) error
 		Slug: d.Get("slug").(string),
 	}
 
+	tflog.Debug(ctx, "Creating Sentry project", "teamName", team, "org", org)
 	proj, _, err := client.Projects.Create(org, team, params)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
+	tflog.Debug(ctx, "Created Sentry project", "projectSlug", proj.Slug, "projectID", proj.ID, "team", team, "org", org)
 
 	d.SetId(proj.Slug)
-	return resourceSentryProjectUpdate(d, meta)
+	return resourceSentryProjectUpdate(ctx, d, meta)
 }
 
-func resourceSentryProjectRead(d *schema.ResourceData, meta interface{}) error {
+func resourceSentryProjectRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
 	slug := d.Id()
 	org := d.Get("organization").(string)
 
+	tflog.Debug(ctx, "Reading Sentry project", "projectSlug", slug, "org", org)
 	proj, resp, err := client.Projects.Get(org, slug)
 	if found, err := checkClientGet(resp, err, d); !found {
-		return err
+		return diag.FromErr(err)
 	}
+	tflog.Debug(ctx, "Read Sentry project", "projectSlug", proj.Slug, "projectID", proj.ID, "org", org)
 
 	d.SetId(proj.Slug)
 	d.Set("organization", proj.Organization.Slug)
@@ -145,7 +155,7 @@ func resourceSentryProjectRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceSentryProjectUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceSentryProjectUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
 	slug := d.Id()
@@ -172,29 +182,34 @@ func resourceSentryProjectUpdate(d *schema.ResourceData, meta interface{}) error
 		params.ResolveAge = Int(v.(int))
 	}
 
+	tflog.Debug(ctx, "Updating Sentry project", "projectSlug", slug, "org", org)
 	proj, _, err := client.Projects.Update(org, slug, params)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
+	tflog.Debug(ctx, "Updated Sentry project", "projectSlug", proj.Slug, "projectID", proj.ID, "org", org)
 
 	d.SetId(proj.Slug)
-	return resourceSentryProjectRead(d, meta)
+	return resourceSentryProjectRead(ctx, d, meta)
 }
 
-func resourceSentryProjectDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceSentryProjectDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
 	slug := d.Id()
 	org := d.Get("organization").(string)
 
+	tflog.Debug(ctx, "Deleting Sentry project", "projectSlug", slug, "org", org)
 	_, err := client.Projects.Delete(org, slug)
-	return err
+	tflog.Debug(ctx, "Deleted Sentry project", "projectSlug", slug, "org", org)
+
+	return diag.FromErr(err)
 }
 
-func resourceSentryProjectImporter(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+func resourceSentryProjectImporter(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	addrID := d.Id()
 
-	log.Printf("[DEBUG] Importing key using ADDR ID %s", addrID)
+	tflog.Debug(ctx, "Importing Sentry project", "projetID", addrID)
 
 	parts := strings.Split(addrID, "/")
 

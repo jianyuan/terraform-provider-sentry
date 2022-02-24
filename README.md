@@ -1,6 +1,5 @@
 # terraform-provider-sentry
 
-[![CircleCI](https://circleci.com/gh/jianyuan/terraform-provider-sentry/tree/master.svg?style=svg)](https://circleci.com/gh/jianyuan/terraform-provider-sentry/tree/master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/jianyuan/terraform-provider-sentry)](https://goreportcard.com/report/github.com/jianyuan/terraform-provider-sentry)
 
 Terraform provider for [Sentry](https://sentry.io).
@@ -19,15 +18,15 @@ Pre-compiled binaries are available from the [Releases](https://github.com/jiany
 
 ## Development
 
+If you wish to work on the provider, you will need to install [Go](https://go.dev/doc/install) (We use >= 1.17) on your machine.
+
 ### Test
 
-Test the provider by running `make test`.
+In order to run the full suite of acceptance tests, run `make testacc`.
 
-Make sure to set the following environment variables:
+Make sure to set the following environment variables beforehand:
 
 - `SENTRY_TEST_ORGANIZATION`
-- `SENTRY_TOKEN`
+- `SENTRY_AUTH_TOKEN`
 
-### Build
-
-See the [Writing Custom Providers page of the Terraform documentation](https://www.terraform.io/docs/extend/writing-custom-providers.html#building-the-plugin) for instructions.
+_Note:_ Acceptance tests create real resources, and often cost money to run.

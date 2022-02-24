@@ -1,18 +1,22 @@
 package sentry
 
 import (
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/sentry"
 )
 
 func resourceSentryKey() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceSentryKeyCreate,
-		Read:   resourceSentryKeyRead,
-		Update: resourceSentryKeyUpdate,
-		Delete: resourceSentryKeyDelete,
+		CreateContext: resourceSentryKeyCreate,
+		ReadContext:   resourceSentryKeyRead,
+		UpdateContext: resourceSentryKeyUpdate,
+		DeleteContext: resourceSentryKeyDelete,
 		Importer: &schema.ResourceImporter{
-			State: resourceKeyImport,
+			StateContext: resourceKeyImport,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -73,11 +77,17 @@ func resourceSentryKey() *schema.Resource {
 	}
 }
 
-func resourceSentryKeyCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceSentryKeyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
 	org := d.Get("organization").(string)
 	project := d.Get("project").(string)
+
+	_, resp, err := client.Projects.Get(org, project)
+	if found, err := checkClientGet(resp, err, d); !found {
+		return diag.Errorf("project not found \"%v\": %v", project, err)
+	}
+
 	params := &sentry.CreateProjectKeyParams{
 		Name: d.Get("name").(string),
 		RateLimit: &sentry.ProjectKeyRateLimit{
@@ -86,32 +96,36 @@ func resourceSentryKeyCreate(d *schema.ResourceData, meta interface{}) error {
 		},
 	}
 
+	tflog.Debug(ctx, "Creating Sentry key", "keyName", params.Name, "org", org, "project", project)
 	key, _, err := client.ProjectKeys.Create(org, project, params)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-
+	tflog.Debug(ctx, "Created Sentry key", "keyID", key.ID, "keyName", key.Name, "org", org, "project", project)
 	d.SetId(key.ID)
 
-	return resourceSentryKeyRead(d, meta)
+	return resourceSentryKeyRead(ctx, d, meta)
 }
 
-func resourceSentryKeyRead(d *schema.ResourceData, meta interface{}) error {
+func resourceSentryKeyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
 	id := d.Id()
 	org := d.Get("organization").(string)
 	project := d.Get("project").(string)
 
+	tflog.Debug(ctx, "Reading Sentry key", "keyID", id, "org", org, "project", project)
 	keys, resp, err := client.ProjectKeys.List(org, project)
 	if found, err := checkClientGet(resp, err, d); !found {
-		return err
+		return diag.FromErr(err)
 	}
+	tflog.Trace(ctx, "Read Sentry keys", "keyCount", len(keys), "keys", keys)
 
 	found := false
 
 	for _, key := range keys {
 		if key.ID == id {
+			tflog.Debug(ctx, "Found Sentry key", "keyID", id, "org", org, "project", project)
 			d.SetId(key.ID)
 			d.Set("name", key.Name)
 			d.Set("public", key.Public)
@@ -135,13 +149,14 @@ func resourceSentryKeyRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if !found {
+		tflog.Warn(ctx, "Sentry key could not be found...", "keyID", id)
 		d.SetId("")
 	}
 
 	return nil
 }
 
-func resourceSentryKeyUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceSentryKeyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
 	id := d.Id()
@@ -155,22 +170,26 @@ func resourceSentryKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 		},
 	}
 
+	tflog.Debug(ctx, "Updating Sentry key", "keyID", id)
 	key, _, err := client.ProjectKeys.Update(org, project, id, params)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
+	tflog.Debug(ctx, "Updated Sentry key", "keyID", id)
 
 	d.SetId(key.ID)
-	return resourceSentryKeyRead(d, meta)
+	return resourceSentryKeyRead(ctx, d, meta)
 }
 
-func resourceSentryKeyDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceSentryKeyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
 	id := d.Id()
 	org := d.Get("organization").(string)
 	project := d.Get("project").(string)
 
+	tflog.Debug(ctx, "Deleting Sentry key", "keyID", id)
 	_, err := client.ProjectKeys.Delete(org, project, id)
-	return err
+	tflog.Debug(ctx, "Deleted Sentry key", "keyID", id)
+	return diag.FromErr(err)
 }
