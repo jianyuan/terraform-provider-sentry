@@ -191,17 +191,19 @@ func resourceSentryProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 	if d.HasChange("team") {
 		oldTeam, team := d.GetChange("team")
 
-		tflog.Debug(ctx, "Adding team to Sentry project", slug, "org", org, "team", team, "projectSlug")
+		tflog.Debug(ctx, "Adding updated team to Sentry project", slug, "org", org, "team", team, "projectSlug")
 		_, err := client.Projects.AddTeam(org, params.Slug, team.(string))
 		if err != nil {
 			return diag.FromErr(err)
 		}
+		tflog.Debug(ctx, "Added updated team to Sentry project", "projectSlug", slug, "org", org, "team", team)
 
+		tflog.Debug(ctx, "Removing old team from Sentry project", "projectSlug", slug, "org", org, "oldTeam", oldTeam)
 		_, err = client.Projects.RemoveTeam(org, params.Slug, oldTeam.(string))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		tflog.Debug(ctx, "Added team to Sentry project", slug, "org", org, "team", team, "projectSlug")
+		tflog.Debug(ctx, "Removed old team to Sentry project", slug, "org", org, "team", team, "projectSlug")
 	}
 	tflog.Debug(ctx, "Updated Sentry project", "projectSlug", proj.Slug, "projectID", proj.ID, "org", org)
 
