@@ -192,7 +192,7 @@ func resourceSentryProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 		oldTeam, team := d.GetChange("team")
 
 		tflog.Debug(ctx, "Adding updated team to Sentry project", slug, "org", org, "team", team, "projectSlug")
-		_, err := client.Projects.AddTeam(org, params.Slug, team.(string))
+		_, _, err := client.Projects.AddTeam(org, params.Slug, team.(string))
 		if err != nil {
 			return diag.FromErr(err)
 		}

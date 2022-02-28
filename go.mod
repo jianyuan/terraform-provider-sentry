@@ -6,7 +6,7 @@ go 1.17
 
 require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.10.1
-	github.com/jianyuan/go-sentry v1.2.1-0.20201022193837-4bc7bd117d9d
+	github.com/jianyuan/go-sentry v1.2.1-0.20220226053639-5107a7c89534
 	github.com/mitchellh/mapstructure v1.4.3
 )
 
