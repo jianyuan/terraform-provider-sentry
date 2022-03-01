@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/logging"
 )
 
 func resourceSentryProject() *schema.Resource {
@@ -112,7 +113,8 @@ func resourceSentryProjectCreate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	tflog.Debug(ctx, "Creating Sentry project", "teamName", team, "org", org)
-	proj, _, err := client.Projects.Create(org, team, params)
+	proj, resp, err := client.Projects.Create(org, team, params)
+	tflog.Debug(ctx, "Sentry project create http response data", logging.ExtractHttpResponse(resp)...)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -130,6 +132,7 @@ func resourceSentryProjectRead(ctx context.Context, d *schema.ResourceData, meta
 
 	tflog.Debug(ctx, "Reading Sentry project", "projectSlug", slug, "org", org)
 	proj, resp, err := client.Projects.Get(org, slug)
+	tflog.Debug(ctx, "Sentry project read http response data", logging.ExtractHttpResponse(resp)...)
 	if found, err := checkClientGet(resp, err, d); !found {
 		return diag.FromErr(err)
 	}
@@ -183,7 +186,8 @@ func resourceSentryProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	tflog.Debug(ctx, "Updating Sentry project", "projectSlug", slug, "org", org)
-	proj, _, err := client.Projects.Update(org, slug, params)
+	proj, resp, err := client.Projects.Update(org, slug, params)
+	tflog.Debug(ctx, "Sentry project update http response data", logging.ExtractHttpResponse(resp)...)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -200,7 +204,8 @@ func resourceSentryProjectDelete(ctx context.Context, d *schema.ResourceData, me
 	org := d.Get("organization").(string)
 
 	tflog.Debug(ctx, "Deleting Sentry project", "projectSlug", slug, "org", org)
-	_, err := client.Projects.Delete(org, slug)
+	resp, err := client.Projects.Delete(org, slug)
+	tflog.Debug(ctx, "Sentry project delete http response data", logging.ExtractHttpResponse(resp)...)
 	tflog.Debug(ctx, "Deleted Sentry project", "projectSlug", slug, "org", org)
 
 	return diag.FromErr(err)

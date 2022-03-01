@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/logging"
 )
 
 func resourceSentryDefaultKey() *schema.Resource {
@@ -56,10 +57,12 @@ func resourceSentryDefaultKeyCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	tflog.Debug(ctx, "Creating Sentry default key", "org", org, "project", project, "keyID", id)
-	if _, _, err := client.ProjectKeys.Update(org, project, id, params); err != nil {
+	key, resp, err := client.ProjectKeys.Update(org, project, id, params)
+	tflog.Debug(ctx, "Sentry default key create http response data", logging.ExtractHttpResponse(resp)...)
+	if err != nil {
 		return diag.FromErr(err)
 	}
-	tflog.Debug(ctx, "Created Sentry default key", "org", org, "project", project, "keyID", id)
+	tflog.Debug(ctx, "Created Sentry default key", "org", org, "project", project, "keyID", key.ID)
 
 	d.SetId(id)
 	return resourceSentryKeyRead(ctx, d, meta)

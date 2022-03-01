@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/logging"
 )
 
 func resourceSentryOrganization() *schema.Resource {
@@ -50,7 +51,8 @@ func resourceSentryOrganizationCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	tflog.Debug(ctx, "Creating Sentry organization", "orgName", params.Name)
-	org, _, err := client.Organizations.Create(params)
+	org, resp, err := client.Organizations.Create(params)
+	tflog.Debug(ctx, "Sentry organization create http response data", logging.ExtractHttpResponse(resp)...)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -67,6 +69,7 @@ func resourceSentryOrganizationRead(ctx context.Context, d *schema.ResourceData,
 
 	tflog.Debug(ctx, "Reading Sentry organization", "orgSlug", slug)
 	org, resp, err := client.Organizations.Get(slug)
+	tflog.Debug(ctx, "Sentry organization read http response data", logging.ExtractHttpResponse(resp)...)
 	if found, err := checkClientGet(resp, err, d); !found {
 		return diag.FromErr(err)
 	}
@@ -89,7 +92,8 @@ func resourceSentryOrganizationUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	tflog.Debug(ctx, "Updating Sentry organization", "orgSlug", slug)
-	org, _, err := client.Organizations.Update(slug, params)
+	org, resp, err := client.Organizations.Update(slug, params)
+	tflog.Debug(ctx, "Sentry Organization update http response data", logging.ExtractHttpResponse(resp)...)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -105,7 +109,8 @@ func resourceSentryOrganizationDelete(ctx context.Context, d *schema.ResourceDat
 	slug := d.Id()
 
 	tflog.Debug(ctx, "Deleting Sentry organization", "orgSlug", slug)
-	_, err := client.Organizations.Delete(slug)
+	resp, err := client.Organizations.Delete(slug)
+	tflog.Debug(ctx, "Sentry organization delete http response data", logging.ExtractHttpResponse(resp)...)
 	tflog.Debug(ctx, "Deleted Sentry organization", "orgSlug", slug)
 
 	return diag.FromErr(err)

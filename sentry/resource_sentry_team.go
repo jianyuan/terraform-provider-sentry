@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/logging"
 )
 
 func resourceSentryTeam() *schema.Resource {
@@ -66,7 +67,8 @@ func resourceSentryTeamCreate(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	tflog.Debug(ctx, "Creating Sentry team", "teamName", params.Name, "org", org)
-	team, _, err := client.Teams.Create(org, params)
+	team, resp, err := client.Teams.Create(org, params)
+	tflog.Debug(ctx, "Sentry team create http response data", logging.ExtractHttpResponse(resp)...)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -84,6 +86,7 @@ func resourceSentryTeamRead(ctx context.Context, d *schema.ResourceData, meta in
 
 	tflog.Debug(ctx, "Reading Sentry team", "teamSlug", slug, "org", org)
 	team, resp, err := client.Teams.Get(org, slug)
+	tflog.Debug(ctx, "Sentry team read http response data", logging.ExtractHttpResponse(resp)...)
 	if found, err := checkClientGet(resp, err, d); !found {
 		return diag.FromErr(err)
 	}
@@ -111,7 +114,8 @@ func resourceSentryTeamUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	tflog.Debug(ctx, "Updating Sentry team", "teamSlug", slug, "org", org)
-	team, _, err := client.Teams.Update(org, slug, params)
+	team, resp, err := client.Teams.Update(org, slug, params)
+	tflog.Debug(ctx, "Sentry team update http response data", logging.ExtractHttpResponse(resp)...)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -128,7 +132,8 @@ func resourceSentryTeamDelete(ctx context.Context, d *schema.ResourceData, meta 
 	org := d.Get("organization").(string)
 
 	tflog.Debug(ctx, "Deleting Sentry team", "teamSlug", slug, "org", org)
-	_, err := client.Teams.Delete(org, slug)
+	resp, err := client.Teams.Delete(org, slug)
+	tflog.Debug(ctx, "Sentry team delete http response data", logging.ExtractHttpResponse(resp)...)
 	tflog.Debug(ctx, "Deleted Sentry team", "teamSlug", slug, "org", org)
 
 	return diag.FromErr(err)

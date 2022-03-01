@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/logging"
 )
 
 func dataSourceSentryKey() *schema.Resource {
@@ -86,7 +87,8 @@ func dataSourceSentryKeyRead(ctx context.Context, d *schema.ResourceData, meta i
 	project := d.Get("project").(string)
 
 	tflog.Debug(ctx, "Reading Sentry project keys", "org", org, "project", project)
-	keys, _, err := client.ProjectKeys.List(org, project)
+	keys, resp, err := client.ProjectKeys.List(org, project)
+	tflog.Debug(ctx, "Sentry key read http response data", logging.ExtractHttpResponse(resp)...)
 	if err != nil {
 		return diag.FromErr(err)
 	}

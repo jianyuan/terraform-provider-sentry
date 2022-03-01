@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/logging"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -149,7 +150,8 @@ func resourceSentryRuleCreate(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	tflog.Debug(ctx, "Creating Sentry rule", "ruleName", name, "org", org, "project", project)
-	rule, _, err := client.Rules.Create(org, project, params)
+	rule, resp, err := client.Rules.Create(org, project, params)
+	tflog.Debug(ctx, "Sentry rule create http response data", logging.ExtractHttpResponse(resp)...)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -168,10 +170,11 @@ func resourceSentryRuleRead(ctx context.Context, d *schema.ResourceData, meta in
 
 	tflog.Debug(ctx, "Reading Sentry rule", "ruleID", id, "org", org, "project", project)
 	rules, resp, err := client.Rules.List(org, project)
+	tflog.Debug(ctx, "Sentry rule read http response data", logging.ExtractHttpResponse(resp)...)
 	if found, err := checkClientGet(resp, err, d); !found {
 		return diag.FromErr(err)
 	}
-	tflog.Trace(ctx, "Read Sentry rules", "ruleCount", len(rules), "rules", rules)
+	tflog.Trace(ctx, "Read Sentry rules", "ruleCount", len(rules), "rules", logging.TryJsonify(rules))
 
 	var rule *sentry.Rule
 	for _, r := range rules {
@@ -289,7 +292,8 @@ func resourceSentryRuleUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	tflog.Debug(ctx, "Updating Sentry rule", "ruleID", id, "org", org, "project", project)
-	rule, _, err := client.Rules.Update(org, project, id, params)
+	rule, resp, err := client.Rules.Update(org, project, id, params)
+	tflog.Debug(ctx, "Sentry rule update http response data", logging.ExtractHttpResponse(resp)...)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -306,7 +310,8 @@ func resourceSentryRuleDelete(ctx context.Context, d *schema.ResourceData, meta 
 	project := d.Get("project").(string)
 
 	tflog.Debug(ctx, "Deleting Sentry rule", "ruleID", id, "org", org, "project", project)
-	_, err := client.Rules.Delete(org, project, id)
+	resp, err := client.Rules.Delete(org, project, id)
+	tflog.Debug(ctx, "Sentry rule delete http response data", logging.ExtractHttpResponse(resp)...)
 	tflog.Debug(ctx, "Deleted Sentry rule", "ruleID", id, "org", org, "project", project)
 
 	return diag.FromErr(err)
