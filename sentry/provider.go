@@ -38,6 +38,7 @@ func Provider() *schema.Provider {
 		DataSourcesMap: map[string]*schema.Resource{
 			"sentry_key":          dataSourceSentryKey(),
 			"sentry_organization": dataSourceSentryOrganization(),
+			"sentry_team":         dataSourceSentryTeam(),
 		},
 
 		ConfigureContextFunc: providerContextConfigure,
