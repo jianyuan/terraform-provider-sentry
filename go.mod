@@ -5,8 +5,9 @@ replace git.apache.org/thrift.git => github.com/apache/thrift v0.0.0-20180902110
 go 1.17
 
 require (
+	github.com/hashicorp/terraform-plugin-log v0.2.1
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.10.1
-	github.com/jianyuan/go-sentry v1.2.1-0.20201022193837-4bc7bd117d9d
+	github.com/jianyuan/go-sentry v1.2.1-0.20210621222913-1234f239dab3
 	github.com/mitchellh/mapstructure v1.4.3
 )
 
@@ -38,7 +39,6 @@ require (
 	github.com/hashicorp/terraform-exec v0.15.0 // indirect
 	github.com/hashicorp/terraform-json v0.13.0 // indirect
 	github.com/hashicorp/terraform-plugin-go v0.5.0 // indirect
-	github.com/hashicorp/terraform-plugin-log v0.2.1 // indirect
 	github.com/hashicorp/terraform-registry-address v0.0.0-20210816115301-cb2034eba045 // indirect
 	github.com/hashicorp/terraform-svchost v0.0.0-20200729002733-f050f53b9734 // indirect
 	github.com/hashicorp/yamux v0.0.0-20211028200310-0bc27b27de87 // indirect
@@ -49,6 +49,7 @@ require (
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/oklog/run v1.1.0 // indirect
+	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80 // indirect
 	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
 	github.com/zclconf/go-cty v1.10.0 // indirect
 	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e // indirect
