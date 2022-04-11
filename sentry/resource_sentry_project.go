@@ -97,6 +97,21 @@ func resourceSentryProject() *schema.Resource {
 			},
 
 			// TODO: Project options
+
+			// Canva
+
+			"remove_default_key": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Whether to remove the default key",
+				Default:     false,
+			},
+			"remove_default_rule": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Whether to remove the default rule",
+				Default:     false,
+			},
 		},
 	}
 }
@@ -117,6 +132,22 @@ func resourceSentryProjectCreate(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 	tflog.Debug(ctx, "Created Sentry project", "projectSlug", proj.Slug, "projectID", proj.ID, "team", team, "org", org)
+
+	// Canva
+
+	if _, ok := d.GetOk("remove_default_key"); ok {
+		err = removeDefaultKey(client, org, proj.Slug)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if _, ok := d.GetOk("remove_default_rule"); ok {
+		err = removeDefaultRule(client, org, proj.Slug)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
 
 	d.SetId(proj.Slug)
 	return resourceSentryProjectUpdate(ctx, d, meta)
@@ -221,4 +252,38 @@ func resourceSentryProjectImporter(ctx context.Context, d *schema.ResourceData, 
 	d.SetId(parts[1])
 
 	return []*schema.ResourceData{d}, nil
+}
+
+// Canva
+
+func removeDefaultKey(client *sentry.Client, org, projSlug string) error {
+	keys, _, err := client.ProjectKeys.List(org, projSlug)
+	if err != nil {
+		return err
+	}
+
+	for _, key := range keys {
+		if key.Name == "Default" {
+			_, err = client.ProjectKeys.Delete(org, projSlug, key.ID)
+			return err
+		}
+	}
+
+	return nil
+}
+
+func removeDefaultRule(client *sentry.Client, org, projSlug string) error {
+	rules, _, err := client.Rules.List(org, projSlug)
+	if err != nil {
+		return err
+	}
+
+	for _, rule := range rules {
+		if rule.Name == "Send a notification for new issues" {
+			_, err = client.Rules.Delete(org, projSlug, rule.ID)
+			return err
+		}
+	}
+
+	return nil
 }
