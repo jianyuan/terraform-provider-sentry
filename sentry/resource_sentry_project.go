@@ -112,6 +112,15 @@ func resourceSentryProject() *schema.Resource {
 				Description: "Whether to remove the default rule",
 				Default:     false,
 			},
+			"allowed_domains": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The domains allowed to be collected",
+				Optional:    true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 		},
 	}
 }
@@ -183,6 +192,10 @@ func resourceSentryProjectRead(ctx context.Context, d *schema.ResourceData, meta
 
 	// TODO: Project options
 
+	// Canva
+
+	d.Set("allowed_domains", proj.AllowedDomains)
+
 	return nil
 }
 
@@ -211,6 +224,16 @@ func resourceSentryProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 
 	if v, ok := d.GetOk("resolve_age"); ok {
 		params.ResolveAge = Int(v.(int))
+	}
+
+	// Canva
+
+	if v, ok := d.GetOk("allowed_domains"); ok {
+		allowedDomains := v.([]interface{})
+		params.AllowedDomains = make([]string, len(allowedDomains))
+		for i, ad := range allowedDomains {
+			params.AllowedDomains[i] = ad.(string)
+		}
 	}
 
 	tflog.Debug(ctx, "Updating Sentry project", "projectSlug", slug, "org", org)
