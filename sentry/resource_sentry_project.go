@@ -121,6 +121,12 @@ func resourceSentryProject() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"grouping_enhancements": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Grouping enhancements pattern",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -195,6 +201,7 @@ func resourceSentryProjectRead(ctx context.Context, d *schema.ResourceData, meta
 	// Canva
 
 	d.Set("allowed_domains", proj.AllowedDomains)
+	d.Set("grouping_enhancements", proj.GroupingEnhancements)
 
 	return nil
 }
@@ -234,6 +241,10 @@ func resourceSentryProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 		for i, ad := range allowedDomains {
 			params.AllowedDomains[i] = ad.(string)
 		}
+	}
+
+	if v, ok := d.GetOk("grouping_enhancements"); ok {
+		params.GroupingEnhancements = v.(string)
 	}
 
 	tflog.Debug(ctx, "Updating Sentry project", "projectSlug", slug, "org", org)
