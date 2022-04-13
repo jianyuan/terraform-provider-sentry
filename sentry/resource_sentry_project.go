@@ -188,8 +188,6 @@ func resourceSentryProjectRead(ctx context.Context, d *schema.ResourceData, meta
 
 	// TODO: Project options
 
-	// Canva
-
 	d.Set("allowed_domains", proj.AllowedDomains)
 
 	return nil
@@ -221,8 +219,6 @@ func resourceSentryProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 	if v, ok := d.GetOk("resolve_age"); ok {
 		params.ResolveAge = Int(v.(int))
 	}
-
-	// Canva
 
 	if v, ok := d.GetOk("allowed_domains"); ok {
 		allowedDomains := v.([]interface{})
