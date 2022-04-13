@@ -5,7 +5,7 @@ replace git.apache.org/thrift.git => github.com/apache/thrift v0.0.0-20180902110
 go 1.18
 
 require (
-	github.com/canva/go-sentry v1.2.1-0.20220413222458-c5b0f2054d29
+	github.com/canva/go-sentry v1.3.0
 	github.com/google/go-cmp v0.5.7
 	github.com/hashicorp/terraform-plugin-log v0.3.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.10.1
