@@ -98,8 +98,6 @@ func resourceSentryProject() *schema.Resource {
 
 			// TODO: Project options
 
-			// Canva
-
 			"remove_default_key": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -147,8 +145,6 @@ func resourceSentryProjectCreate(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 	tflog.Debug(ctx, "Created Sentry project", "projectSlug", proj.Slug, "projectID", proj.ID, "team", team, "org", org)
-
-	// Canva
 
 	if _, ok := d.GetOk("remove_default_key"); ok {
 		err = removeDefaultKey(client, org, proj.Slug)
@@ -198,8 +194,6 @@ func resourceSentryProjectRead(ctx context.Context, d *schema.ResourceData, meta
 
 	// TODO: Project options
 
-	// Canva
-
 	d.Set("allowed_domains", proj.AllowedDomains)
 	d.Set("grouping_enhancements", proj.GroupingEnhancements)
 
@@ -232,8 +226,6 @@ func resourceSentryProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 	if v, ok := d.GetOk("resolve_age"); ok {
 		params.ResolveAge = Int(v.(int))
 	}
-
-	// Canva
 
 	if v, ok := d.GetOk("allowed_domains"); ok {
 		allowedDomains := v.([]interface{})
@@ -287,8 +279,6 @@ func resourceSentryProjectImporter(ctx context.Context, d *schema.ResourceData, 
 
 	return []*schema.ResourceData{d}, nil
 }
-
-// Canva
 
 func removeDefaultKey(client *sentry.Client, org, projSlug string) error {
 	keys, _, err := client.ProjectKeys.List(org, projSlug)
