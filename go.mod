@@ -2,22 +2,18 @@ module github.com/canva/terraform-provider-sentry
 
 replace git.apache.org/thrift.git => github.com/apache/thrift v0.0.0-20180902110319-2566ecd5d999 // indirect
 
-replace github.com/jianyuan/go-sentry => github.com/canva/go-sentry v1.3.0
-
-replace github.com/jianyuan/terraform-provider-sentry => ./
-
 go 1.18
 
 require (
+	github.com/canva/go-sentry v1.2.1-0.20220413222458-c5b0f2054d29
 	github.com/google/go-cmp v0.5.7
 	github.com/hashicorp/terraform-plugin-log v0.3.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.10.1
-	github.com/jianyuan/go-sentry v1.2.0
-	github.com/jianyuan/terraform-provider-sentry v0.7.0
 	github.com/mitchellh/mapstructure v1.4.3
 )
 
 require (
+	cloud.google.com/go v0.65.0 // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/apparentlymart/go-cidr v1.1.0 // indirect
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
@@ -60,6 +56,7 @@ require (
 	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f // indirect
 	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
 	golang.org/x/text v0.3.7 // indirect
+	google.golang.org/api v0.30.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20211223182754-3ac035c7e7cb // indirect
 	google.golang.org/grpc v1.45.0 // indirect
