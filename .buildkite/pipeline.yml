@@ -3,6 +3,8 @@ env:
 steps:
   - label: ":golang: ci"
     command:
+      - git submodule init
+      - git submodule update
       - "go get -v -t -d ./..."
       - "go build"
       - "go test ./..."
