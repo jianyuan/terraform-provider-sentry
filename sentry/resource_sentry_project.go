@@ -98,8 +98,6 @@ func resourceSentryProject() *schema.Resource {
 
 			// TODO: Project options
 
-			// Canva
-
 			"remove_default_key": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -132,8 +130,6 @@ func resourceSentryProjectCreate(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 	tflog.Debug(ctx, "Created Sentry project", "projectSlug", proj.Slug, "projectID", proj.ID, "team", team, "org", org)
-
-	// Canva
 
 	if _, ok := d.GetOk("remove_default_key"); ok {
 		err = removeDefaultKey(client, org, proj.Slug)
@@ -253,8 +249,6 @@ func resourceSentryProjectImporter(ctx context.Context, d *schema.ResourceData, 
 
 	return []*schema.ResourceData{d}, nil
 }
-
-// Canva
 
 func removeDefaultKey(client *sentry.Client, org, projSlug string) error {
 	keys, _, err := client.ProjectKeys.List(org, projSlug)
