@@ -4,9 +4,9 @@ import (
 	"context"
 	"net/url"
 
+	"github.com/canva/go-sentry/sentry"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/jianyuan/go-sentry/sentry"
 )
 
 // Config is the configuration structure used to instantiate the Sentry
