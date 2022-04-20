@@ -168,7 +168,7 @@ func mapApmRulesData(ctx context.Context, apmRules *[]sentry.APMRule) []interfac
 			ar["projects"] = apmRule.Projects
 			ar["owner"] = apmRule.Owner
 			ar["triggers"] = mapTriggers(ctx, &apmRule.Triggers)
-			// ar["created"] = apmRule.Created
+			// ar["created"] = apmRule.Created //TODO: map later
 
 			ars[i] = ar
 		}
