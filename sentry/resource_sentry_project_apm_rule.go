@@ -90,6 +90,7 @@ func resourceSentryAPMRule() *schema.Resource {
 							Type:     schema.TypeList,
 							Optional: true,
 							Computed: true,
+							// Default: [],
 							Elem: &schema.Schema{
 								Type: schema.TypeMap,
 							},
@@ -160,39 +161,41 @@ func resourceSentryAPMRuleCreate(ctx context.Context, d *schema.ResourceData, me
 
 	//using Type.SchemaSet
 	inputTriggers := d.Get("triggers").(*schema.Set)
-	inputTriggersList := inputTriggers.List()
-	triggers := make([]sentry.Trigger, len(inputTriggersList))
-	for i, ia := range inputTriggersList {
-		var trigger sentry.Trigger
-		mapstructure.WeakDecode(ia, &trigger)
+	triggers := mapTriggersCreate(inputTriggers)
+	// inputTriggers := d.Get("triggers").(*schema.Set)
+	// inputTriggersList := inputTriggers.List()
+	// triggers := make([]sentry.Trigger, len(inputTriggersList))
+	// for i, ia := range inputTriggersList {
+	// 	var trigger sentry.Trigger
+	// 	mapstructure.WeakDecode(ia, &trigger)
 
-		//replace with uppercasing
-		trigger["alertThreshold"] = trigger["alert_threshold"]
-		trigger["resolveThreshold"] = trigger["resolve_threshold"]
-		trigger["thresholdType"] = trigger["threshold_type"]
-		delete(trigger, "alert_threshold")
-		delete(trigger, "resolve_threshold")
-		delete(trigger, "threshold_type")
+	// 	//replace with uppercasing
+	// 	trigger["alertThreshold"] = trigger["alert_threshold"]
+	// 	trigger["resolveThreshold"] = trigger["resolve_threshold"]
+	// 	trigger["thresholdType"] = trigger["threshold_type"]
+	// 	delete(trigger, "alert_threshold")
+	// 	delete(trigger, "resolve_threshold")
+	// 	delete(trigger, "threshold_type")
 
-		//test delete alert and id
-		delete(trigger, "alert_rule_id")
-		delete(trigger, "id")
+	// 	//test delete alert and id
+	// 	delete(trigger, "alert_rule_id")
+	// 	delete(trigger, "id")
 
-		triggers[i] = trigger
-	}
-	//swop trigger elements so critical is first
-	if triggers[0]["label"] != "critical" {
-		var criticalTriggerIndex int
-		for i, trigger := range triggers {
-			if trigger["label"] == "critical" {
-				criticalTriggerIndex = i
-			}
-		}
+	// 	triggers[i] = trigger
+	// }
+	// //swop trigger elements so critical is first
+	// if triggers[0]["label"] != "critical" {
+	// 	var criticalTriggerIndex int
+	// 	for i, trigger := range triggers {
+	// 		if trigger["label"] == "critical" {
+	// 			criticalTriggerIndex = i
+	// 		}
+	// 	}
 
-		temp := triggers[criticalTriggerIndex]
-		triggers[criticalTriggerIndex] = triggers[0]
-		triggers[0] = temp
-	}
+	// 	temp := triggers[criticalTriggerIndex]
+	// 	triggers[criticalTriggerIndex] = triggers[0]
+	// 	triggers[0] = temp
+	// }
 
 	tflog.Info(ctx, "triggers", triggers)
 
@@ -323,40 +326,41 @@ func resourceSentryAPMRuleUpdate(ctx context.Context, d *schema.ResourceData, me
 
 	//using Type.SchemaSet
 	inputTriggers := d.Get("triggers").(*schema.Set)
-	inputTriggersList := inputTriggers.List()
-	triggers := make([]sentry.Trigger, len(inputTriggersList))
-	for i, ia := range inputTriggersList {
-		var trigger sentry.Trigger
-		mapstructure.WeakDecode(ia, &trigger)
+	triggers := mapTriggersCreate(inputTriggers)
+	// inputTriggersList := inputTriggers.List()
+	// triggers := make([]sentry.Trigger, len(inputTriggersList))
+	// for i, ia := range inputTriggersList {
+	// 	var trigger sentry.Trigger
+	// 	mapstructure.WeakDecode(ia, &trigger)
 
-		//replace with uppercasing
-		trigger["alertThreshold"] = trigger["alert_threshold"]
-		trigger["resolveThreshold"] = trigger["resolve_threshold"]
-		trigger["thresholdType"] = trigger["threshold_type"]
-		delete(trigger, "alert_threshold")
-		delete(trigger, "resolve_threshold")
-		delete(trigger, "threshold_type")
+	// 	//replace with uppercasing
+	// 	trigger["alertThreshold"] = trigger["alert_threshold"]
+	// 	trigger["resolveThreshold"] = trigger["resolve_threshold"]
+	// 	trigger["thresholdType"] = trigger["threshold_type"]
+	// 	delete(trigger, "alert_threshold")
+	// 	delete(trigger, "resolve_threshold")
+	// 	delete(trigger, "threshold_type")
 
-		//test delete alert and id
-		delete(trigger, "alert_rule_id")
-		delete(trigger, "id")
+	// 	//test delete alert and id
+	// 	delete(trigger, "alert_rule_id")
+	// 	delete(trigger, "id")
 
-		triggers[i] = trigger
-	}
+	// 	triggers[i] = trigger
+	// }
 
-	//swop trigger elements so critical is first
-	if triggers[0]["label"] != "critical" {
-		var criticalTriggerIndex int
-		for i, trigger := range triggers {
-			if trigger["label"] == "critical" {
-				criticalTriggerIndex = i
-			}
-		}
+	// //swop trigger elements so critical is first
+	// if triggers[0]["label"] != "critical" {
+	// 	var criticalTriggerIndex int
+	// 	for i, trigger := range triggers {
+	// 		if trigger["label"] == "critical" {
+	// 			criticalTriggerIndex = i
+	// 		}
+	// 	}
 
-		temp := triggers[criticalTriggerIndex]
-		triggers[criticalTriggerIndex] = triggers[0]
-		triggers[0] = temp
-	}
+	// 	temp := triggers[criticalTriggerIndex]
+	// 	triggers[criticalTriggerIndex] = triggers[0]
+	// 	triggers[0] = temp
+	// }
 
 	tflog.Info(ctx, "triggers", triggers)
 
@@ -396,6 +400,45 @@ func resourceSentryAPMRuleDelete(ctx context.Context, d *schema.ResourceData, me
 	tflog.Debug(ctx, "Deleted Sentry APM rule", "ruleID", id, "org", org, "project", project)
 
 	return diag.FromErr(err)
+}
+
+func mapTriggersCreate(inputTriggers *schema.Set) []sentry.Trigger {
+	inputTriggersList := inputTriggers.List()
+	triggers := make([]sentry.Trigger, len(inputTriggersList))
+	for i, ia := range inputTriggersList {
+		var trigger sentry.Trigger
+		mapstructure.WeakDecode(ia, &trigger)
+
+		//replace with uppercasing
+		trigger["alertThreshold"] = trigger["alert_threshold"]
+		trigger["resolveThreshold"] = trigger["resolve_threshold"]
+		trigger["thresholdType"] = trigger["threshold_type"]
+		delete(trigger, "alert_threshold")
+		delete(trigger, "resolve_threshold")
+		delete(trigger, "threshold_type")
+
+		//test delete alert and id
+		delete(trigger, "alert_rule_id")
+		delete(trigger, "id")
+
+		triggers[i] = trigger
+	}
+
+	//swop trigger elements so critical is first
+	if triggers[0]["label"] != "critical" {
+		var criticalTriggerIndex int
+		for i, trigger := range triggers {
+			if trigger["label"] == "critical" {
+				criticalTriggerIndex = i
+			}
+		}
+
+		temp := triggers[criticalTriggerIndex]
+		triggers[criticalTriggerIndex] = triggers[0]
+		triggers[0] = temp
+	}
+
+	return triggers
 }
 
 // func mapSchemaTriggers(ctx context.Context, triggers []map[string]*schema.Schema) []sentry.Trigger {
