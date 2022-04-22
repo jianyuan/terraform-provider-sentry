@@ -180,6 +180,20 @@ func resourceSentryAPMRuleCreate(ctx context.Context, d *schema.ResourceData, me
 
 		triggers[i] = trigger
 	}
+	//swop trigger elements so critical is first
+	if triggers[0]["label"] != "critical" {
+		var criticalTriggerIndex int
+		for i, trigger := range triggers {
+			if trigger["label"] == "critical" {
+				criticalTriggerIndex = i
+			}
+		}
+
+		temp := triggers[criticalTriggerIndex]
+		triggers[criticalTriggerIndex] = triggers[0]
+		triggers[0] = temp
+	}
+
 	tflog.Info(ctx, "triggers", triggers)
 
 	//using Type.SchemaList (doesn't work with list because of actions needing to be)
@@ -329,6 +343,21 @@ func resourceSentryAPMRuleUpdate(ctx context.Context, d *schema.ResourceData, me
 
 		triggers[i] = trigger
 	}
+
+	//swop trigger elements so critical is first
+	if triggers[0]["label"] != "critical" {
+		var criticalTriggerIndex int
+		for i, trigger := range triggers {
+			if trigger["label"] == "critical" {
+				criticalTriggerIndex = i
+			}
+		}
+
+		temp := triggers[criticalTriggerIndex]
+		triggers[criticalTriggerIndex] = triggers[0]
+		triggers[0] = temp
+	}
+
 	tflog.Info(ctx, "triggers", triggers)
 
 	params := &sentry.APMRule{
@@ -369,31 +398,31 @@ func resourceSentryAPMRuleDelete(ctx context.Context, d *schema.ResourceData, me
 	return diag.FromErr(err)
 }
 
-func mapSchemaTriggers(ctx context.Context, triggers []map[string]*schema.Schema) []sentry.Trigger {
-	tflog.Debug(ctx, "Mapping triggers")
-	if triggers != nil {
-		tflog.Debug(ctx, "Triggers found", triggers)
-		trs := make([]sentry.Trigger, len(triggers), len(triggers))
+// func mapSchemaTriggers(ctx context.Context, triggers []map[string]*schema.Schema) []sentry.Trigger {
+// 	tflog.Debug(ctx, "Mapping triggers")
+// 	if triggers != nil {
+// 		tflog.Debug(ctx, "Triggers found", triggers)
+// 		trs := make([]sentry.Trigger, len(triggers), len(triggers))
 
-		for i, trigger := range triggers {
-			tflog.Debug(ctx, "Reading trigger", trigger)
-			tr := make(map[string]interface{})
+// 		for i, trigger := range triggers {
+// 			tflog.Debug(ctx, "Reading trigger", trigger)
+// 			tr := make(map[string]interface{})
 
-			tr["id"] = trigger["id"]
-			tr["alert_rule_id"] = trigger["alertRuleId"]
-			tr["label"] = trigger["label"]
-			tr["threshold_type"] = trigger["thresholdType"]
-			tr["alert_threshold"] = trigger["alertThreshold"]
-			tr["resolve_threshold"] = trigger["resolveThreshold"]
-			// tr["actions"] = mapActions(ctx, trigger["actions"]) //TODO: map later
+// 			tr["id"] = trigger["id"]
+// 			tr["alert_rule_id"] = trigger["alertRuleId"]
+// 			tr["label"] = trigger["label"]
+// 			tr["threshold_type"] = trigger["thresholdType"]
+// 			tr["alert_threshold"] = trigger["alertThreshold"]
+// 			tr["resolve_threshold"] = trigger["resolveThreshold"]
+// 			// tr["actions"] = mapActions(ctx, trigger["actions"]) //TODO: map later
 
-			trs[i] = tr
-		}
+// 			trs[i] = tr
+// 		}
 
-		tflog.Debug(ctx, "Mapped triggers", trs)
-		return trs
-	}
+// 		tflog.Debug(ctx, "Mapped triggers", trs)
+// 		return trs
+// 	}
 
-	tflog.Debug(ctx, "No triggers found", triggers)
-	return make([]sentry.Trigger, 0)
-}
+// 	tflog.Debug(ctx, "No triggers found", triggers)
+// 	return make([]sentry.Trigger, 0)
+// }
