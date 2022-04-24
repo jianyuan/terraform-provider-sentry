@@ -3,6 +3,7 @@ package sentry
 import (
 	"context"
 	"fmt"
+	"reflect"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -70,13 +71,6 @@ func resourceSentryAPMRule() *schema.Resource {
 				Optional:    true,
 				Description: "The value at which the APM rule resolves",
 			},
-			// "triggers": {
-			// 	Type:     schema.TypeList,
-			// 	Required: true,
-			// 	Elem: &schema.Schema{
-			// 		Type: schema.TypeMap,
-			// 	},
-			// },
 			"triggers": {
 				Type:     schema.TypeSet,
 				Required: true,
@@ -90,7 +84,6 @@ func resourceSentryAPMRule() *schema.Resource {
 							Type:     schema.TypeList,
 							Optional: true,
 							Computed: true,
-							// Default: [],
 							Elem: &schema.Schema{
 								Type: schema.TypeMap,
 							},
@@ -153,72 +146,15 @@ func resourceSentryAPMRuleCreate(ctx context.Context, d *schema.ResourceData, me
 	owner := d.Get("owner").(string)
 
 	tflog.Info(ctx, "trying to set projects", d.Get("projects"))
-	projects_input := d.Get("projects").([]interface{})
-	projects := make([]string, len(projects_input))
-	for i, v := range projects_input {
+	inputProjects := d.Get("projects").([]interface{})
+	projects := make([]string, len(inputProjects))
+	for i, v := range inputProjects {
 		projects[i] = fmt.Sprint(v)
 	}
 
-	//using Type.SchemaSet
 	inputTriggers := d.Get("triggers").(*schema.Set)
 	triggers := mapTriggersCreate(inputTriggers)
-	// inputTriggers := d.Get("triggers").(*schema.Set)
-	// inputTriggersList := inputTriggers.List()
-	// triggers := make([]sentry.Trigger, len(inputTriggersList))
-	// for i, ia := range inputTriggersList {
-	// 	var trigger sentry.Trigger
-	// 	mapstructure.WeakDecode(ia, &trigger)
-
-	// 	//replace with uppercasing
-	// 	trigger["alertThreshold"] = trigger["alert_threshold"]
-	// 	trigger["resolveThreshold"] = trigger["resolve_threshold"]
-	// 	trigger["thresholdType"] = trigger["threshold_type"]
-	// 	delete(trigger, "alert_threshold")
-	// 	delete(trigger, "resolve_threshold")
-	// 	delete(trigger, "threshold_type")
-
-	// 	//test delete alert and id
-	// 	delete(trigger, "alert_rule_id")
-	// 	delete(trigger, "id")
-
-	// 	triggers[i] = trigger
-	// }
-	// //swop trigger elements so critical is first
-	// if triggers[0]["label"] != "critical" {
-	// 	var criticalTriggerIndex int
-	// 	for i, trigger := range triggers {
-	// 		if trigger["label"] == "critical" {
-	// 			criticalTriggerIndex = i
-	// 		}
-	// 	}
-
-	// 	temp := triggers[criticalTriggerIndex]
-	// 	triggers[criticalTriggerIndex] = triggers[0]
-	// 	triggers[0] = temp
-	// }
-
 	tflog.Info(ctx, "triggers", triggers)
-
-	//using Type.SchemaList (doesn't work with list because of actions needing to be)
-	// inputTriggers := d.Get("triggers").([]interface{})
-	// // inputTriggersList := inputTriggers.List()
-	// triggers := make([]sentry.Trigger, len(inputTriggers))
-	// for i, ia := range inputTriggers {
-	// 	var trigger sentry.Trigger
-	// 	mapstructure.WeakDecode(ia, &trigger)
-	// 	triggers[i] = trigger
-	// }
-	// tflog.Info(ctx, "triggers", triggers)
-
-	//create hardcoded triggers (works)
-	// triggers := make([]sentry.Trigger, 0)
-	// triggers = append(triggers, sentry.Trigger{
-	// 	// "actions":       [],
-	// 	"alertThreshold":   10000,
-	// 	"label":            "critical",
-	// 	"resolveThreshold": 100.0,
-	// 	"thresholdType":    0,
-	// })
 
 	params := &sentry.CreateAPMRuleParams{
 		Name:             name,
@@ -251,6 +187,7 @@ func resourceSentryAPMRuleCreate(ctx context.Context, d *schema.ResourceData, me
 
 func resourceSentryAPMRuleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
+
 	org := d.Get("organization").(string)
 	project := d.Get("project").(string)
 	id := d.Id()
@@ -276,15 +213,13 @@ func resourceSentryAPMRuleRead(ctx context.Context, d *schema.ResourceData, meta
 	}
 	tflog.Debug(ctx, "Read Sentry APM rule", "ruleID", apmRule.ID, "org", org, "project", project)
 
-	triggers := mapTriggers(ctx, &apmRule.Triggers)
+	triggers := mapResourceTriggersRead(ctx, &apmRule.Triggers)
 	if err := d.Set("triggers", triggers); err != nil {
 		return diag.FromErr(err)
 	}
 
 	d.SetId(apmRule.ID)
 	d.Set("name", apmRule.Name)
-	// d.Set("organization", apmRule.Owner
-	// d.Set("project").(string)
 	d.Set("environment", apmRule.Environment)
 	d.Set("dataset", apmRule.DataSet)
 	d.Set("query", apmRule.Query)
@@ -292,10 +227,7 @@ func resourceSentryAPMRuleRead(ctx context.Context, d *schema.ResourceData, meta
 	d.Set("time_window", apmRule.TimeWindow)
 	d.Set("threshold_type", apmRule.ThresholdType)
 	d.Set("resolve_threshold", apmRule.ResolveThreshold)
-	// s := mapSchemaTriggers(ctx, d.Get("triggers").([]map[string]*schema.Schema))
-	tflog.Debug(ctx, "trying to set projects", apmRule.Projects)
 	d.Set("projects", apmRule.Projects)
-	tflog.Debug(ctx, "succeeded to set projects", apmRule.Projects)
 	d.Set("owner", apmRule.Owner)
 
 	return nil
@@ -318,53 +250,18 @@ func resourceSentryAPMRuleUpdate(ctx context.Context, d *schema.ResourceData, me
 	owner := d.Get("owner").(string)
 
 	tflog.Info(ctx, "trying to set projects", d.Get("projects"))
-	projects_input := d.Get("projects").([]interface{})
-	projects := make([]string, len(projects_input))
-	for i, v := range projects_input {
+	inputProjects := d.Get("projects").([]interface{})
+	projects := make([]string, len(inputProjects))
+	for i, v := range inputProjects {
 		projects[i] = fmt.Sprint(v)
 	}
 
-	//using Type.SchemaSet
 	inputTriggers := d.Get("triggers").(*schema.Set)
 	triggers := mapTriggersCreate(inputTriggers)
-	// inputTriggersList := inputTriggers.List()
-	// triggers := make([]sentry.Trigger, len(inputTriggersList))
-	// for i, ia := range inputTriggersList {
-	// 	var trigger sentry.Trigger
-	// 	mapstructure.WeakDecode(ia, &trigger)
-
-	// 	//replace with uppercasing
-	// 	trigger["alertThreshold"] = trigger["alert_threshold"]
-	// 	trigger["resolveThreshold"] = trigger["resolve_threshold"]
-	// 	trigger["thresholdType"] = trigger["threshold_type"]
-	// 	delete(trigger, "alert_threshold")
-	// 	delete(trigger, "resolve_threshold")
-	// 	delete(trigger, "threshold_type")
-
-	// 	//test delete alert and id
-	// 	delete(trigger, "alert_rule_id")
-	// 	delete(trigger, "id")
-
-	// 	triggers[i] = trigger
-	// }
-
-	// //swop trigger elements so critical is first
-	// if triggers[0]["label"] != "critical" {
-	// 	var criticalTriggerIndex int
-	// 	for i, trigger := range triggers {
-	// 		if trigger["label"] == "critical" {
-	// 			criticalTriggerIndex = i
-	// 		}
-	// 	}
-
-	// 	temp := triggers[criticalTriggerIndex]
-	// 	triggers[criticalTriggerIndex] = triggers[0]
-	// 	triggers[0] = temp
-	// }
-
 	tflog.Info(ctx, "triggers", triggers)
 
 	params := &sentry.APMRule{
+		ID:               id,
 		Name:             name,
 		Environment:      &environment,
 		DataSet:          dataset,
@@ -417,7 +314,7 @@ func mapTriggersCreate(inputTriggers *schema.Set) []sentry.Trigger {
 		delete(trigger, "resolve_threshold")
 		delete(trigger, "threshold_type")
 
-		//test delete alert and id
+		//delete id and alert_rule_id as they are not required in POST&PUT requests
 		delete(trigger, "alert_rule_id")
 		delete(trigger, "id")
 
@@ -441,31 +338,50 @@ func mapTriggersCreate(inputTriggers *schema.Set) []sentry.Trigger {
 	return triggers
 }
 
-// func mapSchemaTriggers(ctx context.Context, triggers []map[string]*schema.Schema) []sentry.Trigger {
-// 	tflog.Debug(ctx, "Mapping triggers")
-// 	if triggers != nil {
-// 		tflog.Debug(ctx, "Triggers found", triggers)
-// 		trs := make([]sentry.Trigger, len(triggers), len(triggers))
+func mapResourceTriggersRead(ctx context.Context, triggers *[]sentry.Trigger) []interface{} {
+	if triggers != nil {
+		trs := make([]interface{}, len(*triggers), len(*triggers))
 
-// 		for i, trigger := range triggers {
-// 			tflog.Debug(ctx, "Reading trigger", trigger)
-// 			tr := make(map[string]interface{})
+		for i, trigger := range *triggers {
+			tflog.Debug(ctx, "Reading trigger", trigger)
+			tr := make(map[string]interface{})
 
-// 			tr["id"] = trigger["id"]
-// 			tr["alert_rule_id"] = trigger["alertRuleId"]
-// 			tr["label"] = trigger["label"]
-// 			tr["threshold_type"] = trigger["thresholdType"]
-// 			tr["alert_threshold"] = trigger["alertThreshold"]
-// 			tr["resolve_threshold"] = trigger["resolveThreshold"]
-// 			// tr["actions"] = mapActions(ctx, trigger["actions"]) //TODO: map later
+			tr["id"] = trigger["id"]
+			tr["alert_rule_id"] = trigger["alertRuleId"]
+			tr["label"] = trigger["label"]
+			tr["threshold_type"] = trigger["thresholdType"]
+			tr["alert_threshold"] = trigger["alertThreshold"]
+			tr["resolve_threshold"] = trigger["resolveThreshold"]
+			tr["actions"] = mapResourceActionsRead(ctx, trigger["actions"])
 
-// 			trs[i] = tr
-// 		}
+			trs[i] = tr
+		}
 
-// 		tflog.Debug(ctx, "Mapped triggers", trs)
-// 		return trs
-// 	}
+		return trs
+	}
 
-// 	tflog.Debug(ctx, "No triggers found", triggers)
-// 	return make([]sentry.Trigger, 0)
-// }
+	return make([]interface{}, 0)
+}
+
+func mapResourceActionsRead(ctx context.Context, a interface{}) interface{} {
+	//convert actions which appears as interface{} but is actually []interface{}
+	var actions []map[string]interface{}
+	rv := reflect.ValueOf(a)
+	if rv.Kind() == reflect.Slice {
+		for i := 0; i < rv.Len(); i++ {
+			t := rv.Index(i).Interface().(map[string]interface{})
+			actions = append(actions, t)
+		}
+	}
+
+	for _, f := range actions {
+		for k, v := range f {
+			switch vv := v.(type) {
+			case float64:
+				f[k] = fmt.Sprintf("%.0f", vv)
+			}
+		}
+	}
+
+	return actions
+}
