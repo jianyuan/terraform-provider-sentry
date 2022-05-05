@@ -3,12 +3,14 @@ package sentry
 import (
 	"errors"
 	"fmt"
+	"sort"
 	"testing"
 
+	"github.com/canva/go-sentry/sentry"
+	"github.com/google/go-cmp/cmp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/jianyuan/go-sentry/sentry"
 )
 
 func TestAccSentryProject_basic(t *testing.T) {
@@ -29,6 +31,8 @@ func TestAccSentryProject_basic(t *testing.T) {
 	    name = "Test project changed"
 	    slug = "%s"
 	    platform = "go"
+		allowed_domains = ["www.canva.com", "www.canva.cn"]
+		grouping_enhancements = "function:panic_handler ^-group"
 	  }
 	`, testOrganization, testOrganization, newProjectSlug)
 
@@ -47,6 +51,9 @@ func TestAccSentryProject_basic(t *testing.T) {
 						Team:         "Test team",
 						SlugPresent:  true,
 						Platform:     "go",
+
+						AllowedDomains:       []string{"*"},
+						GroupingEnhancements: "",
 					}),
 				),
 			},
@@ -60,8 +67,19 @@ func TestAccSentryProject_basic(t *testing.T) {
 						Team:         "Test team",
 						Slug:         newProjectSlug,
 						Platform:     "go",
+
+						AllowedDomains:       []string{"www.canva.com", "www.canva.cn"},
+						GroupingEnhancements: "function:panic_handler ^-group",
 					}),
 				),
+			},
+			{
+				Config: testAccSentryProjectRemoveKeyConfig,
+				Check:  testAccCheckSentryKeyRemoved("sentry_project.test_project_remove_key"),
+			},
+			{
+				Config: testAccSentryProjectRemoveRuleConfig,
+				Check:  testAccCheckSentryRuleRemoved("sentry_project.test_project_remove_rule"),
 			},
 		},
 	})
@@ -121,6 +139,9 @@ type testAccSentryProjectExpectedAttributes struct {
 	SlugPresent bool
 	Slug        string
 	Platform    string
+
+	AllowedDomains       []string
+	GroupingEnhancements string
 }
 
 func testAccCheckSentryProjectAttributes(proj *sentry.Project, want *testAccSentryProjectExpectedAttributes) resource.TestCheckFunc {
@@ -149,6 +170,47 @@ func testAccCheckSentryProjectAttributes(proj *sentry.Project, want *testAccSent
 			return fmt.Errorf("got Platform %q; want %q", proj.Platform, want.Platform)
 		}
 
+		if !cmp.Equal(proj.AllowedDomains, want.AllowedDomains, cmp.Transformer("sort", func(in []string) []string {
+			sort.Strings(in)
+			return in
+		})) {
+			return fmt.Errorf("got allowed domain: %q; want %q", proj.AllowedDomains, want.AllowedDomains)
+		}
+
+		if want.GroupingEnhancements != "" && proj.GroupingEnhancements != want.GroupingEnhancements {
+			return fmt.Errorf("got GroupingEnhancements %q; want %q", proj.GroupingEnhancements, want.GroupingEnhancements)
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckSentryKeyRemoved(n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs := s.RootModule().Resources[n]
+		client := testAccProvider.Meta().(*sentry.Client)
+		keys, _, err := client.ProjectKeys.List(rs.Primary.Attributes["organization"], rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+		if len(keys) != 0 {
+			return fmt.Errorf("Default key not removed")
+		}
+		return nil
+	}
+}
+
+func testAccCheckSentryRuleRemoved(n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs := s.RootModule().Resources[n]
+		client := testAccProvider.Meta().(*sentry.Client)
+		keys, _, err := client.Rules.List(rs.Primary.Attributes["organization"], rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+		if len(keys) != 0 {
+			return fmt.Errorf("Default rule not removed")
+		}
 		return nil
 	}
 }
@@ -164,5 +226,31 @@ var testAccSentryProjectConfig = fmt.Sprintf(`
     team = "${sentry_team.test_team.id}"
     name = "Test project"
     platform = "go"
+  }
+`, testOrganization, testOrganization)
+
+var testAccSentryProjectRemoveKeyConfig = fmt.Sprintf(`
+  resource "sentry_team" "test_team" {
+    organization = "%s"
+    name = "Test team"
+  }
+  resource "sentry_project" "test_project_remove_key" {
+    organization = "%s"
+    team = "${sentry_team.test_team.id}"
+	name = "Test project"
+	remove_default_key = true
+  }
+`, testOrganization, testOrganization)
+
+var testAccSentryProjectRemoveRuleConfig = fmt.Sprintf(`
+  resource "sentry_team" "test_team" {
+    organization = "%s"
+    name = "Test team"
+  }
+  resource "sentry_project" "test_project_remove_rule" {
+    organization = "%s"
+    team = "${sentry_team.test_team.id}"
+	name = "Test project"
+	remove_default_rule = true
   }
 `, testOrganization, testOrganization)

@@ -4,10 +4,10 @@ import (
 	"context"
 	"sort"
 
+	"github.com/canva/go-sentry/sentry"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/jianyuan/go-sentry/sentry"
 )
 
 func resourceSentryDefaultKey() *schema.Resource {
@@ -55,11 +55,11 @@ func resourceSentryDefaultKeyCreate(ctx context.Context, d *schema.ResourceData,
 		},
 	}
 
-	tflog.Debug(ctx, "Creating Sentry default key", "org", org, "project", project, "keyID", id)
+	tflog.Debug(ctx, "Creating Sentry default key", map[string]interface{}{"org": org, "project": project, "keyID": id})
 	if _, _, err := client.ProjectKeys.Update(org, project, id, params); err != nil {
 		return diag.FromErr(err)
 	}
-	tflog.Debug(ctx, "Created Sentry default key", "org", org, "project", project, "keyID", id)
+	tflog.Debug(ctx, "Created Sentry default key", map[string]interface{}{"org": org, "project": project, "keyID": id})
 
 	d.SetId(id)
 	return resourceSentryKeyRead(ctx, d, meta)

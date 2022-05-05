@@ -1,0 +1,15 @@
+env:
+  FORCE_COLOR: 1
+steps:
+  - label: ":golang: ci"
+    command:
+      - "go get -v -t -d ./..."
+      - "go build"
+      - "go test ./..."
+    plugins:
+      docker#v1.4.0:
+        image: "canvadev/ci-docker-node-yarn-chrome-xvfb:2018-09-07"
+        workdir: /app
+    agents:
+      - queue=ci-docker
+    timeout_in_minutes: 5

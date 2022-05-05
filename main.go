@@ -1,8 +1,8 @@
 package main
 
 import (
+	"github.com/canva/terraform-provider-sentry/sentry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
-	"github.com/jianyuan/terraform-provider-sentry/sentry"
 )
 
 func main() {

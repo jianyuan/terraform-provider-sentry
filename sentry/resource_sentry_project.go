@@ -5,10 +5,10 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/canva/go-sentry/sentry"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/jianyuan/go-sentry/sentry"
 )
 
 func resourceSentryProject() *schema.Resource {
@@ -97,6 +97,34 @@ func resourceSentryProject() *schema.Resource {
 			},
 
 			// TODO: Project options
+
+			"remove_default_key": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Whether to remove the default key",
+				Default:     false,
+			},
+			"remove_default_rule": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Whether to remove the default rule",
+				Default:     false,
+			},
+			"allowed_domains": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The domains allowed to be collected",
+				Optional:    true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"grouping_enhancements": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Grouping enhancements pattern",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -111,12 +139,26 @@ func resourceSentryProjectCreate(ctx context.Context, d *schema.ResourceData, me
 		Slug: d.Get("slug").(string),
 	}
 
-	tflog.Debug(ctx, "Creating Sentry project", "teamName", team, "org", org)
+	tflog.Debug(ctx, "Creating Sentry project", map[string]interface{}{"teamName": team, "org": org})
 	proj, _, err := client.Projects.Create(org, team, params)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	tflog.Debug(ctx, "Created Sentry project", "projectSlug", proj.Slug, "projectID", proj.ID, "team", team, "org", org)
+	tflog.Debug(ctx, "Created Sentry project", map[string]interface{}{"projectSlug": proj.Slug, "projectID": proj.ID, "team": team, "org": org})
+
+	if _, ok := d.GetOk("remove_default_key"); ok {
+		err = removeDefaultKey(client, org, proj.Slug)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if _, ok := d.GetOk("remove_default_rule"); ok {
+		err = removeDefaultRule(client, org, proj.Slug)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
 
 	d.SetId(proj.Slug)
 	return resourceSentryProjectUpdate(ctx, d, meta)
@@ -128,12 +170,12 @@ func resourceSentryProjectRead(ctx context.Context, d *schema.ResourceData, meta
 	slug := d.Id()
 	org := d.Get("organization").(string)
 
-	tflog.Debug(ctx, "Reading Sentry project", "projectSlug", slug, "org", org)
+	tflog.Debug(ctx, "Reading Sentry project", map[string]interface{}{"projectSlug": slug, "org": org})
 	proj, resp, err := client.Projects.Get(org, slug)
 	if found, err := checkClientGet(resp, err, d); !found {
 		return diag.FromErr(err)
 	}
-	tflog.Debug(ctx, "Read Sentry project", "projectSlug", proj.Slug, "projectID", proj.ID, "org", org)
+	tflog.Debug(ctx, "Read Sentry project", map[string]interface{}{"projectSlug": proj.Slug, "projectID": proj.ID, "org": org})
 
 	d.SetId(proj.Slug)
 	d.Set("organization", proj.Organization.Slug)
@@ -151,6 +193,9 @@ func resourceSentryProjectRead(ctx context.Context, d *schema.ResourceData, meta
 	d.Set("resolve_age", proj.ResolveAge)
 
 	// TODO: Project options
+
+	d.Set("allowed_domains", proj.AllowedDomains)
+	d.Set("grouping_enhancements", proj.GroupingEnhancements)
 
 	return nil
 }
@@ -182,12 +227,24 @@ func resourceSentryProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 		params.ResolveAge = Int(v.(int))
 	}
 
-	tflog.Debug(ctx, "Updating Sentry project", "projectSlug", slug, "org", org)
+	if v, ok := d.GetOk("allowed_domains"); ok {
+		allowedDomains := v.([]interface{})
+		params.AllowedDomains = make([]string, len(allowedDomains))
+		for i, ad := range allowedDomains {
+			params.AllowedDomains[i] = ad.(string)
+		}
+	}
+
+	if v, ok := d.GetOk("grouping_enhancements"); ok {
+		params.GroupingEnhancements = v.(string)
+	}
+
+	tflog.Debug(ctx, "Updating Sentry project", map[string]interface{}{"projectSlug": slug, "org": org})
 	proj, _, err := client.Projects.Update(org, slug, params)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	tflog.Debug(ctx, "Updated Sentry project", "projectSlug", proj.Slug, "projectID", proj.ID, "org", org)
+	tflog.Debug(ctx, "Updated Sentry project", map[string]interface{}{"projectSlug": proj.Slug, "projectID": proj.ID, "org": org})
 
 	d.SetId(proj.Slug)
 	return resourceSentryProjectRead(ctx, d, meta)
@@ -199,9 +256,9 @@ func resourceSentryProjectDelete(ctx context.Context, d *schema.ResourceData, me
 	slug := d.Id()
 	org := d.Get("organization").(string)
 
-	tflog.Debug(ctx, "Deleting Sentry project", "projectSlug", slug, "org", org)
+	tflog.Debug(ctx, "Deleting Sentry project", map[string]interface{}{"projectSlug": slug, "org": org})
 	_, err := client.Projects.Delete(org, slug)
-	tflog.Debug(ctx, "Deleted Sentry project", "projectSlug", slug, "org", org)
+	tflog.Debug(ctx, "Deleted Sentry project", map[string]interface{}{"projectSlug": slug, "org": org})
 
 	return diag.FromErr(err)
 }
@@ -209,7 +266,7 @@ func resourceSentryProjectDelete(ctx context.Context, d *schema.ResourceData, me
 func resourceSentryProjectImporter(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	addrID := d.Id()
 
-	tflog.Debug(ctx, "Importing Sentry project", "projetID", addrID)
+	tflog.Debug(ctx, "Importing Sentry project", map[string]interface{}{"projetID": addrID})
 
 	parts := strings.Split(addrID, "/")
 
@@ -221,4 +278,36 @@ func resourceSentryProjectImporter(ctx context.Context, d *schema.ResourceData, 
 	d.SetId(parts[1])
 
 	return []*schema.ResourceData{d}, nil
+}
+
+func removeDefaultKey(client *sentry.Client, org, projSlug string) error {
+	keys, _, err := client.ProjectKeys.List(org, projSlug)
+	if err != nil {
+		return err
+	}
+
+	for _, key := range keys {
+		if key.Name == "Default" {
+			_, err = client.ProjectKeys.Delete(org, projSlug, key.ID)
+			return err
+		}
+	}
+
+	return nil
+}
+
+func removeDefaultRule(client *sentry.Client, org, projSlug string) error {
+	rules, _, err := client.Rules.List(org, projSlug)
+	if err != nil {
+		return err
+	}
+
+	for _, rule := range rules {
+		if rule.Name == "Send a notification for new issues" {
+			_, err = client.Rules.Delete(org, projSlug, rule.ID)
+			return err
+		}
+	}
+
+	return nil
 }

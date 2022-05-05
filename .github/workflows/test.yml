@@ -9,10 +9,6 @@ on:
   push:
     paths-ignore:
       - "README.md"
-  # We test at a regular interval to ensure we are alerted to something breaking due
-  # to an API change, even if the code did not change.
-  schedule:
-    - cron: "0 0 * * *"
 jobs:
   # ensure the code builds...
   build:
@@ -67,10 +63,6 @@ jobs:
         run: |
           go mod download
 
-      - name: TF acceptance tests
-        timeout-minutes: 10
-        env:
-          SENTRY_TEST_ORGANIZATION: ${{ secrets.SENTRY_TEST_ORGANIZATION }}
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      - name: Run Go tests
         run: |
-          make testacc
+          go test -race ./...

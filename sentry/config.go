@@ -4,9 +4,9 @@ import (
 	"context"
 	"net/url"
 
+	"github.com/canva/go-sentry/sentry"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/jianyuan/go-sentry/sentry"
 )
 
 // Config is the configuration structure used to instantiate the Sentry
@@ -22,7 +22,7 @@ func (c *Config) Client(ctx context.Context) (interface{}, diag.Diagnostics) {
 	var err error
 
 	if c.BaseURL != "" {
-		tflog.Debug(ctx, "Parsing base url", "BaseUrl", c.BaseURL)
+		tflog.Debug(ctx, "Parsing base url", map[string]interface{}{"BaseUrl": c.BaseURL})
 		baseURL, err = url.Parse(c.BaseURL)
 		if err != nil {
 			return nil, diag.FromErr(err)
