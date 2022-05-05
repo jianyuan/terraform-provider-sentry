@@ -12,7 +12,7 @@ import (
 func resourceSentryRuleImporter(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	addrID := d.Id()
 
-	tflog.Debug(ctx, "Importing Sentry rule", "ruleID", addrID)
+	tflog.Debug(ctx, "Importing Sentry rule", map[string]interface{}{"ruleID": addrID})
 
 	parts := strings.Split(addrID, "/")
 

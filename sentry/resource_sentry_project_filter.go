@@ -58,12 +58,12 @@ func resourceSentryFilterRead(ctx context.Context, d *schema.ResourceData, meta 
 	org := d.Get("organization").(string)
 	project := d.Get("project").(string)
 
-	tflog.Debug(ctx, "Reading Sentry filter config", "org", org, "project", project)
+	tflog.Debug(ctx, "Reading Sentry filter config", map[string]interface{}{"org": org, "project": project})
 	filterConfig, resp, err := client.ProjectFilter.GetFilterConfig(org, project)
 	if found, err := checkClientGet(resp, err, d); !found {
 		return diag.FromErr(err)
 	}
-	tflog.Trace(ctx, "Read Sentry filter config", "filterConfig", filterConfig)
+	tflog.Trace(ctx, "Read Sentry filter config", map[string]interface{}{"filterConfig": filterConfig})
 
 	d.SetId(fmt.Sprintf("%s-%s_filter", org, project))
 	d.Set("browser_extension", filterConfig.BrowserExtension)
@@ -85,7 +85,7 @@ func resourceSentryFilterUpdate(ctx context.Context, d *schema.ResourceData, met
 		legacyBrowsers[idx] = browser.(string)
 	}
 
-	tflog.Debug(ctx, "Updating Sentry filters browser extensions and legacy browser", "org", org, "project", project)
+	tflog.Debug(ctx, "Updating Sentry filters browser extensions and legacy browser", map[string]interface{}{"org": org, "project": project})
 	_, err := client.ProjectFilter.UpdateBrowserExtensions(org, project, browserExtension)
 	if err != nil {
 		return diag.FromErr(err)
@@ -94,7 +94,7 @@ func resourceSentryFilterUpdate(ctx context.Context, d *schema.ResourceData, met
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	tflog.Debug(ctx, "Updated Sentry filters browser extensions and legacy browser", "org", org, "project", project)
+	tflog.Debug(ctx, "Updated Sentry filters browser extensions and legacy browser", map[string]interface{}{"org": org, "project": project})
 
 	return resourceSentryFilterRead(ctx, d, meta)
 }
@@ -105,7 +105,7 @@ func resourceSentryFilterDelete(ctx context.Context, d *schema.ResourceData, met
 	org := d.Get("organization").(string)
 	project := d.Get("project").(string)
 
-	tflog.Debug(ctx, "Deleting Sentry filters browser extensions and legacy browser", "org", org, "project", project)
+	tflog.Debug(ctx, "Deleting Sentry filters browser extensions and legacy browser", map[string]interface{}{"org": org, "project": project})
 	_, err := client.ProjectFilter.UpdateBrowserExtensions(org, project, false)
 	if err != nil {
 		return diag.FromErr(err)
@@ -114,7 +114,7 @@ func resourceSentryFilterDelete(ctx context.Context, d *schema.ResourceData, met
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	tflog.Debug(ctx, "Deleted Sentry filters browser extensions and legacy browser", "org", org, "project", project)
+	tflog.Debug(ctx, "Deleted Sentry filters browser extensions and legacy browser", map[string]interface{}{"org": org, "project": project})
 
 	return nil
 }
