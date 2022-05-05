@@ -32,6 +32,7 @@ func TestAccSentryProject_basic(t *testing.T) {
 	    slug = "%s"
 	    platform = "go"
 		allowed_domains = ["www.canva.com", "www.canva.cn"]
+		grouping_enhancements = "function:panic_handler ^-group"
 	  }
 	`, testOrganization, testOrganization, newProjectSlug)
 
@@ -51,7 +52,8 @@ func TestAccSentryProject_basic(t *testing.T) {
 						SlugPresent:  true,
 						Platform:     "go",
 
-						AllowedDomains: []string{"*"},
+						AllowedDomains:       []string{"*"},
+						GroupingEnhancements: "",
 					}),
 				),
 			},
@@ -66,7 +68,8 @@ func TestAccSentryProject_basic(t *testing.T) {
 						Slug:         newProjectSlug,
 						Platform:     "go",
 
-						AllowedDomains: []string{"www.canva.com", "www.canva.cn"},
+						AllowedDomains:       []string{"www.canva.com", "www.canva.cn"},
+						GroupingEnhancements: "function:panic_handler ^-group",
 					}),
 				),
 			},
@@ -137,7 +140,8 @@ type testAccSentryProjectExpectedAttributes struct {
 	Slug        string
 	Platform    string
 
-	AllowedDomains []string
+	AllowedDomains       []string
+	GroupingEnhancements string
 }
 
 func testAccCheckSentryProjectAttributes(proj *sentry.Project, want *testAccSentryProjectExpectedAttributes) resource.TestCheckFunc {
@@ -170,7 +174,11 @@ func testAccCheckSentryProjectAttributes(proj *sentry.Project, want *testAccSent
 			sort.Strings(in)
 			return in
 		})) {
-			return fmt.Errorf("got allowed domain: %v; want %v", proj.AllowedDomains, want.AllowedDomains)
+			return fmt.Errorf("got allowed domain: %q; want %q", proj.AllowedDomains, want.AllowedDomains)
+		}
+
+		if want.GroupingEnhancements != "" && proj.GroupingEnhancements != want.GroupingEnhancements {
+			return fmt.Errorf("got GroupingEnhancements %q; want %q", proj.GroupingEnhancements, want.GroupingEnhancements)
 		}
 
 		return nil

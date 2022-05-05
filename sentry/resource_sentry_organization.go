@@ -49,12 +49,12 @@ func resourceSentryOrganizationCreate(ctx context.Context, d *schema.ResourceDat
 		AgreeTerms: sentry.Bool(d.Get("agree_terms").(bool)),
 	}
 
-	tflog.Debug(ctx, "Creating Sentry organization", "orgName", params.Name)
+	tflog.Debug(ctx, "Creating Sentry organization", map[string]interface{}{"orgName": params.Name})
 	org, _, err := client.Organizations.Create(params)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	tflog.Debug(ctx, "Created Sentry organization", "orgName", org.Name, "orgID", org.ID)
+	tflog.Debug(ctx, "Created Sentry organization", map[string]interface{}{"orgName": org.Name, "orgID": org.ID})
 
 	d.SetId(org.Slug)
 	return resourceSentryOrganizationRead(ctx, d, meta)
@@ -65,12 +65,12 @@ func resourceSentryOrganizationRead(ctx context.Context, d *schema.ResourceData,
 
 	slug := d.Id()
 
-	tflog.Debug(ctx, "Reading Sentry organization", "orgSlug", slug)
+	tflog.Debug(ctx, "Reading Sentry organization", map[string]interface{}{"orgSlug": slug})
 	org, resp, err := client.Organizations.Get(slug)
 	if found, err := checkClientGet(resp, err, d); !found {
 		return diag.FromErr(err)
 	}
-	tflog.Debug(ctx, "Read Sentry organization", "orgSlug", org.Slug, "orgID", org.ID)
+	tflog.Debug(ctx, "Read Sentry organization", map[string]interface{}{"orgSlug": org.Slug, "orgID": org.ID})
 
 	d.SetId(org.Slug)
 	d.Set("internal_id", org.ID)
@@ -88,12 +88,12 @@ func resourceSentryOrganizationUpdate(ctx context.Context, d *schema.ResourceDat
 		Slug: d.Get("slug").(string),
 	}
 
-	tflog.Debug(ctx, "Updating Sentry organization", "orgSlug", slug)
+	tflog.Debug(ctx, "Updating Sentry organization", map[string]interface{}{"orgSlug": slug})
 	org, _, err := client.Organizations.Update(slug, params)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	tflog.Debug(ctx, "Updated Sentry organization", "orgSlug", org.Slug, "orgID", org.ID)
+	tflog.Debug(ctx, "Updated Sentry organization", map[string]interface{}{"orgSlug": org.Slug, "orgID": org.ID})
 
 	d.SetId(org.Slug)
 	return resourceSentryOrganizationRead(ctx, d, meta)
@@ -104,9 +104,9 @@ func resourceSentryOrganizationDelete(ctx context.Context, d *schema.ResourceDat
 
 	slug := d.Id()
 
-	tflog.Debug(ctx, "Deleting Sentry organization", "orgSlug", slug)
+	tflog.Debug(ctx, "Deleting Sentry organization", map[string]interface{}{"orgSlug": slug})
 	_, err := client.Organizations.Delete(slug)
-	tflog.Debug(ctx, "Deleted Sentry organization", "orgSlug", slug)
+	tflog.Debug(ctx, "Deleted Sentry organization", map[string]interface{}{"orgSlug": slug})
 
 	return diag.FromErr(err)
 }
