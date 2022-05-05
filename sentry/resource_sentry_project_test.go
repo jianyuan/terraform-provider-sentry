@@ -3,9 +3,11 @@ package sentry
 import (
 	"errors"
 	"fmt"
+	"sort"
 	"testing"
 
 	"github.com/canva/go-sentry/sentry"
+	"github.com/google/go-cmp/cmp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -29,6 +31,8 @@ func TestAccSentryProject_basic(t *testing.T) {
 	    name = "Test project changed"
 	    slug = "%s"
 	    platform = "go"
+		allowed_domains = ["www.canva.com", "www.canva.cn"]
+		grouping_enhancements = "function:panic_handler ^-group"
 	  }
 	`, testOrganization, testOrganization, newProjectSlug)
 
@@ -47,6 +51,9 @@ func TestAccSentryProject_basic(t *testing.T) {
 						Team:         "Test team",
 						SlugPresent:  true,
 						Platform:     "go",
+
+						AllowedDomains:       []string{"*"},
+						GroupingEnhancements: "",
 					}),
 				),
 			},
@@ -60,6 +67,9 @@ func TestAccSentryProject_basic(t *testing.T) {
 						Team:         "Test team",
 						Slug:         newProjectSlug,
 						Platform:     "go",
+
+						AllowedDomains:       []string{"www.canva.com", "www.canva.cn"},
+						GroupingEnhancements: "function:panic_handler ^-group",
 					}),
 				),
 			},
@@ -129,6 +139,9 @@ type testAccSentryProjectExpectedAttributes struct {
 	SlugPresent bool
 	Slug        string
 	Platform    string
+
+	AllowedDomains       []string
+	GroupingEnhancements string
 }
 
 func testAccCheckSentryProjectAttributes(proj *sentry.Project, want *testAccSentryProjectExpectedAttributes) resource.TestCheckFunc {
@@ -155,6 +168,17 @@ func testAccCheckSentryProjectAttributes(proj *sentry.Project, want *testAccSent
 
 		if want.Platform != "" && proj.Platform != want.Platform {
 			return fmt.Errorf("got Platform %q; want %q", proj.Platform, want.Platform)
+		}
+
+		if !cmp.Equal(proj.AllowedDomains, want.AllowedDomains, cmp.Transformer("sort", func(in []string) []string {
+			sort.Strings(in)
+			return in
+		})) {
+			return fmt.Errorf("got allowed domain: %q; want %q", proj.AllowedDomains, want.AllowedDomains)
+		}
+
+		if want.GroupingEnhancements != "" && proj.GroupingEnhancements != want.GroupingEnhancements {
+			return fmt.Errorf("got GroupingEnhancements %q; want %q", proj.GroupingEnhancements, want.GroupingEnhancements)
 		}
 
 		return nil
