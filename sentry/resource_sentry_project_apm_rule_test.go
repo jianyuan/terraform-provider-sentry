@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/javaadsnappcar/go-sentry/sentry"
+	"github.com/jianyuan/go-sentry/sentry"
 )
 
 func TestAccSentryProjectAPMRule_basic(t *testing.T) {
