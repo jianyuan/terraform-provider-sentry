@@ -154,6 +154,8 @@ github.com/jessevdk/go-flags v1.5.0/go.mod h1:Fw0T6WPc1dYxT4mKEZRfG5kJhaTDP9pj1c
 github.com/jhump/protoreflect v1.6.0 h1:h5jfMVslIg6l29nsMs0D8Wj17RDVdNYti0vDN/PZZoE=
 github.com/jianyuan/go-sentry v1.2.1-0.20210621222913-1234f239dab3 h1:EbK7aPqY1jfdI31V/8pclxmFbntFTbOZcg8ARRo0szA=
 github.com/jianyuan/go-sentry v1.2.1-0.20210621222913-1234f239dab3/go.mod h1:LZt9pgCnEWnqk0c8S4w2LlIIJzAe8Hr1GXZfZnsR1O4=
+github.com/jianyuan/go-sentry v1.4.0 h1:g4tBUPCLoHdYYMyoRWch3C06NYWxvIBtJPFE0wx5GjY=
+github.com/jianyuan/go-sentry v1.4.0/go.mod h1:K7x+nBCRDmjUQDlAckq0Ek/MnFH1WoMrc8XQS4sL+Ks=
 github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 h1:DowS9hvgyYSX4TO5NpyC606/Z4SxnNYbT+WX27or6Ck=
 github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351/go.mod h1:CT57kijsi8u/K/BOFA39wgDQJ9CxiF4nAY/ojJ6r6mM=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
