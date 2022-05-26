@@ -9,6 +9,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.16.0
 	github.com/jianyuan/go-sentry v1.2.1-0.20210621222913-1234f239dab3
 	github.com/mitchellh/mapstructure v1.5.0
+	golang.org/x/time v0.0.0-20220411224347-583f2d630306
 )
 
 require (
@@ -55,9 +56,6 @@ require (
 	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f // indirect
 	golang.org/x/sys v0.0.0-20220517195934-5e4e11fc645e // indirect
 	golang.org/x/text v0.3.7 // indirect
-	golang.org/x/time v0.0.0-20220411224347-583f2d630306 // indirect
-	golang.org/x/tools v0.1.5 // indirect
-	google.golang.org/api v0.33.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20211223182754-3ac035c7e7cb // indirect
 	google.golang.org/grpc v1.46.0 // indirect
