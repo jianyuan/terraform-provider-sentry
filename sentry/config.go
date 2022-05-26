@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http"
 	"net/url"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -40,7 +39,7 @@ func (c *Config) Client(ctx context.Context) (interface{}, diag.Diagnostics) {
 	client := &http.Client{
 		Transport: &transport{
 			// 40 requests every second.
-			limiter: rate.NewLimiter(rate.Every(1*time.Second), 40),
+			limiter: rate.NewLimiter(40, 1),
 		},
 	}
 
