@@ -51,6 +51,7 @@ jobs:
           - "0.15.*"
           - "1.0.*"
           - "1.1.*"
+          - "1.2.*"
     steps:
       - uses: actions/setup-go@v2
         with:
