@@ -7,7 +7,7 @@ go 1.18
 require (
 	github.com/hashicorp/terraform-plugin-log v0.4.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.16.0
-	github.com/jianyuan/go-sentry v1.2.1-0.20210621222913-1234f239dab3
+	github.com/jianyuan/go-sentry v1.4.0
 	github.com/mitchellh/mapstructure v1.5.0
 )
 
