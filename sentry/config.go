@@ -22,7 +22,9 @@ func (c *Config) Client(ctx context.Context) (interface{}, diag.Diagnostics) {
 	var err error
 
 	if c.BaseURL != "" {
-		tflog.Debug(ctx, "Parsing base url", "BaseUrl", c.BaseURL)
+		tflog.Debug(ctx, "Parsing base url", map[string]interface{}{
+			"BaseUrl": c.BaseURL,
+		})
 		baseURL, err = url.Parse(c.BaseURL)
 		if err != nil {
 			return nil, diag.FromErr(err)

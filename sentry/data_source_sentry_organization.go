@@ -36,12 +36,18 @@ func dataSourceSentryOrganizationRead(ctx context.Context, d *schema.ResourceDat
 
 	slug := d.Get("slug").(string)
 
-	tflog.Debug(ctx, "Reading Sentry org", "orgSlug", slug)
+	tflog.Debug(ctx, "Reading Sentry org", map[string]interface{}{
+		"orgSlug": slug,
+	})
 	org, _, err := client.Organizations.Get(slug)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	tflog.Debug(ctx, "Read Sentry org", "orgName", org.Name, "orgSlug", org.Slug, "orgID", org.ID)
+	tflog.Debug(ctx, "Read Sentry org", map[string]interface{}{
+		"orgName": org.Name,
+		"orgSlug": org.Slug,
+		"orgID":   org.ID,
+	})
 
 	d.SetId(org.Slug)
 	d.Set("internal_id", org.ID)
