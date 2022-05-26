@@ -9,6 +9,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.16.0
 	github.com/jianyuan/go-sentry v1.4.0
 	github.com/mitchellh/mapstructure v1.5.0
+	golang.org/x/time v0.0.0-20220411224347-583f2d630306
 )
 
 require (
