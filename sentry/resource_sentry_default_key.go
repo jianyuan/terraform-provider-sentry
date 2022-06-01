@@ -56,13 +56,21 @@ func resourceSentryDefaultKeyCreate(ctx context.Context, d *schema.ResourceData,
 		},
 	}
 
-	tflog.Debug(ctx, "Creating Sentry default key", "org", org, "project", project, "keyID", id)
+	tflog.Debug(ctx, "Creating Sentry default key", map[string]interface{}{
+		"org":     org,
+		"project": project,
+		"keyID":   id,
+	})
 	key, resp, err := client.ProjectKeys.Update(org, project, id, params)
-	tflog.Debug(ctx, "Sentry default key create http response data", logging.ExtractHttpResponse(resp)...)
+	tflog.Debug(ctx, "Sentry default key create http response data", logging.ExtractHttpResponse(resp))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	tflog.Debug(ctx, "Created Sentry default key", "org", org, "project", project, "keyID", key.ID)
+	tflog.Debug(ctx, "Created Sentry default key", map[string]interface{}{
+		"org":     org,
+		"project": project,
+		"keyID":   key.ID,
+	})
 
 	d.SetId(id)
 	return resourceSentryKeyRead(ctx, d, meta)

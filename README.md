@@ -18,7 +18,7 @@ Pre-compiled binaries are available from the [Releases](https://github.com/jiany
 
 ## Development
 
-If you wish to work on the provider, you will need to install [Go](https://go.dev/doc/install) (We use >= 1.17) on your machine.
+If you wish to work on the provider, you will need to install [Go](https://go.dev/doc/install) (We use >= 1.18) on your machine.
 
 ### Test
 
