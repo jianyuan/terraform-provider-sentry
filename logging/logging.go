@@ -44,11 +44,11 @@ func extractHttpResponseElements(resp *http.Response) []logKeyValuePair {
 
 // ExtractHttpResponse extracts key-value pairs from the http.Response object.
 // This is to match the args signature of the tflog package.
-func ExtractHttpResponse(resp *http.Response) []interface{} {
+func ExtractHttpResponse(resp *http.Response) map[string]interface{} {
 	elements := extractHttpResponseElements(resp)
-	args := []interface{}{}
+	args := make(map[string]interface{})
 	for _, pair := range elements {
-		args = append(args, pair.Key, pair.Value)
+		args[pair.Key] = pair.Value
 	}
 	return args
 }

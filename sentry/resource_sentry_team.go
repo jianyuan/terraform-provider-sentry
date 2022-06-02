@@ -71,7 +71,7 @@ func resourceSentryTeamCreate(ctx context.Context, d *schema.ResourceData, meta 
 		"org":      org,
 	})
 	team, resp, err := client.Teams.Create(org, params)
-	tflog.Debug(ctx, "Sentry team create http response data", logging.ExtractHttpResponse(resp)...)
+	tflog.Debug(ctx, "Sentry team create http response data", logging.ExtractHttpResponse(resp))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -95,7 +95,7 @@ func resourceSentryTeamRead(ctx context.Context, d *schema.ResourceData, meta in
 		"org":      org,
 	})
 	team, resp, err := client.Teams.Get(org, slug)
-	tflog.Debug(ctx, "Sentry team read http response data", logging.ExtractHttpResponse(resp)...)
+	tflog.Debug(ctx, "Sentry team read http response data", logging.ExtractHttpResponse(resp))
 	if found, err := checkClientGet(resp, err, d); !found {
 		return diag.FromErr(err)
 	}
@@ -127,11 +127,11 @@ func resourceSentryTeamUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	tflog.Debug(ctx, "Updating Sentry team", map[string]interface{}{
-		"teamSlug": team.Slug,
+		"teamSlug": slug,
 		"org":      org,
 	})
 	team, resp, err := client.Teams.Update(org, slug, params)
-	tflog.Debug(ctx, "Sentry team update http response data", logging.ExtractHttpResponse(resp)...)
+	tflog.Debug(ctx, "Sentry team update http response data", logging.ExtractHttpResponse(resp))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -156,7 +156,7 @@ func resourceSentryTeamDelete(ctx context.Context, d *schema.ResourceData, meta 
 		"org":      org,
 	})
 	resp, err := client.Teams.Delete(org, slug)
-	tflog.Debug(ctx, "Sentry team delete http response data", logging.ExtractHttpResponse(resp)...)
+	tflog.Debug(ctx, "Sentry team delete http response data", logging.ExtractHttpResponse(resp))
 	tflog.Debug(ctx, "Deleted Sentry team", map[string]interface{}{
 		"teamSlug": slug,
 		"org":      org,

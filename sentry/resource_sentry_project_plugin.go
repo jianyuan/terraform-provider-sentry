@@ -58,7 +58,7 @@ func resourceSentryPluginCreate(ctx context.Context, d *schema.ResourceData, met
 		"project":    project,
 	})
 	resp, err := client.ProjectPlugins.Enable(org, project, plugin)
-	tflog.Debug(ctx, "Sentry plugin create http response data", logging.ExtractHttpResponse(resp)...)
+	tflog.Debug(ctx, "Sentry plugin create http response data", logging.ExtractHttpResponse(resp))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -92,7 +92,7 @@ func resourceSentryPluginRead(ctx context.Context, d *schema.ResourceData, meta 
 		"project":  project,
 	})
 	plugin, resp, err := client.ProjectPlugins.Get(org, project, id)
-	tflog.Debug(ctx, "Sentry plugin read http response data", logging.ExtractHttpResponse(resp)...)
+	tflog.Debug(ctx, "Sentry plugin read http response data", logging.ExtractHttpResponse(resp))
 	if found, err := checkClientGet(resp, err, d); !found {
 		return diag.FromErr(err)
 	}
@@ -135,7 +135,7 @@ func resourceSentryPluginUpdate(ctx context.Context, d *schema.ResourceData, met
 	})
 	params := d.Get("config").(map[string]interface{})
 	plugin, resp, err := client.ProjectPlugins.Update(org, project, id, params)
-	tflog.Debug(ctx, "Sentry plugin update http response data", logging.ExtractHttpResponse(resp)...)
+	tflog.Debug(ctx, "Sentry plugin update http response data", logging.ExtractHttpResponse(resp))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -161,7 +161,7 @@ func resourceSentryPluginDelete(ctx context.Context, d *schema.ResourceData, met
 		"project":  project,
 	})
 	resp, err := client.ProjectPlugins.Disable(org, project, id)
-	tflog.Debug(ctx, "Sentry plugin delete http response data", logging.ExtractHttpResponse(resp)...)
+	tflog.Debug(ctx, "Sentry plugin delete http response data", logging.ExtractHttpResponse(resp))
 	tflog.Debug(ctx, "Deleted Sentry plugin", map[string]interface{}{
 		"pluginID": id,
 		"org":      org,

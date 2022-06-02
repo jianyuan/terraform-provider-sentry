@@ -117,7 +117,7 @@ func resourceSentryProjectCreate(ctx context.Context, d *schema.ResourceData, me
 		"org":      org,
 	})
 	proj, resp, err := client.Projects.Create(org, team, params)
-	tflog.Debug(ctx, "Sentry project create http response data", logging.ExtractHttpResponse(resp)...)
+	tflog.Debug(ctx, "Sentry project create http response data", logging.ExtractHttpResponse(resp))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -143,7 +143,7 @@ func resourceSentryProjectRead(ctx context.Context, d *schema.ResourceData, meta
 		"org":         org,
 	})
 	proj, resp, err := client.Projects.Get(org, slug)
-	tflog.Debug(ctx, "Sentry project read http response data", logging.ExtractHttpResponse(resp)...)
+	tflog.Debug(ctx, "Sentry project read http response data", logging.ExtractHttpResponse(resp))
 	if found, err := checkClientGet(resp, err, d); !found {
 		return diag.FromErr(err)
 	}
@@ -205,7 +205,7 @@ func resourceSentryProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 		"org":         org,
 	})
 	proj, resp, err := client.Projects.Update(org, slug, params)
-	tflog.Debug(ctx, "Sentry project update http response data", logging.ExtractHttpResponse(resp)...)
+	tflog.Debug(ctx, "Sentry project update http response data", logging.ExtractHttpResponse(resp))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -230,7 +230,7 @@ func resourceSentryProjectDelete(ctx context.Context, d *schema.ResourceData, me
 		"org":         org,
 	})
 	resp, err := client.Projects.Delete(org, slug)
-	tflog.Debug(ctx, "Sentry project delete http response data", logging.ExtractHttpResponse(resp)...)
+	tflog.Debug(ctx, "Sentry project delete http response data", logging.ExtractHttpResponse(resp))
 	tflog.Debug(ctx, "Deleted Sentry project", map[string]interface{}{
 		"projectSlug": slug,
 		"org":         org,

@@ -155,7 +155,7 @@ func resourceSentryRuleCreate(ctx context.Context, d *schema.ResourceData, meta 
 		"project":  project,
 	})
 	rule, resp, err := client.Rules.Create(org, project, params)
-	tflog.Debug(ctx, "Sentry rule create http response data", logging.ExtractHttpResponse(resp)...)
+	tflog.Debug(ctx, "Sentry rule create http response data", logging.ExtractHttpResponse(resp))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -183,7 +183,7 @@ func resourceSentryRuleRead(ctx context.Context, d *schema.ResourceData, meta in
 		"project": project,
 	})
 	rules, resp, err := client.Rules.List(org, project)
-	tflog.Debug(ctx, "Sentry rule read http response data", logging.ExtractHttpResponse(resp)...)
+	tflog.Debug(ctx, "Sentry rule read http response data", logging.ExtractHttpResponse(resp))
 	if found, err := checkClientGet(resp, err, d); !found {
 		return diag.FromErr(err)
 	}
@@ -317,7 +317,7 @@ func resourceSentryRuleUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		"project": project,
 	})
 	rule, resp, err := client.Rules.Update(org, project, id, params)
-	tflog.Debug(ctx, "Sentry rule update http response data", logging.ExtractHttpResponse(resp)...)
+	tflog.Debug(ctx, "Sentry rule update http response data", logging.ExtractHttpResponse(resp))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -343,7 +343,7 @@ func resourceSentryRuleDelete(ctx context.Context, d *schema.ResourceData, meta 
 		"project": project,
 	})
 	resp, err := client.Rules.Delete(org, project, id)
-	tflog.Debug(ctx, "Sentry rule delete http response data", logging.ExtractHttpResponse(resp)...)
+	tflog.Debug(ctx, "Sentry rule delete http response data", logging.ExtractHttpResponse(resp))
 	tflog.Debug(ctx, "Deleted Sentry rule", map[string]interface{}{
 		"ruleID":  id,
 		"org":     org,

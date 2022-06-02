@@ -103,7 +103,7 @@ func resourceSentryKeyCreate(ctx context.Context, d *schema.ResourceData, meta i
 		"project": project,
 	})
 	key, resp, err := client.ProjectKeys.Create(org, project, params)
-	tflog.Debug(ctx, "Sentry key create http response data", logging.ExtractHttpResponse(resp)...)
+	tflog.Debug(ctx, "Sentry key create http response data", logging.ExtractHttpResponse(resp))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -131,7 +131,7 @@ func resourceSentryKeyRead(ctx context.Context, d *schema.ResourceData, meta int
 		"project": project,
 	})
 	keys, resp, err := client.ProjectKeys.List(org, project)
-	tflog.Debug(ctx, "Sentry key read http response data", logging.ExtractHttpResponse(resp)...)
+	tflog.Debug(ctx, "Sentry key read http response data", logging.ExtractHttpResponse(resp))
 	if found, err := checkClientGet(resp, err, d); !found {
 		return diag.FromErr(err)
 	}
@@ -199,7 +199,7 @@ func resourceSentryKeyUpdate(ctx context.Context, d *schema.ResourceData, meta i
 		"keyID": id,
 	})
 	key, resp, err := client.ProjectKeys.Update(org, project, id, params)
-	tflog.Debug(ctx, "Sentry key update http response data", logging.ExtractHttpResponse(resp)...)
+	tflog.Debug(ctx, "Sentry key update http response data", logging.ExtractHttpResponse(resp))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -222,7 +222,7 @@ func resourceSentryKeyDelete(ctx context.Context, d *schema.ResourceData, meta i
 		"keyID": id,
 	})
 	resp, err := client.ProjectKeys.Delete(org, project, id)
-	tflog.Debug(ctx, "Sentry key delete http response data", logging.ExtractHttpResponse(resp)...)
+	tflog.Debug(ctx, "Sentry key delete http response data", logging.ExtractHttpResponse(resp))
 	tflog.Debug(ctx, "Deleted Sentry key", map[string]interface{}{
 		"keyID": id,
 	})
