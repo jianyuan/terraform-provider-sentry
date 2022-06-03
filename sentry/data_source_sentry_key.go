@@ -85,7 +85,10 @@ func dataSourceSentryKeyRead(ctx context.Context, d *schema.ResourceData, meta i
 	org := d.Get("organization").(string)
 	project := d.Get("project").(string)
 
-	tflog.Debug(ctx, "Reading Sentry project keys", "org", org, "project", project)
+	tflog.Debug(ctx, "Reading Sentry project keys", map[string]interface{}{
+		"org":     org,
+		"project": project,
+	})
 	keys, _, err := client.ProjectKeys.List(org, project)
 	if err != nil {
 		return diag.FromErr(err)
@@ -102,19 +105,27 @@ func dataSourceSentryKeyRead(ctx context.Context, d *schema.ResourceData, meta i
 	}
 
 	if len(keys) == 1 {
-		tflog.Debug(ctx, "sentry_key - single key", "keyName", keys[0].Name, "keyID", keys[0].ID)
+		tflog.Debug(ctx, "sentry_key - single key", map[string]interface{}{
+			"keyName": keys[0].Name,
+			"keyID":   keys[0].ID,
+		})
 		return diag.FromErr(sentryKeyAttributes(d, &keys[0]))
 	}
 
 	first := d.Get("first").(bool)
-	tflog.Debug(ctx, "sentry_key - multiple results found", "first", first)
+	tflog.Debug(ctx, "sentry_key - multiple results found", map[string]interface{}{
+		"first": first,
+	})
 	if first {
 		// Sort keys by date created
 		sort.Slice(keys, func(i, j int) bool {
 			return keys[i].DateCreated.Before(keys[j].DateCreated)
 		})
 
-		tflog.Debug(ctx, "sentry_key - Found more than one key. Returning the oldest (`first`) key.", "keyName", keys[0].Name, "keyID", keys[0].ID)
+		tflog.Debug(ctx, "sentry_key - Found more than one key. Returning the oldest (`first`) key.", map[string]interface{}{
+			"keyName": keys[0].Name,
+			"keyID":   keys[0].ID,
+		})
 		return diag.FromErr(sentryKeyAttributes(d, &keys[0]))
 	}
 
