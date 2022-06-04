@@ -10,40 +10,40 @@ import (
 	"github.com/jianyuan/go-sentry/sentry"
 )
 
-func TestAccSentryProjectAPMRule_basic(t *testing.T) {
-	var apmRule sentry.APMRule
+func TestAccSentryProjectAlertRule_basic(t *testing.T) {
+	var alertRule sentry.APMRule
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckSentryProjectAPMRuleDestroy,
+		CheckDestroy: testAccCheckSentryProjectAlertRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSentryProjectAPMRuleConfig,
+				Config: testAccSentryProjectAlertRuleConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSentryProjectAPMRuleExists("sentry_apm_rule.test_apm_rule", &apmRule),
-					resource.TestCheckResourceAttr("sentry_apm_rule.test_apm_rule", "name", "Test apm rule"),
-					resource.TestCheckResourceAttr("sentry_apm_rule", "environment", ""),
-					resource.TestCheckResourceAttr("sentry_apm_rule", "dataset", "transactions"),
+					testAccCheckSentryProjectAlertRuleExists("sentry_alert_rule.test_alert_rule", &alertRule),
+					resource.TestCheckResourceAttr("sentry_alert_rule.test_alert_rule", "name", "Test alert rule"),
+					resource.TestCheckResourceAttr("sentry_alert_rule", "environment", ""),
+					resource.TestCheckResourceAttr("sentry_alert_rule", "dataset", "transactions"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckSentryProjectAPMRuleDestroy(s *terraform.State) error {
+func testAccCheckSentryProjectAlertRuleDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*sentry.Client)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "sentry_apm_rule" {
+		if rs.Type != "sentry_alert_rule" {
 			continue
 		}
 
-		apmRules, resp, err := client.APMRules.List(testOrganization, rs.Primary.Attributes["project"])
+		alertRules, resp, err := client.APMRules.List(testOrganization, rs.Primary.Attributes["project"])
 		if err == nil {
-			for _, apmRule := range apmRules {
-				if apmRule.ID == rs.Primary.ID {
-					return errors.New("Project apm rule still exists")
+			for _, alertRule := range alertRules {
+				if alertRule.ID == rs.Primary.ID {
+					return errors.New("Project alert rule still exists")
 				}
 			}
 		}
@@ -56,7 +56,7 @@ func testAccCheckSentryProjectAPMRuleDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckSentryProjectAPMRuleExists(n string, apmRule *sentry.APMRule) resource.TestCheckFunc {
+func testAccCheckSentryProjectAlertRuleExists(n string, alertRule *sentry.APMRule) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -68,16 +68,16 @@ func testAccCheckSentryProjectAPMRuleExists(n string, apmRule *sentry.APMRule) r
 		}
 
 		client := testAccProvider.Meta().(*sentry.Client)
-		sentryApmRules, _, err := client.APMRules.List(
+		sentryAlertRules, _, err := client.APMRules.List(
 			rs.Primary.Attributes["organization"],
 			rs.Primary.Attributes["project"],
 		)
 		if err != nil {
 			return err
 		}
-		for _, sentryApmRule := range sentryApmRules {
-			if sentryApmRule.ID == rs.Primary.ID {
-				*apmRule = sentryApmRule
+		for _, sentryAlertRule := range sentryAlertRules {
+			if sentryAlertRule.ID == rs.Primary.ID {
+				*alertRule = sentryAlertRule
 				break
 			}
 		}
@@ -85,7 +85,7 @@ func testAccCheckSentryProjectAPMRuleExists(n string, apmRule *sentry.APMRule) r
 	}
 }
 
-var testAccSentryProjectAPMRuleConfig = fmt.Sprintf(`
+var testAccSentryProjectAlertRuleConfig = fmt.Sprintf(`
 resource "sentry_team" "test_team" {
 	organization = "%s"
 	name		= "Test team"	
@@ -98,10 +98,10 @@ resource "sentry_project" "test_project" {
 	platform = "go"
 }
 
-resource "sentry_apm_rule" "test_apm_rule" {
+resource "sentry_alert_rule" "test_alert_rule" {
 	organization      = "%s"
 	project           = sentry_project.test_project.id
-	name              = "Test apm rule"
+	name              = "Test alert rule"
 	dataset           = "transactions"
 	query             = "http.url:http://testservice.com/stats"
 	time_window       = 50.0

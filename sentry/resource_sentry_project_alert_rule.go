@@ -12,12 +12,12 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-func resourceSentryAPMRule() *schema.Resource {
+func resourceSentryAlertRule() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceSentryAPMRuleCreate,
-		ReadContext:   resourceSentryAPMRuleRead,
-		UpdateContext: resourceSentryAPMRuleUpdate,
-		DeleteContext: resourceSentryAPMRuleDelete,
+		CreateContext: resourceSentryAlertRuleCreate,
+		ReadContext:   resourceSentryAlertRuleRead,
+		UpdateContext: resourceSentryAlertRuleUpdate,
+		DeleteContext: resourceSentryAlertRuleDelete,
 
 		Schema: map[string]*schema.Schema{
 			"organization": &schema.Schema{
@@ -33,18 +33,18 @@ func resourceSentryAPMRule() *schema.Resource {
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The APM rule name",
+				Description: "The Alert rule name",
 			},
 			"environment": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "Perform APM rule in a specific environment",
+				Description: "Perform Alert rule in a specific environment",
 			},
 			"dataset": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The Sentry APM category",
+				Description: "The Sentry Alert category",
 			},
 			"query": &schema.Schema{
 				Type:        schema.TypeString,
@@ -59,7 +59,7 @@ func resourceSentryAPMRule() *schema.Resource {
 			"time_window": &schema.Schema{
 				Type:        schema.TypeFloat,
 				Required:    true,
-				Description: "The period to evaluate the APM rule in minutes",
+				Description: "The period to evaluate the Alert rule in minutes",
 			},
 			"threshold_type": &schema.Schema{
 				Type:        schema.TypeInt,
@@ -69,7 +69,7 @@ func resourceSentryAPMRule() *schema.Resource {
 			"resolve_threshold": &schema.Schema{
 				Type:        schema.TypeFloat,
 				Optional:    true,
-				Description: "The value at which the APM rule resolves",
+				Description: "The value at which the Alert rule resolves",
 			},
 			"triggers": {
 				Type:     schema.TypeSet,
@@ -124,13 +124,13 @@ func resourceSentryAPMRule() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "Specifies the owner id of this APM rule",
+				Description: "Specifies the owner id of this Alert rule",
 			},
 		},
 	}
 }
 
-func resourceSentryAPMRuleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSentryAlertRuleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
 	name := d.Get("name").(string)
@@ -173,67 +173,67 @@ func resourceSentryAPMRuleCreate(ctx context.Context, d *schema.ResourceData, me
 		params.Environment = &environment
 	}
 
-	tflog.Info(ctx, "Creating Sentry APM rule", "ruleName", name, "org", org, "project", project, "params", params)
-	apmRule, _, err := client.APMRules.Create(org, project, params)
+	tflog.Info(ctx, "Creating Sentry Alert rule", "ruleName", name, "org", org, "project", project, "params", params)
+	alertRule, _, err := client.APMRules.Create(org, project, params)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	tflog.Info(ctx, "Created Sentry APM rule", "ruleName", apmRule.Name, "ruleID", apmRule.ID, "org", org, "project", project)
+	tflog.Info(ctx, "Created Sentry Alert rule", "ruleName", alertRule.Name, "ruleID", alertRule.ID, "org", org, "project", project)
 
-	d.SetId(apmRule.ID)
+	d.SetId(alertRule.ID)
 
-	return resourceSentryAPMRuleRead(ctx, d, meta)
+	return resourceSentryAlertRuleRead(ctx, d, meta)
 }
 
-func resourceSentryAPMRuleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSentryAlertRuleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
 	org := d.Get("organization").(string)
 	project := d.Get("project").(string)
 	id := d.Id()
 
-	tflog.Debug(ctx, "Reading Sentry APM rule", "apmRuleID", id, "org", org, "project", project)
-	apmRules, resp, err := client.APMRules.List(org, project)
+	tflog.Debug(ctx, "Reading Sentry Alert rule", "alertRuleID", id, "org", org, "project", project)
+	alertRules, resp, err := client.APMRules.List(org, project)
 
 	if found, err := checkClientGet(resp, err, d); !found {
 		return diag.FromErr(err)
 	}
-	tflog.Trace(ctx, "Read Sentry APM rules", "ruleCount", len(apmRules), "APM rules", apmRules)
+	tflog.Trace(ctx, "Read Sentry Alert rules", "ruleCount", len(alertRules), "Alert rules", alertRules)
 
-	var apmRule *sentry.APMRule
-	for _, r := range apmRules {
+	var alertRule *sentry.APMRule
+	for _, r := range alertRules {
 		if r.ID == id {
-			apmRule = &r
+			alertRule = &r
 			break
 		}
 	}
 
-	if apmRule == nil {
-		return diag.Errorf("Could not find apmRule with ID" + id)
+	if alertRule == nil {
+		return diag.Errorf("Could not find alertRule with ID" + id)
 	}
-	tflog.Debug(ctx, "Read Sentry APM rule", "ruleID", apmRule.ID, "org", org, "project", project)
+	tflog.Debug(ctx, "Read Sentry Alert rule", "ruleID", alertRule.ID, "org", org, "project", project)
 
-	triggers := mapResourceTriggersRead(ctx, &apmRule.Triggers)
+	triggers := mapResourceTriggersRead(ctx, &alertRule.Triggers)
 	if err := d.Set("triggers", triggers); err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(apmRule.ID)
-	d.Set("name", apmRule.Name)
-	d.Set("environment", apmRule.Environment)
-	d.Set("dataset", apmRule.DataSet)
-	d.Set("query", apmRule.Query)
-	d.Set("aggregate", apmRule.Aggregate)
-	d.Set("time_window", apmRule.TimeWindow)
-	d.Set("threshold_type", apmRule.ThresholdType)
-	d.Set("resolve_threshold", apmRule.ResolveThreshold)
-	d.Set("projects", apmRule.Projects)
-	d.Set("owner", apmRule.Owner)
+	d.SetId(alertRule.ID)
+	d.Set("name", alertRule.Name)
+	d.Set("environment", alertRule.Environment)
+	d.Set("dataset", alertRule.DataSet)
+	d.Set("query", alertRule.Query)
+	d.Set("aggregate", alertRule.Aggregate)
+	d.Set("time_window", alertRule.TimeWindow)
+	d.Set("threshold_type", alertRule.ThresholdType)
+	d.Set("resolve_threshold", alertRule.ResolveThreshold)
+	d.Set("projects", alertRule.Projects)
+	d.Set("owner", alertRule.Owner)
 
 	return nil
 }
 
-func resourceSentryAPMRuleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSentryAlertRuleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
 	id := d.Id()
@@ -275,26 +275,26 @@ func resourceSentryAPMRuleUpdate(ctx context.Context, d *schema.ResourceData, me
 		Owner:            owner,
 	}
 
-	tflog.Debug(ctx, "Updating Sentry APM rule", "ruleName", name, "org", org, "project", project)
-	apmRule, _, err := client.APMRules.Update(org, project, id, params)
+	tflog.Debug(ctx, "Updating Sentry Alert rule", "ruleName", name, "org", org, "project", project)
+	alertRule, _, err := client.APMRules.Update(org, project, id, params)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	tflog.Debug(ctx, "Updated Sentry APM rule", "ruleName", apmRule.Name, "ruleID", apmRule.ID, "org", org, "project", project)
+	tflog.Debug(ctx, "Updated Sentry Alert rule", "ruleName", alertRule.Name, "ruleID", alertRule.ID, "org", org, "project", project)
 
-	return resourceSentryAPMRuleRead(ctx, d, meta)
+	return resourceSentryAlertRuleRead(ctx, d, meta)
 }
 
-func resourceSentryAPMRuleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSentryAlertRuleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
 	id := d.Id()
 	org := d.Get("organization").(string)
 	project := d.Get("project").(string)
 
-	tflog.Debug(ctx, "Deleting Sentry APM rule", "ruleID", id, "org", org, "project", project)
+	tflog.Debug(ctx, "Deleting Sentry Alert rule", "ruleID", id, "org", org, "project", project)
 	_, err := client.APMRules.Delete(org, project, id)
-	tflog.Debug(ctx, "Deleted Sentry APM rule", "ruleID", id, "org", org, "project", project)
+	tflog.Debug(ctx, "Deleted Sentry Alert rule", "ruleID", id, "org", org, "project", project)
 
 	return diag.FromErr(err)
 }

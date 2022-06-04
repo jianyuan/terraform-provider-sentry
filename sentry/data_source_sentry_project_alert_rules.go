@@ -11,9 +11,9 @@ import (
 	"github.com/jianyuan/go-sentry/sentry"
 )
 
-func dataSourceSentryAPMRules() *schema.Resource {
+func dataSourceSentryAlertRules() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceSentryAPMRuleRead,
+		ReadContext: dataSourceSentryAlertRuleRead,
 		Schema: map[string]*schema.Schema{
 			"organization": &schema.Schema{
 				Type:        schema.TypeString,
@@ -25,7 +25,7 @@ func dataSourceSentryAPMRules() *schema.Resource {
 				Required:    true,
 				Description: "The slug of the project to create the plugin for",
 			},
-			"apm_rules": &schema.Schema{
+			"alert_rules": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -37,7 +37,7 @@ func dataSourceSentryAPMRules() *schema.Resource {
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The APM rule name",
+							Description: "The alert rule name",
 						},
 						"environment": &schema.Schema{
 							Type:     schema.TypeString,
@@ -124,23 +124,23 @@ func dataSourceSentryAPMRules() *schema.Resource {
 	}
 }
 
-func dataSourceSentryAPMRuleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceSentryAlertRuleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 	org := d.Get("organization").(string)
 	project := d.Get("project").(string)
 
-	tflog.Debug(ctx, "Reading Sentry APM rules", "org", org, "project", project)
-	apmRules, resp, err := client.APMRules.List(org, project)
+	tflog.Debug(ctx, "Reading Sentry Alert rules", "org", org, "project", project)
+	alertRules, resp, err := client.APMRules.List(org, project)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	if found, err := checkClientGet(resp, err, d); !found {
 		return diag.FromErr(err)
 	}
-	tflog.Trace(ctx, "Read Sentry APM rules", "ruleCount", len(apmRules), "APM rules", apmRules)
+	tflog.Trace(ctx, "Read Sentry Alert rules", "ruleCount", len(alertRules), "Alert rules", alertRules)
 
-	apm_rules := mapApmRulesData(ctx, &apmRules)
-	if err := d.Set("apm_rules", apm_rules); err != nil {
+	alert_rules := mapAlertRulesData(ctx, &alertRules)
+	if err := d.Set("alert_rules", alert_rules); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -149,26 +149,25 @@ func dataSourceSentryAPMRuleRead(ctx context.Context, d *schema.ResourceData, me
 	return nil
 }
 
-func mapApmRulesData(ctx context.Context, apmRules *[]sentry.APMRule) []interface{} {
-	if apmRules != nil {
-		ars := make([]interface{}, len(*apmRules), len(*apmRules))
+func mapAlertRulesData(ctx context.Context, alertRules *[]sentry.APMRule) []interface{} {
+	if alertRules != nil {
+		ars := make([]interface{}, len(*alertRules), len(*alertRules))
 
-		for i, apmRule := range *apmRules {
+		for i, alertRule := range *alertRules {
 			ar := make(map[string]interface{})
 
-			ar["id"] = apmRule.ID
-			ar["name"] = apmRule.Name
-			ar["environment"] = apmRule.Environment
-			ar["dataset"] = apmRule.DataSet
-			ar["query"] = apmRule.Query
-			ar["aggregate"] = apmRule.Aggregate
-			ar["time_window"] = apmRule.TimeWindow
-			ar["threshold_type"] = apmRule.ThresholdType
-			ar["resolve_threshold"] = apmRule.ResolveThreshold
-			ar["projects"] = apmRule.Projects
-			ar["owner"] = apmRule.Owner
-			ar["triggers"] = mapTriggers(ctx, &apmRule.Triggers)
-			// ar["created"] = apmRule.Created //TODO: map later
+			ar["id"] = alertRule.ID
+			ar["name"] = alertRule.Name
+			ar["environment"] = alertRule.Environment
+			ar["dataset"] = alertRule.DataSet
+			ar["query"] = alertRule.Query
+			ar["aggregate"] = alertRule.Aggregate
+			ar["time_window"] = alertRule.TimeWindow
+			ar["threshold_type"] = alertRule.ThresholdType
+			ar["resolve_threshold"] = alertRule.ResolveThreshold
+			ar["projects"] = alertRule.Projects
+			ar["owner"] = alertRule.Owner
+			ar["triggers"] = mapTriggers(ctx, &alertRule.Triggers)
 
 			ars[i] = ar
 		}
@@ -206,7 +205,6 @@ func mapTriggers(ctx context.Context, triggers *[]sentry.Trigger) []interface{} 
 
 func mapActions(ctx context.Context, a interface{}) interface{} {
 	//convert actions which appears as interface{} but is actually []interface{}
-	// var actions []interface{}
 	var actions []map[string]interface{}
 	rv := reflect.ValueOf(a)
 	if rv.Kind() == reflect.Slice {

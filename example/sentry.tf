@@ -37,10 +37,10 @@ output "sentry_key_dsn_secret" {
     value = "${data.sentry_key.via_name.dsn_secret}"
 }
 
-resource "sentry_apm_rule" "default" {
+resource "sentry_alert_rule" "default" {
   organization      = "${sentry_organization.my_organization.id}"
   project           = "${sentry_project.web_app.id}"
-  name              = "test-apm-rule"
+  name              = "test-alert-rule"
   dataset           = "transactions"
   query             = "http.url:http://testservice.com/stats"
   time_window       = 50.0

@@ -33,13 +33,13 @@ func Provider() *schema.Provider {
 			"sentry_default_key":  resourceSentryDefaultKey(),
 			"sentry_plugin":       resourceSentryPlugin(),
 			"sentry_rule":         resourceSentryRule(),
-			"sentry_apm_rule":     resourceSentryAPMRule(),
+			"sentry_alert_rule":   resourceSentryAlertRule(),
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
 			"sentry_key":          dataSourceSentryKey(),
 			"sentry_organization": dataSourceSentryOrganization(),
-			"sentry_apm_rules":    dataSourceSentryAPMRules(),
+			"sentry_alert_rules":  dataSourceSentryAlertRules(),
 		},
 
 		ConfigureContextFunc: providerContextConfigure,
