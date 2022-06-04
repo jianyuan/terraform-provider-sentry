@@ -23,8 +23,8 @@ func TestAccSentryProjectAlertRule_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSentryProjectAlertRuleExists("sentry_alert_rule.test_alert_rule", &alertRule),
 					resource.TestCheckResourceAttr("sentry_alert_rule.test_alert_rule", "name", "Test alert rule"),
-					resource.TestCheckResourceAttr("sentry_alert_rule", "environment", ""),
-					resource.TestCheckResourceAttr("sentry_alert_rule", "dataset", "transactions"),
+					resource.TestCheckResourceAttr("sentry_alert_rule.test_alert_rule", "environment", ""),
+					resource.TestCheckResourceAttr("sentry_alert_rule.test_alert_rule", "dataset", "transactions"),
 				),
 			},
 		},
@@ -125,7 +125,9 @@ resource "sentry_alert_rule" "test_alert_rule" {
 	  threshold_type    = 0
 	}
   
-	projects = ["Test project"]
+	projects = [
+		sentry_project.test_project.id,
+	]
 }
 
 `, testOrganization, testOrganization, testOrganization)

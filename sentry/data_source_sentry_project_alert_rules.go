@@ -129,7 +129,10 @@ func dataSourceSentryAlertRuleRead(ctx context.Context, d *schema.ResourceData, 
 	org := d.Get("organization").(string)
 	project := d.Get("project").(string)
 
-	tflog.Debug(ctx, "Reading Sentry Alert rules", "org", org, "project", project)
+	tflog.Debug(ctx, "Reading Sentry Alert rules", map[string]interface{}{
+		"org":     org,
+		"project": project,
+	})
 	alertRules, resp, err := client.APMRules.List(org, project)
 	if err != nil {
 		return diag.FromErr(err)
@@ -137,7 +140,10 @@ func dataSourceSentryAlertRuleRead(ctx context.Context, d *schema.ResourceData, 
 	if found, err := checkClientGet(resp, err, d); !found {
 		return diag.FromErr(err)
 	}
-	tflog.Trace(ctx, "Read Sentry Alert rules", "ruleCount", len(alertRules), "Alert rules", alertRules)
+	tflog.Trace(ctx, "Read Sentry Alert rules", map[string]interface{}{
+		"ruleCount":  len(alertRules),
+		"alertRules": alertRules,
+	})
 
 	alert_rules := mapAlertRulesData(ctx, &alertRules)
 	if err := d.Set("alert_rules", alert_rules); err != nil {
