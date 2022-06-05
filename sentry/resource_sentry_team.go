@@ -11,6 +11,8 @@ import (
 
 func resourceSentryTeam() *schema.Resource {
 	return &schema.Resource{
+		Description: "Sentry Team resource.",
+
 		CreateContext: resourceSentryTeamCreate,
 		ReadContext:   resourceSentryTeamRead,
 		UpdateContext: resourceSentryTeamUpdate,
@@ -23,17 +25,17 @@ func resourceSentryTeam() *schema.Resource {
 			"organization": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The slug of the organization the team should be created for",
+				Description: "The slug of the organization the team should be created for.",
 			},
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The name of the team",
+				Description: "The name of the team.",
 			},
 			"slug": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The optional slug for this team",
+				Description: "The optional slug for this team.",
 				Computed:    true,
 			},
 			"team_id": {

@@ -11,6 +11,8 @@ import (
 
 func resourceSentryPlugin() *schema.Resource {
 	return &schema.Resource{
+		Description: "Sentry Plugin resource.",
+
 		CreateContext: resourceSentryPluginCreate,
 		ReadContext:   resourceSentryPluginRead,
 		UpdateContext: resourceSentryPluginUpdate,
@@ -23,22 +25,22 @@ func resourceSentryPlugin() *schema.Resource {
 			"organization": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The slug of the organization the project belongs to",
+				Description: "The slug of the organization the project belongs to.",
 			},
 			"project": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The slug of the project to create the plugin for",
+				Description: "The slug of the project to create the plugin for.",
 			},
 			"plugin": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Plugin ID",
+				Description: "Plugin ID.",
 			},
 			"config": {
 				Type:        schema.TypeMap,
 				Optional:    true,
-				Description: "Plugin config",
+				Description: "Plugin config.",
 			},
 		},
 	}

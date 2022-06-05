@@ -19,6 +19,11 @@ const (
 
 func resourceSentryRule() *schema.Resource {
 	return &schema.Resource{
+		Description: "Sentry Rule resource. Note that there's no public documentation for the " +
+			"values of conditions, filters, and actions. You can either inspect the request " +
+			"payload sent when creating or editing an alert rule on Sentry or inspect " +
+			"[Sentry's rules registry in the source code](https://github.com/getsentry/sentry/tree/master/src/sentry/rules).",
+
 		CreateContext: resourceSentryRuleCreate,
 		ReadContext:   resourceSentryRuleRead,
 		UpdateContext: resourceSentryRuleUpdate,

@@ -15,13 +15,13 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"SENTRY_AUTH_TOKEN", "SENTRY_TOKEN"}, nil),
-				Description: "The authentication token used to connect to Sentry",
+				Description: "The authentication token used to connect to Sentry.",
 			},
 			"base_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("SENTRY_BASE_URL", "https://sentry.io/api/"),
-				Description: "The Sentry Base API URL",
+				Description: "The Sentry Base API URL in the format \"https://[hostname]/api/\".",
 			},
 		},
 

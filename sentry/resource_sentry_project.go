@@ -13,6 +13,8 @@ import (
 
 func resourceSentryProject() *schema.Resource {
 	return &schema.Resource{
+		Description: "Sentry Project resource.",
+
 		CreateContext: resourceSentryProjectCreate,
 		ReadContext:   resourceSentryProjectRead,
 		UpdateContext: resourceSentryProjectUpdate,
@@ -25,28 +27,28 @@ func resourceSentryProject() *schema.Resource {
 			"organization": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The slug of the organization the project belongs to",
+				Description: "The slug of the organization the project belongs to.",
 			},
 			"team": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The slug of the team to create the project for",
+				Description: "The slug of the team to create the project for.",
 			},
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The name for the project",
+				Description: "The name for the project.",
 			},
 			"slug": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The optional slug for this project",
+				Description: "The optional slug for this project.",
 				Computed:    true,
 			},
 			"platform": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The optional platform for this project",
+				Description: "The optional platform for this project.",
 				Computed:    true,
 			},
 			"project_id": {
