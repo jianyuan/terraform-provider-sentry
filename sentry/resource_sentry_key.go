@@ -11,6 +11,8 @@ import (
 
 func resourceSentryKey() *schema.Resource {
 	return &schema.Resource{
+		Description: "Sentry Key resource.",
+
 		CreateContext: resourceSentryKeyCreate,
 		ReadContext:   resourceSentryKeyRead,
 		UpdateContext: resourceSentryKeyUpdate,
@@ -21,57 +23,66 @@ func resourceSentryKey() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"organization": {
+				Description: "The slug of the organization the key should be created for.",
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The slug of the organization the key should be created for",
 			},
 			"project": {
+				Description: "The slug of the project the key should be created for.",
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The slug of the project the key should be created for",
 			},
 			"name": {
+				Description: "The name of the key.",
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The name of the key",
 			},
 			"public": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Description: "Public key portion of the client key.",
+				Type:        schema.TypeString,
+				Computed:    true,
 			},
 			"secret": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Description: "Secret key portion of the client key.",
+				Type:        schema.TypeString,
+				Computed:    true,
 			},
 			"project_id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Description: "The ID of the project that the key belongs to.",
+				Type:        schema.TypeInt,
+				Computed:    true,
 			},
 			"is_active": {
-				Type:     schema.TypeBool,
-				Computed: true,
+				Description: "Flag indicating the key is active.",
+				Type:        schema.TypeBool,
+				Computed:    true,
 			},
 			"rate_limit_window": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
+				Description: "Length of time that will be considered when checking the rate limit.",
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
 			},
 			"rate_limit_count": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
+				Description: "Number of events that can be reported within the rate limit window.",
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
 			},
 			"dsn_secret": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Deprecated: "DSN (Deprecated) for the key.",
+				Type:       schema.TypeString,
+				Computed:   true,
 			},
 			"dsn_public": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Description: "DSN for the key.",
+				Type:        schema.TypeString,
+				Computed:    true,
 			},
 			"dsn_csp": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Description: "DSN for the Content Security Policy (CSP) for the key.",
+				Type:        schema.TypeString,
+				Computed:    true,
 			},
 		},
 	}

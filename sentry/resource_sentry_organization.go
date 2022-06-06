@@ -11,6 +11,8 @@ import (
 
 func resourceSentryOrganization() *schema.Resource {
 	return &schema.Resource{
+		Description: "Sentry Organization resource.",
+
 		CreateContext: resourceSentryOrganizationCreate,
 		ReadContext:   resourceSentryOrganizationRead,
 		UpdateContext: resourceSentryOrganizationUpdate,
@@ -21,20 +23,20 @@ func resourceSentryOrganization() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
+				Description: "The human readable name for the organization.",
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The human readable name for the organization",
 			},
 			"slug": {
+				Description: "The unique URL slug for this organization.",
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The unique URL slug for this organization",
 				Computed:    true,
 			},
 			"agree_terms": {
+				Description: "You agree to the applicable terms of service and privacy policy.",
 				Type:        schema.TypeBool,
 				Required:    true,
-				Description: "You agree to the applicable terms of service and privacy policy",
 			},
 		},
 	}

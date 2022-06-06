@@ -12,16 +12,20 @@ func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"token": {
+				Description: "The authentication token used to connect to Sentry. The value can be sourced from " +
+					"the `SENTRY_AUTH_TOKEN` environment variable.",
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"SENTRY_AUTH_TOKEN", "SENTRY_TOKEN"}, nil),
-				Description: "The authentication token used to connect to Sentry",
+				Sensitive:   true,
 			},
 			"base_url": {
+				Description: "The target Sentry Base API URL in the format `https://[hostname]/api/`. " +
+					"The default value is `https://sentry.io/api/`. The value must be provided when working with " +
+					"Sentry On-Premise. The value can be sourced from the `SENTRY_BASE_URL` environment variable.",
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("SENTRY_BASE_URL", "https://sentry.io/api/"),
-				Description: "The Sentry Base API URL",
 			},
 		},
 

@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/jianyuan/go-sentry/sentry"
 	"github.com/mitchellh/mapstructure"
 )
@@ -19,6 +20,11 @@ const (
 
 func resourceSentryRule() *schema.Resource {
 	return &schema.Resource{
+		Description: "Sentry Rule resource. Note that there's no public documentation for the " +
+			"values of conditions, filters, and actions. You can either inspect the request " +
+			"payload sent when creating or editing an alert rule on Sentry or inspect " +
+			"[Sentry's rules registry in the source code](https://github.com/getsentry/sentry/tree/master/src/sentry/rules).",
+
 		CreateContext: resourceSentryRuleCreate,
 		ReadContext:   resourceSentryRuleRead,
 		UpdateContext: resourceSentryRuleUpdate,
@@ -29,62 +35,69 @@ func resourceSentryRule() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"organization": {
+				Description: "The slug of the organization the project belongs to.",
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The slug of the organization the project belongs to",
 			},
 			"project": {
+				Description: "The slug of the project to create the plugin for.",
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The slug of the project to create the plugin for",
 			},
 			"name": {
+				Description: "The rule name.",
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The rule name",
 			},
 			"action_match": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Description:  "Trigger actions when an event is captured by Sentry and `any` or `all` of the specified conditions happen. Defaults to `any`.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.StringInSlice([]string{"all", "any"}, false),
 			},
 			"filter_match": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Description:  "Trigger actions if `all`, `any`, or `none` of the specified filters match. Defaults to `any`.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.StringInSlice([]string{"all", "any", "none"}, false),
 			},
 			"actions": {
-				Type:     schema.TypeList,
-				Required: true,
+				Description: "List of actions.",
+				Type:        schema.TypeList,
+				Required:    true,
 				Elem: &schema.Schema{
 					Type: schema.TypeMap,
 				},
 			},
 			"conditions": {
-				Type:     schema.TypeList,
-				Required: true,
+				Description: "List of conditions.",
+				Type:        schema.TypeList,
+				Required:    true,
 				Elem: &schema.Schema{
 					Type: schema.TypeMap,
 				},
 			},
 			"filters": {
-				Type:     schema.TypeList,
-				Optional: true,
+				Description: "List of filters.",
+				Type:        schema.TypeList,
+				Optional:    true,
 				Elem: &schema.Schema{
 					Type: schema.TypeMap,
 				},
 			},
 			"frequency": {
+				Description: "Perform actions at most once every `X` minutes for this issue. Defaults to `30`.",
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Computed:    true,
-				Description: "Perform actions at most once every X minutes",
 			},
 			"environment": {
+				Description: "Perform rule in a specific environment.",
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "Perform rule in a specific environment",
 			},
 		},
 	}

@@ -13,6 +13,8 @@ import (
 
 func resourceSentryProject() *schema.Resource {
 	return &schema.Resource{
+		Description: "Sentry Project resource.",
+
 		CreateContext: resourceSentryProjectCreate,
 		ReadContext:   resourceSentryProjectRead,
 		UpdateContext: resourceSentryProjectUpdate,
@@ -23,30 +25,30 @@ func resourceSentryProject() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"organization": {
+				Description: "The slug of the organization the project belongs to.",
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The slug of the organization the project belongs to",
 			},
 			"team": {
+				Description: "The slug of the team to create the project for.",
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The slug of the team to create the project for",
 			},
 			"name": {
+				Description: "The name for the project.",
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The name for the project",
 			},
 			"slug": {
+				Description: "The optional slug for this project.",
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The optional slug for this project",
 				Computed:    true,
 			},
 			"platform": {
+				Description: "The optional platform for this project.",
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The optional platform for this project",
 				Computed:    true,
 			},
 			"project_id": {
@@ -58,9 +60,9 @@ func resourceSentryProject() *schema.Resource {
 				Computed: true,
 			},
 			"is_bookmarked": {
+				Deprecated: "is_bookmarked is no longer used",
 				Type:       schema.TypeBool,
 				Computed:   true,
-				Deprecated: "is_bookmarked is no longer used",
 			},
 			"color": {
 				Type:     schema.TypeString,
@@ -78,21 +80,21 @@ func resourceSentryProject() *schema.Resource {
 				Computed: true,
 			},
 			"digests_min_delay": {
+				Description: "The minimum amount of time (in seconds) to wait between scheduling digests for delivery after the initial scheduling.",
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "The minimum amount of time (in seconds) to wait between scheduling digests for delivery after the initial scheduling.",
 				Optional:    true,
 			},
 			"digests_max_delay": {
+				Description: "The maximum amount of time (in seconds) to wait between scheduling digests for delivery.",
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "The maximum amount of time (in seconds) to wait between scheduling digests for delivery.",
 				Optional:    true,
 			},
 			"resolve_age": {
+				Description: "Hours in which an issue is automatically resolve if not seen after this amount of time.",
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "Hours in which an issue is automatically resolve if not seen after this amount of time.",
 				Computed:    true,
 			},
 

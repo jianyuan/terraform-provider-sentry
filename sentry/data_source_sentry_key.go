@@ -12,20 +12,25 @@ import (
 
 func dataSourceSentryKey() *schema.Resource {
 	return &schema.Resource{
+		Description: "Sentry Key data source.",
+
 		ReadContext: dataSourceSentryKeyRead,
 
 		Schema: map[string]*schema.Schema{
 			"organization": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Description: "The slug of the organization the key should be created for.",
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
 			},
 			"project": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Description: "The slug of the project the key should be created for.",
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
 			},
 			"first": {
+				Description:   "Boolean flag indicating that we want the first key of the returned keys.",
 				Type:          schema.TypeBool,
 				Optional:      true,
 				Default:       false,
@@ -33,6 +38,7 @@ func dataSourceSentryKey() *schema.Resource {
 				ConflictsWith: []string{"name"},
 			},
 			"name": {
+				Description:   "The name of the key to retrieve.",
 				Type:          schema.TypeString,
 				Optional:      true,
 				ForceNew:      true,
@@ -40,40 +46,49 @@ func dataSourceSentryKey() *schema.Resource {
 			},
 			// Computed values.
 			"public": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Description: "Public key portion of the client key.",
+				Type:        schema.TypeString,
+				Computed:    true,
 			},
 			"secret": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Description: "Secret key portion of the client key.",
+				Type:        schema.TypeString,
+				Computed:    true,
 			},
 			"project_id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Description: "The ID of the project that the key belongs to.",
+				Type:        schema.TypeInt,
+				Computed:    true,
 			},
 			"is_active": {
-				Type:     schema.TypeBool,
-				Computed: true,
+				Description: "Flag indicating the key is active.",
+				Type:        schema.TypeBool,
+				Computed:    true,
 			},
 			"rate_limit_window": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Description: "Length of time that will be considered when checking the rate limit.",
+				Type:        schema.TypeInt,
+				Computed:    true,
 			},
 			"rate_limit_count": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Description: "Number of events that can be reported within the rate limit window.",
+				Type:        schema.TypeInt,
+				Computed:    true,
 			},
 			"dsn_secret": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Deprecated: "DSN (Deprecated) for the key.",
+				Type:       schema.TypeString,
+				Computed:   true,
 			},
 			"dsn_public": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Description: "DSN for the key.",
+				Type:        schema.TypeString,
+				Computed:    true,
 			},
 			"dsn_csp": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Description: "DSN for the Content Security Policy (CSP) for the key.",
+				Type:        schema.TypeString,
+				Computed:    true,
 			},
 		},
 	}
