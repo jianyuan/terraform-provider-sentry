@@ -52,19 +52,19 @@ resource "sentry_rule" "default" {
 
 ### Required
 
-- `actions` (List of Map of String)
-- `conditions` (List of Map of String)
-- `name` (String) The rule name
-- `organization` (String) The slug of the organization the project belongs to
-- `project` (String) The slug of the project to create the plugin for
+- `actions` (List of Map of String) List of actions.
+- `conditions` (List of Map of String) List of conditions.
+- `name` (String) The rule name.
+- `organization` (String) The slug of the organization the project belongs to.
+- `project` (String) The slug of the project to create the plugin for.
 
 ### Optional
 
-- `action_match` (String)
-- `environment` (String) Perform rule in a specific environment
-- `filter_match` (String)
-- `filters` (List of Map of String)
-- `frequency` (Number) Perform actions at most once every X minutes
+- `action_match` (String) Trigger actions when an event is captured by Sentry and `any` or `all` of the specified conditions happen. Defaults to `any`.
+- `environment` (String) Perform rule in a specific environment.
+- `filter_match` (String) Trigger actions if `all`, `any`, or `none` of the specified filters match. Defaults to `any`.
+- `filters` (List of Map of String) List of filters.
+- `frequency` (Number) Perform actions at most once every `X` minutes for this issue. Defaults to `30`.
 
 ### Read-Only
 

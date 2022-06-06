@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/jianyuan/go-sentry/sentry"
 	"github.com/mitchellh/mapstructure"
 )
@@ -36,27 +37,31 @@ func resourceSentryRule() *schema.Resource {
 			"organization": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The slug of the organization the project belongs to",
+				Description: "The slug of the organization the project belongs to.",
 			},
 			"project": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The slug of the project to create the plugin for",
+				Description: "The slug of the project to create the plugin for.",
 			},
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The rule name",
+				Description: "The rule name.",
 			},
 			"action_match": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.StringInSlice([]string{"all", "any"}, false),
+				Description:  "Trigger actions when an event is captured by Sentry and `any` or `all` of the specified conditions happen. Defaults to `any`.",
 			},
 			"filter_match": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.StringInSlice([]string{"all", "any", "none"}, false),
+				Description:  "Trigger actions if `all`, `any`, or `none` of the specified filters match. Defaults to `any`.",
 			},
 			"actions": {
 				Type:     schema.TypeList,
@@ -64,6 +69,7 @@ func resourceSentryRule() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeMap,
 				},
+				Description: "List of actions.",
 			},
 			"conditions": {
 				Type:     schema.TypeList,
@@ -71,6 +77,7 @@ func resourceSentryRule() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeMap,
 				},
+				Description: "List of conditions.",
 			},
 			"filters": {
 				Type:     schema.TypeList,
@@ -78,18 +85,19 @@ func resourceSentryRule() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeMap,
 				},
+				Description: "List of filters.",
 			},
 			"frequency": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Computed:    true,
-				Description: "Perform actions at most once every X minutes",
+				Description: "Perform actions at most once every `X` minutes for this issue. Defaults to `30`.",
 			},
 			"environment": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "Perform rule in a specific environment",
+				Description: "Perform rule in a specific environment.",
 			},
 		},
 	}
