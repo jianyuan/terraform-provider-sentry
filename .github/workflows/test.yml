@@ -13,6 +13,9 @@ on:
   # to an API change, even if the code did not change.
   schedule:
     - cron: "0 0 * * *"
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   # ensure the code builds...
   build:
