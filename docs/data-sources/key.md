@@ -3,12 +3,12 @@
 page_title: "sentry_key Data Source - terraform-provider-sentry"
 subcategory: ""
 description: |-
-  
+  Sentry Key data source.
 ---
 
 # sentry_key (Data Source)
 
-
+Sentry Key data source.
 
 ## Example Usage
 

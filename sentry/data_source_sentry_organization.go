@@ -11,22 +11,25 @@ import (
 
 func dataSourceSentryOrganization() *schema.Resource {
 	return &schema.Resource{
+		Description: "Sentry Organization data source.",
+
 		ReadContext: dataSourceSentryOrganizationRead,
+
 		Schema: map[string]*schema.Schema{
 			"slug": {
+				Description: "The unique URL slug for this organization.",
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The unique URL slug for this organization.",
 			},
 			"internal_id": {
+				Description: "The internal ID for this organization.",
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The internal ID for this organization.",
 			},
 			"name": {
+				Description: "The human readable name for this organization.",
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The human readable name for this organization.",
 			},
 		},
 	}
