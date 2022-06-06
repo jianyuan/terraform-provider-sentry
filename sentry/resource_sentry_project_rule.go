@@ -35,69 +35,69 @@ func resourceSentryRule() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"organization": {
+				Description: "The slug of the organization the project belongs to.",
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The slug of the organization the project belongs to.",
 			},
 			"project": {
+				Description: "The slug of the project to create the plugin for.",
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The slug of the project to create the plugin for.",
 			},
 			"name": {
+				Description: "The rule name.",
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The rule name.",
 			},
 			"action_match": {
+				Description:  "Trigger actions when an event is captured by Sentry and `any` or `all` of the specified conditions happen. Defaults to `any`.",
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validation.StringInSlice([]string{"all", "any"}, false),
-				Description:  "Trigger actions when an event is captured by Sentry and `any` or `all` of the specified conditions happen. Defaults to `any`.",
 			},
 			"filter_match": {
+				Description:  "Trigger actions if `all`, `any`, or `none` of the specified filters match. Defaults to `any`.",
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validation.StringInSlice([]string{"all", "any", "none"}, false),
-				Description:  "Trigger actions if `all`, `any`, or `none` of the specified filters match. Defaults to `any`.",
 			},
 			"actions": {
-				Type:     schema.TypeList,
-				Required: true,
+				Description: "List of actions.",
+				Type:        schema.TypeList,
+				Required:    true,
 				Elem: &schema.Schema{
 					Type: schema.TypeMap,
 				},
-				Description: "List of actions.",
 			},
 			"conditions": {
-				Type:     schema.TypeList,
-				Required: true,
+				Description: "List of conditions.",
+				Type:        schema.TypeList,
+				Required:    true,
 				Elem: &schema.Schema{
 					Type: schema.TypeMap,
 				},
-				Description: "List of conditions.",
 			},
 			"filters": {
-				Type:     schema.TypeList,
-				Optional: true,
+				Description: "List of filters.",
+				Type:        schema.TypeList,
+				Optional:    true,
 				Elem: &schema.Schema{
 					Type: schema.TypeMap,
 				},
-				Description: "List of filters.",
 			},
 			"frequency": {
+				Description: "Perform actions at most once every `X` minutes for this issue. Defaults to `30`.",
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Computed:    true,
-				Description: "Perform actions at most once every `X` minutes for this issue. Defaults to `30`.",
 			},
 			"environment": {
+				Description: "Perform rule in a specific environment.",
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "Perform rule in a specific environment.",
 			},
 		},
 	}
