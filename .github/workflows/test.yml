@@ -4,9 +4,13 @@
 name: Tests
 on:
   pull_request:
+    branches:
+      - main
     paths-ignore:
       - "README.md"
   push:
+    branches:
+      - main
     paths-ignore:
       - "README.md"
   # We test at a regular interval to ensure we are alerted to something breaking due
