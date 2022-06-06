@@ -46,7 +46,7 @@ jobs:
       - run: go generate ./...
       - name: git diff
         run: |
-          git diff --compact-summary --exit-code || \
+          git diff --exit-code || \
             (echo; echo "Unexpected difference in directories after code generation. Run 'go generate ./...' command and commit."; exit 1)
 
   # run acceptance tests in a matrix with Terraform core versions
