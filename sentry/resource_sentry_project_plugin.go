@@ -18,7 +18,7 @@ func resourceSentryPlugin() *schema.Resource {
 		UpdateContext: resourceSentryPluginUpdate,
 		DeleteContext: resourceSentryPluginDelete,
 		Importer: &schema.ResourceImporter{
-			StateContext: resourceSentryPluginImporter,
+			StateContext: importOrganizationProjectAndID,
 		},
 
 		Schema: map[string]*schema.Schema{

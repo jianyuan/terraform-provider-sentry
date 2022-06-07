@@ -18,7 +18,7 @@ func resourceSentryTeam() *schema.Resource {
 		UpdateContext: resourceSentryTeamUpdate,
 		DeleteContext: resourceSentryTeamDelete,
 		Importer: &schema.ResourceImporter{
-			StateContext: resourceSentryTeamImport,
+			StateContext: importOrganizationAndID,
 		},
 
 		Schema: map[string]*schema.Schema{

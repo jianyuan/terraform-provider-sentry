@@ -3,12 +3,12 @@
 page_title: "sentry_rule Resource - terraform-provider-sentry"
 subcategory: ""
 description: |-
-  Sentry Rule resource. Note that there's no public documentation for the values of conditions, filters, and actions. You can either inspect the request payload sent when creating or editing an alert rule on Sentry or inspect Sentry's rules registry in the source code https://github.com/getsentry/sentry/tree/master/src/sentry/rules.
+  WARNING: This resource is deprecated and will be removed in the next major version. Use the sentry_issue_alert resource instead.
 ---
 
 # sentry_rule (Resource)
 
-Sentry Rule resource. Note that there's no public documentation for the values of conditions, filters, and actions. You can either inspect the request payload sent when creating or editing an alert rule on Sentry or inspect [Sentry's rules registry in the source code](https://github.com/getsentry/sentry/tree/master/src/sentry/rules).
+> **WARNING:** This resource is deprecated and will be removed in the next major version. Use the `sentry_issue_alert` resource instead.
 
 ## Example Usage
 
