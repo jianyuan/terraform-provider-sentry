@@ -4,17 +4,9 @@
 
 Terraform provider for [Sentry](https://sentry.io).
 
-[This package is also published on the official Terraform registry](https://registry.terraform.io/providers/jianyuan/sentry/latest).
-
 ## Usage
 
-[See the docs for usage information](./docs).
-
-## Installation
-
-See the [the Provider Configuration page of the Terraform documentation](https://www.terraform.io/docs/configuration/providers.html#third-party-plugins) for instructions.
-
-Pre-compiled binaries are available from the [Releases](https://github.com/jianyuan/terraform-provider-sentry/releases) page.
+Detailed documentation is available on the [Terraform provider registry](https://registry.terraform.io/providers/jianyuan/sentry/latest).
 
 ## Development
 
