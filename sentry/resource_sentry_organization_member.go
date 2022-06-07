@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/sentry"
+	"sort"
 )
 
 func resourceSentryOrganizationMember() *schema.Resource {
@@ -123,6 +124,8 @@ func resourceSentryOrganizationMemberRead(ctx context.Context, d *schema.Resourc
 		"teams": member.Teams,
 		"org":   org,
 	})
+
+	sort.Strings(member.Teams)
 
 	d.SetId(member.ID)
 	d.Set("member_id", member.ID)
