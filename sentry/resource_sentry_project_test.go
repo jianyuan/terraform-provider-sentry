@@ -1,6 +1,7 @@
 package sentry
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -8,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/jianyuan/go-sentry/sentry"
+	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
 func TestAccSentryProject_basic(t *testing.T) {
@@ -75,7 +76,8 @@ func testAccCheckSentryProjectDestroy(s *terraform.State) error {
 			continue
 		}
 
-		proj, resp, err := client.Projects.Get(testOrganization, rs.Primary.ID)
+		ctx := context.Background()
+		proj, resp, err := client.Projects.Get(ctx, testOrganization, rs.Primary.ID)
 		if err == nil {
 			if proj != nil {
 				return errors.New("Project still exists")
@@ -101,7 +103,9 @@ func testAccCheckSentryProjectExists(n string, proj *sentry.Project) resource.Te
 		}
 
 		client := testAccProvider.Meta().(*sentry.Client)
+		ctx := context.Background()
 		sentryProj, _, err := client.Projects.Get(
+			ctx,
 			rs.Primary.Attributes["organization"],
 			rs.Primary.ID,
 		)

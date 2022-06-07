@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/jianyuan/go-sentry/sentry"
+	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
 func resourceSentryTeam() *schema.Resource {
@@ -71,7 +71,7 @@ func resourceSentryTeamCreate(ctx context.Context, d *schema.ResourceData, meta 
 		"teamName": params.Name,
 		"org":      org,
 	})
-	team, _, err := client.Teams.Create(org, params)
+	team, _, err := client.Teams.Create(ctx, org, params)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -94,7 +94,7 @@ func resourceSentryTeamRead(ctx context.Context, d *schema.ResourceData, meta in
 		"teamSlug": slug,
 		"org":      org,
 	})
-	team, resp, err := client.Teams.Get(org, slug)
+	team, resp, err := client.Teams.Get(ctx, org, slug)
 	if found, err := checkClientGet(resp, err, d); !found {
 		return diag.FromErr(err)
 	}
@@ -129,7 +129,7 @@ func resourceSentryTeamUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		"teamSlug": slug,
 		"org":      org,
 	})
-	team, _, err := client.Teams.Update(org, slug, params)
+	team, _, err := client.Teams.Update(ctx, org, slug, params)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -153,7 +153,7 @@ func resourceSentryTeamDelete(ctx context.Context, d *schema.ResourceData, meta 
 		"teamSlug": slug,
 		"org":      org,
 	})
-	_, err := client.Teams.Delete(org, slug)
+	_, err := client.Teams.Delete(ctx, org, slug)
 	tflog.Debug(ctx, "Deleted Sentry team", map[string]interface{}{
 		"teamSlug": slug,
 		"org":      org,

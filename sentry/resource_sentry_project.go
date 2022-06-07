@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/jianyuan/go-sentry/sentry"
+	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
 func resourceSentryProject() *schema.Resource {
@@ -117,7 +117,7 @@ func resourceSentryProjectCreate(ctx context.Context, d *schema.ResourceData, me
 		"teamName": team,
 		"org":      org,
 	})
-	proj, _, err := client.Projects.Create(org, team, params)
+	proj, _, err := client.Projects.Create(ctx, org, team, params)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -142,7 +142,7 @@ func resourceSentryProjectRead(ctx context.Context, d *schema.ResourceData, meta
 		"projectSlug": slug,
 		"org":         org,
 	})
-	proj, resp, err := client.Projects.Get(org, slug)
+	proj, resp, err := client.Projects.Get(ctx, org, slug)
 	if found, err := checkClientGet(resp, err, d); !found {
 		return diag.FromErr(err)
 	}
@@ -203,7 +203,7 @@ func resourceSentryProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 		"projectSlug": slug,
 		"org":         org,
 	})
-	proj, _, err := client.Projects.Update(org, slug, params)
+	proj, _, err := client.Projects.Update(ctx, org, slug, params)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -227,7 +227,7 @@ func resourceSentryProjectDelete(ctx context.Context, d *schema.ResourceData, me
 		"projectSlug": slug,
 		"org":         org,
 	})
-	_, err := client.Projects.Delete(org, slug)
+	_, err := client.Projects.Delete(ctx, org, slug)
 	tflog.Debug(ctx, "Deleted Sentry project", map[string]interface{}{
 		"projectSlug": slug,
 		"org":         org,

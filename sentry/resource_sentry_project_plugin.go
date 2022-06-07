@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/jianyuan/go-sentry/sentry"
+	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
 func resourceSentryPlugin() *schema.Resource {
@@ -58,7 +58,7 @@ func resourceSentryPluginCreate(ctx context.Context, d *schema.ResourceData, met
 		"org":        org,
 		"project":    project,
 	})
-	_, err := client.ProjectPlugins.Enable(org, project, plugin)
+	_, err := client.ProjectPlugins.Enable(ctx, org, project, plugin)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -71,7 +71,7 @@ func resourceSentryPluginCreate(ctx context.Context, d *schema.ResourceData, met
 	d.SetId(plugin)
 
 	params := d.Get("config").(map[string]interface{})
-	if _, _, err := client.ProjectPlugins.Update(org, project, plugin, params); err != nil {
+	if _, _, err := client.ProjectPlugins.Update(ctx, org, project, plugin, params); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -90,7 +90,7 @@ func resourceSentryPluginRead(ctx context.Context, d *schema.ResourceData, meta 
 		"org":      org,
 		"project":  project,
 	})
-	plugin, resp, err := client.ProjectPlugins.Get(org, project, id)
+	plugin, resp, err := client.ProjectPlugins.Get(ctx, org, project, id)
 	if found, err := checkClientGet(resp, err, d); !found {
 		return diag.FromErr(err)
 	}
@@ -132,7 +132,7 @@ func resourceSentryPluginUpdate(ctx context.Context, d *schema.ResourceData, met
 		"project":  project,
 	})
 	params := d.Get("config").(map[string]interface{})
-	plugin, _, err := client.ProjectPlugins.Update(org, project, id, params)
+	plugin, _, err := client.ProjectPlugins.Update(ctx, org, project, id, params)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -157,7 +157,7 @@ func resourceSentryPluginDelete(ctx context.Context, d *schema.ResourceData, met
 		"org":      org,
 		"project":  project,
 	})
-	_, err := client.ProjectPlugins.Disable(org, project, id)
+	_, err := client.ProjectPlugins.Disable(ctx, org, project, id)
 	tflog.Debug(ctx, "Deleted Sentry plugin", map[string]interface{}{
 		"pluginID": id,
 		"org":      org,

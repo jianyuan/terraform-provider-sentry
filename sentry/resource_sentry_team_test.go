@@ -1,6 +1,7 @@
 package sentry
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -8,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/jianyuan/go-sentry/sentry"
+	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
 func TestAccSentryTeam_basic(t *testing.T) {
@@ -62,7 +63,9 @@ func testAccCheckSentryTeamDestroy(s *terraform.State) error {
 			continue
 		}
 
+		ctx := context.Background()
 		team, resp, err := client.Teams.Get(
+			ctx,
 			rs.Primary.Attributes["organization"],
 			rs.Primary.ID,
 		)
@@ -91,7 +94,9 @@ func testAccCheckSentryTeamExists(n string, team *sentry.Team) resource.TestChec
 		}
 
 		client := testAccProvider.Meta().(*sentry.Client)
+		ctx := context.Background()
 		sentryTeam, _, err := client.Teams.Get(
+			ctx,
 			rs.Primary.Attributes["organization"],
 			rs.Primary.ID,
 		)

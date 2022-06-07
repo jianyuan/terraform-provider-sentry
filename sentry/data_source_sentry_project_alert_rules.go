@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/jianyuan/go-sentry/sentry"
+	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
 func dataSourceSentryAlertRules() *schema.Resource {
@@ -133,7 +133,7 @@ func dataSourceSentryAlertRuleRead(ctx context.Context, d *schema.ResourceData, 
 		"org":     org,
 		"project": project,
 	})
-	alertRules, resp, err := client.APMRules.List(org, project)
+	alertRules, resp, err := client.MetricAlerts.List(ctx, org, project)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -145,7 +145,7 @@ func dataSourceSentryAlertRuleRead(ctx context.Context, d *schema.ResourceData, 
 		"alertRules": alertRules,
 	})
 
-	alert_rules := mapAlertRulesData(ctx, &alertRules)
+	alert_rules := mapAlertRulesData(ctx, alertRules)
 	if err := d.Set("alert_rules", alert_rules); err != nil {
 		return diag.FromErr(err)
 	}
@@ -155,11 +155,11 @@ func dataSourceSentryAlertRuleRead(ctx context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func mapAlertRulesData(ctx context.Context, alertRules *[]sentry.APMRule) []interface{} {
+func mapAlertRulesData(ctx context.Context, alertRules []*sentry.MetricAlert) []interface{} {
 	if alertRules != nil {
-		ars := make([]interface{}, len(*alertRules), len(*alertRules))
+		ars := make([]interface{}, len(alertRules), len(alertRules))
 
-		for i, alertRule := range *alertRules {
+		for i, alertRule := range alertRules {
 			ar := make(map[string]interface{})
 
 			ar["id"] = alertRule.ID

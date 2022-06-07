@@ -1,6 +1,7 @@
 package sentry
 
 import (
+	"github.com/jianyuan/go-sentry/v2/sentry"
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -21,9 +22,9 @@ func Int(v int) *int {
 // `true`, `nil` => a resource was successfully found
 // `false`, `nil` => a resource was successfully not found
 // `false`, `err` => encountered an unexpected error
-func checkClientGet(resp *http.Response, err error, d *schema.ResourceData) (bool, error) {
+func checkClientGet(resp *sentry.Response, err error, d *schema.ResourceData) (bool, error) {
 	if err != nil {
-		if resp != nil && resp.StatusCode == http.StatusNotFound {
+		if resp != nil && resp.Response.StatusCode == http.StatusNotFound {
 			d.SetId("")
 			return false, nil
 		}

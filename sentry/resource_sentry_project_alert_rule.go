@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/jianyuan/go-sentry/sentry"
+	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -154,7 +154,7 @@ func resourceSentryAlertRuleCreate(ctx context.Context, d *schema.ResourceData, 
 	inputTriggers := d.Get("triggers").(*schema.Set)
 	triggers := mapTriggersCreate(inputTriggers)
 
-	params := &sentry.CreateAPMRuleParams{
+	params := &sentry.CreateAlertRuleParams{
 		Name:             name,
 		DataSet:          dataset,
 		Query:            query,
@@ -177,7 +177,7 @@ func resourceSentryAlertRuleCreate(ctx context.Context, d *schema.ResourceData, 
 		"project":  project,
 		"params":   params,
 	})
-	alertRule, _, err := client.APMRules.Create(org, project, params)
+	alertRule, _, err := client.MetricAlerts.Create(ctx, org, project, params)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -205,7 +205,7 @@ func resourceSentryAlertRuleRead(ctx context.Context, d *schema.ResourceData, me
 		"org":         org,
 		"project":     project,
 	})
-	alertRules, resp, err := client.APMRules.List(org, project)
+	alertRules, resp, err := client.MetricAlerts.List(ctx, org, project)
 
 	if found, err := checkClientGet(resp, err, d); !found {
 		return diag.FromErr(err)
@@ -215,10 +215,10 @@ func resourceSentryAlertRuleRead(ctx context.Context, d *schema.ResourceData, me
 		"alertRules": alertRules,
 	})
 
-	var alertRule *sentry.APMRule
+	var alertRule *sentry.MetricAlert
 	for _, r := range alertRules {
 		if r.ID == id {
-			alertRule = &r
+			alertRule = r
 			break
 		}
 	}
@@ -277,7 +277,7 @@ func resourceSentryAlertRuleUpdate(ctx context.Context, d *schema.ResourceData, 
 	inputTriggers := d.Get("triggers").(*schema.Set)
 	triggers := mapTriggersCreate(inputTriggers)
 
-	params := &sentry.APMRule{
+	params := &sentry.MetricAlert{
 		ID:               id,
 		Name:             name,
 		Environment:      &environment,
@@ -297,7 +297,7 @@ func resourceSentryAlertRuleUpdate(ctx context.Context, d *schema.ResourceData, 
 		"org":      org,
 		"project":  project,
 	})
-	alertRule, _, err := client.APMRules.Update(org, project, id, params)
+	alertRule, _, err := client.MetricAlerts.Update(ctx, org, project, id, params)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -323,7 +323,7 @@ func resourceSentryAlertRuleDelete(ctx context.Context, d *schema.ResourceData, 
 		"org":     org,
 		"project": project,
 	})
-	_, err := client.APMRules.Delete(org, project, id)
+	_, err := client.MetricAlerts.Delete(ctx, org, project, id)
 	tflog.Debug(ctx, "Deleted Sentry Alert rule", map[string]interface{}{
 		"ruleID":  id,
 		"org":     org,
