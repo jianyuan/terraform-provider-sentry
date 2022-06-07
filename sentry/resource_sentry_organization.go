@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/jianyuan/go-sentry/sentry"
+	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
 func resourceSentryOrganization() *schema.Resource {
@@ -54,7 +54,7 @@ func resourceSentryOrganizationCreate(ctx context.Context, d *schema.ResourceDat
 	tflog.Debug(ctx, "Creating Sentry organization", map[string]interface{}{
 		"orgName": params.Name,
 	})
-	org, _, err := client.Organizations.Create(params)
+	org, _, err := client.Organizations.Create(ctx, params)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -75,7 +75,7 @@ func resourceSentryOrganizationRead(ctx context.Context, d *schema.ResourceData,
 	tflog.Debug(ctx, "Reading Sentry organization", map[string]interface{}{
 		"orgSlug": slug,
 	})
-	org, resp, err := client.Organizations.Get(slug)
+	org, resp, err := client.Organizations.Get(ctx, slug)
 	if found, err := checkClientGet(resp, err, d); !found {
 		return diag.FromErr(err)
 	}
@@ -103,7 +103,7 @@ func resourceSentryOrganizationUpdate(ctx context.Context, d *schema.ResourceDat
 	tflog.Debug(ctx, "Updating Sentry organization", map[string]interface{}{
 		"orgSlug": slug,
 	})
-	org, _, err := client.Organizations.Update(slug, params)
+	org, _, err := client.Organizations.Update(ctx, slug, params)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -124,7 +124,7 @@ func resourceSentryOrganizationDelete(ctx context.Context, d *schema.ResourceDat
 	tflog.Debug(ctx, "Deleting Sentry organization", map[string]interface{}{
 		"orgSlug": slug,
 	})
-	_, err := client.Organizations.Delete(slug)
+	_, err := client.Organizations.Delete(ctx, slug)
 	tflog.Debug(ctx, "Deleted Sentry organization", map[string]interface{}{
 		"orgSlug": slug,
 	})

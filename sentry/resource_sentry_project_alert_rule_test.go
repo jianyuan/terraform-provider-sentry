@@ -1,17 +1,18 @@
 package sentry
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/jianyuan/go-sentry/sentry"
+	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
 func TestAccSentryProjectAlertRule_basic(t *testing.T) {
-	var alertRule sentry.APMRule
+	var alertRule sentry.MetricAlert
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -39,7 +40,8 @@ func testAccCheckSentryProjectAlertRuleDestroy(s *terraform.State) error {
 			continue
 		}
 
-		alertRules, resp, err := client.APMRules.List(testOrganization, rs.Primary.Attributes["project"])
+		ctx := context.Background()
+		alertRules, resp, err := client.MetricAlerts.List(ctx, testOrganization, rs.Primary.Attributes["project"])
 		if err == nil {
 			for _, alertRule := range alertRules {
 				if alertRule.ID == rs.Primary.ID {
@@ -56,7 +58,7 @@ func testAccCheckSentryProjectAlertRuleDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckSentryProjectAlertRuleExists(n string, alertRule *sentry.APMRule) resource.TestCheckFunc {
+func testAccCheckSentryProjectAlertRuleExists(n string, alertRule *sentry.MetricAlert) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -68,7 +70,9 @@ func testAccCheckSentryProjectAlertRuleExists(n string, alertRule *sentry.APMRul
 		}
 
 		client := testAccProvider.Meta().(*sentry.Client)
-		sentryAlertRules, _, err := client.APMRules.List(
+		ctx := context.Background()
+		sentryAlertRules, _, err := client.MetricAlerts.List(
+			ctx,
 			rs.Primary.Attributes["organization"],
 			rs.Primary.Attributes["project"],
 		)
@@ -77,7 +81,7 @@ func testAccCheckSentryProjectAlertRuleExists(n string, alertRule *sentry.APMRul
 		}
 		for _, sentryAlertRule := range sentryAlertRules {
 			if sentryAlertRule.ID == rs.Primary.ID {
-				*alertRule = sentryAlertRule
+				*alertRule = *sentryAlertRule
 				break
 			}
 		}

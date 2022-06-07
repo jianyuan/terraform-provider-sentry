@@ -1,17 +1,18 @@
 package sentry
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/jianyuan/go-sentry/sentry"
+	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
 func TestAccSentryProjectRule_basic(t *testing.T) {
-	var rule sentry.Rule
+	var rule sentry.IssueAlert
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -39,7 +40,8 @@ func testAccCheckSentryProjectRuleDestroy(s *terraform.State) error {
 			continue
 		}
 
-		rules, resp, err := client.Rules.List(testOrganization, rs.Primary.Attributes["project"])
+		ctx := context.Background()
+		rules, resp, err := client.IssueAlerts.List(ctx, testOrganization, rs.Primary.Attributes["project"])
 		if err == nil {
 			for _, rule := range rules {
 				if rule.ID == rs.Primary.ID {
@@ -56,7 +58,7 @@ func testAccCheckSentryProjectRuleDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckSentryProjectRuleExists(n string, rule *sentry.Rule) resource.TestCheckFunc {
+func testAccCheckSentryProjectRuleExists(n string, rule *sentry.IssueAlert) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -68,7 +70,9 @@ func testAccCheckSentryProjectRuleExists(n string, rule *sentry.Rule) resource.T
 		}
 
 		client := testAccProvider.Meta().(*sentry.Client)
-		sentryRules, _, err := client.Rules.List(
+		ctx := context.Background()
+		sentryRules, _, err := client.IssueAlerts.List(
+			ctx,
 			rs.Primary.Attributes["organization"],
 			rs.Primary.Attributes["project"],
 		)
@@ -77,7 +81,7 @@ func testAccCheckSentryProjectRuleExists(n string, rule *sentry.Rule) resource.T
 		}
 		for _, sentryRule := range sentryRules {
 			if sentryRule.ID == rs.Primary.ID {
-				*rule = sentryRule
+				*rule = *sentryRule
 				break
 			}
 		}

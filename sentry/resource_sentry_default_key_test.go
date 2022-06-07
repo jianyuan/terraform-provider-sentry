@@ -1,13 +1,14 @@
 package sentry
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/jianyuan/go-sentry/sentry"
+	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
 func TestAccSentryDefaultKey_basic(t *testing.T) {
@@ -90,9 +91,12 @@ func testAccCheckSentryDefaultKeyExists(n string, projectKey *sentry.ProjectKey)
 		}
 
 		client := testAccProvider.Meta().(*sentry.Client)
+		ctx := context.Background()
 		keys, _, err := client.ProjectKeys.List(
+			ctx,
 			rs.Primary.Attributes["organization"],
 			rs.Primary.Attributes["project"],
+			nil,
 		)
 		if err != nil {
 			return err
@@ -100,7 +104,7 @@ func testAccCheckSentryDefaultKeyExists(n string, projectKey *sentry.ProjectKey)
 
 		for _, key := range keys {
 			if key.ID == rs.Primary.ID {
-				*projectKey = key
+				*projectKey = *key
 				break
 			}
 		}

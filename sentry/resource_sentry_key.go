@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/jianyuan/go-sentry/sentry"
+	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
 func resourceSentryKey() *schema.Resource {
@@ -94,7 +94,7 @@ func resourceSentryKeyCreate(ctx context.Context, d *schema.ResourceData, meta i
 	org := d.Get("organization").(string)
 	project := d.Get("project").(string)
 
-	_, resp, err := client.Projects.Get(org, project)
+	_, resp, err := client.Projects.Get(ctx, org, project)
 	if found, err := checkClientGet(resp, err, d); !found {
 		return diag.Errorf("project not found \"%v\": %v", project, err)
 	}
@@ -112,7 +112,7 @@ func resourceSentryKeyCreate(ctx context.Context, d *schema.ResourceData, meta i
 		"org":     org,
 		"project": project,
 	})
-	key, _, err := client.ProjectKeys.Create(org, project, params)
+	key, _, err := client.ProjectKeys.Create(ctx, org, project, params)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -139,18 +139,28 @@ func resourceSentryKeyRead(ctx context.Context, d *schema.ResourceData, meta int
 		"org":     org,
 		"project": project,
 	})
-	keys, resp, err := client.ProjectKeys.List(org, project)
-	if found, err := checkClientGet(resp, err, d); !found {
-		return diag.FromErr(err)
+
+	listParams := &sentry.ListCursorParams{}
+	var allKeys []*sentry.ProjectKey
+	for {
+		keys, resp, err := client.ProjectKeys.List(ctx, org, project, listParams)
+		if found, err := checkClientGet(resp, err, d); !found {
+			return diag.FromErr(err)
+		}
+		allKeys = append(allKeys, keys...)
+		if resp.Cursor == "" {
+			break
+		}
+		listParams.Cursor = resp.Cursor
 	}
 	tflog.Trace(ctx, "Read Sentry keys", map[string]interface{}{
-		"keyCount": len(keys),
-		"keys":     keys,
+		"keyCount": len(allKeys),
+		"keys":     allKeys,
 	})
 
 	found := false
 
-	for _, key := range keys {
+	for _, key := range allKeys {
 		if key.ID == id {
 			tflog.Debug(ctx, "Found Sentry key", map[string]interface{}{
 				"keyID":   id,
@@ -206,7 +216,7 @@ func resourceSentryKeyUpdate(ctx context.Context, d *schema.ResourceData, meta i
 	tflog.Debug(ctx, "Updating Sentry key", map[string]interface{}{
 		"keyID": id,
 	})
-	key, _, err := client.ProjectKeys.Update(org, project, id, params)
+	key, _, err := client.ProjectKeys.Update(ctx, org, project, id, params)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -228,7 +238,7 @@ func resourceSentryKeyDelete(ctx context.Context, d *schema.ResourceData, meta i
 	tflog.Debug(ctx, "Deleting Sentry key", map[string]interface{}{
 		"keyID": id,
 	})
-	_, err := client.ProjectKeys.Delete(org, project, id)
+	_, err := client.ProjectKeys.Delete(ctx, org, project, id)
 	tflog.Debug(ctx, "Deleted Sentry key", map[string]interface{}{
 		"keyID": id,
 	})

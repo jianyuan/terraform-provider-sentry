@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/jianyuan/go-sentry/sentry"
+	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
 func resourceSentryDefaultKey() *schema.Resource {
@@ -33,20 +33,29 @@ func resourceSentryDefaultKeyCreate(ctx context.Context, d *schema.ResourceData,
 	org := d.Get("organization").(string)
 	project := d.Get("project").(string)
 
-	keys, resp, err := client.ProjectKeys.List(org, project)
-	if found, err := checkClientGet(resp, err, d); !found {
-		return diag.FromErr(err)
+	listParams := &sentry.ListCursorParams{}
+	var allKeys []*sentry.ProjectKey
+	for {
+		keys, resp, err := client.ProjectKeys.List(ctx, org, project, listParams)
+		if found, err := checkClientGet(resp, err, d); !found {
+			return diag.FromErr(err)
+		}
+		allKeys = append(allKeys, keys...)
+		if resp.Cursor == "" {
+			break
+		}
+		listParams.Cursor = resp.Cursor
 	}
 
-	if len(keys) < 1 {
+	if len(allKeys) < 1 {
 		return diag.Errorf("Default key not found on the project")
 	}
 
-	sort.Slice(keys, func(i, j int) bool {
-		return keys[i].DateCreated.Before(keys[j].DateCreated)
+	sort.Slice(allKeys, func(i, j int) bool {
+		return allKeys[i].DateCreated.Before(allKeys[j].DateCreated)
 	})
 
-	id := keys[0].ID
+	id := allKeys[0].ID
 	params := &sentry.UpdateProjectKeyParams{
 		Name: d.Get("name").(string),
 		RateLimit: &sentry.ProjectKeyRateLimit{
@@ -60,7 +69,7 @@ func resourceSentryDefaultKeyCreate(ctx context.Context, d *schema.ResourceData,
 		"project": project,
 		"keyID":   id,
 	})
-	if _, _, err := client.ProjectKeys.Update(org, project, id, params); err != nil {
+	if _, _, err := client.ProjectKeys.Update(ctx, org, project, id, params); err != nil {
 		return diag.FromErr(err)
 	}
 	tflog.Debug(ctx, "Created Sentry default key", map[string]interface{}{

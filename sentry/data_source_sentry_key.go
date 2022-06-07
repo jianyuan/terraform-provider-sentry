@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/jianyuan/go-sentry/sentry"
+	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
 func dataSourceSentryKey() *schema.Resource {
@@ -104,27 +104,37 @@ func dataSourceSentryKeyRead(ctx context.Context, d *schema.ResourceData, meta i
 		"org":     org,
 		"project": project,
 	})
-	keys, _, err := client.ProjectKeys.List(org, project)
-	if err != nil {
-		return diag.FromErr(err)
+
+	listParams := &sentry.ListCursorParams{}
+	var allKeys []*sentry.ProjectKey
+	for {
+		keys, resp, err := client.ProjectKeys.List(ctx, org, project, listParams)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		allKeys = append(allKeys, keys...)
+		if resp.Cursor == "" {
+			break
+		}
+		listParams.Cursor = resp.Cursor
 	}
 
 	if v, ok := d.GetOk("name"); ok {
 		name := v.(string)
-		for _, key := range keys {
+		for _, key := range allKeys {
 			if key.Name == name {
-				return diag.FromErr(sentryKeyAttributes(d, &key))
+				return diag.FromErr(sentryKeyAttributes(d, key))
 			}
 		}
 		return diag.Errorf("Can't find Sentry key: %s", v)
 	}
 
-	if len(keys) == 1 {
+	if len(allKeys) == 1 {
 		tflog.Debug(ctx, "sentry_key - single key", map[string]interface{}{
-			"keyName": keys[0].Name,
-			"keyID":   keys[0].ID,
+			"keyName": allKeys[0].Name,
+			"keyID":   allKeys[0].ID,
 		})
-		return diag.FromErr(sentryKeyAttributes(d, &keys[0]))
+		return diag.FromErr(sentryKeyAttributes(d, allKeys[0]))
 	}
 
 	first := d.Get("first").(bool)
@@ -133,20 +143,20 @@ func dataSourceSentryKeyRead(ctx context.Context, d *schema.ResourceData, meta i
 	})
 	if first {
 		// Sort keys by date created
-		sort.Slice(keys, func(i, j int) bool {
-			return keys[i].DateCreated.Before(keys[j].DateCreated)
+		sort.Slice(allKeys, func(i, j int) bool {
+			return allKeys[i].DateCreated.Before(allKeys[j].DateCreated)
 		})
 
 		tflog.Debug(ctx, "sentry_key - Found more than one key. Returning the oldest (`first`) key.", map[string]interface{}{
-			"keyName": keys[0].Name,
-			"keyID":   keys[0].ID,
+			"keyName": allKeys[0].Name,
+			"keyID":   allKeys[0].ID,
 		})
-		return diag.FromErr(sentryKeyAttributes(d, &keys[0]))
+		return diag.FromErr(sentryKeyAttributes(d, allKeys[0]))
 	}
 
 	return diag.Errorf("There are %d keys associate to this project. "+
 		"To avoid ambiguity, please set `first` to true or filter the keys by specifying a `name`.",
-		len(keys))
+		len(allKeys))
 }
 
 func sentryKeyAttributes(d *schema.ResourceData, key *sentry.ProjectKey) error {

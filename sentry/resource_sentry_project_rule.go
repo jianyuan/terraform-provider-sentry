@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/jianyuan/go-sentry/sentry"
+	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -146,7 +146,7 @@ func resourceSentryRuleCreate(ctx context.Context, d *schema.ResourceData, meta 
 		filters[i] = filter
 	}
 
-	params := &sentry.CreateRuleParams{
+	params := &sentry.CreateIssueAlertParams{
 		ActionMatch: actionMatch,
 		FilterMatch: filterMatch,
 		Environment: environment,
@@ -166,7 +166,7 @@ func resourceSentryRuleCreate(ctx context.Context, d *schema.ResourceData, meta 
 		"org":      org,
 		"project":  project,
 	})
-	rule, _, err := client.Rules.Create(org, project, params)
+	rule, _, err := client.IssueAlerts.Create(ctx, org, project, params)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -193,7 +193,7 @@ func resourceSentryRuleRead(ctx context.Context, d *schema.ResourceData, meta in
 		"org":     org,
 		"project": project,
 	})
-	rules, resp, err := client.Rules.List(org, project)
+	rules, resp, err := client.IssueAlerts.List(ctx, org, project)
 	if found, err := checkClientGet(resp, err, d); !found {
 		return diag.FromErr(err)
 	}
@@ -202,10 +202,10 @@ func resourceSentryRuleRead(ctx context.Context, d *schema.ResourceData, meta in
 		"rules":     rules,
 	})
 
-	var rule *sentry.Rule
+	var rule *sentry.IssueAlert
 	for _, r := range rules {
 		if r.ID == id {
-			rule = &r
+			rule = r
 			break
 		}
 	}
@@ -306,7 +306,7 @@ func resourceSentryRuleUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		filters[i] = filter
 	}
 
-	params := &sentry.Rule{
+	params := &sentry.IssueAlert{
 		ID:          id,
 		ActionMatch: actionMatch,
 		FilterMatch: filterMatch,
@@ -326,7 +326,7 @@ func resourceSentryRuleUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		"org":     org,
 		"project": project,
 	})
-	rule, _, err := client.Rules.Update(org, project, id, params)
+	rule, _, err := client.IssueAlerts.Update(ctx, org, project, id, params)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -351,7 +351,7 @@ func resourceSentryRuleDelete(ctx context.Context, d *schema.ResourceData, meta 
 		"org":     org,
 		"project": project,
 	})
-	_, err := client.Rules.Delete(org, project, id)
+	_, err := client.IssueAlerts.Delete(ctx, org, project, id)
 	tflog.Debug(ctx, "Deleted Sentry rule", map[string]interface{}{
 		"ruleID":  id,
 		"org":     org,

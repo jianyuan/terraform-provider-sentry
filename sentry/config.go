@@ -2,13 +2,12 @@ package sentry
 
 import (
 	"context"
-	"net/http"
-	"net/url"
-
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/jianyuan/go-sentry/sentry"
+	"github.com/jianyuan/go-sentry/v2/sentry"
+	"golang.org/x/oauth2"
 	"golang.org/x/time/rate"
+	"net/http"
 )
 
 // Config is the configuration structure used to instantiate the Sentry
@@ -20,32 +19,30 @@ type Config struct {
 
 // Client to connect to Sentry.
 func (c *Config) Client(ctx context.Context) (interface{}, diag.Diagnostics) {
-	var baseURL *url.URL
-	var err error
-
-	if c.BaseURL != "" {
-		tflog.Debug(ctx, "Parsing base url", map[string]interface{}{
-			"BaseUrl": c.BaseURL,
-		})
-		baseURL, err = url.Parse(c.BaseURL)
-		if err != nil {
-			return nil, diag.FromErr(err)
-		}
-	} else {
-		tflog.Warn(ctx, "No base URL was set for the Sentry client")
-	}
-
 	tflog.Info(ctx, "Instantiating Sentry client...")
-	client := &http.Client{
+
+	// Rate limit
+	rateLimitHTTPClient := &http.Client{
 		Transport: &transport{
 			// 40 requests every second.
 			limiter: rate.NewLimiter(40, 1),
 		},
 	}
+	ctx = context.WithValue(ctx, oauth2.HTTPClient, rateLimitHTTPClient)
 
-	cl := sentry.NewClient(client, baseURL, c.Token)
+	// Auth
+	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.Token})
+	httpClient := oauth2.NewClient(ctx, ts)
 
-	return cl, nil
+	if c.BaseURL == "" {
+		return sentry.NewClient(httpClient), nil
+	} else {
+		cl, err := sentry.NewOnPremiseClient(c.BaseURL, httpClient)
+		if err != nil {
+			return nil, diag.FromErr(err)
+		}
+		return cl, nil
+	}
 }
 
 type transport struct {
