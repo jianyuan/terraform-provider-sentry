@@ -133,8 +133,8 @@ func testAccCheckSentryProjectAttributes(proj *sentry.Project, want *testAccSent
 			return fmt.Errorf("got proj %q; want %q", proj.Name, want.Name)
 		}
 
-		if proj.Organization.Slug != want.Organization {
-			return fmt.Errorf("got organization %q; want %q", proj.Organization.Slug, want.Organization)
+		if *proj.Organization.Slug != want.Organization {
+			return fmt.Errorf("got organization %q; want %q", *proj.Organization.Slug, want.Organization)
 		}
 
 		if proj.Team.Name != want.Team {

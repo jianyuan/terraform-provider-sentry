@@ -235,16 +235,8 @@ github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 h1:BQSFePA1RWJOl
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99/go.mod h1:1lJo3i6rXxKeerYnT8Nvf0QmHCRC1n8sfWVwXF2Frvo=
 github.com/jessevdk/go-flags v1.5.0/go.mod h1:Fw0T6WPc1dYxT4mKEZRfG5kJhaTDP9pj1c2EWnYs/m4=
 github.com/jhump/protoreflect v1.6.0 h1:h5jfMVslIg6l29nsMs0D8Wj17RDVdNYti0vDN/PZZoE=
-github.com/jianyuan/go-sentry/v2 v2.0.0-20220607175638-03a23e1c1907 h1:amPUzRa3CuGkvYaYz6lKCpfW8iBlXtHAjLfSWw9OyJk=
-github.com/jianyuan/go-sentry/v2 v2.0.0-20220607175638-03a23e1c1907/go.mod h1:UXgOT72+JxLg2xVZ32gOMM4QfrnlIsBEhs/atm0SZKc=
-github.com/jianyuan/go-sentry/v2 v2.0.0-20220607191237-8deeedafdb44 h1:3tx7bhw+M2qdnnox9my8fRIEtGDfPJ1a7899GQi+8E0=
-github.com/jianyuan/go-sentry/v2 v2.0.0-20220607191237-8deeedafdb44/go.mod h1:UXgOT72+JxLg2xVZ32gOMM4QfrnlIsBEhs/atm0SZKc=
-github.com/jianyuan/go-sentry/v2 v2.0.0-20220607213835-f31f2534912c h1:E/YLekAv9mKcicLLY+dY9tx/ngPn+il/d1HqykGj8/U=
-github.com/jianyuan/go-sentry/v2 v2.0.0-20220607213835-f31f2534912c/go.mod h1:UXgOT72+JxLg2xVZ32gOMM4QfrnlIsBEhs/atm0SZKc=
-github.com/jianyuan/go-sentry/v2 v2.0.0-20220608020352-0583b1c05ac0 h1:wWRd4UstTsosbDVhzZn19fjDvagxWazzC9YktzGpb0Q=
-github.com/jianyuan/go-sentry/v2 v2.0.0-20220608020352-0583b1c05ac0/go.mod h1:UXgOT72+JxLg2xVZ32gOMM4QfrnlIsBEhs/atm0SZKc=
-github.com/jianyuan/go-sentry/v2 v2.0.0-20220608072727-e9d2ff57582f h1:vJCxn219GkQMeP2n+2dTcmehNS1pReE9s0QK5uEoumk=
-github.com/jianyuan/go-sentry/v2 v2.0.0-20220608072727-e9d2ff57582f/go.mod h1:UXgOT72+JxLg2xVZ32gOMM4QfrnlIsBEhs/atm0SZKc=
+github.com/jianyuan/go-sentry/v2 v2.0.0-20220608213421-232cd66713bb h1:dZWEit5IGghC4w9/Ur/HU5NkrKeEjHUbD/5cpLO/LlM=
+github.com/jianyuan/go-sentry/v2 v2.0.0-20220608213421-232cd66713bb/go.mod h1:UXgOT72+JxLg2xVZ32gOMM4QfrnlIsBEhs/atm0SZKc=
 github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024/go.mod h1:6v2b51hI/fHJwM22ozAgKL4VKDeJcHhJFhtBdhmNjmU=
 github.com/jstemmer/go-junit-report v0.9.1/go.mod h1:Brl9GWCQeLvo8nXZwPNNblvFj/XSXhF0NWZEnDohbsk=
 github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 h1:DowS9hvgyYSX4TO5NpyC606/Z4SxnNYbT+WX27or6Ck=
@@ -439,8 +431,6 @@ golang.org/x/oauth2 v0.0.0-20190226205417-e64efc72b421/go.mod h1:gOpvHmFTYa4Iltr
 golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45/go.mod h1:gOpvHmFTYa4IltrdGE7lF6nIHvwfUNPOp7c8zoXwtLw=
 golang.org/x/oauth2 v0.0.0-20191202225959-858c2ad4c8b6/go.mod h1:gOpvHmFTYa4IltrdGE7lF6nIHvwfUNPOp7c8zoXwtLw=
 golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d/go.mod h1:gOpvHmFTYa4IltrdGE7lF6nIHvwfUNPOp7c8zoXwtLw=
-golang.org/x/oauth2 v0.0.0-20220524215830-622c5d57e401 h1:zwrSfklXn0gxyLRX/aR+q6cgHbV/ItVyzbPlbA+dkAw=
-golang.org/x/oauth2 v0.0.0-20220524215830-622c5d57e401/go.mod h1:DAh4E804XQdzx2j+YRIaUnCqCV2RuMz24cGBJ5QYIrc=
 golang.org/x/oauth2 v0.0.0-20220608161450-d0670ef3b1eb h1:8tDJ3aechhddbdPAxpycgXHJRMLpk/Ab+aa4OgdN5/g=
 golang.org/x/oauth2 v0.0.0-20220608161450-d0670ef3b1eb/go.mod h1:jaDAt6Dkxork7LmZnYtzbRWj0W47D86a3TGe0YHBvmE=
 golang.org/x/sync v0.0.0-20180314180146-1d60e4601c6f/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=

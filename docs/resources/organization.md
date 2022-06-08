@@ -37,6 +37,7 @@ resource "sentry_organization" "default" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `internal_id` (String) The internal ID for this organization.
 
 ## Import
 
