@@ -17,19 +17,19 @@ Sentry Issue Alert resource. Note that there's no public documentation for the v
 
 ### Required
 
+- `action_match` (String) Trigger actions when an event is captured by Sentry and `any` or `all` of the specified conditions happen.
 - `actions` (List of Map of String) List of actions.
 - `conditions` (List of Map of String) List of conditions.
-- `name` (String) The rule name.
-- `organization` (String) The slug of the organization the project belongs to.
-- `project` (String) The slug of the project to create the plugin for.
+- `filter_match` (String) Trigger actions if `all`, `any`, or `none` of the specified filters match.
+- `frequency` (Number) Perform actions at most once every `X` minutes for this issue. Defaults to `30`.
+- `name` (String) The issue alert name.
+- `organization` (String) The slug of the organization the issue alert belongs to.
+- `project` (String) The slug of the project to create the issue alert for.
 
 ### Optional
 
-- `action_match` (String) Trigger actions when an event is captured by Sentry and `any` or `all` of the specified conditions happen. Defaults to `any`.
-- `environment` (String) Perform rule in a specific environment.
-- `filter_match` (String) Trigger actions if `all`, `any`, or `none` of the specified filters match. Defaults to `any`.
+- `environment` (String) Perform issue alert in a specific environment.
 - `filters` (List of Map of String) List of filters.
-- `frequency` (Number) Perform actions at most once every `X` minutes for this issue. Defaults to `30`.
 
 ### Read-Only
 

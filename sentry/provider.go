@@ -15,7 +15,7 @@ func Provider() *schema.Provider {
 				Description: "The authentication token used to connect to Sentry. The value can be sourced from " +
 					"the `SENTRY_AUTH_TOKEN` environment variable.",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"SENTRY_AUTH_TOKEN", "SENTRY_TOKEN"}, nil),
 				Sensitive:   true,
 			},
