@@ -17,7 +17,7 @@ Sentry Team resource.
 resource "sentry_team" "default" {
   organization = "my-organization"
 
-  name = "My Team"
+  name = "my-team"
   slug = "my-team"
 }
 ```
@@ -38,9 +38,10 @@ resource "sentry_team" "default" {
 
 - `has_access` (Boolean)
 - `id` (String) The ID of this resource.
+- `internal_id` (String) The internal ID for this team.
 - `is_member` (Boolean)
 - `is_pending` (Boolean)
-- `team_id` (String)
+- `team_id` (String, Deprecated) Use `internal_id` instead.
 
 ## Import
 

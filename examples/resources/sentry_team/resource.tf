@@ -2,6 +2,6 @@
 resource "sentry_team" "default" {
   organization = "my-organization"
 
-  name = "My Team"
+  name = "my-team"
   slug = "my-team"
 }

@@ -15,41 +15,47 @@ import (
 func TestAccSentryTeam_basic(t *testing.T) {
 	var team sentry.Team
 
-	random := acctest.RandInt()
-	newTeamSlug := fmt.Sprintf("test-team-changed-%d", random)
+	teamSlug := acctest.RandomWithPrefix("tf-team")
+	rn := "sentry_team.test_team"
 
-	testAccSentryTeamUpdateConfig := fmt.Sprintf(`
-    resource "sentry_team" "test_team" {
-      organization = "%s"
-      name = "Test team changed"
-      slug = "%s"
-    }
-	`, testOrganization, newTeamSlug)
+	check := func(teamSlug string) resource.TestCheckFunc {
+		return resource.ComposeTestCheckFunc(
+			testAccCheckSentryTeamExists(rn, &team),
+			resource.TestCheckResourceAttrPair(rn, "organization", "data.sentry_organization.test_organization", "id"),
+			resource.TestCheckResourceAttr(rn, "name", teamSlug),
+			resource.TestCheckResourceAttr(rn, "slug", teamSlug),
+			resource.TestCheckResourceAttrWith(rn, "internal_id", func(v string) error {
+				want := sentry.StringValue(team.ID)
+				if v != want {
+					return fmt.Errorf("got team ID %s; want %s", v, want)
+				}
+				return nil
+			}),
+			resource.TestCheckResourceAttrPair(rn, "internal_id", rn, "team_id"),
+			resource.TestCheckResourceAttrSet(rn, "has_access"),
+			resource.TestCheckResourceAttrSet(rn, "is_pending"),
+			resource.TestCheckResourceAttrSet(rn, "is_member"),
+		)
+	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckSentryTeamDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckSentryTeamDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSentryTeamConfig,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSentryTeamExists("sentry_team.test_team", &team),
-					testAccCheckSentryTeamAttributes(&team, &testAccSentryTeamExpectedAttributes{
-						Name:        "Test team",
-						SlugPresent: true,
-					}),
-				),
+				Config: testAccSentryTeamConfig(teamSlug),
+				Check:  check(teamSlug),
 			},
 			{
-				Config: testAccSentryTeamUpdateConfig,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSentryTeamExists("sentry_team.test_team", &team),
-					testAccCheckSentryTeamAttributes(&team, &testAccSentryTeamExpectedAttributes{
-						Name: "Test team changed",
-						Slug: newTeamSlug,
-					}),
-				),
+				Config: testAccSentryTeamConfig(teamSlug + "-renamed"),
+				Check:  check(teamSlug + "-renamed"),
+			},
+			{
+				ResourceName:      rn,
+				ImportState:       true,
+				ImportStateIdFunc: testAccSentryTeamImportStateIdFunc(rn),
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -71,7 +77,7 @@ func testAccCheckSentryTeamDestroy(s *terraform.State) error {
 		)
 		if err == nil {
 			if team != nil {
-				return errors.New("Team still exists")
+				return errors.New("team still exists")
 			}
 		}
 		if resp.StatusCode != 404 {
@@ -86,56 +92,48 @@ func testAccCheckSentryTeamExists(n string, team *sentry.Team) resource.TestChec
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return fmt.Errorf("not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
-			return errors.New("No team ID is set")
+			return errors.New("no ID is set")
 		}
 
+		org := rs.Primary.Attributes["organization"]
+		teamSlug := rs.Primary.ID
 		client := testAccProvider.Meta().(*sentry.Client)
 		ctx := context.Background()
-		sentryTeam, _, err := client.Teams.Get(
-			ctx,
-			rs.Primary.Attributes["organization"],
-			rs.Primary.ID,
-		)
+		gotTeam, _, err := client.Teams.Get(ctx, org, teamSlug)
 		if err != nil {
 			return err
 		}
-		*team = *sentryTeam
+		*team = *gotTeam
 		return nil
 	}
 }
 
-type testAccSentryTeamExpectedAttributes struct {
-	Name string
-
-	SlugPresent bool
-	Slug        string
-}
-
-func testAccCheckSentryTeamAttributes(team *sentry.Team, want *testAccSentryTeamExpectedAttributes) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		if team.Name != want.Name {
-			return fmt.Errorf("got team %q; want %q", team.Name, want.Name)
+func testAccSentryTeamImportStateIdFunc(n string) resource.ImportStateIdFunc {
+	return func(s *terraform.State) (string, error) {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return "", fmt.Errorf("not found: %s", n)
 		}
-
-		if want.SlugPresent && team.Slug == "" {
-			return errors.New("got empty slug; want non-empty slug")
-		}
-
-		if want.Slug != "" && team.Slug != want.Slug {
-			return fmt.Errorf("got slug %q; want %q", team.Slug, want.Slug)
-		}
-
-		return nil
+		org := rs.Primary.Attributes["organization"]
+		teamSlug := rs.Primary.ID
+		return buildTwoPartID(org, teamSlug), nil
 	}
 }
 
-var testAccSentryTeamConfig = fmt.Sprintf(`
-  resource "sentry_team" "test_team" {
-    organization = "%s"
-    name = "Test team"
-  }
-`, testOrganization)
+func testAccSentryTeamConfig(teamSlug string) string {
+	return fmt.Sprintf(`
+data "sentry_organization" "test_organization" {
+	slug = "%[1]s"
+}
+
+resource "sentry_team" "test_team" {
+	organization = data.sentry_organization.test_organization.id
+	name         = "%[2]s"
+	slug         = "%[2]s"
+}
+	`, testOrganization, teamSlug)
+}

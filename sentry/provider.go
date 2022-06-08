@@ -42,9 +42,10 @@ func Provider() *schema.Provider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
+			"sentry_alert_rules":  dataSourceSentryAlertRules(),
 			"sentry_key":          dataSourceSentryKey(),
 			"sentry_organization": dataSourceSentryOrganization(),
-			"sentry_alert_rules":  dataSourceSentryAlertRules(),
+			"sentry_team":         dataSourceSentryTeam(),
 		},
 
 		ConfigureContextFunc: providerContextConfigure,
