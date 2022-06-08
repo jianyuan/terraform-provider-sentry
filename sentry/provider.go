@@ -15,7 +15,7 @@ func Provider() *schema.Provider {
 				Description: "The authentication token used to connect to Sentry. The value can be sourced from " +
 					"the `SENTRY_AUTH_TOKEN` environment variable.",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"SENTRY_AUTH_TOKEN", "SENTRY_TOKEN"}, nil),
 				Sensitive:   true,
 			},
@@ -30,14 +30,15 @@ func Provider() *schema.Provider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"sentry_organization": resourceSentryOrganization(),
-			"sentry_team":         resourceSentryTeam(),
-			"sentry_project":      resourceSentryProject(),
-			"sentry_key":          resourceSentryKey(),
-			"sentry_default_key":  resourceSentryDefaultKey(),
-			"sentry_plugin":       resourceSentryPlugin(),
-			"sentry_rule":         resourceSentryRule(),
 			"sentry_alert_rule":   resourceSentryAlertRule(),
+			"sentry_issue_alert":  resourceSentryIssueAlert(),
+			"sentry_default_key":  resourceSentryDefaultKey(),
+			"sentry_key":          resourceSentryKey(),
+			"sentry_organization": resourceSentryOrganization(),
+			"sentry_plugin":       resourceSentryPlugin(),
+			"sentry_project":      resourceSentryProject(),
+			"sentry_rule":         resourceSentryRule(),
+			"sentry_team":         resourceSentryTeam(),
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{

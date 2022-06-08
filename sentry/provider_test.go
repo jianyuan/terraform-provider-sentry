@@ -10,12 +10,18 @@ import (
 var testOrganization = os.Getenv("SENTRY_TEST_ORGANIZATION")
 
 var testAccProviders map[string]*schema.Provider
+var testAccProviderFactories map[string]func() (*schema.Provider, error)
 var testAccProvider *schema.Provider
 
 func init() {
 	testAccProvider = Provider()
 	testAccProviders = map[string]*schema.Provider{
 		"sentry": testAccProvider,
+	}
+	testAccProviderFactories = map[string]func() (*schema.Provider, error){
+		"sentry": func() (*schema.Provider, error) {
+			return testAccProvider, nil
+		},
 	}
 }
 
