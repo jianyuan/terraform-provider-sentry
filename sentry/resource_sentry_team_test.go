@@ -51,6 +51,12 @@ func TestAccSentryTeam_basic(t *testing.T) {
 				Config: testAccSentryTeamConfig(teamName + "-renamed"),
 				Check:  check(teamName + "-renamed"),
 			},
+			{
+				ResourceName:      rn,
+				ImportState:       true,
+				ImportStateIdFunc: testAccSentryTeamImportStateIdFunc(rn),
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -103,6 +109,18 @@ func testAccCheckSentryTeamExists(n string, team *sentry.Team) resource.TestChec
 		}
 		*team = *gotTeam
 		return nil
+	}
+}
+
+func testAccSentryTeamImportStateIdFunc(n string) resource.ImportStateIdFunc {
+	return func(s *terraform.State) (string, error) {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return "", fmt.Errorf("not found: %s", n)
+		}
+		org := rs.Primary.Attributes["organization"]
+		teamSlug := rs.Primary.ID
+		return buildTwoPartID(org, teamSlug), nil
 	}
 }
 
