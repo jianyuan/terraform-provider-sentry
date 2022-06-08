@@ -15,15 +15,15 @@ import (
 func TestAccSentryTeam_basic(t *testing.T) {
 	var team sentry.Team
 
-	teamName := acctest.RandomWithPrefix("tf-team")
+	teamSlug := acctest.RandomWithPrefix("tf-team")
 	rn := "sentry_team.test_team"
 
-	check := func(teamName string) resource.TestCheckFunc {
+	check := func(teamSlug string) resource.TestCheckFunc {
 		return resource.ComposeTestCheckFunc(
 			testAccCheckSentryTeamExists(rn, &team),
 			resource.TestCheckResourceAttrPair(rn, "organization", "data.sentry_organization.test_organization", "id"),
-			resource.TestCheckResourceAttr(rn, "name", teamName),
-			resource.TestCheckResourceAttr(rn, "slug", teamName),
+			resource.TestCheckResourceAttr(rn, "name", teamSlug),
+			resource.TestCheckResourceAttr(rn, "slug", teamSlug),
 			resource.TestCheckResourceAttrWith(rn, "internal_id", func(v string) error {
 				want := sentry.StringValue(team.ID)
 				if v != want {
@@ -44,12 +44,12 @@ func TestAccSentryTeam_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckSentryTeamDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSentryTeamConfig(teamName),
-				Check:  check(teamName),
+				Config: testAccSentryTeamConfig(teamSlug),
+				Check:  check(teamSlug),
 			},
 			{
-				Config: testAccSentryTeamConfig(teamName + "-renamed"),
-				Check:  check(teamName + "-renamed"),
+				Config: testAccSentryTeamConfig(teamSlug + "-renamed"),
+				Check:  check(teamSlug + "-renamed"),
 			},
 			{
 				ResourceName:      rn,
@@ -77,7 +77,7 @@ func testAccCheckSentryTeamDestroy(s *terraform.State) error {
 		)
 		if err == nil {
 			if team != nil {
-				return errors.New("Team still exists")
+				return errors.New("team still exists")
 			}
 		}
 		if resp.StatusCode != 404 {
@@ -124,7 +124,7 @@ func testAccSentryTeamImportStateIdFunc(n string) resource.ImportStateIdFunc {
 	}
 }
 
-func testAccSentryTeamConfig(teamName string) string {
+func testAccSentryTeamConfig(teamSlug string) string {
 	return fmt.Sprintf(`
 data "sentry_organization" "test_organization" {
 	slug = "%[1]s"
@@ -135,5 +135,5 @@ resource "sentry_team" "test_team" {
 	name         = "%[2]s"
 	slug         = "%[2]s"
 }
-	`, testOrganization, teamName)
+	`, testOrganization, teamSlug)
 }
