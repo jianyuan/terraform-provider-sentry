@@ -52,7 +52,7 @@ resource "sentry_key" "default" {
 Import is supported using the following syntax:
 
 ```shell
-# import using the organization, team slugs and key id from the URL:
+# import using the organization, project slugs and key id from the URL:
 # https://sentry.io/settings/[org-slug]/projects/[project-slug]/keys/[key-id]/
 terraform import sentry_project.default org-slug/project-slug/key-id
 ```
