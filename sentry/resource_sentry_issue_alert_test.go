@@ -13,7 +13,7 @@ import (
 )
 
 func TestAccSentryIssueAlert_basic(t *testing.T) {
-	var rule sentry.IssueAlert
+	var alert sentry.IssueAlert
 
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
@@ -22,7 +22,7 @@ func TestAccSentryIssueAlert_basic(t *testing.T) {
 
 	check := func(alertName string) resource.TestCheckFunc {
 		return resource.ComposeTestCheckFunc(
-			testAccCheckSentryIssueAlertExists(rn, &rule),
+			testAccCheckSentryIssueAlertExists(rn, &alert),
 			resource.TestCheckResourceAttr(rn, "organization", testOrganization),
 			resource.TestCheckResourceAttr(rn, "action_match", "any"),
 			resource.TestCheckResourceAttr(rn, "filter_match", "any"),
@@ -184,9 +184,9 @@ func testAccCheckSentryIssueAlertDestroy(s *terraform.State) error {
 		}
 
 		ctx := context.Background()
-		rule, resp, err := client.IssueAlerts.Get(ctx, org, project, id)
+		alert, resp, err := client.IssueAlerts.Get(ctx, org, project, id)
 		if err == nil {
-			if rule != nil {
+			if alert != nil {
 				return errors.New("issue alert still exists")
 			}
 		}
@@ -199,7 +199,7 @@ func testAccCheckSentryIssueAlertDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckSentryIssueAlertExists(n string, rule *sentry.IssueAlert) resource.TestCheckFunc {
+func testAccCheckSentryIssueAlertExists(n string, alert *sentry.IssueAlert) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -213,16 +213,16 @@ func testAccCheckSentryIssueAlertExists(n string, rule *sentry.IssueAlert) resou
 		org, project, id, err := splitThreePartID(rs.Primary.ID, "organization-slug", "project-slug", "id")
 		client := testAccProvider.Meta().(*sentry.Client)
 		ctx := context.Background()
-		gotRule, _, err := client.IssueAlerts.Get(ctx, org, project, id)
+		gotAlert, _, err := client.IssueAlerts.Get(ctx, org, project, id)
 		if err != nil {
 			return err
 		}
-		*rule = *gotRule
+		*alert = *gotAlert
 		return nil
 	}
 }
 
-func testAccSentryIssueAlertConfig(teamName, projectName, ruleName string) string {
+func testAccSentryIssueAlertConfig(teamName, projectName, alertName string) string {
 	return fmt.Sprintf(`
 data "sentry_organization" "test_organization" {
 	slug = "%[1]s"
@@ -351,5 +351,5 @@ resource "sentry_issue_alert" "test_issue_alert" {
 		}
 	]
 }
-	`, testOrganization, teamName, projectName, ruleName)
+	`, testOrganization, teamName, projectName, alertName)
 }
