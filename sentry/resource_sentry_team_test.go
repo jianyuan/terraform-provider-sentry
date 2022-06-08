@@ -24,13 +24,14 @@ func TestAccSentryTeam_basic(t *testing.T) {
 			resource.TestCheckResourceAttrPair(rn, "organization", "data.sentry_organization.test_organization", "id"),
 			resource.TestCheckResourceAttr(rn, "name", teamName),
 			resource.TestCheckResourceAttr(rn, "slug", teamName),
-			resource.TestCheckResourceAttrWith(rn, "team_id", func(v string) error {
+			resource.TestCheckResourceAttrWith(rn, "internal_id", func(v string) error {
 				want := sentry.StringValue(team.ID)
 				if v != want {
 					return fmt.Errorf("got team ID %s; want %s", v, want)
 				}
 				return nil
 			}),
+			resource.TestCheckResourceAttrPair(rn, "internal_id", rn, "team_id"),
 			resource.TestCheckResourceAttrSet(rn, "has_access"),
 			resource.TestCheckResourceAttrSet(rn, "is_pending"),
 			resource.TestCheckResourceAttrSet(rn, "is_member"),

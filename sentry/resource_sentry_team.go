@@ -39,9 +39,10 @@ func resourceSentryTeam() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 			},
-			"team_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+			"internal_id": {
+				Description: "The internal ID for this team.",
+				Type:        schema.TypeString,
+				Computed:    true,
 			},
 			"has_access": {
 				Type:     schema.TypeBool,
@@ -54,6 +55,12 @@ func resourceSentryTeam() *schema.Resource {
 			"is_member": {
 				Type:     schema.TypeBool,
 				Computed: true,
+			},
+			"team_id": {
+				Deprecated:  "Use `internal_id` instead.",
+				Description: "Use `internal_id` instead.",
+				Type:        schema.TypeString,
+				Computed:    true,
 			},
 		},
 	}
@@ -102,10 +109,11 @@ func resourceSentryTeamRead(ctx context.Context, d *schema.ResourceData, meta in
 	d.Set("organization", org)
 	d.Set("name", team.Name)
 	d.Set("slug", team.Slug)
-	d.Set("team_id", team.ID)
+	d.Set("internal_id", team.ID)
 	d.Set("has_access", team.HasAccess)
 	d.Set("is_pending", team.IsPending)
 	d.Set("is_member", team.IsMember)
+	d.Set("team_id", team.ID) // Deprecated
 	return nil
 }
 
