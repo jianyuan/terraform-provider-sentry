@@ -2,6 +2,7 @@ package sentry
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -138,6 +139,11 @@ func resourceSentryIssueAlertObject(d *schema.ResourceData) *sentry.IssueAlert {
 	return alert
 }
 
+func splitSentryIssueAlertID(id string) (org string, project string, alertID string, err error) {
+	org, project, alertID, err = splitThreePartID(id, "organization-slug", "project-slug", "alert-id")
+	return
+}
+
 func resourceSentryIssueAlertCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
@@ -146,20 +152,14 @@ func resourceSentryIssueAlertCreate(ctx context.Context, d *schema.ResourceData,
 	alertReq := resourceSentryIssueAlertObject(d)
 
 	tflog.Debug(ctx, "Creating issue alert", map[string]interface{}{
-		"ruleName": alertReq.Name,
-		"org":      org,
-		"project":  project,
+		"org":       org,
+		"project":   project,
+		"alertName": alertReq.Name,
 	})
 	alert, _, err := client.IssueAlerts.Create(ctx, org, project, alertReq)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	tflog.Debug(ctx, "Created issue alert", map[string]interface{}{
-		"ruleName": alert.Name,
-		"ruleID":   alert.ID,
-		"org":      org,
-		"project":  project,
-	})
 
 	d.SetId(buildThreePartID(org, project, *alert.ID))
 	return resourceSentryIssueAlertRead(ctx, d, meta)
@@ -167,32 +167,26 @@ func resourceSentryIssueAlertCreate(ctx context.Context, d *schema.ResourceData,
 
 func resourceSentryIssueAlertRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
-	org, project, id, err := splitThreePartID(d.Id(), "organization-slug", "project-slug", "id")
+
+	org, project, alertID, err := splitSentryIssueAlertID(d.Id())
 	if err != nil {
 		diag.FromErr(err)
 	}
 
 	tflog.Debug(ctx, "Reading issue alert", map[string]interface{}{
-		"ruleID":  id,
 		"org":     org,
 		"project": project,
+		"alertID": alertID,
 	})
-
-	rule, resp, err := client.IssueAlerts.Get(ctx, org, project, id)
+	rule, resp, err := client.IssueAlerts.Get(ctx, org, project, alertID)
 	if found, err := checkClientGet(resp, err, d); !found {
 		return diag.FromErr(err)
 	}
 
 	if rule == nil {
 		d.SetId("")
-		return diag.Errorf("Cannot find issue alert with ID " + id)
+		return diag.Errorf("Cannot find issue alert with ID " + alertID)
 	}
-
-	tflog.Debug(ctx, "Read issue alert", map[string]interface{}{
-		"ruleID":  rule.ID,
-		"org":     org,
-		"project": project,
-	})
 
 	conditions := make([]interface{}, 0, len(rule.Conditions))
 	for _, condition := range rule.Conditions {
@@ -218,53 +212,40 @@ func resourceSentryIssueAlertRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set("name", rule.Name)
 	d.Set("environment", rule.Environment)
 	d.Set("project", project)
-
 	return nil
 }
 
 func resourceSentryIssueAlertUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
-	org, project, id, err := splitThreePartID(d.Id(), "organization-slug", "project-slug", "id")
+	org, project, alertID, err := splitSentryIssueAlertID(d.Id())
 	alertReq := resourceSentryIssueAlertObject(d)
 
 	tflog.Debug(ctx, "Updating issue alert", map[string]interface{}{
-		"ruleID":  id,
 		"org":     org,
 		"project": project,
+		"alertID": alertID,
 	})
-	alert, _, err := client.IssueAlerts.Update(ctx, org, project, id, alertReq)
+	_, _, err = client.IssueAlerts.Update(ctx, org, project, alertID, alertReq)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	tflog.Debug(ctx, "Updated issue alert", map[string]interface{}{
-		"ruleID":  alert.ID,
-		"org":     org,
-		"project": project,
-	})
-
 	return resourceSentryIssueAlertRead(ctx, d, meta)
 }
 
 func resourceSentryIssueAlertDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	org, project, id, err := splitThreePartID(d.Id(), "organization-slug", "project-slug", "id")
+	client := meta.(*sentry.Client)
+
+	org, project, alertID, err := splitSentryIssueAlertID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	client := meta.(*sentry.Client)
-
 	tflog.Debug(ctx, "Deleting issue rule", map[string]interface{}{
-		"ruleID":  id,
 		"org":     org,
 		"project": project,
+		"alertID": alertID,
 	})
-	_, err = client.IssueAlerts.Delete(ctx, org, project, id)
-	tflog.Debug(ctx, "Deleted issue rule", map[string]interface{}{
-		"ruleID":  id,
-		"org":     org,
-		"project": project,
-	})
-
+	_, err = client.IssueAlerts.Delete(ctx, org, project, alertID)
 	return diag.FromErr(err)
 }
