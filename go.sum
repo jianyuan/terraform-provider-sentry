@@ -237,6 +237,14 @@ github.com/jessevdk/go-flags v1.5.0/go.mod h1:Fw0T6WPc1dYxT4mKEZRfG5kJhaTDP9pj1c
 github.com/jhump/protoreflect v1.6.0 h1:h5jfMVslIg6l29nsMs0D8Wj17RDVdNYti0vDN/PZZoE=
 github.com/jianyuan/go-sentry/v2 v2.0.0-20220607175638-03a23e1c1907 h1:amPUzRa3CuGkvYaYz6lKCpfW8iBlXtHAjLfSWw9OyJk=
 github.com/jianyuan/go-sentry/v2 v2.0.0-20220607175638-03a23e1c1907/go.mod h1:UXgOT72+JxLg2xVZ32gOMM4QfrnlIsBEhs/atm0SZKc=
+github.com/jianyuan/go-sentry/v2 v2.0.0-20220607191237-8deeedafdb44 h1:3tx7bhw+M2qdnnox9my8fRIEtGDfPJ1a7899GQi+8E0=
+github.com/jianyuan/go-sentry/v2 v2.0.0-20220607191237-8deeedafdb44/go.mod h1:UXgOT72+JxLg2xVZ32gOMM4QfrnlIsBEhs/atm0SZKc=
+github.com/jianyuan/go-sentry/v2 v2.0.0-20220607213835-f31f2534912c h1:E/YLekAv9mKcicLLY+dY9tx/ngPn+il/d1HqykGj8/U=
+github.com/jianyuan/go-sentry/v2 v2.0.0-20220607213835-f31f2534912c/go.mod h1:UXgOT72+JxLg2xVZ32gOMM4QfrnlIsBEhs/atm0SZKc=
+github.com/jianyuan/go-sentry/v2 v2.0.0-20220608020352-0583b1c05ac0 h1:wWRd4UstTsosbDVhzZn19fjDvagxWazzC9YktzGpb0Q=
+github.com/jianyuan/go-sentry/v2 v2.0.0-20220608020352-0583b1c05ac0/go.mod h1:UXgOT72+JxLg2xVZ32gOMM4QfrnlIsBEhs/atm0SZKc=
+github.com/jianyuan/go-sentry/v2 v2.0.0-20220608072727-e9d2ff57582f h1:vJCxn219GkQMeP2n+2dTcmehNS1pReE9s0QK5uEoumk=
+github.com/jianyuan/go-sentry/v2 v2.0.0-20220608072727-e9d2ff57582f/go.mod h1:UXgOT72+JxLg2xVZ32gOMM4QfrnlIsBEhs/atm0SZKc=
 github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024/go.mod h1:6v2b51hI/fHJwM22ozAgKL4VKDeJcHhJFhtBdhmNjmU=
 github.com/jstemmer/go-junit-report v0.9.1/go.mod h1:Brl9GWCQeLvo8nXZwPNNblvFj/XSXhF0NWZEnDohbsk=
 github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 h1:DowS9hvgyYSX4TO5NpyC606/Z4SxnNYbT+WX27or6Ck=

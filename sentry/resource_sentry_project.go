@@ -188,15 +188,15 @@ func resourceSentryProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	if v, ok := d.GetOk("digests_min_delay"); ok {
-		params.DigestsMinDelay = Int(v.(int))
+		params.DigestsMinDelay = sentry.Int(v.(int))
 	}
 
 	if v, ok := d.GetOk("digests_max_delay"); ok {
-		params.DigestsMaxDelay = Int(v.(int))
+		params.DigestsMaxDelay = sentry.Int(v.(int))
 	}
 
 	if v, ok := d.GetOk("resolve_age"); ok {
-		params.ResolveAge = Int(v.(int))
+		params.ResolveAge = sentry.Int(v.(int))
 	}
 
 	tflog.Debug(ctx, "Updating Sentry project", map[string]interface{}{

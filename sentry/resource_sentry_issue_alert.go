@@ -2,20 +2,12 @@ package sentry
 
 import (
 	"context"
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/mitchellh/mapstructure"
-)
-
-const (
-	defaultActionMatch = "any"
-	defaultFilterMatch = "any"
-	defaultFrequency   = 30
 )
 
 func resourceSentryIssueAlert() *schema.Resource {
@@ -29,47 +21,16 @@ func resourceSentryIssueAlert() *schema.Resource {
 		ReadContext:   resourceSentryIssueAlertRead,
 		UpdateContext: resourceSentryIssueAlertUpdate,
 		DeleteContext: resourceSentryIssueAlertDelete,
+
 		Importer: &schema.ResourceImporter{
-			StateContext: importOrganizationProjectAndID,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
 			"organization": {
-				Description: "The slug of the organization the project belongs to.",
+				Description: "The slug of the organization the issue alert belongs to.",
 				Type:        schema.TypeString,
 				Required:    true,
-			},
-			"project": {
-				Description: "The slug of the project to create the plugin for.",
-				Type:        schema.TypeString,
-				Required:    true,
-			},
-			"name": {
-				Description: "The rule name.",
-				Type:        schema.TypeString,
-				Required:    true,
-			},
-			"action_match": {
-				Description:  "Trigger actions when an event is captured by Sentry and `any` or `all` of the specified conditions happen. Defaults to `any`.",
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validation.StringInSlice([]string{"all", "any"}, false),
-			},
-			"filter_match": {
-				Description:  "Trigger actions if `all`, `any`, or `none` of the specified filters match. Defaults to `any`.",
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validation.StringInSlice([]string{"all", "any", "none"}, false),
-			},
-			"actions": {
-				Description: "List of actions.",
-				Type:        schema.TypeList,
-				Required:    true,
-				Elem: &schema.Schema{
-					Type: schema.TypeMap,
-				},
 			},
 			"conditions": {
 				Description: "List of conditions.",
@@ -78,6 +39,7 @@ func resourceSentryIssueAlert() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeMap,
 				},
+				DiffSuppressFunc: SuppressEquivalentJSONDiffs,
 			},
 			"filters": {
 				Description: "List of filters.",
@@ -86,178 +48,176 @@ func resourceSentryIssueAlert() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeMap,
 				},
+				DiffSuppressFunc: SuppressEquivalentJSONDiffs,
+			},
+			"actions": {
+				Description: "List of actions.",
+				Type:        schema.TypeList,
+				Required:    true,
+				Elem: &schema.Schema{
+					Type: schema.TypeMap,
+				},
+				DiffSuppressFunc: SuppressEquivalentJSONDiffs,
+			},
+			"action_match": {
+				Description:  "Trigger actions when an event is captured by Sentry and `any` or `all` of the specified conditions happen.",
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.StringInSlice([]string{"all", "any"}, false),
+			},
+			"filter_match": {
+				Description:  "Trigger actions if `all`, `any`, or `none` of the specified filters match.",
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.StringInSlice([]string{"all", "any", "none"}, false),
 			},
 			"frequency": {
 				Description: "Perform actions at most once every `X` minutes for this issue. Defaults to `30`.",
 				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
+			},
+			"name": {
+				Description: "The issue alert name.",
+				Type:        schema.TypeString,
+				Required:    true,
 			},
 			"environment": {
-				Description: "Perform rule in a specific environment.",
+				Description: "Perform issue alert in a specific environment.",
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
+			},
+			"project": {
+				Description: "The slug of the project to create the issue alert for.",
+				Type:        schema.TypeString,
+				Required:    true,
 			},
 		},
 	}
 }
 
+func resourceSentryIssueAlertObject(d *schema.ResourceData) *sentry.IssueAlert {
+	alert := &sentry.IssueAlert{
+		ActionMatch: sentry.String(d.Get("action_match").(string)),
+		FilterMatch: sentry.String(d.Get("filter_match").(string)),
+		Frequency:   sentry.Int(d.Get("frequency").(int)),
+		Name:        sentry.String(d.Get("name").(string)),
+	}
+
+	conditionsIn := d.Get("conditions").([]interface{})
+	filtersIn := d.Get("filters").([]interface{})
+	actionsIn := d.Get("actions").([]interface{})
+
+	alert.Conditions = make([]*sentry.IssueAlertCondition, 0, len(conditionsIn))
+	for _, ic := range conditionsIn {
+		condition := new(sentry.IssueAlertCondition)
+		mapstructure.WeakDecode(ic, condition)
+		alert.Conditions = append(alert.Conditions, condition)
+	}
+	alert.Filters = make([]*sentry.IssueAlertFilter, 0, len(filtersIn))
+	for _, ia := range filtersIn {
+		filter := new(sentry.IssueAlertFilter)
+		mapstructure.WeakDecode(ia, filter)
+		alert.Filters = append(alert.Filters, filter)
+	}
+	alert.Actions = make([]*sentry.IssueAlertAction, 0, len(actionsIn))
+	for _, ia := range actionsIn {
+		action := new(sentry.IssueAlertAction)
+		mapstructure.WeakDecode(ia, action)
+		alert.Actions = append(alert.Actions, action)
+	}
+
+	if v, ok := d.GetOk("environment"); ok {
+		alert.Environment = sentry.String(v.(string))
+	}
+
+	if v, ok := d.GetOk("project"); ok {
+		alert.Projects = []string{v.(string)}
+	}
+
+	return alert
+}
+
 func resourceSentryIssueAlertCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
-	name := d.Get("name").(string)
 	org := d.Get("organization").(string)
 	project := d.Get("project").(string)
-	environment := d.Get("environment").(string)
-	actionMatch := d.Get("action_match").(string)
-	filterMatch := d.Get("filter_match").(string)
-	inputConditions := d.Get("conditions").([]interface{})
-	inputActions := d.Get("actions").([]interface{})
-	inputFilters := d.Get("filters").([]interface{})
-	frequency := d.Get("frequency").(int)
+	alertReq := resourceSentryIssueAlertObject(d)
 
-	if actionMatch == "" {
-		actionMatch = defaultActionMatch
-	}
-	if filterMatch == "" {
-		filterMatch = defaultFilterMatch
-	}
-	if frequency == 0 {
-		frequency = defaultFrequency
-	}
-
-	conditions := make([]sentry.ConditionType, len(inputConditions))
-	for i, ic := range inputConditions {
-		var condition sentry.ConditionType
-		mapstructure.WeakDecode(ic, &condition)
-		conditions[i] = condition
-	}
-	actions := make([]sentry.ActionType, len(inputActions))
-	for i, ia := range inputActions {
-		var action sentry.ActionType
-		mapstructure.WeakDecode(ia, &action)
-		actions[i] = action
-	}
-	filters := make([]sentry.FilterType, len(inputFilters))
-	for i, ia := range inputFilters {
-		var filter sentry.FilterType
-		mapstructure.WeakDecode(ia, &filter)
-		filters[i] = filter
-	}
-
-	params := &sentry.CreateIssueAlertParams{
-		ActionMatch: actionMatch,
-		FilterMatch: filterMatch,
-		Environment: environment,
-		Frequency:   frequency,
-		Name:        name,
-		Conditions:  conditions,
-		Actions:     actions,
-		Filters:     filters,
-	}
-
-	if environment != "" {
-		params.Environment = environment
-	}
-
-	tflog.Debug(ctx, "Creating Sentry rule", map[string]interface{}{
-		"ruleName": name,
+	tflog.Debug(ctx, "Creating issue alert", map[string]interface{}{
+		"ruleName": alertReq.Name,
 		"org":      org,
 		"project":  project,
 	})
-	rule, _, err := client.IssueAlerts.Create(ctx, org, project, params)
+	alert, _, err := client.IssueAlerts.Create(ctx, org, project, alertReq)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	tflog.Debug(ctx, "Created Sentry rule", map[string]interface{}{
-		"ruleName": rule.Name,
-		"ruleID":   rule.ID,
+	tflog.Debug(ctx, "Created issue alert", map[string]interface{}{
+		"ruleName": alert.Name,
+		"ruleID":   alert.ID,
 		"org":      org,
 		"project":  project,
 	})
 
-	d.SetId(rule.ID)
-
+	d.SetId(buildThreePartID(org, project, *alert.ID))
 	return resourceSentryIssueAlertRead(ctx, d, meta)
 }
 
 func resourceSentryIssueAlertRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
-	org := d.Get("organization").(string)
-	project := d.Get("project").(string)
-	id := d.Id()
+	org, project, id, err := splitThreePartID(d.Id(), "organization-slug", "project-slug", "id")
+	if err != nil {
+		diag.FromErr(err)
+	}
 
-	tflog.Debug(ctx, "Reading Sentry rule", map[string]interface{}{
+	tflog.Debug(ctx, "Reading issue alert", map[string]interface{}{
 		"ruleID":  id,
 		"org":     org,
 		"project": project,
 	})
-	rules, resp, err := client.IssueAlerts.List(ctx, org, project)
+
+	rule, resp, err := client.IssueAlerts.Get(ctx, org, project, id)
 	if found, err := checkClientGet(resp, err, d); !found {
 		return diag.FromErr(err)
 	}
-	tflog.Trace(ctx, "Read Sentry rules", map[string]interface{}{
-		"ruleCount": len(rules),
-		"rules":     rules,
-	})
-
-	var rule *sentry.IssueAlert
-	for _, r := range rules {
-		if r.ID == id {
-			rule = r
-			break
-		}
-	}
 
 	if rule == nil {
-		return diag.Errorf("Could not find rule with ID " + id)
+		d.SetId("")
+		return diag.Errorf("Cannot find issue alert with ID " + id)
 	}
-	tflog.Debug(ctx, "Read Sentry rule", map[string]interface{}{
+
+	tflog.Debug(ctx, "Read issue alert", map[string]interface{}{
 		"ruleID":  rule.ID,
 		"org":     org,
 		"project": project,
 	})
 
-	// workaround for
-	// https://github.com/hashicorp/terraform-plugin-sdk/issues/62
-	// as the data sent by Sentry is integer
-	for _, f := range rule.Actions {
-		for k, v := range f {
-			switch vv := v.(type) {
-			case float64:
-				f[k] = fmt.Sprintf("%.0f", vv)
-			}
-		}
+	conditions := make([]interface{}, 0, len(rule.Conditions))
+	for _, condition := range rule.Conditions {
+		conditions = append(conditions, *condition)
+	}
+	filters := make([]interface{}, 0, len(rule.Filters))
+	for _, filter := range rule.Filters {
+		filters = append(filters, *filter)
+	}
+	actions := make([]interface{}, 0, len(rule.Actions))
+	for _, action := range rule.Actions {
+		actions = append(actions, *action)
 	}
 
-	for _, f := range rule.Conditions {
-		for k, v := range f {
-			switch vv := v.(type) {
-			case float64:
-				f[k] = fmt.Sprintf("%.0f", vv)
-			}
-		}
-	}
-
-	for _, f := range rule.Filters {
-		for k, v := range f {
-			switch vv := v.(type) {
-			case float64:
-				f[k] = fmt.Sprintf("%.0f", vv)
-			}
-		}
-	}
-
-	d.SetId(rule.ID)
-	d.Set("name", rule.Name)
-	d.Set("frequency", rule.Frequency)
-	d.Set("environment", rule.Environment)
-	d.Set("filters", rule.Filters)
-	d.Set("actions", rule.Actions)
-	d.Set("conditions", rule.Conditions)
+	d.SetId(buildThreePartID(org, project, *rule.ID))
+	d.Set("organization", org)
+	d.Set("conditions", conditions)
+	d.Set("filters", filters)
+	d.Set("actions", actions)
 	d.Set("action_match", rule.ActionMatch)
 	d.Set("filter_match", rule.FilterMatch)
+	d.Set("frequency", rule.Frequency)
+	d.Set("name", rule.Name)
+	d.Set("environment", rule.Environment)
+	d.Set("project", project)
 
 	return nil
 }
@@ -265,73 +225,20 @@ func resourceSentryIssueAlertRead(ctx context.Context, d *schema.ResourceData, m
 func resourceSentryIssueAlertUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
-	id := d.Id()
-	name := d.Get("name").(string)
-	org := d.Get("organization").(string)
-	project := d.Get("project").(string)
-	environment := d.Get("environment").(string)
-	actionMatch := d.Get("action_match").(string)
-	filterMatch := d.Get("filter_match").(string)
-	inputConditions := d.Get("conditions").([]interface{})
-	inputActions := d.Get("actions").([]interface{})
-	inputFilters := d.Get("filters").([]interface{})
-	frequency := d.Get("frequency").(int)
+	org, project, id, err := splitThreePartID(d.Id(), "organization-slug", "project-slug", "id")
+	alertReq := resourceSentryIssueAlertObject(d)
 
-	if actionMatch == "" {
-		actionMatch = defaultActionMatch
-	}
-	if filterMatch == "" {
-		filterMatch = defaultFilterMatch
-	}
-	if frequency == 0 {
-		frequency = defaultFrequency
-	}
-
-	conditions := make([]sentry.ConditionType, len(inputConditions))
-	for i, ic := range inputConditions {
-		var condition sentry.ConditionType
-		mapstructure.WeakDecode(ic, &condition)
-		conditions[i] = condition
-	}
-	actions := make([]sentry.ActionType, len(inputActions))
-	for i, ia := range inputActions {
-		var action sentry.ActionType
-		mapstructure.WeakDecode(ia, &action)
-		actions[i] = action
-	}
-	filters := make([]sentry.FilterType, len(inputFilters))
-	for i, ia := range inputFilters {
-		var filter sentry.FilterType
-		mapstructure.WeakDecode(ia, &filter)
-		filters[i] = filter
-	}
-
-	params := &sentry.IssueAlert{
-		ID:          id,
-		ActionMatch: actionMatch,
-		FilterMatch: filterMatch,
-		Frequency:   frequency,
-		Name:        name,
-		Conditions:  conditions,
-		Actions:     actions,
-		Filters:     filters,
-	}
-
-	if environment != "" {
-		params.Environment = &environment
-	}
-
-	tflog.Debug(ctx, "Updating Sentry rule", map[string]interface{}{
+	tflog.Debug(ctx, "Updating issue alert", map[string]interface{}{
 		"ruleID":  id,
 		"org":     org,
 		"project": project,
 	})
-	rule, _, err := client.IssueAlerts.Update(ctx, org, project, id, params)
+	alert, _, err := client.IssueAlerts.Update(ctx, org, project, id, alertReq)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	tflog.Debug(ctx, "Updated Sentry rule", map[string]interface{}{
-		"ruleID":  rule.ID,
+	tflog.Debug(ctx, "Updated issue alert", map[string]interface{}{
+		"ruleID":  alert.ID,
 		"org":     org,
 		"project": project,
 	})
@@ -340,19 +247,20 @@ func resourceSentryIssueAlertUpdate(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceSentryIssueAlertDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	org, project, id, err := splitThreePartID(d.Id(), "organization-slug", "project-slug", "id")
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	client := meta.(*sentry.Client)
 
-	id := d.Id()
-	org := d.Get("organization").(string)
-	project := d.Get("project").(string)
-
-	tflog.Debug(ctx, "Deleting Sentry rule", map[string]interface{}{
+	tflog.Debug(ctx, "Deleting issue rule", map[string]interface{}{
 		"ruleID":  id,
 		"org":     org,
 		"project": project,
 	})
-	_, err := client.IssueAlerts.Delete(ctx, org, project, id)
-	tflog.Debug(ctx, "Deleted Sentry rule", map[string]interface{}{
+	_, err = client.IssueAlerts.Delete(ctx, org, project, id)
+	tflog.Debug(ctx, "Deleted issue rule", map[string]interface{}{
 		"ruleID":  id,
 		"org":     org,
 		"project": project,
