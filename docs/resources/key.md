@@ -47,4 +47,12 @@ resource "sentry_key" "default" {
 - `public` (String) Public key portion of the client key.
 - `secret` (String) Secret key portion of the client key.
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+# import using the organization, team slugs and key id from the URL:
+# https://sentry.io/settings/[org-slug]/projects/[project-slug]/keys/[key-id]/
+terraform import sentry_project.default org-slug/project-slug/key-id
+```
