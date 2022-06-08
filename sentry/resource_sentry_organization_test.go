@@ -30,8 +30,9 @@ func TestAccSentryOrganization_basic(t *testing.T) {
 			resource.TestCheckResourceAttr(rn, "name", orgName),
 			resource.TestCheckResourceAttrSet(rn, "slug"),
 			resource.TestCheckResourceAttrWith(rn, "internal_id", func(v string) error {
-				if v != *organization.ID {
-					return fmt.Errorf("got organization ID %s; want %s", v, *organization.ID)
+				want := sentry.StringValue(organization.ID)
+				if v != want {
+					return fmt.Errorf("got organization ID %s; want %s", v, want)
 				}
 				return nil
 			}),

@@ -2,23 +2,34 @@ package sentry
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
 func TestAccSentryOrganizationDataSource_basic(t *testing.T) {
+	var organization sentry.Organization
+
+	rn := "data.sentry_organization.test"
+
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccSentryOrganizationDataSourceConfig,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.sentry_organization.test", "name"),
-					resource.TestMatchResourceAttr("data.sentry_organization.test", "internal_id", regexp.MustCompile(`^\d+$`)),
-					resource.TestCheckResourceAttr("data.sentry_organization.test", "slug", testOrganization),
+					testAccCheckSentryOrganizationExists(rn, &organization),
+					resource.TestCheckResourceAttrSet(rn, "name"),
+					resource.TestCheckResourceAttr(rn, "slug", testOrganization),
+					resource.TestCheckResourceAttrWith(rn, "internal_id", func(v string) error {
+						want := sentry.StringValue(organization.ID)
+						if v != want {
+							return fmt.Errorf("got organization ID %s; want %s", v, want)
+						}
+						return nil
+					}),
 				),
 			},
 		},

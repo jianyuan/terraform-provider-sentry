@@ -59,13 +59,13 @@ func resourceSentryOrganizationCreate(ctx context.Context, d *schema.ResourceDat
 		params.Slug = sentry.String(slug.(string))
 	}
 
-	tflog.Info(ctx, "Creating organization", map[string]interface{}{"organization": params.Name})
+	tflog.Debug(ctx, "Creating organization", map[string]interface{}{"org": params.Name})
 	organization, _, err := client.Organizations.Create(ctx, params)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(*organization.Slug)
+	d.SetId(sentry.StringValue(organization.Slug))
 	return resourceSentryOrganizationRead(ctx, d, meta)
 }
 
@@ -73,6 +73,7 @@ func resourceSentryOrganizationRead(ctx context.Context, d *schema.ResourceData,
 	client := meta.(*sentry.Client)
 	org := d.Id()
 
+	tflog.Debug(ctx, "Reading organization", map[string]interface{}{"org": org})
 	organization, _, err := client.Organizations.Get(ctx, org)
 	if err != nil {
 		if sErr, ok := err.(*sentry.ErrorResponse); ok {
@@ -108,7 +109,7 @@ func resourceSentryOrganizationUpdate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	d.SetId(*organization.Slug)
+	d.SetId(sentry.StringValue(organization.Slug))
 	return resourceSentryOrganizationRead(ctx, d, meta)
 }
 

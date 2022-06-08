@@ -38,25 +38,16 @@ func dataSourceSentryOrganization() *schema.Resource {
 func dataSourceSentryOrganizationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
-	slug := d.Get("slug").(string)
+	org := d.Get("slug").(string)
 
-	tflog.Debug(ctx, "Reading Sentry org", map[string]interface{}{
-		"orgSlug": slug,
-	})
-	org, _, err := client.Organizations.Get(ctx, slug)
+	tflog.Debug(ctx, "Reading organization", map[string]interface{}{"org": org})
+	organization, _, err := client.Organizations.Get(ctx, org)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	tflog.Debug(ctx, "Read Sentry org", map[string]interface{}{
-		"orgName": org.Name,
-		"orgSlug": org.Slug,
-		"orgID":   org.ID,
-	})
 
-	d.SetId(*org.Slug)
-	d.Set("internal_id", org.ID)
-	d.Set("name", org.Name)
-	d.Set("slug", org.Slug)
-
+	d.SetId(sentry.StringValue(organization.Slug))
+	d.Set("name", organization.Name)
+	d.Set("internal_id", organization.ID)
 	return nil
 }
