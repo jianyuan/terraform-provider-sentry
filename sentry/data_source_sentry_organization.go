@@ -53,7 +53,7 @@ func dataSourceSentryOrganizationRead(ctx context.Context, d *schema.ResourceDat
 		"orgID":   org.ID,
 	})
 
-	d.SetId(org.Slug)
+	d.SetId(*org.Slug)
 	d.Set("internal_id", org.ID)
 	d.Set("name", org.Name)
 	d.Set("slug", org.Slug)
