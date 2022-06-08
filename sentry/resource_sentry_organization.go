@@ -53,8 +53,10 @@ func resourceSentryOrganizationCreate(ctx context.Context, d *schema.ResourceDat
 
 	params := &sentry.CreateOrganizationParams{
 		Name:       sentry.String(d.Get("name").(string)),
-		Slug:       sentry.String(d.Get("slug").(string)),
 		AgreeTerms: sentry.Bool(d.Get("agree_terms").(bool)),
+	}
+	if slug, ok := d.GetOk("slug"); ok {
+		params.Slug = sentry.String(slug.(string))
 	}
 
 	tflog.Info(ctx, "Creating organization", map[string]interface{}{"organization": params.Name})
@@ -85,6 +87,7 @@ func resourceSentryOrganizationRead(ctx context.Context, d *schema.ResourceData,
 
 	d.Set("name", organization.Name)
 	d.Set("slug", organization.Slug)
+	d.Set("agree_terms", true)
 	d.Set("internal_id", organization.ID)
 	return nil
 }
@@ -94,7 +97,9 @@ func resourceSentryOrganizationUpdate(ctx context.Context, d *schema.ResourceDat
 	org := d.Id()
 	params := &sentry.UpdateOrganizationParams{
 		Name: sentry.String(d.Get("name").(string)),
-		Slug: sentry.String(d.Get("slug").(string)),
+	}
+	if slug, ok := d.GetOk("slug"); ok {
+		params.Slug = sentry.String(slug.(string))
 	}
 
 	tflog.Debug(ctx, "Updating organization", map[string]interface{}{"org": org})
