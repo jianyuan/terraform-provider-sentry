@@ -3,12 +3,12 @@
 page_title: "sentry_issue_alert Resource - terraform-provider-sentry"
 subcategory: ""
 description: |-
-  Sentry Issue Alert resource. Note that there's no public documentation for the values of conditions, filters, and actions. You can either inspect the request payload sent when creating or editing an alert rule on Sentry or inspect Sentry's rules registry in the source code https://github.com/getsentry/sentry/tree/master/src/sentry/rules.
+  Sentry Issue Alert resource. Note that there's no public documentation for the values of conditions, filters, and actions. You can either inspect the request payload sent when creating or editing an issue alert on Sentry or inspect Sentry's rules registry in the source code https://github.com/getsentry/sentry/tree/master/src/sentry/rules.
 ---
 
 # sentry_issue_alert (Resource)
 
-Sentry Issue Alert resource. Note that there's no public documentation for the values of conditions, filters, and actions. You can either inspect the request payload sent when creating or editing an alert rule on Sentry or inspect [Sentry's rules registry in the source code](https://github.com/getsentry/sentry/tree/master/src/sentry/rules).
+Sentry Issue Alert resource. Note that there's no public documentation for the values of conditions, filters, and actions. You can either inspect the request payload sent when creating or editing an issue alert on Sentry or inspect [Sentry's rules registry in the source code](https://github.com/getsentry/sentry/tree/master/src/sentry/rules).
 
 
 
@@ -34,5 +34,6 @@ Sentry Issue Alert resource. Note that there's no public documentation for the v
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `internal_id` (String) The internal ID for this issue alert.
 
 

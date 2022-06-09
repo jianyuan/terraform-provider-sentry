@@ -11,7 +11,9 @@ import (
 
 func dataSourceSentryIssueAlertSentryIssueAlert() *schema.Resource {
 	return &schema.Resource{
-		Description: "Sentry Issue Alert data source.",
+		Description: "Sentry Issue Alert data source. As the object structure of `conditions`, `filters`, and " + "" +
+			"`actions` are undocumented, a tip is to set up an Issue Alert via the Web UI, and use this data source " +
+			"to copy its object structure to your resources.",
 
 		ReadContext: dataSourceSentryIssueAlertRead,
 
