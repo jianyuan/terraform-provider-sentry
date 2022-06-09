@@ -2,6 +2,7 @@ package sentry
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -15,7 +16,7 @@ func resourceSentryIssueAlert() *schema.Resource {
 	return &schema.Resource{
 		Description: "Sentry Issue Alert resource. Note that there's no public documentation for the " +
 			"values of conditions, filters, and actions. You can either inspect the request " +
-			"payload sent when creating or editing an alert rule on Sentry or inspect " +
+			"payload sent when creating or editing an issue alert on Sentry or inspect " +
 			"[Sentry's rules registry in the source code](https://github.com/getsentry/sentry/tree/master/src/sentry/rules).",
 
 		CreateContext: resourceSentryIssueAlertCreate,
@@ -93,6 +94,11 @@ func resourceSentryIssueAlert() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
+			"internal_id": {
+				Description: "The internal ID for this issue alert.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -161,7 +167,7 @@ func resourceSentryIssueAlertCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	d.SetId(buildThreePartID(org, project, *alert.ID))
+	d.SetId(buildThreePartID(org, project, sentry.StringValue(alert.ID)))
 	return resourceSentryIssueAlertRead(ctx, d, meta)
 }
 
@@ -173,45 +179,44 @@ func resourceSentryIssueAlertRead(ctx context.Context, d *schema.ResourceData, m
 		diag.FromErr(err)
 	}
 
-	tflog.Debug(ctx, "Reading issue alert", map[string]interface{}{
-		"org":     org,
-		"project": project,
-		"alertID": alertID,
-	})
-	rule, resp, err := client.IssueAlerts.Get(ctx, org, project, alertID)
-	if found, err := checkClientGet(resp, err, d); !found {
+	tflog.Debug(ctx, "Reading issue alert", map[string]interface{}{"org": org, "project": project, "alertID": alertID})
+	alert, _, err := client.IssueAlerts.Get(ctx, org, project, alertID)
+	if err != nil {
+		if sErr, ok := err.(*sentry.ErrorResponse); ok {
+			if sErr.Response.StatusCode == http.StatusNotFound {
+				tflog.Info(ctx, "Removing issue alert from state because it no longer exists in Sentry", map[string]interface{}{"org": org, "project": project, "alertID": alertID})
+				d.SetId("")
+				return nil
+			}
+		}
 		return diag.FromErr(err)
 	}
 
-	if rule == nil {
-		d.SetId("")
-		return diag.Errorf("Cannot find issue alert with ID " + alertID)
-	}
-
-	conditions := make([]interface{}, 0, len(rule.Conditions))
-	for _, condition := range rule.Conditions {
+	conditions := make([]interface{}, 0, len(alert.Conditions))
+	for _, condition := range alert.Conditions {
 		conditions = append(conditions, *condition)
 	}
-	filters := make([]interface{}, 0, len(rule.Filters))
-	for _, filter := range rule.Filters {
+	filters := make([]interface{}, 0, len(alert.Filters))
+	for _, filter := range alert.Filters {
 		filters = append(filters, *filter)
 	}
-	actions := make([]interface{}, 0, len(rule.Actions))
-	for _, action := range rule.Actions {
+	actions := make([]interface{}, 0, len(alert.Actions))
+	for _, action := range alert.Actions {
 		actions = append(actions, *action)
 	}
 
-	d.SetId(buildThreePartID(org, project, *rule.ID))
+	d.SetId(buildThreePartID(org, project, sentry.StringValue(alert.ID)))
 	d.Set("organization", org)
 	d.Set("conditions", conditions)
 	d.Set("filters", filters)
 	d.Set("actions", actions)
-	d.Set("action_match", rule.ActionMatch)
-	d.Set("filter_match", rule.FilterMatch)
-	d.Set("frequency", rule.Frequency)
-	d.Set("name", rule.Name)
-	d.Set("environment", rule.Environment)
+	d.Set("action_match", alert.ActionMatch)
+	d.Set("filter_match", alert.FilterMatch)
+	d.Set("frequency", alert.Frequency)
+	d.Set("name", alert.Name)
+	d.Set("environment", alert.Environment)
 	d.Set("project", project)
+	d.Set("internal_id", alert.ID)
 	return nil
 }
 
@@ -241,7 +246,7 @@ func resourceSentryIssueAlertDelete(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	tflog.Debug(ctx, "Deleting issue rule", map[string]interface{}{
+	tflog.Debug(ctx, "Deleting issue alert", map[string]interface{}{
 		"org":     org,
 		"project": project,
 		"alertID": alertID,

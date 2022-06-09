@@ -15,7 +15,7 @@ import (
 func TestAccSentryIssueAlert_basic(t *testing.T) {
 	var alert sentry.IssueAlert
 
-	teamName := acctest.RandomWithPrefix("tf-team")
+	teamSlug := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	alertName := acctest.RandomWithPrefix("tf-issue-alert")
 	rn := "sentry_issue_alert.test_issue_alert"
@@ -29,6 +29,7 @@ func TestAccSentryIssueAlert_basic(t *testing.T) {
 			resource.TestCheckResourceAttr(rn, "name", alertName),
 			resource.TestCheckResourceAttr(rn, "environment", ""),
 			resource.TestCheckResourceAttr(rn, "project", projectName),
+			resource.TestCheckResourceAttrSet(rn, "internal_id"),
 			// Conditions
 			resource.TestCheckResourceAttr(rn, "conditions.#", "5"),
 			resource.TestCheckResourceAttr(rn, "conditions.0.id", "sentry.rules.conditions.first_seen_event.FirstSeenEventCondition"),
@@ -154,11 +155,11 @@ func TestAccSentryIssueAlert_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckSentryIssueAlertDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSentryIssueAlertConfig(teamName, projectName, alertName),
+				Config: testAccSentryIssueAlertConfig(teamSlug, projectName, alertName),
 				Check:  check(alertName),
 			},
 			{
-				Config: testAccSentryIssueAlertConfig(teamName, projectName, alertName+"-renamed"),
+				Config: testAccSentryIssueAlertConfig(teamSlug, projectName, alertName+"-renamed"),
 				Check:  check(alertName + "-renamed"),
 			},
 			{
@@ -222,7 +223,7 @@ func testAccCheckSentryIssueAlertExists(n string, alert *sentry.IssueAlert) reso
 	}
 }
 
-func testAccSentryIssueAlertConfig(teamName, projectName, alertName string) string {
+func testAccSentryIssueAlertConfig(teamSlug, projectName, alertName string) string {
 	return fmt.Sprintf(`
 data "sentry_organization" "test_organization" {
 	slug = "%[1]s"
@@ -351,5 +352,5 @@ resource "sentry_issue_alert" "test_issue_alert" {
 		}
 	]
 }
-	`, testOrganization, teamName, projectName, alertName)
+	`, testOrganization, teamSlug, projectName, alertName)
 }
