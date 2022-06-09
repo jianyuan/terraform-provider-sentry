@@ -24,11 +24,11 @@ func TestAccSentryIssueAlert_basic(t *testing.T) {
 		return resource.ComposeTestCheckFunc(
 			testAccCheckSentryIssueAlertExists(rn, &alert),
 			resource.TestCheckResourceAttr(rn, "organization", testOrganization),
-			resource.TestCheckResourceAttr(rn, "action_match", "any"),
-			resource.TestCheckResourceAttr(rn, "filter_match", "any"),
+			resource.TestCheckResourceAttr(rn, "project", projectName),
 			resource.TestCheckResourceAttr(rn, "name", alertName),
 			resource.TestCheckResourceAttr(rn, "environment", ""),
-			resource.TestCheckResourceAttr(rn, "project", projectName),
+			resource.TestCheckResourceAttr(rn, "action_match", "any"),
+			resource.TestCheckResourceAttr(rn, "filter_match", "any"),
 			resource.TestCheckResourceAttrSet(rn, "internal_id"),
 			// Conditions
 			resource.TestCheckResourceAttr(rn, "conditions.#", "5"),
@@ -121,8 +121,7 @@ func TestAccSentryIssueAlert_basic(t *testing.T) {
 			resource.TestCheckResourceAttr(rn, "actions.#", "4"),
 			resource.TestCheckResourceAttr(rn, "actions.0.id", "sentry.mail.actions.NotifyEmailAction"),
 			resource.TestCheckResourceAttr(rn, "actions.1.id", "sentry.mail.actions.NotifyEmailAction"),
-			resource.TestCheckResourceAttr(rn, "actions.2.id", "sentry.mail.actions.NotifyEmailAction"),
-			resource.TestCheckResourceAttr(rn, "actions.3.id", "sentry.rules.actions.notify_event.NotifyEventAction"),
+			resource.TestCheckResourceAttr(rn, "actions.2.id", "sentry.rules.actions.notify_event.NotifyEventAction"),
 			resource.TestCheckTypeSetElemNestedAttrs(rn, "actions.*", map[string]string{
 				"id":               "sentry.mail.actions.NotifyEmailAction",
 				"name":             "Send a notification to IssueOwners",
@@ -134,13 +133,6 @@ func TestAccSentryIssueAlert_basic(t *testing.T) {
 				"name":             "Send a notification to Team",
 				"targetType":       "Team",
 				"targetIdentifier": "",
-			}),
-			resource.TestCheckResourceAttrPair(rn, "actions.1.targetIdentifier", "sentry_team.test_team", "team_id"),
-			resource.TestCheckTypeSetElemNestedAttrs(rn, "actions.*", map[string]string{
-				"id":               "sentry.mail.actions.NotifyEmailAction",
-				"name":             "Send a notification to Member",
-				"targetType":       "Member",
-				"targetIdentifier": "94401", // TODO
 			}),
 			resource.TestCheckTypeSetElemNestedAttrs(rn, "actions.*", map[string]string{
 				"id":   "sentry.rules.actions.notify_event.NotifyEventAction",
@@ -179,7 +171,7 @@ func testAccCheckSentryIssueAlertDestroy(s *terraform.State) error {
 			continue
 		}
 
-		org, project, id, err := splitThreePartID(rs.Primary.ID, "organization-slug", "project-slug", "id")
+		org, project, id, err := splitSentryIssueAlertID(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -211,7 +203,7 @@ func testAccCheckSentryIssueAlertExists(n string, alert *sentry.IssueAlert) reso
 			return errors.New("No project ID is set")
 		}
 
-		org, project, id, err := splitThreePartID(rs.Primary.ID, "organization-slug", "project-slug", "id")
+		org, project, id, err := splitSentryIssueAlertID(rs.Primary.ID)
 		client := testAccProvider.Meta().(*sentry.Client)
 		ctx := context.Background()
 		gotAlert, _, err := client.IssueAlerts.Get(ctx, org, project, id)
@@ -339,12 +331,6 @@ resource "sentry_issue_alert" "test_issue_alert" {
 			name             = "Send a notification to Team"
 			targetType       = "Team"
 			targetIdentifier = sentry_team.test_team.team_id
-		},
-		{
-			id               = "sentry.mail.actions.NotifyEmailAction"
-			name             = "Send a notification to Member"
-			targetType       = "Member"
-			targetIdentifier = 94401
 		},
 		{
 			id   = "sentry.rules.actions.notify_event.NotifyEventAction"

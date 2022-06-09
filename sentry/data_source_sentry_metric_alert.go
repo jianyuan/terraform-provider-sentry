@@ -11,70 +11,70 @@ import (
 	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
-func dataSourceSentryAlertRules() *schema.Resource {
+func dataSourceSentryMetricAlert() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceSentryAlertRuleRead,
 		Schema: map[string]*schema.Schema{
-			"organization": &schema.Schema{
+			"organization": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The slug of the organization the project belongs to",
 			},
-			"project": &schema.Schema{
+			"project": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The slug of the project to create the plugin for",
 			},
-			"alert_rules": &schema.Schema{
+			"alert_rules": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"id": &schema.Schema{
+						"id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"name": &schema.Schema{
+						"name": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The alert rule name",
 						},
-						"environment": &schema.Schema{
+						"environment": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"dataset": &schema.Schema{
+						"dataset": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"query": &schema.Schema{
+						"query": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"aggregate": &schema.Schema{
+						"aggregate": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"time_window": &schema.Schema{
+						"time_window": {
 							Type:     schema.TypeFloat,
 							Computed: true,
 						},
-						"threshold_type": &schema.Schema{
+						"threshold_type": {
 							Type:     schema.TypeInt,
 							Computed: true,
 						},
-						"resolve_threshold": &schema.Schema{
+						"resolve_threshold": {
 							Type:     schema.TypeFloat,
 							Computed: true,
 						},
-						"projects": &schema.Schema{
+						"projects": {
 							Type:     schema.TypeSet,
 							Computed: true,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
 						},
-						"owner": &schema.Schema{
+						"owner": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -83,7 +83,7 @@ func dataSourceSentryAlertRules() *schema.Resource {
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"id": &schema.Schema{
+									"id": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
@@ -94,23 +94,23 @@ func dataSourceSentryAlertRules() *schema.Resource {
 											Type: schema.TypeMap,
 										},
 									},
-									"alert_rule_id": &schema.Schema{
+									"alert_rule_id": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"label": &schema.Schema{
+									"label": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"threshold_type": &schema.Schema{
+									"threshold_type": {
 										Type:     schema.TypeInt,
 										Computed: true,
 									},
-									"alert_threshold": &schema.Schema{
+									"alert_threshold": {
 										Type:     schema.TypeFloat,
 										Computed: true,
 									},
-									"resolve_threshold": &schema.Schema{
+									"resolve_threshold": {
 										Type:     schema.TypeFloat,
 										Computed: true,
 									},
@@ -173,7 +173,7 @@ func mapAlertRulesData(ctx context.Context, alertRules []*sentry.MetricAlert) []
 			ar["resolve_threshold"] = alertRule.ResolveThreshold
 			ar["projects"] = alertRule.Projects
 			ar["owner"] = alertRule.Owner
-			ar["triggers"] = mapTriggers(ctx, &alertRule.Triggers)
+			ar["triggers"] = mapTriggers(ctx, alertRule.Triggers)
 
 			ars[i] = ar
 		}
@@ -184,23 +184,23 @@ func mapAlertRulesData(ctx context.Context, alertRules []*sentry.MetricAlert) []
 	return make([]interface{}, 0)
 }
 
-func mapTriggers(ctx context.Context, triggers *[]sentry.Trigger) []interface{} {
+func mapTriggers(ctx context.Context, triggers []*sentry.MetricAlertTrigger) []interface{} {
 	if triggers != nil {
-		trs := make([]interface{}, len(*triggers), len(*triggers))
+		trs := make([]interface{}, 0, len(triggers))
 
-		for i, trigger := range *triggers {
-			tflog.Debug(ctx, "Reading trigger", trigger)
+		for _, trigger := range triggers {
+			tflog.Debug(ctx, "Reading trigger", *trigger)
 			tr := make(map[string]interface{})
 
-			tr["id"] = trigger["id"]
-			tr["alert_rule_id"] = trigger["alertRuleId"]
-			tr["label"] = trigger["label"]
-			tr["threshold_type"] = trigger["thresholdType"]
-			tr["alert_threshold"] = trigger["alertThreshold"]
-			tr["resolve_threshold"] = trigger["resolveThreshold"]
-			tr["actions"] = mapActions(ctx, trigger["actions"])
+			tr["id"] = (*trigger)["id"]
+			tr["alert_rule_id"] = (*trigger)["alertRuleId"]
+			tr["label"] = (*trigger)["label"]
+			tr["threshold_type"] = (*trigger)["thresholdType"]
+			tr["alert_threshold"] = (*trigger)["alertThreshold"]
+			tr["resolve_threshold"] = (*trigger)["resolveThreshold"]
+			tr["actions"] = mapActions(ctx, (*trigger)["actions"])
 
-			trs[i] = tr
+			trs = append(trs, tr)
 		}
 
 		return trs

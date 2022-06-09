@@ -34,6 +34,16 @@ func resourceSentryIssueAlert() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
+			"project": {
+				Description: "The slug of the project to create the issue alert for.",
+				Type:        schema.TypeString,
+				Required:    true,
+			},
+			"name": {
+				Description: "The issue alert name.",
+				Type:        schema.TypeString,
+				Required:    true,
+			},
 			"conditions": {
 				Description: "List of conditions.",
 				Type:        schema.TypeList,
@@ -78,21 +88,11 @@ func resourceSentryIssueAlert() *schema.Resource {
 				Type:        schema.TypeInt,
 				Required:    true,
 			},
-			"name": {
-				Description: "The issue alert name.",
-				Type:        schema.TypeString,
-				Required:    true,
-			},
 			"environment": {
 				Description: "Perform issue alert in a specific environment.",
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-			},
-			"project": {
-				Description: "The slug of the project to create the issue alert for.",
-				Type:        schema.TypeString,
-				Required:    true,
 			},
 			"internal_id": {
 				Description: "The internal ID for this issue alert.",
@@ -105,10 +105,10 @@ func resourceSentryIssueAlert() *schema.Resource {
 
 func resourceSentryIssueAlertObject(d *schema.ResourceData) *sentry.IssueAlert {
 	alert := &sentry.IssueAlert{
+		Name:        sentry.String(d.Get("name").(string)),
 		ActionMatch: sentry.String(d.Get("action_match").(string)),
 		FilterMatch: sentry.String(d.Get("filter_match").(string)),
 		Frequency:   sentry.Int(d.Get("frequency").(int)),
-		Name:        sentry.String(d.Get("name").(string)),
 	}
 
 	conditionsIn := d.Get("conditions").([]interface{})
@@ -207,15 +207,15 @@ func resourceSentryIssueAlertRead(ctx context.Context, d *schema.ResourceData, m
 
 	d.SetId(buildThreePartID(org, project, sentry.StringValue(alert.ID)))
 	d.Set("organization", org)
+	d.Set("project", project)
+	d.Set("name", alert.Name)
 	d.Set("conditions", conditions)
 	d.Set("filters", filters)
 	d.Set("actions", actions)
 	d.Set("action_match", alert.ActionMatch)
 	d.Set("filter_match", alert.FilterMatch)
 	d.Set("frequency", alert.Frequency)
-	d.Set("name", alert.Name)
 	d.Set("environment", alert.Environment)
-	d.Set("project", project)
 	d.Set("internal_id", alert.ID)
 	return nil
 }
@@ -224,6 +224,9 @@ func resourceSentryIssueAlertUpdate(ctx context.Context, d *schema.ResourceData,
 	client := meta.(*sentry.Client)
 
 	org, project, alertID, err := splitSentryIssueAlertID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	alertReq := resourceSentryIssueAlertObject(d)
 
 	tflog.Debug(ctx, "Updating issue alert", map[string]interface{}{
