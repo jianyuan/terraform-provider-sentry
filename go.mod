@@ -8,7 +8,7 @@ require (
 	github.com/jianyuan/go-sentry/v2 v2.0.0-20220608225021-64ef9646459b
 	github.com/mitchellh/mapstructure v1.5.0
 	golang.org/x/oauth2 v0.0.0-20220608161450-d0670ef3b1eb
-	golang.org/x/time v0.0.0-20220411224347-583f2d630306
+	golang.org/x/time v0.0.0-20220609170525-579cf78fd858
 )
 
 require github.com/kr/pretty v0.3.0 // indirect
