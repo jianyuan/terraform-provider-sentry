@@ -133,6 +133,11 @@ func resourceSentryMetricAlert() *schema.Resource {
 				Computed:    true,
 				Description: "Specifies the owner id of this Alert rule",
 			},
+			"internal_id": {
+				Description: "The internal ID for this metric alert.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -235,6 +240,7 @@ func resourceSentryMetricAlertRead(ctx context.Context, d *schema.ResourceData, 
 	d.Set("resolve_threshold", alert.ResolveThreshold)
 	d.Set("projects", alert.Projects)
 	d.Set("owner", alert.Owner)
+	d.Set("internal_id", alert.ID)
 	return nil
 }
 

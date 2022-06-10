@@ -235,8 +235,6 @@ github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 h1:BQSFePA1RWJOl
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99/go.mod h1:1lJo3i6rXxKeerYnT8Nvf0QmHCRC1n8sfWVwXF2Frvo=
 github.com/jessevdk/go-flags v1.5.0/go.mod h1:Fw0T6WPc1dYxT4mKEZRfG5kJhaTDP9pj1c2EWnYs/m4=
 github.com/jhump/protoreflect v1.6.0 h1:h5jfMVslIg6l29nsMs0D8Wj17RDVdNYti0vDN/PZZoE=
-github.com/jianyuan/go-sentry/v2 v2.0.0-20220608225021-64ef9646459b h1:/43IwhDfiQytUuLc/ISl7z1VFsfDU9FzQCwuhA8Omzs=
-github.com/jianyuan/go-sentry/v2 v2.0.0-20220608225021-64ef9646459b/go.mod h1:UXgOT72+JxLg2xVZ32gOMM4QfrnlIsBEhs/atm0SZKc=
 github.com/jianyuan/go-sentry/v2 v2.0.0-20220609214149-0f3ec718d87a h1:UrPp20QvlHkcHAEVIjo8YTX6ORimlaWsz8c/Oc/TvqA=
 github.com/jianyuan/go-sentry/v2 v2.0.0-20220609214149-0f3ec718d87a/go.mod h1:UXgOT72+JxLg2xVZ32gOMM4QfrnlIsBEhs/atm0SZKc=
 github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024/go.mod h1:6v2b51hI/fHJwM22ozAgKL4VKDeJcHhJFhtBdhmNjmU=

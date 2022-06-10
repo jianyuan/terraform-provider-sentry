@@ -13,19 +13,69 @@ import (
 
 func dataSourceSentryMetricAlert() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceSentryAlertRuleRead,
+		ReadContext: dataSourceSentryMetricAlertRead,
+
 		Schema: map[string]*schema.Schema{
 			"organization": {
+				Description: "The slug of the organization the metric alert belongs to.",
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The slug of the organization the project belongs to",
 			},
 			"project": {
+				Description: "The slug of the project the metric alert belongs to.",
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The slug of the project to create the plugin for",
 			},
-			"alert_rules": {
+			"internal_id": {
+				Description: "The internal ID for this metric alert.",
+				Type:        schema.TypeString,
+				Required:    true,
+			},
+			"name": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The alert rule name",
+			},
+			"environment": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"dataset": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"query": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"aggregate": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"time_window": {
+				Type:     schema.TypeFloat,
+				Computed: true,
+			},
+			"threshold_type": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+			"resolve_threshold": {
+				Type:     schema.TypeFloat,
+				Computed: true,
+			},
+			"projects": {
+				Type:     schema.TypeSet,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"owner": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"triggers": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -34,88 +84,32 @@ func dataSourceSentryMetricAlert() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"name": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The alert rule name",
+						"actions": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Schema{
+								Type: schema.TypeMap,
+							},
 						},
-						"environment": {
+						"alert_rule_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"dataset": {
+						"label": {
 							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"query": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"aggregate": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"time_window": {
-							Type:     schema.TypeFloat,
 							Computed: true,
 						},
 						"threshold_type": {
 							Type:     schema.TypeInt,
 							Computed: true,
 						},
-						"resolve_threshold": {
+						"alert_threshold": {
 							Type:     schema.TypeFloat,
 							Computed: true,
 						},
-						"projects": {
-							Type:     schema.TypeSet,
+						"resolve_threshold": {
+							Type:     schema.TypeFloat,
 							Computed: true,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-						"owner": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"triggers": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"id": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"actions": {
-										Type:     schema.TypeList,
-										Computed: true,
-										Elem: &schema.Schema{
-											Type: schema.TypeMap,
-										},
-									},
-									"alert_rule_id": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"label": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"threshold_type": {
-										Type:     schema.TypeInt,
-										Computed: true,
-									},
-									"alert_threshold": {
-										Type:     schema.TypeFloat,
-										Computed: true,
-									},
-									"resolve_threshold": {
-										Type:     schema.TypeFloat,
-										Computed: true,
-									},
-								},
-							},
 						},
 					},
 				},
@@ -124,64 +118,35 @@ func dataSourceSentryMetricAlert() *schema.Resource {
 	}
 }
 
-func dataSourceSentryAlertRuleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceSentryMetricAlertRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
+
 	org := d.Get("organization").(string)
 	project := d.Get("project").(string)
+	alertID := d.Get("internal_id").(string)
 
-	tflog.Debug(ctx, "Reading Sentry Alert rules", map[string]interface{}{
-		"org":     org,
-		"project": project,
-	})
-	alertRules, resp, err := client.MetricAlerts.List(ctx, org, project)
+	tflog.Debug(ctx, "Reading metric alert", map[string]interface{}{"org": org, "project": project, "alertID": alertID})
+	alert, _, err := client.MetricAlerts.Get(ctx, org, project, alertID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if found, err := checkClientGet(resp, err, d); !found {
-		return diag.FromErr(err)
-	}
-	tflog.Trace(ctx, "Read Sentry Alert rules", map[string]interface{}{
-		"ruleCount":  len(alertRules),
-		"alertRules": alertRules,
-	})
 
-	alert_rules := mapAlertRulesData(ctx, alertRules)
-	if err := d.Set("alert_rules", alert_rules); err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId(org)
-
+	d.SetId(buildThreePartID(org, project, sentry.StringValue(alert.ID)))
+	d.Set("organization", org)
+	d.Set("project", project)
+	d.Set("internal_id", alertID)
+	d.Set("name", alert.Name)
+	d.Set("environment", alert.Environment)
+	d.Set("dataset", alert.DataSet)
+	d.Set("query", alert.Query)
+	d.Set("aggregate", alert.Aggregate)
+	d.Set("time_window", alert.TimeWindow)
+	d.Set("threshold_type", alert.ThresholdType)
+	d.Set("resolve_threshold", alert.ResolveThreshold)
+	d.Set("projects", alert.Projects)
+	d.Set("owner", alert.Owner)
+	d.Set("triggers", mapTriggers(ctx, alert.Triggers))
 	return nil
-}
-
-func mapAlertRulesData(ctx context.Context, alertRules []*sentry.MetricAlert) []interface{} {
-	if alertRules != nil {
-		ars := make([]interface{}, len(alertRules), len(alertRules))
-
-		for i, alertRule := range alertRules {
-			ar := make(map[string]interface{})
-
-			ar["id"] = alertRule.ID
-			ar["name"] = alertRule.Name
-			ar["environment"] = alertRule.Environment
-			ar["dataset"] = alertRule.DataSet
-			ar["query"] = alertRule.Query
-			ar["aggregate"] = alertRule.Aggregate
-			ar["time_window"] = alertRule.TimeWindow
-			ar["threshold_type"] = alertRule.ThresholdType
-			ar["resolve_threshold"] = alertRule.ResolveThreshold
-			ar["projects"] = alertRule.Projects
-			ar["owner"] = alertRule.Owner
-			ar["triggers"] = mapTriggers(ctx, alertRule.Triggers)
-
-			ars[i] = ar
-		}
-
-		return ars
-	}
-
-	return make([]interface{}, 0)
 }
 
 func mapTriggers(ctx context.Context, triggers []*sentry.MetricAlertTrigger) []interface{} {

@@ -24,7 +24,7 @@ func dataSourceSentryIssueAlertSentryIssueAlert() *schema.Resource {
 				Required:    true,
 			},
 			"project": {
-				Description: "The slug of the project to create the issue alert for.",
+				Description: "The slug of the project the issue alert belongs to.",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
@@ -99,7 +99,6 @@ func dataSourceSentryIssueAlertRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	d.SetId(buildThreePartID(org, project, *alert.ID))
 	conditions := make([]interface{}, 0, len(alert.Conditions))
 	for _, condition := range alert.Conditions {
 		conditions = append(conditions, *condition)

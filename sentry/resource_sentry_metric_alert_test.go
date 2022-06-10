@@ -18,7 +18,7 @@ func TestAccSentryMetricAlert_basic(t *testing.T) {
 	teamSlug := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	alertName := acctest.RandomWithPrefix("tf-issue-alert")
-	rn := "sentry_metric_alert.main"
+	rn := "sentry_metric_alert.test"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -40,7 +40,8 @@ func TestAccSentryMetricAlert_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(rn, "threshold_type", "0"),
 					resource.TestCheckResourceAttr(rn, "resolve_threshold", "100"),
 					resource.TestCheckResourceAttr(rn, "projects.#", "1"),
-					resource.TestCheckResourceAttrPair(rn, "projects.0", "sentry_project.main", "id"),
+					resource.TestCheckResourceAttrPair(rn, "projects.0", "sentry_project.test", "id"),
+					resource.TestCheckResourceAttrSet(rn, "internal_id"),
 				),
 			},
 		},
@@ -101,25 +102,25 @@ func testAccCheckSentryMetricAlertExists(n string, alert *sentry.MetricAlert) re
 
 func testAccSentryMetricAlertConfig(teamSlug, projectName, alertName string) string {
 	return fmt.Sprintf(`
-data "sentry_organization" "main" {
+data "sentry_organization" "test" {
 	slug = "%[1]s"
 }
 
-resource "sentry_team" "main" {
-	organization = data.sentry_organization.main.id
+resource "sentry_team" "test" {
+	organization = data.sentry_organization.test.id
 	name         = "%[2]s"
 }
 
-resource "sentry_project" "main" {
-	organization = sentry_team.main.organization
-	team         = sentry_team.main.id
+resource "sentry_project" "test" {
+	organization = sentry_team.test.organization
+	team         = sentry_team.test.id
 	name         = "%[3]s"
 	platform     = "go"
 }
 
-resource "sentry_metric_alert" "main" {
-	organization      = data.sentry_organization.main.id
-	project           = sentry_project.main.id
+resource "sentry_metric_alert" "test" {
+	organization      = sentry_project.test.organization
+	project           = sentry_project.test.id
 	name              = "%[4]s"
 	dataset           = "transactions"
 	query             = "http.url:http://testservice.com/stats"
@@ -127,7 +128,7 @@ resource "sentry_metric_alert" "main" {
 	time_window       = 50.0
 	threshold_type    = 0
 	resolve_threshold = 100.0
-	
+
 	triggers {
 		actions           = []
 		alert_threshold   = 1000
@@ -135,7 +136,7 @@ resource "sentry_metric_alert" "main" {
 		resolve_threshold = 100.0
 		threshold_type    = 0
 	}
-	
+
 	triggers {
 		actions           = []
 		alert_threshold   = 500
@@ -143,10 +144,6 @@ resource "sentry_metric_alert" "main" {
 		resolve_threshold = 100.0
 		threshold_type    = 0
 	}
-	
-	projects = [
-		sentry_project.main.id,
-	]
 }
 	`, testOrganization, teamSlug, projectName, alertName)
 }
