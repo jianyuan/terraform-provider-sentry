@@ -18,7 +18,7 @@ func TestAccSentryIssueAlert_basic(t *testing.T) {
 	teamSlug := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	alertName := acctest.RandomWithPrefix("tf-issue-alert")
-	rn := "sentry_issue_alert.test_issue_alert"
+	rn := "sentry_issue_alert.test"
 
 	check := func(alertName string) resource.TestCheckFunc {
 		return resource.ComposeTestCheckFunc(
@@ -92,7 +92,7 @@ func TestAccSentryIssueAlert_basic(t *testing.T) {
 				"name":       "The issue is assigned to Team",
 				"targetType": "Team",
 			}),
-			resource.TestCheckResourceAttrPair(rn, "filters.2.targetIdentifier", "sentry_team.test_team", "team_id"),
+			resource.TestCheckResourceAttrPair(rn, "filters.2.targetIdentifier", "sentry_team.test", "team_id"),
 			resource.TestCheckTypeSetElemNestedAttrs(rn, "filters.*", map[string]string{
 				"id":   "sentry.rules.filters.latest_release.LatestReleaseFilter",
 				"name": "The event is from the latest release",
@@ -118,7 +118,7 @@ func TestAccSentryIssueAlert_basic(t *testing.T) {
 				"level": "50",
 			}),
 			// Actions
-			resource.TestCheckResourceAttr(rn, "actions.#", "4"),
+			resource.TestCheckResourceAttr(rn, "actions.#", "3"),
 			resource.TestCheckResourceAttr(rn, "actions.0.id", "sentry.mail.actions.NotifyEmailAction"),
 			resource.TestCheckResourceAttr(rn, "actions.1.id", "sentry.mail.actions.NotifyEmailAction"),
 			resource.TestCheckResourceAttr(rn, "actions.2.id", "sentry.rules.actions.notify_event.NotifyEventAction"),
@@ -217,25 +217,25 @@ func testAccCheckSentryIssueAlertExists(n string, alert *sentry.IssueAlert) reso
 
 func testAccSentryIssueAlertConfig(teamSlug, projectName, alertName string) string {
 	return fmt.Sprintf(`
-data "sentry_organization" "test_organization" {
+data "sentry_organization" "test" {
 	slug = "%[1]s"
 }
 
-resource "sentry_team" "test_team" {
-	organization = data.sentry_organization.test_organization.id
+resource "sentry_team" "test" {
+	organization = data.sentry_organization.test.id
 	name         = "%[2]s"
 }
 
-resource "sentry_project" "test_project" {
-	organization = sentry_team.test_team.organization
-	team         = sentry_team.test_team.id
+resource "sentry_project" "test" {
+	organization = sentry_team.test.organization
+	team         = sentry_team.test.id
 	name         = "%[3]s"
 	platform     = "go"
 }
 
-resource "sentry_issue_alert" "test_issue_alert" {
-	organization = sentry_project.test_project.organization
-	project      = sentry_project.test_project.id
+resource "sentry_issue_alert" "test" {
+	organization = sentry_project.test.organization
+	project      = sentry_project.test.id
 	name         = "%[4]s"
 
 	action_match = "any"
@@ -291,7 +291,7 @@ resource "sentry_issue_alert" "test_issue_alert" {
 			id               = "sentry.rules.filters.assigned_to.AssignedToFilter"
 			name             = "The issue is assigned to Team"
 			targetType       = "Team"
-			targetIdentifier = sentry_team.test_team.team_id
+			targetIdentifier = sentry_team.test.team_id
 		},
 		{
 			id   = "sentry.rules.filters.latest_release.LatestReleaseFilter"
@@ -330,7 +330,7 @@ resource "sentry_issue_alert" "test_issue_alert" {
 			id               = "sentry.mail.actions.NotifyEmailAction"
 			name             = "Send a notification to Team"
 			targetType       = "Team"
-			targetIdentifier = sentry_team.test_team.team_id
+			targetIdentifier = sentry_team.test.team_id
 		},
 		{
 			id   = "sentry.rules.actions.notify_event.NotifyEventAction"
