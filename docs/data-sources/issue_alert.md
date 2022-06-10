@@ -47,7 +47,7 @@ resource "sentry_issue_alert" "copy" {
 
 - `internal_id` (String) The internal ID for this issue alert.
 - `organization` (String) The slug of the organization the issue alert belongs to.
-- `project` (String) The slug of the project to create the issue alert for.
+- `project` (String) The slug of the project the issue alert belongs to.
 
 ### Read-Only
 

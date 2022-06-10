@@ -17,34 +17,27 @@ description: |-
 
 ### Required
 
-- `organization` (String) The slug of the organization the project belongs to
-- `project` (String) The slug of the project to create the plugin for
+- `internal_id` (String) The internal ID for this metric alert.
+- `organization` (String) The slug of the organization the metric alert belongs to.
+- `project` (String) The slug of the project the metric alert belongs to.
 
 ### Read-Only
-
-- `alert_rules` (List of Object) (see [below for nested schema](#nestedatt--alert_rules))
-- `id` (String) The ID of this resource.
-
-<a id="nestedatt--alert_rules"></a>
-### Nested Schema for `alert_rules`
-
-Read-Only:
 
 - `aggregate` (String)
 - `dataset` (String)
 - `environment` (String)
-- `id` (String)
-- `name` (String)
+- `id` (String) The ID of this resource.
+- `name` (String) The metric alert name.
 - `owner` (String)
 - `projects` (Set of String)
 - `query` (String)
 - `resolve_threshold` (Number)
 - `threshold_type` (Number)
 - `time_window` (Number)
-- `triggers` (List of Object) (see [below for nested schema](#nestedobjatt--alert_rules--triggers))
+- `triggers` (List of Object) (see [below for nested schema](#nestedatt--triggers))
 
-<a id="nestedobjatt--alert_rules--triggers"></a>
-### Nested Schema for `alert_rules.triggers`
+<a id="nestedatt--triggers"></a>
+### Nested Schema for `triggers`
 
 Read-Only:
 

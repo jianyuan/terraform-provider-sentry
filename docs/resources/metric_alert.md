@@ -37,6 +37,7 @@ Sentry Metric Alert resource.
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `internal_id` (String) The internal ID for this metric alert.
 
 <a id="nestedblock--triggers"></a>
 ### Nested Schema for `triggers`

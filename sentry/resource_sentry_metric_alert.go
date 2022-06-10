@@ -150,6 +150,7 @@ func resourceSentryMetricAlertObject(d *schema.ResourceData) *sentry.MetricAlert
 		Aggregate:     sentry.String(d.Get("aggregate").(string)),
 		TimeWindow:    sentry.Float64(d.Get("time_window").(float64)),
 		ThresholdType: sentry.Int(d.Get("threshold_type").(int)),
+		Projects:      expandStringList(d.Get("projects").([]interface{})),
 	}
 	if environment, ok := d.GetOk("environment"); ok {
 		alert.Environment = sentry.String(environment.(string))
@@ -162,12 +163,6 @@ func resourceSentryMetricAlertObject(d *schema.ResourceData) *sentry.MetricAlert
 	}
 	if owner, ok := d.GetOk("owner"); ok {
 		alert.Owner = sentry.String(owner.(string))
-	}
-
-	projectsIn := d.Get("projects").([]interface{})
-	alert.Projects = make([]string, 0, len(projectsIn))
-	for _, project := range projectsIn {
-		alert.Projects = append(alert.Projects, project.(string))
 	}
 
 	triggersIn := d.Get("triggers").(*schema.Set)

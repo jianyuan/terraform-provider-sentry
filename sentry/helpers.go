@@ -49,6 +49,16 @@ func SuppressEquivalentJSONDiffs(k, old, new string, d *schema.ResourceData) boo
 	return reflect.DeepEqual(o, n)
 }
 
+func expandStringList(configured []interface{}) []string {
+	vs := make([]string, 0, len(configured))
+	for _, v := range configured {
+		if val, ok := v.(string); ok && val != "" {
+			vs = append(vs, val)
+		}
+	}
+	return vs
+}
+
 // checkClientGet returns a `found` bool and an `error` to indicate if a Get request was successful.
 // The following return values are meaningful:
 // `true`, `nil` => a resource was successfully found

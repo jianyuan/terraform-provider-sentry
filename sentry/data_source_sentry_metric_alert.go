@@ -32,9 +32,9 @@ func dataSourceSentryMetricAlert() *schema.Resource {
 				Required:    true,
 			},
 			"name": {
+				Description: "The metric alert name.",
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The alert rule name",
 			},
 			"environment": {
 				Type:     schema.TypeString,
