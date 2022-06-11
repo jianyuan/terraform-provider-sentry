@@ -121,7 +121,6 @@ func resourceSentryMetricAlert() *schema.Resource {
 			},
 			"projects": {
 				Type:     schema.TypeList,
-				Optional: true,
 				Computed: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
@@ -150,7 +149,6 @@ func resourceSentryMetricAlertObject(d *schema.ResourceData) *sentry.MetricAlert
 		Aggregate:     sentry.String(d.Get("aggregate").(string)),
 		TimeWindow:    sentry.Float64(d.Get("time_window").(float64)),
 		ThresholdType: sentry.Int(d.Get("threshold_type").(int)),
-		Projects:      expandStringList(d.Get("projects").([]interface{})),
 	}
 	if environment, ok := d.GetOk("environment"); ok {
 		alert.Environment = sentry.String(environment.(string))
@@ -163,6 +161,9 @@ func resourceSentryMetricAlertObject(d *schema.ResourceData) *sentry.MetricAlert
 	}
 	if owner, ok := d.GetOk("owner"); ok {
 		alert.Owner = sentry.String(owner.(string))
+	}
+	if project, ok := d.GetOk("project"); ok {
+		alert.Projects = []string{project.(string)}
 	}
 
 	triggersIn := d.Get("triggers").(*schema.Set)
@@ -221,6 +222,10 @@ func resourceSentryMetricAlertRead(ctx context.Context, d *schema.ResourceData, 
 
 	d.SetId(buildThreePartID(org, project, sentry.StringValue(alert.ID)))
 	d.Set("name", alert.Name)
+	if len(alert.Projects) == 1 {
+		d.Set("project", alert.Projects[0])
+	}
+	d.Set("projects", alert.Projects)
 	d.Set("environment", alert.Environment)
 	d.Set("dataset", alert.DataSet)
 	d.Set("query", alert.Query)
@@ -228,7 +233,6 @@ func resourceSentryMetricAlertRead(ctx context.Context, d *schema.ResourceData, 
 	d.Set("time_window", alert.TimeWindow)
 	d.Set("threshold_type", alert.ThresholdType)
 	d.Set("resolve_threshold", alert.ResolveThreshold)
-	d.Set("projects", alert.Projects)
 	d.Set("owner", alert.Owner)
 	d.Set("internal_id", alert.ID)
 	return nil

@@ -25,6 +25,8 @@ func TestAccSentryIssueAlert_basic(t *testing.T) {
 			testAccCheckSentryIssueAlertExists(rn, &alert),
 			resource.TestCheckResourceAttr(rn, "organization", testOrganization),
 			resource.TestCheckResourceAttr(rn, "project", projectName),
+			resource.TestCheckResourceAttr(rn, "projects.#", "1"),
+			resource.TestCheckResourceAttr(rn, "projects.0", projectName),
 			resource.TestCheckResourceAttr(rn, "name", alertName),
 			resource.TestCheckResourceAttr(rn, "environment", ""),
 			resource.TestCheckResourceAttr(rn, "action_match", "any"),

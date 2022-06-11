@@ -94,6 +94,13 @@ func resourceSentryIssueAlert() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 			},
+			"projects": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 			"internal_id": {
 				Description: "The internal ID for this issue alert.",
 				Type:        schema.TypeString,
@@ -202,7 +209,10 @@ func resourceSentryIssueAlertRead(ctx context.Context, d *schema.ResourceData, m
 
 	d.SetId(buildThreePartID(org, project, sentry.StringValue(alert.ID)))
 	d.Set("organization", org)
-	d.Set("project", project)
+	if len(alert.Projects) == 1 {
+		d.Set("project", alert.Projects[0])
+	}
+	d.Set("projects", alert.Projects)
 	d.Set("name", alert.Name)
 	d.Set("conditions", conditions)
 	d.Set("filters", filters)
