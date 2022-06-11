@@ -171,11 +171,6 @@ func resourceSentryMetricAlertObject(d *schema.ResourceData) *sentry.MetricAlert
 	return alert
 }
 
-func splitSentryMetricAlertID(id string) (org string, project string, alertID string, err error) {
-	org, project, alertID, err = splitThreePartID(id, "organization-slug", "project-slug", "alert-id")
-	return
-}
-
 func resourceSentryMetricAlertCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
@@ -201,7 +196,7 @@ func resourceSentryMetricAlertCreate(ctx context.Context, d *schema.ResourceData
 func resourceSentryMetricAlertRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
-	org, project, alertID, err := splitSentryMetricAlertID(d.Id())
+	org, project, alertID, err := splitSentryAlertID(d.Id())
 	if err != nil {
 		diag.FromErr(err)
 	}
@@ -242,7 +237,7 @@ func resourceSentryMetricAlertRead(ctx context.Context, d *schema.ResourceData, 
 func resourceSentryMetricAlertUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
-	org, project, alertID, err := splitSentryMetricAlertID(d.Id())
+	org, project, alertID, err := splitSentryAlertID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -265,7 +260,7 @@ func resourceSentryMetricAlertUpdate(ctx context.Context, d *schema.ResourceData
 func resourceSentryMetricAlertDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
-	org, project, alertID, err := splitSentryMetricAlertID(d.Id())
+	org, project, alertID, err := splitSentryAlertID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

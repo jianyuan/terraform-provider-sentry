@@ -35,6 +35,11 @@ func splitThreePartID(id, a, b, c string) (string, string, string, error) {
 	return parts[0], parts[1], parts[2], nil
 }
 
+func splitSentryAlertID(id string) (org string, project string, alertID string, err error) {
+	org, project, alertID, err = splitThreePartID(id, "organization-slug", "project-slug", "alert-id")
+	return
+}
+
 func SuppressEquivalentJSONDiffs(k, old, new string, d *schema.ResourceData) bool {
 	var o interface{}
 	if err := json.Unmarshal([]byte(old), &o); err != nil {

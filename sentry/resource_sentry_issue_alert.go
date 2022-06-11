@@ -145,11 +145,6 @@ func resourceSentryIssueAlertObject(d *schema.ResourceData) *sentry.IssueAlert {
 	return alert
 }
 
-func splitSentryIssueAlertID(id string) (org string, project string, alertID string, err error) {
-	org, project, alertID, err = splitThreePartID(id, "organization-slug", "project-slug", "alert-id")
-	return
-}
-
 func resourceSentryIssueAlertCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
@@ -174,7 +169,7 @@ func resourceSentryIssueAlertCreate(ctx context.Context, d *schema.ResourceData,
 func resourceSentryIssueAlertRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
-	org, project, alertID, err := splitSentryIssueAlertID(d.Id())
+	org, project, alertID, err := splitSentryAlertID(d.Id())
 	if err != nil {
 		diag.FromErr(err)
 	}
@@ -223,7 +218,7 @@ func resourceSentryIssueAlertRead(ctx context.Context, d *schema.ResourceData, m
 func resourceSentryIssueAlertUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
-	org, project, alertID, err := splitSentryIssueAlertID(d.Id())
+	org, project, alertID, err := splitSentryAlertID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -244,7 +239,7 @@ func resourceSentryIssueAlertUpdate(ctx context.Context, d *schema.ResourceData,
 func resourceSentryIssueAlertDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
-	org, project, alertID, err := splitSentryIssueAlertID(d.Id())
+	org, project, alertID, err := splitSentryAlertID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

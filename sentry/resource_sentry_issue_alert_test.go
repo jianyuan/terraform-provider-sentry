@@ -171,7 +171,7 @@ func testAccCheckSentryIssueAlertDestroy(s *terraform.State) error {
 			continue
 		}
 
-		org, project, id, err := splitSentryIssueAlertID(rs.Primary.ID)
+		org, project, id, err := splitSentryAlertID(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -203,7 +203,10 @@ func testAccCheckSentryIssueAlertExists(n string, alert *sentry.IssueAlert) reso
 			return errors.New("No project ID is set")
 		}
 
-		org, project, id, err := splitSentryIssueAlertID(rs.Primary.ID)
+		org, project, id, err := splitSentryAlertID(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
 		client := testAccProvider.Meta().(*sentry.Client)
 		ctx := context.Background()
 		gotAlert, _, err := client.IssueAlerts.Get(ctx, org, project, id)

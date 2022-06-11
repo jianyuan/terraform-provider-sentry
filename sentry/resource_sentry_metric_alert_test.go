@@ -56,7 +56,7 @@ func testAccCheckSentryMetricAlertDestroy(s *terraform.State) error {
 			continue
 		}
 
-		org, project, id, err := splitSentryMetricAlertID(rs.Primary.ID)
+		org, project, id, err := splitSentryAlertID(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -88,7 +88,10 @@ func testAccCheckSentryMetricAlertExists(n string, alert *sentry.MetricAlert) re
 			return errors.New("no ID is set")
 		}
 
-		org, project, alertID, err := splitSentryMetricAlertID(rs.Primary.ID)
+		org, project, alertID, err := splitSentryAlertID(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
 		client := testAccProvider.Meta().(*sentry.Client)
 		ctx := context.Background()
 		gotAlert, _, err := client.MetricAlerts.Get(ctx, org, project, alertID)
