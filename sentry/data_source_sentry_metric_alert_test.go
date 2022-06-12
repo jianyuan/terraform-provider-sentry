@@ -31,6 +31,20 @@ func TestAccSentryMetricAlertDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair(dn, "organization", rn, "organization"),
 					resource.TestCheckResourceAttrPair(dn, "project", rn, "project"),
 					resource.TestCheckResourceAttrPair(dn, "internal_id", rn, "internal_id"),
+					resource.TestCheckResourceAttrPair(dn, "name", rn, "name"),
+					resource.TestCheckResourceAttrPair(dn, "environment", rn, "environment"),
+					resource.TestCheckResourceAttrPair(dn, "dataset", rn, "dataset"),
+					resource.TestCheckResourceAttrPair(dn, "query", rn, "query"),
+					resource.TestCheckResourceAttrPair(dn, "aggregate", rn, "aggregate"),
+					resource.TestCheckResourceAttrPair(dn, "time_window", rn, "time_window"),
+					resource.TestCheckResourceAttrPair(dn, "threshold_type", rn, "threshold_type"),
+					resource.TestCheckResourceAttrPair(dn, "resolve_threshold", rn, "resolve_threshold"),
+					resource.TestCheckResourceAttr(dn, "projects.#", "1"),
+					resource.TestCheckResourceAttrPair(dn, "projects.0", rn, "projects.0"),
+					resource.TestCheckResourceAttrPair(dn, "owners", rn, "owners"),
+					resource.TestCheckResourceAttr(dn, "triggers.#", "2"),
+					resource.TestCheckResourceAttrPair(dn, "triggers.0", rn, "triggers.0"),
+					resource.TestCheckResourceAttrPair(dn, "triggers.1", rn, "triggers.1"),
 					// TODO: Other fields
 				),
 			},
@@ -67,7 +81,7 @@ resource "sentry_metric_alert" "test" {
 	threshold_type    = 0
 	resolve_threshold = 100.0
 
-	triggers {
+	trigger {
 		actions           = []
 		alert_threshold   = 1000
 		label             = "critical"
@@ -75,7 +89,7 @@ resource "sentry_metric_alert" "test" {
 		threshold_type    = 0
 	}
 
-	triggers {
+	trigger {
 		actions           = []
 		alert_threshold   = 500
 		label             = "warning"
@@ -101,14 +115,14 @@ resource "sentry_metric_alert" "test_copy" {
 	threshold_type    = data.sentry_metric_alert.test.threshold_type
 	resolve_threshold = data.sentry_metric_alert.test.resolve_threshold
 
-	dynamic "triggers" {
+	dynamic "trigger" {
 		for_each = data.sentry_metric_alert.test.triggers
 		content {
-			actions           = triggers.value.actions
-			alert_threshold   = triggers.value.alert_threshold
-			label             = triggers.value.label
-			resolve_threshold = triggers.value.resolve_threshold
-			threshold_type    = triggers.value.threshold_type
+			actions           = trigger.value.actions
+			alert_threshold   = trigger.value.alert_threshold
+			label             = trigger.value.label
+			resolve_threshold = trigger.value.resolve_threshold
+			threshold_type    = trigger.value.threshold_type
 		}
 	}
 }

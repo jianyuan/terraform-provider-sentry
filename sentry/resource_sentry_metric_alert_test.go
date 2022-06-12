@@ -134,7 +134,7 @@ resource "sentry_metric_alert" "test" {
 	threshold_type    = 0
 	resolve_threshold = 100.0
 
-	triggers {
+	trigger {
 		actions           = []
 		alert_threshold   = 1000
 		label             = "critical"
@@ -142,7 +142,7 @@ resource "sentry_metric_alert" "test" {
 		threshold_type    = 0
 	}
 
-	triggers {
+	trigger {
 		actions           = []
 		alert_threshold   = 500
 		label             = "warning"

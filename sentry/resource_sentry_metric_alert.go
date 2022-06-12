@@ -2,10 +2,9 @@ package sentry
 
 import (
 	"context"
-	"fmt"
 	"net/http"
-	"reflect"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -78,8 +77,8 @@ func resourceSentryMetricAlert() *schema.Resource {
 				Optional:    true,
 				Description: "The value at which the Alert rule resolves",
 			},
-			"triggers": {
-				Type:     schema.TypeSet,
+			"trigger": {
+				Type:     schema.TypeList,
 				Required: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -166,8 +165,8 @@ func resourceSentryMetricAlertObject(d *schema.ResourceData) *sentry.MetricAlert
 		alert.Projects = []string{project.(string)}
 	}
 
-	triggersIn := d.Get("triggers").(*schema.Set)
-	alert.Triggers = mapTriggersCreate(triggersIn)
+	triggersIn := d.Get("trigger").([]interface{})
+	alert.Triggers = mapMetricAlertTriggers(triggersIn)
 
 	return alert
 }
@@ -202,7 +201,11 @@ func resourceSentryMetricAlertRead(ctx context.Context, d *schema.ResourceData, 
 		diag.FromErr(err)
 	}
 
-	tflog.Debug(ctx, "Reading metric alert", map[string]interface{}{"org": org, "project": project, "alertID": alertID})
+	tflog.Debug(ctx, "Reading metric alert", map[string]interface{}{
+		"org":     org,
+		"project": project,
+		"alertID": alertID,
+	})
 	alert, _, err := client.MetricAlerts.Get(ctx, org, project, alertID)
 	if err != nil {
 		if sErr, ok := err.(*sentry.ErrorResponse); ok {
@@ -215,27 +218,32 @@ func resourceSentryMetricAlertRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	triggers := mapResourceTriggersRead(ctx, alert.Triggers)
-	if err := d.Set("triggers", triggers); err != nil {
+	triggers := flattenMetricAlertTriggers(alert.Triggers)
+	if err := d.Set("trigger", triggers); err != nil {
 		return diag.FromErr(err)
 	}
 
 	d.SetId(buildThreePartID(org, project, sentry.StringValue(alert.ID)))
-	d.Set("name", alert.Name)
+	retError := multierror.Append(
+		d.Set("name", alert.Name),
+		d.Set("projects", alert.Projects),
+		d.Set("environment", alert.Environment),
+		d.Set("dataset", alert.DataSet),
+		d.Set("query", alert.Query),
+		d.Set("aggregate", alert.Aggregate),
+		d.Set("time_window", alert.TimeWindow),
+		d.Set("threshold_type", alert.ThresholdType),
+		d.Set("resolve_threshold", alert.ResolveThreshold),
+		d.Set("owner", alert.Owner),
+		d.Set("internal_id", alert.ID),
+	)
 	if len(alert.Projects) == 1 {
-		d.Set("project", alert.Projects[0])
+		retError = multierror.Append(
+			retError,
+			d.Set("project", alert.Projects[0]),
+		)
 	}
-	d.Set("projects", alert.Projects)
-	d.Set("environment", alert.Environment)
-	d.Set("dataset", alert.DataSet)
-	d.Set("query", alert.Query)
-	d.Set("aggregate", alert.Aggregate)
-	d.Set("time_window", alert.TimeWindow)
-	d.Set("threshold_type", alert.ThresholdType)
-	d.Set("resolve_threshold", alert.ResolveThreshold)
-	d.Set("owner", alert.Owner)
-	d.Set("internal_id", alert.ID)
-	return nil
+	return diag.FromErr(retError.ErrorOrNil())
 }
 
 func resourceSentryMetricAlertUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -278,89 +286,62 @@ func resourceSentryMetricAlertDelete(ctx context.Context, d *schema.ResourceData
 	return diag.FromErr(err)
 }
 
-func mapTriggersCreate(inputTriggers *schema.Set) []*sentry.MetricAlertTrigger {
-	inputTriggersList := inputTriggers.List()
-	triggers := make([]*sentry.MetricAlertTrigger, len(inputTriggersList))
-	for i, ia := range inputTriggersList {
-		var trigger sentry.MetricAlertTrigger
-		mapstructure.WeakDecode(ia, &trigger)
-
-		//replace with uppercasing
-		trigger["alertThreshold"] = trigger["alert_threshold"]
-		trigger["resolveThreshold"] = trigger["resolve_threshold"]
-		trigger["thresholdType"] = trigger["threshold_type"]
-		delete(trigger, "alert_threshold")
-		delete(trigger, "resolve_threshold")
-		delete(trigger, "threshold_type")
-
-		//delete id and alert_rule_id as they are not required in POST&PUT requests
-		delete(trigger, "alert_rule_id")
-		delete(trigger, "id")
-
-		triggers[i] = &trigger
-	}
-
-	//swop trigger elements so critical is first
-	if (*triggers[0])["label"] != "critical" {
-		var criticalTriggerIndex int
-		for i, trigger := range triggers {
-			if (*trigger)["label"] == "critical" {
-				criticalTriggerIndex = i
+func mapMetricAlertTriggers(triggerList []interface{}) []*sentry.MetricAlertTrigger {
+	triggers := make([]*sentry.MetricAlertTrigger, 0, len(triggerList))
+	for _, triggerMap := range triggerList {
+		triggerMap := triggerMap.(map[string]interface{})
+		trigger := &sentry.MetricAlertTrigger{
+			Label:            sentry.String(triggerMap["label"].(string)),
+			ThresholdType:    sentry.Int(triggerMap["threshold_type"].(int)),
+			AlertThreshold:   sentry.Float64(triggerMap["alert_threshold"].(float64)),
+			ResolveThreshold: sentry.Float64(triggerMap["resolve_threshold"].(float64)),
+		}
+		if v, ok := triggerMap["id"].(string); ok {
+			if v != "" {
+				trigger.ID = sentry.String(v)
+			}
+		}
+		if v, ok := triggerMap["alert_rule_id"].(string); ok {
+			if v != "" {
+				trigger.AlertRuleID = sentry.String(v)
+			}
+		}
+		if actionList, ok := triggerMap["actions"].([]interface{}); ok {
+			trigger.Actions = make([]*sentry.MetricAlertTriggerAction, 0, len(actionList))
+			for _, actionMap := range actionList {
+				if v, ok := actionMap.(map[string]interface{}); ok {
+					trigger.Actions = append(trigger.Actions, mapMetricAlertTriggerAction(v))
+				}
 			}
 		}
 
-		temp := triggers[criticalTriggerIndex]
-		triggers[criticalTriggerIndex] = triggers[0]
-		triggers[0] = temp
+		triggers = append(triggers, trigger)
 	}
-
 	return triggers
 }
 
-func mapResourceTriggersRead(ctx context.Context, triggers []*sentry.MetricAlertTrigger) []interface{} {
-	if triggers != nil {
-		trs := make([]interface{}, 0, len(triggers))
-
-		for _, trigger := range triggers {
-			tflog.Debug(ctx, "Reading trigger", (*trigger))
-			tr := make(map[string]interface{})
-
-			tr["id"] = (*trigger)["id"]
-			tr["alert_rule_id"] = (*trigger)["alertRuleId"]
-			tr["label"] = (*trigger)["label"]
-			tr["threshold_type"] = (*trigger)["thresholdType"]
-			tr["alert_threshold"] = (*trigger)["alertThreshold"]
-			tr["resolve_threshold"] = (*trigger)["resolveThreshold"]
-			tr["actions"] = mapResourceActionsRead(ctx, (*trigger)["actions"])
-
-			trs = append(trs, tr)
-		}
-
-		return trs
-	}
-
-	return make([]interface{}, 0)
+func mapMetricAlertTriggerAction(actionMap map[string]interface{}) *sentry.MetricAlertTriggerAction {
+	action := new(sentry.MetricAlertTriggerAction)
+	_ = mapstructure.WeakDecode(actionMap, action)
+	return action
 }
 
-func mapResourceActionsRead(ctx context.Context, a interface{}) interface{} {
-	//convert actions which appears as interface{} but is actually []interface{}
-	var actions []map[string]interface{}
-	rv := reflect.ValueOf(a)
-	if rv.Kind() == reflect.Slice {
-		for i := 0; i < rv.Len(); i++ {
-			t := rv.Index(i).Interface().(map[string]interface{})
-			actions = append(actions, t)
-		}
+func flattenMetricAlertTriggers(triggers []*sentry.MetricAlertTrigger) []interface{} {
+	if triggers == nil {
+		return []interface{}{}
 	}
 
-	for _, f := range actions {
-		for k, v := range f {
-			switch vv := v.(type) {
-			case float64:
-				f[k] = fmt.Sprintf("%.0f", vv)
-			}
-		}
+	triggerList := make([]interface{}, 0, len(triggers))
+	for _, trigger := range triggers {
+		triggerMap := make(map[string]interface{})
+		triggerMap["id"] = trigger.ID
+		triggerMap["alert_rule_id"] = trigger.AlertRuleID
+		triggerMap["label"] = trigger.Label
+		triggerMap["threshold_type"] = trigger.ThresholdType
+		triggerMap["alert_threshold"] = trigger.AlertThreshold
+		triggerMap["resolve_threshold"] = trigger.ResolveThreshold
+		triggerMap["actions"] = trigger.Actions
+		triggerList = append(triggerList, triggerMap)
 	}
-
-	return actions
+	return triggerList
 }

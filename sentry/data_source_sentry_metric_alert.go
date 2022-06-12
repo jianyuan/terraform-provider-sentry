@@ -2,9 +2,8 @@ package sentry
 
 import (
 	"context"
-	"fmt"
-	"reflect"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -132,67 +131,21 @@ func dataSourceSentryMetricAlertRead(ctx context.Context, d *schema.ResourceData
 	}
 
 	d.SetId(buildThreePartID(org, project, sentry.StringValue(alert.ID)))
-	d.Set("organization", org)
-	d.Set("project", project)
-	d.Set("internal_id", alertID)
-	d.Set("name", alert.Name)
-	d.Set("environment", alert.Environment)
-	d.Set("dataset", alert.DataSet)
-	d.Set("query", alert.Query)
-	d.Set("aggregate", alert.Aggregate)
-	d.Set("time_window", alert.TimeWindow)
-	d.Set("threshold_type", alert.ThresholdType)
-	d.Set("resolve_threshold", alert.ResolveThreshold)
-	d.Set("projects", alert.Projects)
-	d.Set("owner", alert.Owner)
-	d.Set("triggers", mapTriggers(ctx, alert.Triggers))
-	return nil
-}
-
-func mapTriggers(ctx context.Context, triggers []*sentry.MetricAlertTrigger) []interface{} {
-	if triggers != nil {
-		trs := make([]interface{}, 0, len(triggers))
-
-		for _, trigger := range triggers {
-			tflog.Debug(ctx, "Reading trigger", *trigger)
-			tr := make(map[string]interface{})
-
-			tr["id"] = (*trigger)["id"]
-			tr["alert_rule_id"] = (*trigger)["alertRuleId"]
-			tr["label"] = (*trigger)["label"]
-			tr["threshold_type"] = (*trigger)["thresholdType"]
-			tr["alert_threshold"] = (*trigger)["alertThreshold"]
-			tr["resolve_threshold"] = (*trigger)["resolveThreshold"]
-			tr["actions"] = mapActions(ctx, (*trigger)["actions"])
-
-			trs = append(trs, tr)
-		}
-
-		return trs
-	}
-
-	return make([]interface{}, 0)
-}
-
-func mapActions(ctx context.Context, a interface{}) interface{} {
-	//convert actions which appears as interface{} but is actually []interface{}
-	var actions []map[string]interface{}
-	rv := reflect.ValueOf(a)
-	if rv.Kind() == reflect.Slice {
-		for i := 0; i < rv.Len(); i++ {
-			t := rv.Index(i).Interface().(map[string]interface{})
-			actions = append(actions, t)
-		}
-	}
-
-	for _, f := range actions {
-		for k, v := range f {
-			switch vv := v.(type) {
-			case float64:
-				f[k] = fmt.Sprintf("%.0f", vv)
-			}
-		}
-	}
-
-	return actions
+	retErr := multierror.Append(
+		d.Set("organization", org),
+		d.Set("project", project),
+		d.Set("internal_id", alertID),
+		d.Set("name", alert.Name),
+		d.Set("environment", alert.Environment),
+		d.Set("dataset", alert.DataSet),
+		d.Set("query", alert.Query),
+		d.Set("aggregate", alert.Aggregate),
+		d.Set("time_window", alert.TimeWindow),
+		d.Set("threshold_type", alert.ThresholdType),
+		d.Set("resolve_threshold", alert.ResolveThreshold),
+		d.Set("projects", alert.Projects),
+		d.Set("owner", alert.Owner),
+		d.Set("triggers", flattenMetricAlertTriggers(alert.Triggers)),
+	)
+	return diag.FromErr(retErr.ErrorOrNil())
 }
