@@ -24,23 +24,23 @@ Sentry Metric Alert resource.
 - `query` (String) The query filter to apply
 - `threshold_type` (Number) The type of threshold
 - `time_window` (Number) The period to evaluate the Alert rule in minutes
-- `triggers` (Block Set, Min: 1) (see [below for nested schema](#nestedblock--triggers))
+- `trigger` (Block List, Min: 1) (see [below for nested schema](#nestedblock--trigger))
 
 ### Optional
 
 - `dataset` (String) The Sentry Alert category
 - `environment` (String) Perform Alert rule in a specific environment
 - `owner` (String) Specifies the owner id of this Alert rule
-- `projects` (List of String)
 - `resolve_threshold` (Number) The value at which the Alert rule resolves
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
 - `internal_id` (String) The internal ID for this metric alert.
+- `projects` (List of String)
 
-<a id="nestedblock--triggers"></a>
-### Nested Schema for `triggers`
+<a id="nestedblock--trigger"></a>
+### Nested Schema for `trigger`
 
 Required:
 

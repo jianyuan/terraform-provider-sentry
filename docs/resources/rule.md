@@ -70,5 +70,6 @@ resource "sentry_rule" "default" {
 
 - `id` (String) The ID of this resource.
 - `internal_id` (String) The internal ID for this issue alert.
+- `projects` (List of String)
 
 
