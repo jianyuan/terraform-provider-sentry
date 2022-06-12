@@ -13,56 +13,50 @@ import (
 )
 
 func TestAccSentryProject_basic(t *testing.T) {
-	var project sentry.Project
+	teamName := acctest.RandomWithPrefix("tf-team")
+	projectName := acctest.RandomWithPrefix("tf-project")
+	rn := "sentry_project.test"
 
-	random := acctest.RandInt()
-	newProjectSlug := fmt.Sprintf("test-project-%d", random)
+	check := func(projectName string) resource.TestCheckFunc {
+		var project sentry.Project
 
-	testAccSentryProjectUpdateConfig := fmt.Sprintf(`
-	  resource "sentry_team" "test_team" {
-	    organization = "%s"
-	    name = "Test team"
-	  }
-
-	  resource "sentry_project" "test_project" {
-	    organization = "%s"
-	    team = "${sentry_team.test_team.id}"
-	    name = "Test project changed"
-	    slug = "%s"
-	    platform = "go"
-	  }
-	`, testOrganization, testOrganization, newProjectSlug)
+		return resource.ComposeTestCheckFunc(
+			testAccCheckSentryProjectExists(rn, &project),
+			resource.TestCheckResourceAttr(rn, "organization", testOrganization),
+			resource.TestCheckResourceAttr(rn, "team", teamName),
+			resource.TestCheckResourceAttr(rn, "name", projectName),
+			resource.TestCheckResourceAttrSet(rn, "slug"),
+			resource.TestCheckResourceAttr(rn, "platform", "go"),
+			resource.TestCheckResourceAttrSet(rn, "internal_id"),
+			resource.TestCheckResourceAttrWith(rn, "internal_id", func(v string) error {
+				want := project.ID
+				if v != want {
+					return fmt.Errorf("got project ID %s; want %s", v, want)
+				}
+				return nil
+			}),
+			resource.TestCheckResourceAttrPair(rn, "project_id", rn, "internal_id"),
+		)
+	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckSentryProjectDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckSentryProjectDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSentryProjectConfig,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSentryProjectExists("sentry_project.test_project", &project),
-					testAccCheckSentryProjectAttributes(&project, &testAccSentryProjectExpectedAttributes{
-						Name:         "Test project",
-						Organization: testOrganization,
-						Team:         "Test team",
-						SlugPresent:  true,
-						Platform:     "go",
-					}),
-				),
+				Config: testAccSentryProjectConfig(teamName, projectName),
+				Check:  check(projectName),
 			},
 			{
-				Config: testAccSentryProjectUpdateConfig,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSentryProjectExists("sentry_project.test_project", &project),
-					testAccCheckSentryProjectAttributes(&project, &testAccSentryProjectExpectedAttributes{
-						Name:         "Test project changed",
-						Organization: testOrganization,
-						Team:         "Test team",
-						Slug:         newProjectSlug,
-						Platform:     "go",
-					}),
-				),
+				Config: testAccSentryProjectConfig(teamName, projectName+"-renamed"),
+				Check:  check(projectName + "-renamed"),
+			},
+			{
+				ResourceName:      rn,
+				ImportState:       true,
+				ImportStateIdFunc: testAccSentryProjectImportStateIdFunc(rn),
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -80,10 +74,10 @@ func testAccCheckSentryProjectDestroy(s *terraform.State) error {
 		proj, resp, err := client.Projects.Get(ctx, testOrganization, rs.Primary.ID)
 		if err == nil {
 			if proj != nil {
-				return errors.New("Project still exists")
+				return errors.New("project still exists")
 			}
 		}
-		if resp.StatusCode != 404 {
+		if resp.StatusCode != 403 && resp.StatusCode != 404 {
 			return err
 		}
 		return nil
@@ -95,16 +89,16 @@ func testAccCheckSentryProjectExists(n string, proj *sentry.Project) resource.Te
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return fmt.Errorf("not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
-			return errors.New("No project ID is set")
+			return errors.New("no ID is set")
 		}
 
 		client := testAccProvider.Meta().(*sentry.Client)
 		ctx := context.Background()
-		sentryProj, _, err := client.Projects.Get(
+		gotProj, _, err := client.Projects.Get(
 			ctx,
 			rs.Primary.Attributes["organization"],
 			rs.Primary.ID,
@@ -112,61 +106,39 @@ func testAccCheckSentryProjectExists(n string, proj *sentry.Project) resource.Te
 		if err != nil {
 			return err
 		}
-		*proj = *sentryProj
+		*proj = *gotProj
 		return nil
 	}
 }
 
-type testAccSentryProjectExpectedAttributes struct {
-	Name         string
-	Organization string
-	Team         string
-
-	SlugPresent bool
-	Slug        string
-	Platform    string
-}
-
-func testAccCheckSentryProjectAttributes(proj *sentry.Project, want *testAccSentryProjectExpectedAttributes) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		if proj.Name != want.Name {
-			return fmt.Errorf("got proj %q; want %q", proj.Name, want.Name)
+func testAccSentryProjectImportStateIdFunc(n string) resource.ImportStateIdFunc {
+	return func(s *terraform.State) (string, error) {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return "", fmt.Errorf("not found: %s", n)
 		}
-
-		if *proj.Organization.Slug != want.Organization {
-			return fmt.Errorf("got organization %q; want %q", *proj.Organization.Slug, want.Organization)
-		}
-
-		//if proj.Team.Name != want.Team {
-		//	return fmt.Errorf("got team %q; want %q", proj.Team.Name, want.Team)
-		//}
-
-		if want.SlugPresent && proj.Slug == "" {
-			return errors.New("got empty slug; want non-empty slug")
-		}
-
-		if want.Slug != "" && proj.Slug != want.Slug {
-			return fmt.Errorf("got slug %q; want %q", proj.Slug, want.Slug)
-		}
-
-		if want.Platform != "" && proj.Platform != want.Platform {
-			return fmt.Errorf("got Platform %q; want %q", proj.Platform, want.Platform)
-		}
-
-		return nil
+		org := rs.Primary.Attributes["organization"]
+		projectSlug := rs.Primary.ID
+		return buildTwoPartID(org, projectSlug), nil
 	}
 }
 
-var testAccSentryProjectConfig = fmt.Sprintf(`
-  resource "sentry_team" "test_team" {
-    organization = "%s"
-    name = "Test team"
-  }
+func testAccSentryProjectConfig(teamName, projectName string) string {
+	return fmt.Sprintf(`
+data "sentry_organization" "test" {
+	slug = "%[1]s"
+}
 
-  resource "sentry_project" "test_project" {
-    organization = "%s"
-    team = "${sentry_team.test_team.id}"
-    name = "Test project"
-    platform = "go"
-  }
-`, testOrganization, testOrganization)
+resource "sentry_team" "test" {
+	organization = data.sentry_organization.test.id
+	name         = "%[2]s"
+}
+
+resource "sentry_project" "test" {
+	organization = sentry_team.test.organization
+	team         = sentry_team.test.id
+	name         = "%[3]s"
+	platform     = "go"
+}
+	`, testOrganization, teamName, projectName)
+}

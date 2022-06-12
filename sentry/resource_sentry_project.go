@@ -2,9 +2,8 @@ package sentry
 
 import (
 	"context"
-	"errors"
-	"strings"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -19,8 +18,9 @@ func resourceSentryProject() *schema.Resource {
 		ReadContext:   resourceSentryProjectRead,
 		UpdateContext: resourceSentryProjectUpdate,
 		DeleteContext: resourceSentryProjectDelete,
+
 		Importer: &schema.ResourceImporter{
-			StateContext: resourceSentryProjectImporter,
+			StateContext: importOrganizationAndID,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -51,9 +51,10 @@ func resourceSentryProject() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 			},
-			"project_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+			"internal_id": {
+				Description: "The internal ID for this project.",
+				Type:        schema.TypeString,
+				Computed:    true,
 			},
 			"is_public": {
 				Type:     schema.TypeBool,
@@ -97,7 +98,12 @@ func resourceSentryProject() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 			},
-
+			"project_id": {
+				Deprecated:  "Use `internal_id` instead.",
+				Description: "Use `internal_id` instead.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 			// TODO: Project options
 		},
 	}
@@ -153,23 +159,26 @@ func resourceSentryProjectRead(ctx context.Context, d *schema.ResourceData, meta
 	})
 
 	d.SetId(proj.Slug)
-	d.Set("organization", proj.Organization.Slug)
-	d.Set("team", proj.Team.Slug)
-	d.Set("name", proj.Name)
-	d.Set("slug", proj.Slug)
-	d.Set("platform", proj.Platform)
-	d.Set("project_id", proj.ID)
-	d.Set("is_public", proj.IsPublic)
-	d.Set("color", proj.Color)
-	d.Set("features", proj.Features)
-	d.Set("status", proj.Status)
-	d.Set("digests_min_delay", proj.DigestsMinDelay)
-	d.Set("digests_max_delay", proj.DigestsMaxDelay)
-	d.Set("resolve_age", proj.ResolveAge)
+	retErr := multierror.Append(
+		d.Set("organization", proj.Organization.Slug),
+		d.Set("team", proj.Team.Slug),
+		d.Set("name", proj.Name),
+		d.Set("slug", proj.Slug),
+		d.Set("platform", proj.Platform),
+		d.Set("internal_id", proj.ID),
+		d.Set("is_public", proj.IsPublic),
+		d.Set("color", proj.Color),
+		d.Set("features", proj.Features),
+		d.Set("status", proj.Status),
+		d.Set("digests_min_delay", proj.DigestsMinDelay),
+		d.Set("digests_max_delay", proj.DigestsMaxDelay),
+		d.Set("resolve_age", proj.ResolveAge),
+		d.Set("project_id", proj.ID), // Deprecated
+	)
 
 	// TODO: Project options
 
-	return nil
+	return diag.FromErr(retErr.ErrorOrNil())
 }
 
 func resourceSentryProjectUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -234,23 +243,4 @@ func resourceSentryProjectDelete(ctx context.Context, d *schema.ResourceData, me
 	})
 
 	return diag.FromErr(err)
-}
-
-func resourceSentryProjectImporter(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-	addrID := d.Id()
-
-	tflog.Debug(ctx, "Importing Sentry project", map[string]interface{}{
-		"projectID": addrID,
-	})
-
-	parts := strings.Split(addrID, "/")
-
-	if len(parts) != 2 {
-		return nil, errors.New("Project import requires an ADDR ID of the following schema org-slug/project-slug")
-	}
-
-	d.Set("organization", parts[0])
-	d.SetId(parts[1])
-
-	return []*schema.ResourceData{d}, nil
 }
