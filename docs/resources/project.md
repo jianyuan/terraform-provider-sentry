@@ -48,9 +48,10 @@ resource "sentry_project" "default" {
 - `color` (String)
 - `features` (List of String)
 - `id` (String) The ID of this resource.
+- `internal_id` (String) The internal ID for this project.
 - `is_bookmarked` (Boolean, Deprecated)
 - `is_public` (Boolean)
-- `project_id` (String)
+- `project_id` (String, Deprecated) Use `internal_id` instead.
 - `status` (String)
 
 ## Import
