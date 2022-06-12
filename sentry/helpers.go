@@ -35,6 +35,11 @@ func splitThreePartID(id, a, b, c string) (string, string, string, error) {
 	return parts[0], parts[1], parts[2], nil
 }
 
+func splitSentryAlertID(id string) (org string, project string, alertID string, err error) {
+	org, project, alertID, err = splitThreePartID(id, "organization-slug", "project-slug", "alert-id")
+	return
+}
+
 func SuppressEquivalentJSONDiffs(k, old, new string, d *schema.ResourceData) bool {
 	var o interface{}
 	if err := json.Unmarshal([]byte(old), &o); err != nil {
@@ -47,6 +52,16 @@ func SuppressEquivalentJSONDiffs(k, old, new string, d *schema.ResourceData) boo
 	}
 
 	return reflect.DeepEqual(o, n)
+}
+
+func expandStringList(configured []interface{}) []string {
+	vs := make([]string, 0, len(configured))
+	for _, v := range configured {
+		if val, ok := v.(string); ok && val != "" {
+			vs = append(vs, val)
+		}
+	}
+	return vs
 }
 
 // checkClientGet returns a `found` bool and an `error` to indicate if a Get request was successful.

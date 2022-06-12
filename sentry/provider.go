@@ -30,10 +30,10 @@ func Provider() *schema.Provider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"sentry_alert_rule":   resourceSentryAlertRule(),
-			"sentry_issue_alert":  resourceSentryIssueAlert(),
 			"sentry_default_key":  resourceSentryDefaultKey(),
+			"sentry_issue_alert":  resourceSentryIssueAlert(),
 			"sentry_key":          resourceSentryKey(),
+			"sentry_metric_alert": resourceSentryMetricAlert(),
 			"sentry_organization": resourceSentryOrganization(),
 			"sentry_plugin":       resourceSentryPlugin(),
 			"sentry_project":      resourceSentryProject(),
@@ -42,8 +42,9 @@ func Provider() *schema.Provider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"sentry_alert_rules":  dataSourceSentryAlertRules(),
+			"sentry_issue_alert":  dataSourceSentryIssueAlertSentryIssueAlert(),
 			"sentry_key":          dataSourceSentryKey(),
+			"sentry_metric_alert": dataSourceSentryMetricAlert(),
 			"sentry_organization": dataSourceSentryOrganization(),
 			"sentry_team":         dataSourceSentryTeam(),
 		},
