@@ -11,12 +11,14 @@ import (
 
 func TestAccSentryMetricAlertDataSource_basic(t *testing.T) {
 	var alert sentry.MetricAlert
+	var alertCopy sentry.MetricAlert
 
 	teamSlug := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	alertName := acctest.RandomWithPrefix("tf-metric-alert")
 	rn := "sentry_metric_alert.test"
 	dn := "data.sentry_metric_alert.test"
+	rnCopy := "sentry_metric_alert.test_copy"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -45,7 +47,36 @@ func TestAccSentryMetricAlertDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(dn, "triggers.#", "2"),
 					resource.TestCheckResourceAttrPair(dn, "triggers.0", rn, "triggers.0"),
 					resource.TestCheckResourceAttrPair(dn, "triggers.1", rn, "triggers.1"),
-					// TODO: Other fields
+					testAccCheckSentryMetricAlertExists(rnCopy, &alertCopy),
+					resource.TestCheckResourceAttrPair(rnCopy, "organization", rn, "organization"),
+					resource.TestCheckResourceAttrPair(rnCopy, "project", rn, "project"),
+					resource.TestCheckResourceAttrWith(rnCopy, "internal_id", func(v string) error {
+						want := sentry.StringValue(alertCopy.ID)
+						if v != want {
+							return fmt.Errorf("got metric alert ID %s; want %s", v, want)
+						}
+						return nil
+					}),
+					resource.TestCheckResourceAttrWith(rnCopy, "name", func(v string) error {
+						want := sentry.StringValue(alertCopy.Name)
+						if v != want {
+							return fmt.Errorf("got name ID %s; want %s", v, want)
+						}
+						return nil
+					}),
+					resource.TestCheckResourceAttrPair(rnCopy, "environment", rn, "environment"),
+					resource.TestCheckResourceAttrPair(rnCopy, "dataset", rn, "dataset"),
+					resource.TestCheckResourceAttrPair(rnCopy, "query", rn, "query"),
+					resource.TestCheckResourceAttrPair(rnCopy, "aggregate", rn, "aggregate"),
+					resource.TestCheckResourceAttrPair(rnCopy, "time_window", rn, "time_window"),
+					resource.TestCheckResourceAttrPair(rnCopy, "threshold_type", rn, "threshold_type"),
+					resource.TestCheckResourceAttrPair(rnCopy, "resolve_threshold", rn, "resolve_threshold"),
+					resource.TestCheckResourceAttr(rnCopy, "projects.#", "1"),
+					resource.TestCheckResourceAttrPair(rnCopy, "projects.0", rn, "projects.0"),
+					resource.TestCheckResourceAttrPair(rnCopy, "owners", rn, "owners"),
+					resource.TestCheckResourceAttr(rnCopy, "trigger.#", "2"),
+					resource.TestCheckResourceAttrPair(rnCopy, "trigger.0", rn, "trigger.0"),
+					resource.TestCheckResourceAttrPair(rnCopy, "trigger.1", rn, "trigger.1"),
 				),
 			},
 		},
