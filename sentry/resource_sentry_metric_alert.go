@@ -218,11 +218,6 @@ func resourceSentryMetricAlertRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	triggers := flattenMetricAlertTriggers(alert.Triggers)
-	if err := d.Set("trigger", triggers); err != nil {
-		return diag.FromErr(err)
-	}
-
 	d.SetId(buildThreePartID(org, project, sentry.StringValue(alert.ID)))
 	retError := multierror.Append(
 		d.Set("name", alert.Name),
@@ -234,6 +229,7 @@ func resourceSentryMetricAlertRead(ctx context.Context, d *schema.ResourceData, 
 		d.Set("time_window", alert.TimeWindow),
 		d.Set("threshold_type", alert.ThresholdType),
 		d.Set("resolve_threshold", alert.ResolveThreshold),
+		d.Set("trigger", flattenMetricAlertTriggers(alert.Triggers)),
 		d.Set("owner", alert.Owner),
 		d.Set("internal_id", alert.ID),
 	)

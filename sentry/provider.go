@@ -30,6 +30,7 @@ func Provider() *schema.Provider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
+			"sentry_dashboard":    resourceSentryDashboard(),
 			"sentry_default_key":  resourceSentryDefaultKey(),
 			"sentry_issue_alert":  resourceSentryIssueAlert(),
 			"sentry_key":          resourceSentryKey(),
