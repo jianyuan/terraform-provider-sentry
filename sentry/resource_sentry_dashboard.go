@@ -191,18 +191,10 @@ func resourceSentryDashboardObject(d *schema.ResourceData) *sentry.Dashboard {
 				for _, queryMap := range queryList {
 					queryMap := queryMap.(map[string]interface{})
 					query := new(sentry.DashboardWidgetQuery)
-					if v, ok := queryMap["fields"].([]interface{}); ok && len(v) > 0 {
-						query.Fields = expandStringList(v)
-					}
-					if v, ok := queryMap["aggregates"].([]interface{}); ok && len(v) > 0 {
-						query.Aggregates = expandStringList(v)
-					}
-					if v, ok := queryMap["columns"].([]interface{}); ok && len(v) > 0 {
-						query.Columns = expandStringList(v)
-					}
-					if v, ok := queryMap["field_aliases"].([]interface{}); ok && len(v) > 0 {
-						query.FieldAliases = expandStringList(v)
-					}
+					query.Fields = expandStringList(queryMap["fields"].([]interface{}))
+					query.Aggregates = expandStringList(queryMap["aggregates"].([]interface{}))
+					query.Columns = expandStringList(queryMap["columns"].([]interface{}))
+					query.FieldAliases = expandStringList(queryMap["field_aliases"].([]interface{}))
 					if v, ok := queryMap["name"].(string); ok && v != "" {
 						query.Name = sentry.String(v)
 					}
@@ -370,10 +362,10 @@ func flattenDashboardWidgetQueries(queries []*sentry.DashboardWidgetQuery) []int
 	for _, query := range queries {
 		m := make(map[string]interface{})
 		m["id"] = query.ID
-		m["fields"] = query.Fields
-		m["aggregates"] = query.Aggregates
-		m["columns"] = query.Columns
-		m["field_aliases"] = query.FieldAliases
+		m["fields"] = append([]string{}, query.Fields...)
+		m["aggregates"] = append([]string{}, query.Aggregates...)
+		m["columns"] = append([]string{}, query.Columns...)
+		m["field_aliases"] = append([]string{}, query.FieldAliases...)
 		m["name"] = query.Name
 		m["conditions"] = query.Conditions
 		m["order_by"] = query.OrderBy
