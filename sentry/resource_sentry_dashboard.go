@@ -79,43 +79,35 @@ func resourceSentryDashboard() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"fields": {
-										Type:     schema.TypeList,
+										Type:     schema.TypeSet,
 										Optional: true,
+										Computed: true,
 										Elem: &schema.Schema{
 											Type: schema.TypeString,
-										},
-										DefaultFunc: func() (interface{}, error) {
-											return []interface{}{}, nil
 										},
 									},
 									"aggregates": {
-										Type:     schema.TypeList,
+										Type:     schema.TypeSet,
 										Optional: true,
+										Computed: true,
 										Elem: &schema.Schema{
 											Type: schema.TypeString,
-										},
-										DefaultFunc: func() (interface{}, error) {
-											return []interface{}{}, nil
 										},
 									},
 									"columns": {
-										Type:     schema.TypeList,
+										Type:     schema.TypeSet,
 										Optional: true,
+										Computed: true,
 										Elem: &schema.Schema{
 											Type: schema.TypeString,
-										},
-										DefaultFunc: func() (interface{}, error) {
-											return []interface{}{}, nil
 										},
 									},
 									"field_aliases": {
-										Type:     schema.TypeList,
+										Type:     schema.TypeSet,
 										Optional: true,
+										Computed: true,
 										Elem: &schema.Schema{
 											Type: schema.TypeString,
-										},
-										DefaultFunc: func() (interface{}, error) {
-											return []interface{}{}, nil
 										},
 									},
 									"name": {
@@ -125,12 +117,13 @@ func resourceSentryDashboard() *schema.Resource {
 									"conditions": {
 										Type:     schema.TypeString,
 										Optional: true,
+										Computed: true,
 									},
 									"order_by": {
 										Type:     schema.TypeString,
 										Optional: true,
+										Computed: true,
 									},
-									// Computed
 									"id": {
 										Type:     schema.TypeString,
 										Computed: true,
@@ -155,6 +148,7 @@ func resourceSentryDashboard() *schema.Resource {
 						"limit": {
 							Type:     schema.TypeInt,
 							Optional: true,
+							Computed: true,
 						},
 						"layout": {
 							Type:     schema.TypeList,
@@ -228,10 +222,10 @@ func resourceSentryDashboardObject(d *schema.ResourceData) *sentry.Dashboard {
 				for _, queryMap := range queryList {
 					queryMap := queryMap.(map[string]interface{})
 					query := new(sentry.DashboardWidgetQuery)
-					query.Fields = expandStringList(queryMap["fields"].([]interface{}))
-					query.Aggregates = expandStringList(queryMap["aggregates"].([]interface{}))
-					query.Columns = expandStringList(queryMap["columns"].([]interface{}))
-					query.FieldAliases = expandStringList(queryMap["field_aliases"].([]interface{}))
+					query.Fields = expandStringList(queryMap["fields"].(*schema.Set).List())
+					query.Aggregates = expandStringList(queryMap["aggregates"].(*schema.Set).List())
+					query.Columns = expandStringList(queryMap["columns"].(*schema.Set).List())
+					query.FieldAliases = expandStringList(queryMap["field_aliases"].(*schema.Set).List())
 					query.Name = sentry.String(queryMap["name"].(string))
 					query.Conditions = sentry.String(queryMap["conditions"].(string))
 					query.OrderBy = sentry.String(queryMap["order_by"].(string))
@@ -386,16 +380,24 @@ func flattenDashboardWidgetQueries(queries []*sentry.DashboardWidgetQuery) []int
 	for _, query := range queries {
 		m := make(map[string]interface{})
 		m["id"] = query.ID
-		m["fields"] = append([]string{}, query.Fields...)
-		m["aggregates"] = append([]string{}, query.Aggregates...)
-		m["columns"] = append([]string{}, query.Columns...)
-		m["field_aliases"] = append([]string{}, query.FieldAliases...)
+		m["fields"] = flattenStringSet(query.Fields)
+		m["aggregates"] = flattenStringSet(query.Aggregates)
+		m["columns"] = flattenStringSet(query.Columns)
+		m["field_aliases"] = flattenStringSet(query.FieldAliases)
 		m["name"] = query.Name
 		m["conditions"] = query.Conditions
 		m["order_by"] = query.OrderBy
 		l = append(l, m)
 	}
 	return l
+}
+
+func flattenStringSet(strings []string) *schema.Set {
+	flattenedStrings := schema.NewSet(schema.HashString, []interface{}{})
+	for _, v := range strings {
+		flattenedStrings.Add(v)
+	}
+	return flattenedStrings
 }
 
 func flattenDashboardWidgetLayout(layout *sentry.DashboardWidgetLayout) []interface{} {
