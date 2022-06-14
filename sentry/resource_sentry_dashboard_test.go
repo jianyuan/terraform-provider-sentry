@@ -18,9 +18,25 @@ func TestAccSentryDashboard_basic(t *testing.T) {
 	dashboardTitle := acctest.RandomWithPrefix("tf-dashboard")
 	rn := "sentry_dashboard.test"
 
-	check := func(alertName string) resource.TestCheckFunc {
+	check := func(dashboardTitle string) resource.TestCheckFunc {
 		return resource.ComposeTestCheckFunc(
 			testAccCheckSentryDashboardExists(rn, &dashboard),
+			resource.TestCheckResourceAttr(rn, "organization", testOrganization),
+			resource.TestCheckResourceAttr(rn, "title", dashboardTitle),
+			resource.TestCheckResourceAttr(rn, "widget.#", "1"),
+			resource.TestCheckResourceAttr(rn, "widget.0.title", "Custom Widget"),
+			resource.TestCheckResourceAttr(rn, "widget.0.display_type", "world_map"),
+			resource.TestCheckResourceAttr(rn, "widget.0.query.#", "1"),
+			resource.TestCheckResourceAttr(rn, "widget.0.query.0.name", "Metric"),
+			resource.TestCheckResourceAttr(rn, "widget.0.query.0.fields.#", "1"),
+			resource.TestCheckResourceAttr(rn, "widget.0.query.0.fields.0", "count()"),
+			resource.TestCheckResourceAttr(rn, "widget.0.query.0.aggregates.#", "1"),
+			resource.TestCheckResourceAttr(rn, "widget.0.query.0.aggregates.0", "count()"),
+			resource.TestCheckResourceAttr(rn, "widget.0.query.0.columns.#", "0"),
+			resource.TestCheckResourceAttr(rn, "widget.0.query.0.field_aliases.#", "0"),
+			resource.TestCheckResourceAttr(rn, "widget.0.query.0.conditions", "!event.type:transaction"),
+			resource.TestCheckResourceAttr(rn, "widget.0.query.0.order_by", ""),
+			resource.TestCheckResourceAttrSet(rn, "widget.0.query.0.id"),
 		)
 	}
 

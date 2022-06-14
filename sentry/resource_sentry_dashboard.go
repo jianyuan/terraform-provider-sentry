@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
@@ -52,6 +53,20 @@ func resourceSentryDashboard() *schema.Resource {
 						"display_type": {
 							Type:     schema.TypeString,
 							Required: true,
+							// https://github.com/getsentry/sentry/blob/22.5.0/src/sentry/models/dashboard_widget.py#L51
+							ValidateFunc: validation.StringInSlice(
+								[]string{
+									"line",
+									"area",
+									"stacked_area",
+									"bar",
+									"table",
+									"world_map",
+									"big_number",
+									"top_n",
+								},
+								false,
+							),
 						},
 						"interval": {
 							Type:     schema.TypeString,
@@ -69,12 +84,18 @@ func resourceSentryDashboard() *schema.Resource {
 										Elem: &schema.Schema{
 											Type: schema.TypeString,
 										},
+										DefaultFunc: func() (interface{}, error) {
+											return []interface{}{}, nil
+										},
 									},
 									"aggregates": {
 										Type:     schema.TypeList,
 										Optional: true,
 										Elem: &schema.Schema{
 											Type: schema.TypeString,
+										},
+										DefaultFunc: func() (interface{}, error) {
+											return []interface{}{}, nil
 										},
 									},
 									"columns": {
@@ -83,12 +104,18 @@ func resourceSentryDashboard() *schema.Resource {
 										Elem: &schema.Schema{
 											Type: schema.TypeString,
 										},
+										DefaultFunc: func() (interface{}, error) {
+											return []interface{}{}, nil
+										},
 									},
 									"field_aliases": {
 										Type:     schema.TypeList,
 										Optional: true,
 										Elem: &schema.Schema{
 											Type: schema.TypeString,
+										},
+										DefaultFunc: func() (interface{}, error) {
+											return []interface{}{}, nil
 										},
 									},
 									"name": {
@@ -115,6 +142,15 @@ func resourceSentryDashboard() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 							Computed: true,
+							// https://github.com/getsentry/sentry/blob/22.5.0/src/sentry/models/dashboard_widget.py#L39
+							ValidateFunc: validation.StringInSlice(
+								[]string{
+									"discover",
+									"issue",
+									"metrics",
+								},
+								false,
+							),
 						},
 						"limit": {
 							Type:     schema.TypeInt,
@@ -124,7 +160,6 @@ func resourceSentryDashboard() *schema.Resource {
 							Type:     schema.TypeList,
 							Required: true,
 							MaxItems: 1,
-							MinItems: 1,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"x": {
@@ -173,17 +208,19 @@ func resourceSentryDashboardObject(d *schema.ResourceData) *sentry.Dashboard {
 		for _, widgetMap := range widgetList {
 			widgetMap := widgetMap.(map[string]interface{})
 			widget := new(sentry.DashboardWidget)
-			if v, ok := widgetMap["id"].(string); ok && v != "" {
+			widget.Title = sentry.String(widgetMap["title"].(string))
+			widget.DisplayType = sentry.String(widgetMap["display_type"].(string))
+			if v := widgetMap["id"].(string); v != "" {
 				widget.ID = sentry.String(v)
 			}
-			if v, ok := widgetMap["title"].(string); ok && v != "" {
-				widget.Title = sentry.String(v)
-			}
-			if v, ok := widgetMap["display_type"].(string); ok && v != "" {
-				widget.DisplayType = sentry.String(v)
-			}
-			if v, ok := widgetMap["interval"].(string); ok && v != "" {
+			if v := widgetMap["interval"].(string); v != "" {
 				widget.Interval = sentry.String(v)
+			}
+			if v := widgetMap["widget_type"].(string); v != "" {
+				widget.WidgetType = sentry.String(v)
+			}
+			if v := widgetMap["limit"].(int); v > 0 {
+				widget.Limit = sentry.Int(v)
 			}
 
 			if queryList, ok := widgetMap["query"].([]interface{}); ok {
@@ -195,27 +232,14 @@ func resourceSentryDashboardObject(d *schema.ResourceData) *sentry.Dashboard {
 					query.Aggregates = expandStringList(queryMap["aggregates"].([]interface{}))
 					query.Columns = expandStringList(queryMap["columns"].([]interface{}))
 					query.FieldAliases = expandStringList(queryMap["field_aliases"].([]interface{}))
-					if v, ok := queryMap["name"].(string); ok && v != "" {
-						query.Name = sentry.String(v)
-					}
-					if v, ok := queryMap["conditions"].(string); ok && v != "" {
-						query.Conditions = sentry.String(v)
-					}
-					if v, ok := queryMap["order_by"].(string); ok && v != "" {
-						query.OrderBy = sentry.String(v)
-					}
-					if v, ok := queryMap["id"].(string); ok && v != "" {
+					query.Name = sentry.String(queryMap["name"].(string))
+					query.Conditions = sentry.String(queryMap["conditions"].(string))
+					query.OrderBy = sentry.String(queryMap["order_by"].(string))
+					if v := queryMap["id"].(string); v != "" {
 						query.ID = sentry.String(v)
 					}
 					widget.Queries = append(widget.Queries, query)
 				}
-			}
-
-			if v, ok := widgetMap["widget_type"].(string); ok && v != "" {
-				widget.WidgetType = sentry.String(v)
-			}
-			if v, ok := widgetMap["limit"].(int); ok && v > 0 {
-				widget.Limit = sentry.Int(v)
 			}
 
 			if layoutList, ok := widgetMap["layout"].([]interface{}); ok && len(layoutList) == 1 {
