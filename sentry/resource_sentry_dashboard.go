@@ -79,7 +79,7 @@ func resourceSentryDashboard() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"fields": {
-										Type:     schema.TypeSet,
+										Type:     schema.TypeList,
 										Optional: true,
 										Computed: true,
 										Elem: &schema.Schema{
@@ -103,7 +103,7 @@ func resourceSentryDashboard() *schema.Resource {
 										},
 									},
 									"field_aliases": {
-										Type:     schema.TypeSet,
+										Type:     schema.TypeList,
 										Optional: true,
 										Computed: true,
 										Elem: &schema.Schema{
@@ -222,10 +222,10 @@ func resourceSentryDashboardObject(d *schema.ResourceData) *sentry.Dashboard {
 				for _, queryMap := range queryList {
 					queryMap := queryMap.(map[string]interface{})
 					query := new(sentry.DashboardWidgetQuery)
-					query.Fields = expandStringList(queryMap["fields"].(*schema.Set).List())
+					query.Fields = expandStringList(queryMap["fields"].([]interface{}))
 					query.Aggregates = expandStringList(queryMap["aggregates"].(*schema.Set).List())
 					query.Columns = expandStringList(queryMap["columns"].(*schema.Set).List())
-					query.FieldAliases = expandStringList(queryMap["field_aliases"].(*schema.Set).List())
+					query.FieldAliases = expandStringList(queryMap["field_aliases"].([]interface{}))
 					query.Name = sentry.String(queryMap["name"].(string))
 					query.Conditions = sentry.String(queryMap["conditions"].(string))
 					query.OrderBy = sentry.String(queryMap["order_by"].(string))
@@ -387,10 +387,10 @@ func flattenDashboardWidgetQueries(queries []*sentry.DashboardWidgetQuery) []int
 	for _, query := range queries {
 		queryMap := make(map[string]interface{})
 		queryMap["id"] = query.ID
-		queryMap["fields"] = flattenStringSet(query.Fields)
+		queryMap["fields"] = query.Fields
 		queryMap["aggregates"] = flattenStringSet(query.Aggregates)
 		queryMap["columns"] = flattenStringSet(query.Columns)
-		queryMap["field_aliases"] = flattenStringSet(query.FieldAliases)
+		queryMap["field_aliases"] = query.FieldAliases
 		queryMap["name"] = query.Name
 		queryMap["conditions"] = query.Conditions
 		queryMap["order_by"] = query.OrderBy
