@@ -355,20 +355,27 @@ func flattenDashboardWidgets(widgets []*sentry.DashboardWidget) []interface{} {
 		return []interface{}{}
 	}
 
-	l := make([]interface{}, 0, len(widgets))
+	widgetList := make([]interface{}, 0, len(widgets))
 	for _, widget := range widgets {
-		m := make(map[string]interface{})
-		m["id"] = widget.ID
-		m["title"] = widget.Title
-		m["display_type"] = widget.DisplayType
-		m["interval"] = widget.Interval
-		m["query"] = flattenDashboardWidgetQueries(widget.Queries)
-		m["widget_type"] = widget.WidgetType
-		m["limit"] = widget.Limit
-		m["layout"] = flattenDashboardWidgetLayout(widget.Layout)
-		l = append(l, m)
+		layoutMap := make(map[string]interface{})
+		layoutMap["x"] = widget.Layout.X
+		layoutMap["y"] = widget.Layout.Y
+		layoutMap["w"] = widget.Layout.W
+		layoutMap["h"] = widget.Layout.H
+		layoutMap["min_h"] = widget.Layout.MinH
+
+		widgetMap := make(map[string]interface{})
+		widgetMap["id"] = widget.ID
+		widgetMap["title"] = widget.Title
+		widgetMap["display_type"] = widget.DisplayType
+		widgetMap["interval"] = widget.Interval
+		widgetMap["query"] = flattenDashboardWidgetQueries(widget.Queries)
+		widgetMap["widget_type"] = widget.WidgetType
+		widgetMap["limit"] = widget.Limit
+		widgetMap["layout"] = []interface{}{layoutMap}
+		widgetList = append(widgetList, widgetMap)
 	}
-	return l
+	return widgetList
 }
 
 func flattenDashboardWidgetQueries(queries []*sentry.DashboardWidgetQuery) []interface{} {
@@ -376,41 +383,18 @@ func flattenDashboardWidgetQueries(queries []*sentry.DashboardWidgetQuery) []int
 		return []interface{}{}
 	}
 
-	l := make([]interface{}, 0, len(queries))
+	queryList := make([]interface{}, 0, len(queries))
 	for _, query := range queries {
-		m := make(map[string]interface{})
-		m["id"] = query.ID
-		m["fields"] = flattenStringSet(query.Fields)
-		m["aggregates"] = flattenStringSet(query.Aggregates)
-		m["columns"] = flattenStringSet(query.Columns)
-		m["field_aliases"] = flattenStringSet(query.FieldAliases)
-		m["name"] = query.Name
-		m["conditions"] = query.Conditions
-		m["order_by"] = query.OrderBy
-		l = append(l, m)
+		queryMap := make(map[string]interface{})
+		queryMap["id"] = query.ID
+		queryMap["fields"] = flattenStringSet(query.Fields)
+		queryMap["aggregates"] = flattenStringSet(query.Aggregates)
+		queryMap["columns"] = flattenStringSet(query.Columns)
+		queryMap["field_aliases"] = flattenStringSet(query.FieldAliases)
+		queryMap["name"] = query.Name
+		queryMap["conditions"] = query.Conditions
+		queryMap["order_by"] = query.OrderBy
+		queryList = append(queryList, queryMap)
 	}
-	return l
-}
-
-func flattenStringSet(strings []string) *schema.Set {
-	flattenedStrings := schema.NewSet(schema.HashString, []interface{}{})
-	for _, v := range strings {
-		flattenedStrings.Add(v)
-	}
-	return flattenedStrings
-}
-
-func flattenDashboardWidgetLayout(layout *sentry.DashboardWidgetLayout) []interface{} {
-	if layout == nil {
-		return []interface{}{}
-	}
-
-	m := make(map[string]interface{})
-	m["x"] = layout.X
-	m["y"] = layout.Y
-	m["w"] = layout.W
-	m["h"] = layout.H
-	m["min_h"] = layout.MinH
-
-	return []interface{}{m}
+	return queryList
 }

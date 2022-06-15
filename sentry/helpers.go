@@ -54,6 +54,14 @@ func SuppressEquivalentJSONDiffs(k, old, new string, d *schema.ResourceData) boo
 	return reflect.DeepEqual(o, n)
 }
 
+func flattenStringSet(strings []string) *schema.Set {
+	flattenedStrings := schema.NewSet(schema.HashString, []interface{}{})
+	for _, v := range strings {
+		flattenedStrings.Add(v)
+	}
+	return flattenedStrings
+}
+
 func expandStringList(configured []interface{}) []string {
 	vs := make([]string, 0, len(configured))
 	for _, v := range configured {
