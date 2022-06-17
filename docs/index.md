@@ -28,5 +28,5 @@ provider "sentry" {
 
 - `base_url` (String) The target Sentry Base API URL in the format `https://[hostname]/api/`. The default value is `https://sentry.io/api/`. The value must be provided when working with Sentry On-Premise. The value can be sourced from the `SENTRY_BASE_URL` environment variable.
 - `token` (String, Sensitive) The authentication token used to connect to Sentry. The value can be sourced from the `SENTRY_AUTH_TOKEN` environment variable.
-
+- `rate_limit_per_second` (Int) "The maximum rate that requests will be sent to Sentry. The default value is 40 as is Sentry's internal Rate limit. It can be set lower to avoid accidentally hitting the rate limit. The value can be sourced from the `SENTRY_RATE_LIMIT` environment variable.
 

@@ -16,6 +16,8 @@ import (
 type Config struct {
 	Token   string
 	BaseURL string
+
+	RateLimitPerSecond int
 }
 
 // Client to connect to Sentry.
@@ -26,7 +28,7 @@ func (c *Config) Client(ctx context.Context) (interface{}, diag.Diagnostics) {
 	rateLimitHTTPClient := &http.Client{
 		Transport: &transport{
 			// 40 requests every second.
-			limiter: rate.NewLimiter(40, 1),
+			limiter: rate.NewLimiter(rate.Limit(c.RateLimitPerSecond), 1),
 		},
 	}
 	ctx = context.WithValue(ctx, oauth2.HTTPClient, rateLimitHTTPClient)

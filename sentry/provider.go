@@ -27,6 +27,14 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("SENTRY_BASE_URL", "https://sentry.io/api/"),
 			},
+			"rate_limit_per_second": {
+				Description: "The maximum rate that requests will be sent to Sentry. " +
+					"The default value is 40 as is Sentry's internal Rate limit. " +
+					"The value can be sourced from the `SENTRY_RATE_LIMIT` environment variable.",
+				Type:        schema.TypeInt,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("SENTRY_RATE_LIMIT", 40),
+			},
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -56,8 +64,9 @@ func Provider() *schema.Provider {
 
 func providerContextConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 	config := Config{
-		Token:   d.Get("token").(string),
-		BaseURL: d.Get("base_url").(string),
+		Token:   			d.Get("token").(string),
+		BaseURL: 			d.Get("base_url").(string),
+		RateLimitPerSecond: d.Get("rate_limit_per_second").(int),
 	}
 	return config.Client(ctx)
 }
