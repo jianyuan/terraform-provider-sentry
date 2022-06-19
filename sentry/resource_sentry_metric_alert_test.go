@@ -106,27 +106,23 @@ func testAccCheckSentryMetricAlertExists(n string, alert *sentry.MetricAlert) re
 }
 
 func testAccSentryMetricAlertConfig(teamSlug, projectName, alertName string) string {
-	return fmt.Sprintf(`
-data "sentry_organization" "test" {
-	slug = "%[1]s"
-}
-
+	return testAccSentryOrganizationDataSourceConfig + fmt.Sprintf(`
 resource "sentry_team" "test" {
 	organization = data.sentry_organization.test.id
-	name         = "%[2]s"
+	name         = "%[1]s"
 }
 
 resource "sentry_project" "test" {
 	organization = sentry_team.test.organization
 	team         = sentry_team.test.id
-	name         = "%[3]s"
+	name         = "%[2]s"
 	platform     = "go"
 }
 
 resource "sentry_metric_alert" "test" {
 	organization      = sentry_project.test.organization
 	project           = sentry_project.test.id
-	name              = "%[4]s"
+	name              = "%[3]s"
 	dataset           = "transactions"
 	query             = "http.url:http://testservice.com/stats"
 	aggregate         = "p50(transaction.duration)"
@@ -150,5 +146,5 @@ resource "sentry_metric_alert" "test" {
 		threshold_type    = 0
 	}
 }
-	`, testOrganization, teamSlug, projectName, alertName)
+	`, teamSlug, projectName, alertName)
 }

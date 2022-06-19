@@ -138,56 +138,60 @@ func testAccCheckSentryKeyExists(n string, projectKey *sentry.ProjectKey) resour
 	}
 }
 
-var testAccSentryKeyConfig = fmt.Sprintf(`
-	resource "sentry_team" "test_team" {
-		organization = "%[1]s"
-		name = "Test team"
-	}
+var testAccSentryKeyConfig = testAccSentryOrganizationDataSourceConfig + `
+resource "sentry_team" "test_team" {
+	organization = data.sentry_organization.test.id
+	name         = "Test team"
+}
 
-	resource "sentry_project" "test_project" {
-		organization = "%[1]s"
-		team = "${sentry_team.test_team.id}"
-		name = "Test project"
-	}
+resource "sentry_project" "test_project" {
+	organization = sentry_team.test_team.organization
+	team         = sentry_team.test_team.id
+	name         = "Test project"
+}
 
-	resource "sentry_key" "test_key" {
-		organization = "%[1]s"
-		project = "${sentry_project.test_project.id}"
-		name = "Test key"
-	}
+resource "sentry_key" "test_key" {
+	organization = sentry_project.test_project.organization
+	project      = sentry_project.test_project.id
 
-	resource "sentry_key" "test_key_rate_limit" {
-		organization = "%[1]s"
-		project = "${sentry_project.test_project.id}"
-		name = "Test key"
-		rate_limit_window = 86400
-		rate_limit_count = 1000
-	}
-`, testOrganization)
+	name = "Test key"
+}
 
-var testAccSentryKeyUpdateConfig = fmt.Sprintf(`
-	resource "sentry_team" "test_team" {
-		organization = "%[1]s"
-		name = "Test team"
-	}
+resource "sentry_key" "test_key_rate_limit" {
+	organization = sentry_project.test_project.organization
+	project      = sentry_project.test_project.id
 
-	resource "sentry_project" "test_project" {
-		organization = "%[1]s"
-		team = "${sentry_team.test_team.id}"
-		name = "Test project"
-	}
+	name              = "Test key"
+	rate_limit_window = 86400
+	rate_limit_count  = 1000
+}
+`
 
-	resource "sentry_key" "test_key" {
-		organization = "%[1]s"
-		project = "${sentry_project.test_project.id}"
-		name = "Test key changed"
-	}
+var testAccSentryKeyUpdateConfig = testAccSentryOrganizationDataSourceConfig + `
+resource "sentry_team" "test_team" {
+	organization = data.sentry_organization.test.id
+	name         = "Test team"
+}
 
-	resource "sentry_key" "test_key_rate_limit" {
-		organization = "%[1]s"
-		project = "${sentry_project.test_project.id}"
-		name = "Test key"
-		rate_limit_window = 100
-		rate_limit_count = 100
-	}
-`, testOrganization)
+resource "sentry_project" "test_project" {
+	organization = sentry_team.test_team.organization
+	team         = sentry_team.test_team.id
+	name         = "Test project"
+}
+
+resource "sentry_key" "test_key" {
+	organization = sentry_project.test_project.organization
+	project      = sentry_project.test_project.id
+
+	name = "Test key changed"
+}
+
+resource "sentry_key" "test_key_rate_limit" {
+	organization = sentry_project.test_project.organization
+	project      = sentry_project.test_project.id
+
+	name              = "Test key"
+	rate_limit_window = 100
+	rate_limit_count  = 100
+}
+`

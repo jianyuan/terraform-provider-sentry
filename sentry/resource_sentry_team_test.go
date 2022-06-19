@@ -21,7 +21,7 @@ func TestAccSentryTeam_basic(t *testing.T) {
 	check := func(teamSlug string) resource.TestCheckFunc {
 		return resource.ComposeTestCheckFunc(
 			testAccCheckSentryTeamExists(rn, &team),
-			resource.TestCheckResourceAttrPair(rn, "organization", "data.sentry_organization.test_organization", "id"),
+			resource.TestCheckResourceAttrPair(rn, "organization", "data.sentry_organization.test", "id"),
 			resource.TestCheckResourceAttr(rn, "name", teamSlug),
 			resource.TestCheckResourceAttr(rn, "slug", teamSlug),
 			resource.TestCheckResourceAttrWith(rn, "internal_id", func(v string) error {
@@ -125,15 +125,11 @@ func testAccSentryTeamImportStateIdFunc(n string) resource.ImportStateIdFunc {
 }
 
 func testAccSentryTeamConfig(teamSlug string) string {
-	return fmt.Sprintf(`
-data "sentry_organization" "test_organization" {
-	slug = "%[1]s"
-}
-
+	return testAccSentryOrganizationDataSourceConfig + fmt.Sprintf(`
 resource "sentry_team" "test_team" {
-	organization = data.sentry_organization.test_organization.id
-	name         = "%[2]s"
-	slug         = "%[2]s"
+	organization = data.sentry_organization.test.id
+	name         = "%[1]s"
+	slug         = "%[1]s"
 }
-	`, testOrganization, teamSlug)
+	`, teamSlug)
 }

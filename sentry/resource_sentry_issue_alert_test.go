@@ -221,27 +221,23 @@ func testAccCheckSentryIssueAlertExists(n string, alert *sentry.IssueAlert) reso
 }
 
 func testAccSentryIssueAlertConfig(teamSlug, projectName, alertName string) string {
-	return fmt.Sprintf(`
-data "sentry_organization" "test" {
-	slug = "%[1]s"
-}
-
+	return testAccSentryOrganizationDataSourceConfig + fmt.Sprintf(`
 resource "sentry_team" "test" {
 	organization = data.sentry_organization.test.id
-	name         = "%[2]s"
+	name         = "%[1]s"
 }
 
 resource "sentry_project" "test" {
 	organization = sentry_team.test.organization
 	team         = sentry_team.test.id
-	name         = "%[3]s"
+	name         = "%[2]s"
 	platform     = "go"
 }
 
 resource "sentry_issue_alert" "test" {
 	organization = sentry_project.test.organization
 	project      = sentry_project.test.id
-	name         = "%[4]s"
+	name         = "%[3]s"
 
 	action_match = "any"
 	filter_match = "any"
@@ -343,5 +339,5 @@ resource "sentry_issue_alert" "test" {
 		}
 	]
 }
-	`, testOrganization, teamSlug, projectName, alertName)
+	`, teamSlug, projectName, alertName)
 }

@@ -89,14 +89,10 @@ func testAccCheckSentryDashboardExists(n string, dashboard *sentry.Dashboard) re
 }
 
 func testAccSentryDashboardConfig(dashboardTitle string) string {
-	return fmt.Sprintf(`
-data "sentry_organization" "test" {
-	slug = "%[1]s"
-}
-
+	return testAccSentryOrganizationDataSourceConfig + fmt.Sprintf(`
 resource "sentry_dashboard" "test" {
 	organization = data.sentry_organization.test.id
-	title        = "%[2]s"
+	title        = "%[1]s"
 
 	widget {
 		title        = "Custom Widget"
@@ -119,5 +115,5 @@ resource "sentry_dashboard" "test" {
 		}
 	}
 }
-	`, testOrganization, dashboardTitle)
+	`, dashboardTitle)
 }

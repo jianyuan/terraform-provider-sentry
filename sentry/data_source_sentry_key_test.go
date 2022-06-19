@@ -77,67 +77,70 @@ func testAccCheckSentryKeyDataSourceID(n string) resource.TestCheckFunc {
 	}
 }
 
-var testAccSentryKeyDataSourceConfig = fmt.Sprintf(`
+var testAccSentryKeyDataSourceConfig = testAccSentryOrganizationDataSourceConfig + `
 resource "sentry_team" "test_team" {
-  organization = "%s"
-  name = "Test team"
+	organization = data.sentry_organization.test.id
+	name         = "Test team"
 }
 
 resource "sentry_project" "test_project" {
-  organization = "%s"
-  team = "${sentry_team.test_team.id}"
-  name = "Test project"
+	organization = sentry_team.test_team.organization
+	team         = sentry_team.test_team.id
+	name         = "Test project"
 }
 
 data "sentry_key" "test_key" {
-  organization = "%s"
-  project = "${sentry_project.test_project.id}"
+	organization = sentry_project.test_project.organization
+	project      = sentry_project.test_project.id
 }
-`, testOrganization, testOrganization, testOrganization)
+`
 
 // Testing first parameter
-var testAccSentryKeyDataSourceFirstConfig = fmt.Sprintf(`
+var testAccSentryKeyDataSourceFirstConfig = testAccSentryOrganizationDataSourceConfig + `
 resource "sentry_team" "test_team" {
-  organization = "%s"
-  name = "Test team"
+	organization = data.sentry_organization.test.id
+	name         = "Test team"
 }
 
 resource "sentry_project" "test_project" {
-  organization = "%s"
-  team = "${sentry_team.test_team.id}"
-  name = "Test project"
+	organization = sentry_team.test_team.organization
+	team         = sentry_team.test_team.id
+	name         = "Test project"
 }
 
 resource "sentry_key" "test_key_2" {
-  organization = "%s"
-  project = "${sentry_project.test_project.id}"
-  name = "Test key 2"
+	organization = sentry_project.test_project.organization
+	project      = sentry_project.test_project.id
+
+	name = "Test key 2"
 }
 
 data "sentry_key" "test_key" {
-  organization = "%s"
-  project = "${sentry_project.test_project.id}"
-  first = true
+	organization = sentry_project.test_project.organization
+	project      = sentry_project.test_project.id
+
+	first = true
 }
-`, testOrganization, testOrganization, testOrganization, testOrganization)
+`
 
 // Testing name parameter
 // A key named "Default" is always created along with the project
-var testAccSentryKeyDataSourceNameConfig = fmt.Sprintf(`
+var testAccSentryKeyDataSourceNameConfig = testAccSentryOrganizationDataSourceConfig + `
 resource "sentry_team" "test_team" {
-  organization = "%s"
-  name = "Test team"
+	organization = data.sentry_organization.test.id
+	name         = "Test team"
 }
 
 resource "sentry_project" "test_project" {
-  organization = "%s"
-  team = "${sentry_team.test_team.id}"
-  name = "Test project"
+	organization = sentry_team.test_team.organization
+	team         = sentry_team.test_team.id
+	name         = "Test project"
 }
 
 data "sentry_key" "default_key" {
-  organization = "%s"
-  project = "${sentry_project.test_project.id}"
-  name = "Default"
+	organization = sentry_project.test_project.organization
+	project      = sentry_project.test_project.id
+
+	name = "Default"
 }
-`, testOrganization, testOrganization, testOrganization)
+`

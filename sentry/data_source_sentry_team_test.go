@@ -38,20 +38,16 @@ func TestAccSentryTeamDataSource_basic(t *testing.T) {
 }
 
 func testAccSentryTeamDataSourceConfig(teamSlug string) string {
-	return fmt.Sprintf(`
-data "sentry_organization" "test" {
-	slug = "%[1]s"
-}
-
+	return testAccSentryOrganizationDataSourceConfig + fmt.Sprintf(`
 resource "sentry_team" "test" {
 	organization = data.sentry_organization.test.id
-	name         = "%[2]s"
-	slug         = "%[2]s"
+	name         = "%[1]s"
+	slug         = "%[1]s"
 }
 
 data "sentry_team" "test" {
 	organization = sentry_team.test.organization
 	slug         = sentry_team.test.id
 }
-	`, testOrganization, teamSlug)
+	`, teamSlug)
 }
