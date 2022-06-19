@@ -28,9 +28,7 @@ func (c *Config) Client(ctx context.Context) (interface{}, diag.Diagnostics) {
 	retryClient.Logger = nil // Disable DEBUG logs
 	retryClient.Backoff = func(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration {
 		if rateLimitErr, ok := sentry.CheckResponse(resp).(*sentry.RateLimitError); ok {
-			if d := time.Until(rateLimitErr.Rate.Reset); d > 0 {
-				return d
-			}
+			return time.Until(rateLimitErr.Rate.Reset)
 		}
 		return retryablehttp.DefaultBackoff(min, max, attemptNum, resp)
 	}
