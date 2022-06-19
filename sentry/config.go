@@ -3,7 +3,9 @@ package sentry
 import (
 	"context"
 	"net/http"
+	"time"
 
+	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/jianyuan/go-sentry/v2/sentry"
@@ -23,13 +25,18 @@ func (c *Config) Client(ctx context.Context) (interface{}, diag.Diagnostics) {
 	tflog.Info(ctx, "Instantiating Sentry client...")
 
 	// Rate limit
-	rateLimitHTTPClient := &http.Client{
-		Transport: &transport{
-			// 40 requests every second.
-			limiter: rate.NewLimiter(40, 1),
-		},
+	retryClient := retryablehttp.NewClient()
+	retryClient.Backoff = func(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration {
+		if rateLimitErr, ok := sentry.CheckResponse(resp).(*sentry.RateLimitError); ok {
+			if time.Now().Before(rateLimitErr.Rate.Reset) {
+				return time.Now().Sub(rateLimitErr.Rate.Reset)
+			}
+		}
+		return retryablehttp.DefaultBackoff(min, max, attemptNum, resp)
 	}
-	ctx = context.WithValue(ctx, oauth2.HTTPClient, rateLimitHTTPClient)
+	retryHTTPClient := retryClient.StandardClient()
+
+	ctx = context.WithValue(ctx, oauth2.HTTPClient, retryHTTPClient)
 
 	// Auth
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.Token})
