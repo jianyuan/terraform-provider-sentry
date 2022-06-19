@@ -3,6 +3,7 @@ package sentry
 import (
 	"context"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -113,16 +114,18 @@ func dataSourceSentryIssueAlertRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	d.SetId(buildThreePartID(org, project, sentry.StringValue(alert.ID)))
-	d.Set("organization", org)
-	d.Set("project", project)
-	d.Set("internal_id", alert.ID)
-	d.Set("conditions", conditions)
-	d.Set("filters", filters)
-	d.Set("actions", actions)
-	d.Set("action_match", alert.ActionMatch)
-	d.Set("filter_match", alert.FilterMatch)
-	d.Set("frequency", alert.Frequency)
-	d.Set("name", alert.Name)
-	d.Set("environment", alert.Environment)
-	return nil
+	retErr := multierror.Append(
+		d.Set("organization", org),
+		d.Set("project", project),
+		d.Set("internal_id", alert.ID),
+		d.Set("conditions", conditions),
+		d.Set("filters", filters),
+		d.Set("actions", actions),
+		d.Set("action_match", alert.ActionMatch),
+		d.Set("filter_match", alert.FilterMatch),
+		d.Set("frequency", alert.Frequency),
+		d.Set("name", alert.Name),
+		d.Set("environment", alert.Environment),
+	)
+	return diag.FromErr(retErr.ErrorOrNil())
 }

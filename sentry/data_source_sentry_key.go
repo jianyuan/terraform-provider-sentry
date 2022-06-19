@@ -4,6 +4,7 @@ import (
 	"context"
 	"sort"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -161,20 +162,22 @@ func dataSourceSentryKeyRead(ctx context.Context, d *schema.ResourceData, meta i
 
 func sentryKeyAttributes(d *schema.ResourceData, key *sentry.ProjectKey) error {
 	d.SetId(key.ID)
-	d.Set("name", key.Name)
-	d.Set("public", key.Public)
-	d.Set("secret", key.Secret)
-	d.Set("project_id", key.ProjectID)
-	d.Set("is_active", key.IsActive)
-
+	retErr := multierror.Append(
+		d.Set("name", key.Name),
+		d.Set("public", key.Public),
+		d.Set("secret", key.Secret),
+		d.Set("project_id", key.ProjectID),
+		d.Set("is_active", key.IsActive),
+		d.Set("dsn_secret", key.DSN.Secret),
+		d.Set("dsn_public", key.DSN.Public),
+		d.Set("dsn_csp", key.DSN.CSP),
+	)
 	if key.RateLimit != nil {
-		d.Set("rate_limit_window", key.RateLimit.Window)
-		d.Set("rate_limit_count", key.RateLimit.Count)
+		retErr = multierror.Append(
+			retErr,
+			d.Set("rate_limit_window", key.RateLimit.Window),
+			d.Set("rate_limit_count", key.RateLimit.Count),
+		)
 	}
-
-	d.Set("dsn_secret", key.DSN.Secret)
-	d.Set("dsn_public", key.DSN.Public)
-	d.Set("dsn_csp", key.DSN.CSP)
-
-	return nil
+	return retErr.ErrorOrNil()
 }

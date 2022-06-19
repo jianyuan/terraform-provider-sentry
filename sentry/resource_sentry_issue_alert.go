@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -208,21 +209,26 @@ func resourceSentryIssueAlertRead(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	d.SetId(buildThreePartID(org, project, sentry.StringValue(alert.ID)))
-	d.Set("organization", org)
+	retErr := multierror.Append(
+		d.Set("organization", org),
+		d.Set("projects", alert.Projects),
+		d.Set("name", alert.Name),
+		d.Set("conditions", conditions),
+		d.Set("filters", filters),
+		d.Set("actions", actions),
+		d.Set("action_match", alert.ActionMatch),
+		d.Set("filter_match", alert.FilterMatch),
+		d.Set("frequency", alert.Frequency),
+		d.Set("environment", alert.Environment),
+		d.Set("internal_id", alert.ID),
+	)
 	if len(alert.Projects) == 1 {
-		d.Set("project", alert.Projects[0])
+		retErr = multierror.Append(
+			retErr,
+			d.Set("project", alert.Projects[0]),
+		)
 	}
-	d.Set("projects", alert.Projects)
-	d.Set("name", alert.Name)
-	d.Set("conditions", conditions)
-	d.Set("filters", filters)
-	d.Set("actions", actions)
-	d.Set("action_match", alert.ActionMatch)
-	d.Set("filter_match", alert.FilterMatch)
-	d.Set("frequency", alert.Frequency)
-	d.Set("environment", alert.Environment)
-	d.Set("internal_id", alert.ID)
-	return nil
+	return diag.FromErr(retErr.ErrorOrNil())
 }
 
 func resourceSentryIssueAlertUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

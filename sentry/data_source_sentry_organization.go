@@ -3,6 +3,7 @@ package sentry
 import (
 	"context"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -47,7 +48,9 @@ func dataSourceSentryOrganizationRead(ctx context.Context, d *schema.ResourceDat
 	}
 
 	d.SetId(sentry.StringValue(organization.Slug))
-	d.Set("name", organization.Name)
-	d.Set("internal_id", organization.ID)
-	return nil
+	retErr := multierror.Append(
+		d.Set("name", organization.Name),
+		d.Set("internal_id", organization.ID),
+	)
+	return diag.FromErr(retErr.ErrorOrNil())
 }

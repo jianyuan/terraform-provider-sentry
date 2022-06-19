@@ -3,6 +3,7 @@ package sentry
 import (
 	"context"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -114,9 +115,10 @@ func resourceSentryPluginRead(ctx context.Context, d *schema.ResourceData, meta 
 		config[k] = pluginConfig[k]
 	}
 
-	d.Set("config", config)
-
-	return nil
+	retErr := multierror.Append(
+		d.Set("config", config),
+	)
+	return diag.FromErr(retErr.ErrorOrNil())
 }
 
 func resourceSentryPluginUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

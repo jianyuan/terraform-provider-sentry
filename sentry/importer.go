@@ -2,6 +2,8 @@ package sentry
 
 import (
 	"context"
+
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -11,9 +13,12 @@ func importOrganizationAndID(ctx context.Context, d *schema.ResourceData, meta i
 		return nil, err
 	}
 
-	d.Set("organization", org)
+	retErr := multierror.Append(d.Set("organization", org))
 	d.SetId(id)
 
+	if err := retErr.ErrorOrNil(); err != nil {
+		return nil, err
+	}
 	return []*schema.ResourceData{d}, nil
 }
 
@@ -23,9 +28,14 @@ func importOrganizationProjectAndID(ctx context.Context, d *schema.ResourceData,
 		return nil, err
 	}
 
-	d.Set("organization", org)
-	d.Set("project", project)
+	retErr := multierror.Append(
+		d.Set("organization", org),
+		d.Set("project", project),
+	)
 	d.SetId(id)
 
+	if err := retErr.ErrorOrNil(); err != nil {
+		return nil, err
+	}
 	return []*schema.ResourceData{d}, nil
 }
