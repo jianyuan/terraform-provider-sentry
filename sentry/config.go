@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"golang.org/x/oauth2"
-	"golang.org/x/time/rate"
 )
 
 // Config is the configuration structure used to instantiate the Sentry
@@ -52,16 +51,4 @@ func (c *Config) Client(ctx context.Context) (interface{}, diag.Diagnostics) {
 		}
 		return cl, nil
 	}
-}
-
-type transport struct {
-	limiter *rate.Limiter
-}
-
-func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {
-	ctx := req.Context()
-	if err := t.limiter.Wait(ctx); err != nil {
-		return nil, err
-	}
-	return http.DefaultTransport.RoundTrip(req)
 }
