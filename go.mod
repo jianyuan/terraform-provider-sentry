@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/hashicorp/go-multierror v1.1.1
+	github.com/hashicorp/go-retryablehttp v0.7.1
 	github.com/hashicorp/terraform-plugin-log v0.4.1
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.17.0
 	github.com/jianyuan/go-sentry/v2 v2.0.0-20220612160016-df6d8313ac83
