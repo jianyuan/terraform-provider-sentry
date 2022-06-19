@@ -34,10 +34,10 @@ description: |-
 - `resolve_threshold` (Number)
 - `threshold_type` (Number)
 - `time_window` (Number)
-- `triggers` (List of Object) (see [below for nested schema](#nestedatt--triggers))
+- `trigger` (List of Object) (see [below for nested schema](#nestedatt--trigger))
 
-<a id="nestedatt--triggers"></a>
-### Nested Schema for `triggers`
+<a id="nestedatt--trigger"></a>
+### Nested Schema for `trigger`
 
 Read-Only:
 

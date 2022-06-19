@@ -44,7 +44,7 @@ func TestAccSentryMetricAlertDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(dn, "projects.#", "1"),
 					resource.TestCheckResourceAttrPair(dn, "projects.0", rn, "projects.0"),
 					resource.TestCheckResourceAttrPair(dn, "owners", rn, "owners"),
-					resource.TestCheckResourceAttr(dn, "triggers.#", "2"),
+					resource.TestCheckResourceAttr(dn, "trigger.#", "2"),
 					resource.TestCheckResourceAttrPair(dn, "triggers.0", rn, "triggers.0"),
 					resource.TestCheckResourceAttrPair(dn, "triggers.1", rn, "triggers.1"),
 					testAccCheckSentryMetricAlertExists(rnCopy, &alertCopy),
@@ -147,7 +147,7 @@ resource "sentry_metric_alert" "test_copy" {
 	resolve_threshold = data.sentry_metric_alert.test.resolve_threshold
 
 	dynamic "trigger" {
-		for_each = data.sentry_metric_alert.test.triggers
+		for_each = data.sentry_metric_alert.test.trigger
 		content {
 			actions           = trigger.value.actions
 			alert_threshold   = trigger.value.alert_threshold

@@ -74,7 +74,7 @@ func dataSourceSentryMetricAlert() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"triggers": {
+			"trigger": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -145,7 +145,7 @@ func dataSourceSentryMetricAlertRead(ctx context.Context, d *schema.ResourceData
 		d.Set("resolve_threshold", alert.ResolveThreshold),
 		d.Set("projects", alert.Projects),
 		d.Set("owner", alert.Owner),
-		d.Set("triggers", flattenMetricAlertTriggers(alert.Triggers)),
+		d.Set("trigger", flattenMetricAlertTriggers(alert.Triggers)),
 	)
 	return diag.FromErr(retErr.ErrorOrNil())
 }
