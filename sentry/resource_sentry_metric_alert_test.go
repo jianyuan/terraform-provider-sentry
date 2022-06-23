@@ -20,6 +20,27 @@ func TestAccSentryMetricAlert_basic(t *testing.T) {
 	alertName := acctest.RandomWithPrefix("tf-issue-alert")
 	rn := "sentry_metric_alert.test"
 
+	check := func(alertName string) resource.TestCheckFunc {
+		return resource.ComposeTestCheckFunc(
+			testAccCheckSentryMetricAlertExists(rn, &alert),
+			resource.TestCheckResourceAttr(rn, "organization", testOrganization),
+			resource.TestCheckResourceAttr(rn, "project", projectName),
+			resource.TestCheckResourceAttr(rn, "projects.#", "1"),
+			resource.TestCheckResourceAttr(rn, "projects.0", projectName),
+			resource.TestCheckResourceAttr(rn, "name", alertName),
+			resource.TestCheckResourceAttr(rn, "environment", ""),
+			resource.TestCheckResourceAttr(rn, "dataset", "transactions"),
+			resource.TestCheckResourceAttr(rn, "query", "http.url:http://testservice.com/stats"),
+			resource.TestCheckResourceAttr(rn, "aggregate", "p50(transaction.duration)"),
+			resource.TestCheckResourceAttr(rn, "time_window", "50"),
+			resource.TestCheckResourceAttr(rn, "threshold_type", "0"),
+			resource.TestCheckResourceAttr(rn, "resolve_threshold", "100"),
+			resource.TestCheckResourceAttr(rn, "projects.#", "1"),
+			resource.TestCheckResourceAttrPair(rn, "projects.0", "sentry_project.test", "id"),
+			resource.TestCheckResourceAttrSet(rn, "internal_id"),
+		)
+	}
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
@@ -27,24 +48,16 @@ func TestAccSentryMetricAlert_basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccSentryMetricAlertConfig(teamSlug, projectName, alertName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSentryMetricAlertExists(rn, &alert),
-					resource.TestCheckResourceAttr(rn, "organization", testOrganization),
-					resource.TestCheckResourceAttr(rn, "project", projectName),
-					resource.TestCheckResourceAttr(rn, "projects.#", "1"),
-					resource.TestCheckResourceAttr(rn, "projects.0", projectName),
-					resource.TestCheckResourceAttr(rn, "name", alertName),
-					resource.TestCheckResourceAttr(rn, "environment", ""),
-					resource.TestCheckResourceAttr(rn, "dataset", "transactions"),
-					resource.TestCheckResourceAttr(rn, "query", "http.url:http://testservice.com/stats"),
-					resource.TestCheckResourceAttr(rn, "aggregate", "p50(transaction.duration)"),
-					resource.TestCheckResourceAttr(rn, "time_window", "50"),
-					resource.TestCheckResourceAttr(rn, "threshold_type", "0"),
-					resource.TestCheckResourceAttr(rn, "resolve_threshold", "100"),
-					resource.TestCheckResourceAttr(rn, "projects.#", "1"),
-					resource.TestCheckResourceAttrPair(rn, "projects.0", "sentry_project.test", "id"),
-					resource.TestCheckResourceAttrSet(rn, "internal_id"),
-				),
+				Check:  check(alertName),
+			},
+			{
+				Config: testAccSentryMetricAlertConfig(teamSlug, projectName, alertName+"-renamed"),
+				Check:  check(alertName + "-renamed"),
+			},
+			{
+				ResourceName:      rn,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -131,7 +144,12 @@ resource "sentry_metric_alert" "test" {
 	resolve_threshold = 100.0
 
 	trigger {
-		actions           = []
+		//action {
+		//	type              = "email"
+		//	target_type       = "team"
+		//	target_identifier = sentry_team.test.internal_id
+		//}
+
 		alert_threshold   = 1000
 		label             = "critical"
 		resolve_threshold = 100.0
@@ -139,7 +157,6 @@ resource "sentry_metric_alert" "test" {
 	}
 
 	trigger {
-		actions           = []
 		alert_threshold   = 500
 		label             = "warning"
 		resolve_threshold = 100.0

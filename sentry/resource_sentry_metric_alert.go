@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/v2/sentry"
-	"github.com/mitchellh/mapstructure"
 )
 
 func resourceSentryMetricAlert() *schema.Resource {
@@ -86,17 +85,29 @@ func resourceSentryMetricAlert() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"actions": {
+						"action": {
 							Type:     schema.TypeList,
 							Optional: true,
-							Computed: true,
-							Elem: &schema.Schema{
-								Type: schema.TypeMap,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"type": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+									"target_type": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+									"target_identifier": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+								},
 							},
-						},
-						"alert_rule_id": {
-							Type:     schema.TypeString,
-							Computed: true,
 						},
 						"label": {
 							Type:     schema.TypeString,
@@ -149,24 +160,27 @@ func resourceSentryMetricAlertObject(d *schema.ResourceData) *sentry.MetricAlert
 		TimeWindow:    sentry.Float64(d.Get("time_window").(float64)),
 		ThresholdType: sentry.Int(d.Get("threshold_type").(int)),
 	}
-	if environment, ok := d.GetOk("environment"); ok {
-		alert.Environment = sentry.String(environment.(string))
+	if v, ok := d.GetOk("internal_id"); ok {
+		alert.ID = sentry.String(v.(string))
 	}
-	if dataSet, ok := d.GetOk("dataset"); ok {
-		alert.DataSet = sentry.String(dataSet.(string))
+	if v, ok := d.GetOk("environment"); ok {
+		alert.Environment = sentry.String(v.(string))
 	}
-	if resolveThreshold, ok := d.GetOk("resolve_threshold"); ok {
-		alert.ResolveThreshold = sentry.Float64(resolveThreshold.(float64))
+	if v, ok := d.GetOk("dataset"); ok {
+		alert.DataSet = sentry.String(v.(string))
 	}
-	if owner, ok := d.GetOk("owner"); ok {
-		alert.Owner = sentry.String(owner.(string))
+	if v, ok := d.GetOk("resolve_threshold"); ok {
+		alert.ResolveThreshold = sentry.Float64(v.(float64))
 	}
-	if project, ok := d.GetOk("project"); ok {
-		alert.Projects = []string{project.(string)}
+	if v, ok := d.GetOk("owner"); ok {
+		alert.Owner = sentry.String(v.(string))
+	}
+	if v, ok := d.GetOk("project"); ok {
+		alert.Projects = []string{v.(string)}
 	}
 
 	triggersIn := d.Get("trigger").([]interface{})
-	alert.Triggers = mapMetricAlertTriggers(triggersIn)
+	alert.Triggers = expandMetricAlertTriggers(triggersIn)
 
 	return alert
 }
@@ -282,7 +296,7 @@ func resourceSentryMetricAlertDelete(ctx context.Context, d *schema.ResourceData
 	return diag.FromErr(err)
 }
 
-func mapMetricAlertTriggers(triggerList []interface{}) []*sentry.MetricAlertTrigger {
+func expandMetricAlertTriggers(triggerList []interface{}) []*sentry.MetricAlertTrigger {
 	triggers := make([]*sentry.MetricAlertTrigger, 0, len(triggerList))
 	for _, triggerMap := range triggerList {
 		triggerMap := triggerMap.(map[string]interface{})
@@ -297,29 +311,31 @@ func mapMetricAlertTriggers(triggerList []interface{}) []*sentry.MetricAlertTrig
 				trigger.ID = sentry.String(v)
 			}
 		}
-		if v, ok := triggerMap["alert_rule_id"].(string); ok {
-			if v != "" {
-				trigger.AlertRuleID = sentry.String(v)
-			}
+		if actionList, ok := triggerMap["action"].([]interface{}); ok {
+			trigger.Actions = expandMetricAlertTriggerActions(actionList)
 		}
-		if actionList, ok := triggerMap["actions"].([]interface{}); ok {
-			trigger.Actions = make([]*sentry.MetricAlertTriggerAction, 0, len(actionList))
-			for _, actionMap := range actionList {
-				if v, ok := actionMap.(map[string]interface{}); ok {
-					trigger.Actions = append(trigger.Actions, mapMetricAlertTriggerAction(v))
-				}
-			}
-		}
-
 		triggers = append(triggers, trigger)
 	}
 	return triggers
 }
 
-func mapMetricAlertTriggerAction(actionMap map[string]interface{}) *sentry.MetricAlertTriggerAction {
-	action := new(sentry.MetricAlertTriggerAction)
-	_ = mapstructure.WeakDecode(actionMap, action)
-	return action
+func expandMetricAlertTriggerActions(actionList []interface{}) []*sentry.MetricAlertTriggerAction {
+	actions := make([]*sentry.MetricAlertTriggerAction, 0, len(actionList))
+	for _, actionMap := range actionList {
+		actionMap := actionMap.(map[string]interface{})
+		action := &sentry.MetricAlertTriggerAction{
+			Type:             sentry.String(actionMap["type"].(string)),
+			TargetType:       sentry.String(actionMap["target_type"].(string)),
+			TargetIdentifier: sentry.String(actionMap["target_identifier"].(string)),
+		}
+		if v, ok := actionMap["id"].(string); ok {
+			if v != "" {
+				action.ID = sentry.String(v)
+			}
+		}
+		actions = append(actions, action)
+	}
+	return actions
 }
 
 func flattenMetricAlertTriggers(triggers []*sentry.MetricAlertTrigger) []interface{} {
@@ -331,13 +347,29 @@ func flattenMetricAlertTriggers(triggers []*sentry.MetricAlertTrigger) []interfa
 	for _, trigger := range triggers {
 		triggerMap := make(map[string]interface{})
 		triggerMap["id"] = trigger.ID
-		triggerMap["alert_rule_id"] = trigger.AlertRuleID
 		triggerMap["label"] = trigger.Label
 		triggerMap["threshold_type"] = trigger.ThresholdType
 		triggerMap["alert_threshold"] = trigger.AlertThreshold
 		triggerMap["resolve_threshold"] = trigger.ResolveThreshold
-		triggerMap["actions"] = trigger.Actions
+		triggerMap["action"] = flattenMetricAlertTriggerActions(trigger.Actions)
 		triggerList = append(triggerList, triggerMap)
 	}
 	return triggerList
+}
+
+func flattenMetricAlertTriggerActions(actions []*sentry.MetricAlertTriggerAction) []interface{} {
+	if actions == nil {
+		return []interface{}{}
+	}
+
+	actionList := make([]interface{}, 0, len(actions))
+	for _, action := range actions {
+		actionMap := make(map[string]interface{})
+		actionMap["id"] = action.ID
+		actionMap["type"] = action.Type
+		actionMap["target_type"] = action.TargetType
+		actionMap["target_identifier"] = action.TargetIdentifier
+		actionList = append(actionList, actionMap)
+	}
+	return actionList
 }

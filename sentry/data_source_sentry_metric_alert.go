@@ -83,16 +83,29 @@ func dataSourceSentryMetricAlert() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"actions": {
+						"action": {
 							Type:     schema.TypeList,
 							Computed: true,
-							Elem: &schema.Schema{
-								Type: schema.TypeMap,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"type": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"target_type": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"target_identifier": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
 							},
-						},
-						"alert_rule_id": {
-							Type:     schema.TypeString,
-							Computed: true,
 						},
 						"label": {
 							Type:     schema.TypeString,
