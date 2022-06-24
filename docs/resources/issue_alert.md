@@ -71,7 +71,7 @@ resource "sentry_issue_alert" "main" {
       id               = "sentry.rules.filters.assigned_to.AssignedToFilter"
       name             = "The issue is assigned to Team"
       targetType       = "Team"
-      targetIdentifier = sentry_team.test.team_id
+      targetIdentifier = sentry_team.main.team_id
     },
     {
       id   = "sentry.rules.filters.latest_release.LatestReleaseFilter"
@@ -110,7 +110,7 @@ resource "sentry_issue_alert" "main" {
       id               = "sentry.mail.actions.NotifyEmailAction"
       name             = "Send a notification to Team"
       targetType       = "Team"
-      targetIdentifier = sentry_team.test.team_id
+      targetIdentifier = sentry_team.main.team_id
     },
     {
       id   = "sentry.rules.actions.notify_event.NotifyEventAction"

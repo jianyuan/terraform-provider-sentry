@@ -3,7 +3,7 @@
 data "sentry_issue_alert" "original" {
   organization = "my-organization"
   project      = "my-project"
-  internal_id  = sentry_issue_alert.test.internal_id
+  internal_id  = "42"
 }
 
 # Create a copy of an Issue Alert
@@ -13,7 +13,7 @@ resource "sentry_issue_alert" "copy" {
 
   # Copy and modify attributes as necessary.
 
-  name = "${data.sentry_issue_alert.test.name}-copy"
+  name = "${data.sentry_issue_alert.original.name}-copy"
 
   action_match = data.sentry_issue_alert.original.action_match
   filter_match = data.sentry_issue_alert.original.filter_match

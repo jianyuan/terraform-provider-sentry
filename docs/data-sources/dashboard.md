@@ -17,7 +17,7 @@ description: |-
 # URL format: https://sentry.io/organizations/[organization]/dashboard/[internal_id]/
 data "sentry_dashboard" "original" {
   organization = "my-organization"
-  internal_id  = 42
+  internal_id  = "42"
 }
 
 # Create a copy of a Dashboard
