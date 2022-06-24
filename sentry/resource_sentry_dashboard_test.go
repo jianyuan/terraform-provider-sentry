@@ -13,14 +13,14 @@ import (
 )
 
 func TestAccSentryDashboard_basic(t *testing.T) {
-	var dashboard sentry.Dashboard
-
 	dashboardTitle := acctest.RandomWithPrefix("tf-dashboard")
 	rn := "sentry_dashboard.test"
 
+	var dashboardID string
+
 	check := func(dashboardTitle string) resource.TestCheckFunc {
 		return resource.ComposeTestCheckFunc(
-			testAccCheckSentryDashboardExists(rn, &dashboard),
+			testAccCheckSentryDashboardExists(rn, &dashboardID),
 			resource.TestCheckResourceAttr(rn, "organization", testOrganization),
 			resource.TestCheckResourceAttr(rn, "title", dashboardTitle),
 			resource.TestCheckResourceAttr(rn, "widget.#", "1"),
@@ -37,6 +37,7 @@ func TestAccSentryDashboard_basic(t *testing.T) {
 			resource.TestCheckResourceAttr(rn, "widget.0.query.0.conditions", "!event.type:transaction"),
 			resource.TestCheckResourceAttr(rn, "widget.0.query.0.order_by", ""),
 			resource.TestCheckResourceAttrSet(rn, "widget.0.query.0.id"),
+			resource.TestCheckResourceAttrPtr(rn, "internal_id", &dashboardID),
 		)
 	}
 
@@ -62,7 +63,7 @@ func TestAccSentryDashboard_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckSentryDashboardExists(n string, dashboard *sentry.Dashboard) resource.TestCheckFunc {
+func testAccCheckSentryDashboardExists(n string, dashboardID *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -83,7 +84,7 @@ func testAccCheckSentryDashboardExists(n string, dashboard *sentry.Dashboard) re
 		if err != nil {
 			return err
 		}
-		*dashboard = *gotDashboard
+		*dashboardID = sentry.StringValue(gotDashboard.ID)
 		return nil
 	}
 }

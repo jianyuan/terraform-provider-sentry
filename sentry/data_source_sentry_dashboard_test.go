@@ -6,28 +6,19 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
 func TestAccSentryDashboardDataSource_basic(t *testing.T) {
-
 	dashboardTitle := acctest.RandomWithPrefix("tf-dashboard")
 	rn := "sentry_dashboard.test"
 	dn := "data.sentry_dashboard.test"
 	rnCopy := "sentry_dashboard.test_copy"
 
 	check := func(name, dashboardTitle string) resource.TestCheckFunc {
-		var dashboard sentry.Dashboard
+		var dashboardID string
 
 		return resource.ComposeTestCheckFunc(
-			testAccCheckSentryDashboardExists(name, &dashboard),
-			resource.TestCheckResourceAttrWith(name, "internal_id", func(v string) error {
-				want := sentry.StringValue(dashboard.ID)
-				if v != want {
-					return fmt.Errorf("got dashboard ID %s; want %s", v, want)
-				}
-				return nil
-			}),
+			testAccCheckSentryDashboardExists(name, &dashboardID),
 			resource.TestCheckResourceAttr(name, "organization", testOrganization),
 			resource.TestCheckResourceAttr(name, "title", dashboardTitle),
 			resource.TestCheckResourceAttr(name, "widget.#", "1"),
@@ -52,6 +43,7 @@ func TestAccSentryDashboardDataSource_basic(t *testing.T) {
 				"h":     "1",
 				"min_h": "1",
 			}),
+			resource.TestCheckResourceAttrPtr(name, "internal_id", &dashboardID),
 		)
 	}
 
