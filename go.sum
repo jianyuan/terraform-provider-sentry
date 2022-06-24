@@ -241,6 +241,8 @@ github.com/jessevdk/go-flags v1.5.0/go.mod h1:Fw0T6WPc1dYxT4mKEZRfG5kJhaTDP9pj1c
 github.com/jhump/protoreflect v1.6.0 h1:h5jfMVslIg6l29nsMs0D8Wj17RDVdNYti0vDN/PZZoE=
 github.com/jianyuan/go-sentry/v2 v2.0.0-20220623224115-456c6a0384a4 h1:03LUiNMcQZD5InuD4jttrTV0UjAjeiKshmreV4WGatU=
 github.com/jianyuan/go-sentry/v2 v2.0.0-20220623224115-456c6a0384a4/go.mod h1:BSFWrvtsJEwCQfqpprtP6f3RIW6ZEMqdydXO7E2dMb4=
+github.com/jianyuan/go-sentry/v2 v2.0.0-20220624010057-4108a9892a6c h1:iPXJj3gesY1gdNaR7g56Bl7achDecm+v+EetBBAnF6Q=
+github.com/jianyuan/go-sentry/v2 v2.0.0-20220624010057-4108a9892a6c/go.mod h1:BSFWrvtsJEwCQfqpprtP6f3RIW6ZEMqdydXO7E2dMb4=
 github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024/go.mod h1:6v2b51hI/fHJwM22ozAgKL4VKDeJcHhJFhtBdhmNjmU=
 github.com/jstemmer/go-junit-report v0.9.1/go.mod h1:Brl9GWCQeLvo8nXZwPNNblvFj/XSXhF0NWZEnDohbsk=
 github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 h1:DowS9hvgyYSX4TO5NpyC606/Z4SxnNYbT+WX27or6Ck=

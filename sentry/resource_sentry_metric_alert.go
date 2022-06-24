@@ -234,6 +234,7 @@ func resourceSentryMetricAlertRead(ctx context.Context, d *schema.ResourceData, 
 
 	d.SetId(buildThreePartID(org, project, sentry.StringValue(alert.ID)))
 	retError := multierror.Append(
+		d.Set("organization", org),
 		d.Set("name", alert.Name),
 		d.Set("projects", alert.Projects),
 		d.Set("environment", alert.Environment),
@@ -305,14 +306,12 @@ func expandMetricAlertTriggers(triggerList []interface{}) []*sentry.MetricAlertT
 			ThresholdType:    sentry.Int(triggerMap["threshold_type"].(int)),
 			AlertThreshold:   sentry.Float64(triggerMap["alert_threshold"].(float64)),
 			ResolveThreshold: sentry.Float64(triggerMap["resolve_threshold"].(float64)),
+			Actions:          expandMetricAlertTriggerActions(triggerMap["action"].([]interface{})),
 		}
 		if v, ok := triggerMap["id"].(string); ok {
 			if v != "" {
 				trigger.ID = sentry.String(v)
 			}
-		}
-		if actionList, ok := triggerMap["action"].([]interface{}); ok {
-			trigger.Actions = expandMetricAlertTriggerActions(actionList)
 		}
 		triggers = append(triggers, trigger)
 	}
