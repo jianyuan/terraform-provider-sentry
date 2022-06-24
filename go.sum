@@ -243,6 +243,8 @@ github.com/jianyuan/go-sentry/v2 v2.0.0-20220623224115-456c6a0384a4 h1:03LUiNMcQ
 github.com/jianyuan/go-sentry/v2 v2.0.0-20220623224115-456c6a0384a4/go.mod h1:BSFWrvtsJEwCQfqpprtP6f3RIW6ZEMqdydXO7E2dMb4=
 github.com/jianyuan/go-sentry/v2 v2.0.0-20220624010057-4108a9892a6c h1:iPXJj3gesY1gdNaR7g56Bl7achDecm+v+EetBBAnF6Q=
 github.com/jianyuan/go-sentry/v2 v2.0.0-20220624010057-4108a9892a6c/go.mod h1:BSFWrvtsJEwCQfqpprtP6f3RIW6ZEMqdydXO7E2dMb4=
+github.com/jianyuan/go-sentry/v2 v2.0.0-20220624071746-b886357dc280 h1:bcclaciBAwJX6JBJl8PxIbyacWmsPsGuxSyNABFvmco=
+github.com/jianyuan/go-sentry/v2 v2.0.0-20220624071746-b886357dc280/go.mod h1:4Xfxc6q+xAx/i+y7wln4FEm/QtDDdWua3l2/FXE6Fsk=
 github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024/go.mod h1:6v2b51hI/fHJwM22ozAgKL4VKDeJcHhJFhtBdhmNjmU=
 github.com/jstemmer/go-junit-report v0.9.1/go.mod h1:Brl9GWCQeLvo8nXZwPNNblvFj/XSXhF0NWZEnDohbsk=
 github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 h1:DowS9hvgyYSX4TO5NpyC606/Z4SxnNYbT+WX27or6Ck=
@@ -325,6 +327,7 @@ github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.7.2/go.mod h1:R6va5+xMeoiuVRoj+gSkQ7d3FALtqAAGI1FQKckRals=
 github.com/stretchr/testify v1.7.4 h1:wZRexSlwd7ZXfKINDLsO4r7WBt3gTKONc6K/VesHvHM=
+github.com/stretchr/testify v1.7.5 h1:s5PTfem8p8EbKQOctVV53k6jCJt3UX4IEJzwh+C324Q=
 github.com/vmihailenco/msgpack v3.3.3+incompatible/go.mod h1:fy3FlTQTDXWkZ7Bh6AcGMlsjHatGryHQYUTf1ShIgkk=
 github.com/vmihailenco/msgpack v4.0.4+incompatible h1:dSLoQfGFAo3F6OoNhwUmLwVgaUXK79GlxNBwueZn0xI=
 github.com/vmihailenco/msgpack v4.0.4+incompatible/go.mod h1:fy3FlTQTDXWkZ7Bh6AcGMlsjHatGryHQYUTf1ShIgkk=

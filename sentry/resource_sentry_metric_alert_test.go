@@ -144,11 +144,11 @@ resource "sentry_metric_alert" "test" {
 	resolve_threshold = 100.0
 
 	trigger {
-		//action {
-		//	type              = "email"
-		//	target_type       = "team"
-		//	target_identifier = sentry_team.test.internal_id
-		//}
+		action {
+			type              = "email"
+			target_type       = "team"
+			target_identifier = sentry_team.test.internal_id
+		}
 
 		alert_threshold   = 1000
 		label             = "critical"
