@@ -13,16 +13,16 @@ import (
 )
 
 func TestAccSentryMetricAlert_basic(t *testing.T) {
-	var alert sentry.MetricAlert
-
-	teamSlug := acctest.RandomWithPrefix("tf-team")
+	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	alertName := acctest.RandomWithPrefix("tf-issue-alert")
 	rn := "sentry_metric_alert.test"
 
+	var alertID string
+
 	check := func(alertName string) resource.TestCheckFunc {
 		return resource.ComposeTestCheckFunc(
-			testAccCheckSentryMetricAlertExists(rn, &alert),
+			testAccCheckSentryMetricAlertExists(rn, &alertID),
 			resource.TestCheckResourceAttr(rn, "organization", testOrganization),
 			resource.TestCheckResourceAttr(rn, "project", projectName),
 			resource.TestCheckResourceAttr(rn, "projects.#", "1"),
@@ -37,7 +37,7 @@ func TestAccSentryMetricAlert_basic(t *testing.T) {
 			resource.TestCheckResourceAttr(rn, "resolve_threshold", "100"),
 			resource.TestCheckResourceAttr(rn, "projects.#", "1"),
 			resource.TestCheckResourceAttrPair(rn, "projects.0", "sentry_project.test", "id"),
-			resource.TestCheckResourceAttrSet(rn, "internal_id"),
+			resource.TestCheckResourceAttrPtr(rn, "internal_id", &alertID),
 		)
 	}
 
@@ -47,11 +47,11 @@ func TestAccSentryMetricAlert_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckSentryMetricAlertDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSentryMetricAlertConfig(teamSlug, projectName, alertName),
+				Config: testAccSentryMetricAlertConfig(teamName, projectName, alertName),
 				Check:  check(alertName),
 			},
 			{
-				Config: testAccSentryMetricAlertConfig(teamSlug, projectName, alertName+"-renamed"),
+				Config: testAccSentryMetricAlertConfig(teamName, projectName, alertName+"-renamed"),
 				Check:  check(alertName + "-renamed"),
 			},
 			{
@@ -92,7 +92,7 @@ func testAccCheckSentryMetricAlertDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckSentryMetricAlertExists(n string, alert *sentry.MetricAlert) resource.TestCheckFunc {
+func testAccCheckSentryMetricAlertExists(n string, gotAlertID *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -113,29 +113,17 @@ func testAccCheckSentryMetricAlertExists(n string, alert *sentry.MetricAlert) re
 		if err != nil {
 			return err
 		}
-		*alert = *gotAlert
+		*gotAlertID = sentry.StringValue(gotAlert.ID)
 		return nil
 	}
 }
 
-func testAccSentryMetricAlertConfig(teamSlug, projectName, alertName string) string {
-	return testAccSentryOrganizationDataSourceConfig + fmt.Sprintf(`
-resource "sentry_team" "test" {
-	organization = data.sentry_organization.test.id
-	name         = "%[1]s"
-}
-
-resource "sentry_project" "test" {
-	organization = sentry_team.test.organization
-	team         = sentry_team.test.id
-	name         = "%[2]s"
-	platform     = "go"
-}
-
+func testAccSentryMetricAlertConfig(teamName, projectName, alertName string) string {
+	return testAccSentryProjectConfig(teamName, projectName) + fmt.Sprintf(`
 resource "sentry_metric_alert" "test" {
 	organization      = sentry_project.test.organization
 	project           = sentry_project.test.id
-	name              = "%[3]s"
+	name              = "%[1]s"
 	dataset           = "transactions"
 	query             = "http.url:http://testservice.com/stats"
 	aggregate         = "p50(transaction.duration)"
@@ -163,5 +151,5 @@ resource "sentry_metric_alert" "test" {
 		threshold_type    = 0
 	}
 }
-	`, teamSlug, projectName, alertName)
+	`, alertName)
 }

@@ -6,28 +6,27 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
 func TestAccSentryMetricAlertDataSource_basic(t *testing.T) {
-	var alert sentry.MetricAlert
-	var alertCopy sentry.MetricAlert
-
-	teamSlug := acctest.RandomWithPrefix("tf-team")
+	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	alertName := acctest.RandomWithPrefix("tf-metric-alert")
 	rn := "sentry_metric_alert.test"
 	dn := "data.sentry_metric_alert.test"
 	rnCopy := "sentry_metric_alert.test_copy"
 
+	var alertID string
+	var alertCopyID string
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSentryMetricAlertDataSourceConfig(teamSlug, projectName, alertName),
+				Config: testAccSentryMetricAlertDataSourceConfig(teamName, projectName, alertName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSentryMetricAlertExists(rn, &alert),
+					testAccCheckSentryMetricAlertExists(rn, &alertID),
 					resource.TestCheckResourceAttr(dn, "organization", testOrganization),
 					resource.TestCheckResourceAttr(dn, "project", projectName),
 					resource.TestCheckResourceAttrPair(dn, "organization", rn, "organization"),
@@ -49,23 +48,11 @@ func TestAccSentryMetricAlertDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(dn, "trigger.0.action.#", "0"),
 					resource.TestCheckResourceAttrPair(dn, "triggers.1", rn, "triggers.1"),
 					resource.TestCheckResourceAttr(dn, "trigger.1.action.#", "1"),
-					testAccCheckSentryMetricAlertExists(rnCopy, &alertCopy),
+					testAccCheckSentryMetricAlertExists(rnCopy, &alertCopyID),
 					resource.TestCheckResourceAttrPair(rnCopy, "organization", rn, "organization"),
 					resource.TestCheckResourceAttrPair(rnCopy, "project", rn, "project"),
-					resource.TestCheckResourceAttrWith(rnCopy, "internal_id", func(v string) error {
-						want := sentry.StringValue(alertCopy.ID)
-						if v != want {
-							return fmt.Errorf("got metric alert ID %s; want %s", v, want)
-						}
-						return nil
-					}),
-					resource.TestCheckResourceAttrWith(rnCopy, "name", func(v string) error {
-						want := sentry.StringValue(alertCopy.Name)
-						if v != want {
-							return fmt.Errorf("got name ID %s; want %s", v, want)
-						}
-						return nil
-					}),
+					resource.TestCheckResourceAttrPtr(rnCopy, "internal_id", &alertCopyID),
+					resource.TestCheckResourceAttr(rnCopy, "name", alertName+"-copy"),
 					resource.TestCheckResourceAttrPair(rnCopy, "environment", rn, "environment"),
 					resource.TestCheckResourceAttrPair(rnCopy, "dataset", rn, "dataset"),
 					resource.TestCheckResourceAttrPair(rnCopy, "query", rn, "query"),
@@ -85,24 +72,12 @@ func TestAccSentryMetricAlertDataSource_basic(t *testing.T) {
 	})
 }
 
-func testAccSentryMetricAlertDataSourceConfig(teamSlug, projectName, alertName string) string {
-	return testAccSentryOrganizationDataSourceConfig + fmt.Sprintf(`
-resource "sentry_team" "test" {
-	organization = data.sentry_organization.test.id
-	name         = "%[1]s"
-}
-
-resource "sentry_project" "test" {
-	organization = sentry_team.test.organization
-	team         = sentry_team.test.id
-	name         = "%[2]s"
-	platform     = "go"
-}
-
+func testAccSentryMetricAlertDataSourceConfig(teamName, projectName, alertName string) string {
+	return testAccSentryProjectConfig(teamName, projectName) + fmt.Sprintf(`
 resource "sentry_metric_alert" "test" {
 	organization      = sentry_project.test.organization
 	project           = sentry_project.test.id
-	name              = "%[3]s"
+	name              = "%[1]s"
 	dataset           = "transactions"
 	query             = "http.url:http://testservice.com/stats"
 	aggregate         = "p50(transaction.duration)"
@@ -167,5 +142,5 @@ resource "sentry_metric_alert" "test_copy" {
 		}
 	}
 }
-	`, teamSlug, projectName, alertName)
+	`, alertName)
 }
