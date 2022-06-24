@@ -59,7 +59,10 @@ func dataSourceSentryTeamRead(ctx context.Context, d *schema.ResourceData, meta 
 	org := d.Get("organization").(string)
 	teamSlug := d.Get("slug").(string)
 
-	tflog.Debug(ctx, "Reading team", map[string]interface{}{"org": org, "team": teamSlug})
+	tflog.Debug(ctx, "Reading team", map[string]interface{}{
+		"org":  org,
+		"team": teamSlug,
+	})
 	team, _, err := client.Teams.Get(ctx, org, teamSlug)
 	if err != nil {
 		return diag.FromErr(err)
@@ -68,6 +71,7 @@ func dataSourceSentryTeamRead(ctx context.Context, d *schema.ResourceData, meta 
 	d.SetId(sentry.StringValue(team.Slug))
 	retErr := multierror.Append(
 		d.Set("organization", org),
+		d.Set("slug", team.Slug),
 		d.Set("internal_id", team.ID),
 		d.Set("name", team.Name),
 		d.Set("has_access", team.HasAccess),

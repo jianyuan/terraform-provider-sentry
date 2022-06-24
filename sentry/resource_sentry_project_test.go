@@ -124,17 +124,12 @@ func testAccSentryProjectImportStateIdFunc(n string) resource.ImportStateIdFunc 
 }
 
 func testAccSentryProjectConfig(teamName, projectName string) string {
-	return testAccSentryOrganizationDataSourceConfig + fmt.Sprintf(`
-resource "sentry_team" "test" {
-	organization = data.sentry_organization.test.id
-	name         = "%[1]s"
-}
-
+	return testAccSentryTeamConfig(teamName) + fmt.Sprintf(`
 resource "sentry_project" "test" {
 	organization = sentry_team.test.organization
 	team         = sentry_team.test.id
-	name         = "%[2]s"
+	name         = "%[1]s"
 	platform     = "go"
 }
-	`, teamName, projectName)
+	`, projectName)
 }

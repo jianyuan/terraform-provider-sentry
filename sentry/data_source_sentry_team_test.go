@@ -1,20 +1,18 @@
 package sentry
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
 func TestAccSentryTeamDataSource_basic(t *testing.T) {
-	var team sentry.Team
-
 	teamSlug := acctest.RandomWithPrefix("tf-team")
 	rn := "sentry_team.test"
 	dn := "data.sentry_team.test"
+
+	var teamID string
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -23,7 +21,7 @@ func TestAccSentryTeamDataSource_basic(t *testing.T) {
 			{
 				Config: testAccSentryTeamDataSourceConfig(teamSlug),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSentryTeamExists(rn, &team),
+					testAccCheckSentryTeamExists(rn, &teamID),
 					resource.TestCheckResourceAttrPair(dn, "organization", rn, "organization"),
 					resource.TestCheckResourceAttrPair(dn, "slug", rn, "slug"),
 					resource.TestCheckResourceAttrPair(dn, "internal_id", rn, "internal_id"),
@@ -37,17 +35,11 @@ func TestAccSentryTeamDataSource_basic(t *testing.T) {
 	})
 }
 
-func testAccSentryTeamDataSourceConfig(teamSlug string) string {
-	return testAccSentryOrganizationDataSourceConfig + fmt.Sprintf(`
-resource "sentry_team" "test" {
-	organization = data.sentry_organization.test.id
-	name         = "%[1]s"
-	slug         = "%[1]s"
-}
-
+func testAccSentryTeamDataSourceConfig(teamName string) string {
+	return testAccSentryTeamConfig(teamName) + `
 data "sentry_team" "test" {
 	organization = sentry_team.test.organization
 	slug         = sentry_team.test.id
 }
-	`, teamSlug)
+	`
 }

@@ -13,24 +13,18 @@ import (
 )
 
 func TestAccSentryTeam_basic(t *testing.T) {
-	var team sentry.Team
+	teamName := acctest.RandomWithPrefix("tf-team")
+	rn := "sentry_team.test"
 
-	teamSlug := acctest.RandomWithPrefix("tf-team")
-	rn := "sentry_team.test_team"
+	var teamID string
 
-	check := func(teamSlug string) resource.TestCheckFunc {
+	check := func(teamName string) resource.TestCheckFunc {
 		return resource.ComposeTestCheckFunc(
-			testAccCheckSentryTeamExists(rn, &team),
+			testAccCheckSentryTeamExists(rn, &teamID),
 			resource.TestCheckResourceAttrPair(rn, "organization", "data.sentry_organization.test", "id"),
-			resource.TestCheckResourceAttr(rn, "name", teamSlug),
-			resource.TestCheckResourceAttr(rn, "slug", teamSlug),
-			resource.TestCheckResourceAttrWith(rn, "internal_id", func(v string) error {
-				want := sentry.StringValue(team.ID)
-				if v != want {
-					return fmt.Errorf("got team ID %s; want %s", v, want)
-				}
-				return nil
-			}),
+			resource.TestCheckResourceAttr(rn, "name", teamName),
+			resource.TestCheckResourceAttr(rn, "slug", teamName),
+			resource.TestCheckResourceAttrPtr(rn, "internal_id", &teamID),
 			resource.TestCheckResourceAttrPair(rn, "internal_id", rn, "team_id"),
 			resource.TestCheckResourceAttrSet(rn, "has_access"),
 			resource.TestCheckResourceAttrSet(rn, "is_pending"),
@@ -44,12 +38,12 @@ func TestAccSentryTeam_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckSentryTeamDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSentryTeamConfig(teamSlug),
-				Check:  check(teamSlug),
+				Config: testAccSentryTeamConfig(teamName),
+				Check:  check(teamName),
 			},
 			{
-				Config: testAccSentryTeamConfig(teamSlug + "-renamed"),
-				Check:  check(teamSlug + "-renamed"),
+				Config: testAccSentryTeamConfig(teamName + "-renamed"),
+				Check:  check(teamName + "-renamed"),
 			},
 			{
 				ResourceName:      rn,
@@ -88,7 +82,7 @@ func testAccCheckSentryTeamDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckSentryTeamExists(n string, team *sentry.Team) resource.TestCheckFunc {
+func testAccCheckSentryTeamExists(n string, teamID *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -107,7 +101,7 @@ func testAccCheckSentryTeamExists(n string, team *sentry.Team) resource.TestChec
 		if err != nil {
 			return err
 		}
-		*team = *gotTeam
+		*teamID = sentry.StringValue(gotTeam.ID)
 		return nil
 	}
 }
@@ -124,12 +118,12 @@ func testAccSentryTeamImportStateIdFunc(n string) resource.ImportStateIdFunc {
 	}
 }
 
-func testAccSentryTeamConfig(teamSlug string) string {
+func testAccSentryTeamConfig(teamName string) string {
 	return testAccSentryOrganizationDataSourceConfig + fmt.Sprintf(`
-resource "sentry_team" "test_team" {
+resource "sentry_team" "test" {
 	organization = data.sentry_organization.test.id
 	name         = "%[1]s"
 	slug         = "%[1]s"
 }
-	`, teamSlug)
+	`, teamName)
 }
