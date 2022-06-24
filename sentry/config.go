@@ -15,15 +15,16 @@ import (
 // Config is the configuration structure used to instantiate the Sentry
 // provider.
 type Config struct {
-	Token   string
-	BaseURL string
+	UserAgent string
+	Token     string
+	BaseURL   string
 }
 
 // Client to connect to Sentry.
 func (c *Config) Client(ctx context.Context) (interface{}, diag.Diagnostics) {
 	tflog.Info(ctx, "Instantiating Sentry client...")
 
-	// Rate limit
+	// Handle rate limit
 	retryClient := retryablehttp.NewClient()
 	retryClient.Logger = nil // Disable DEBUG logs
 	retryClient.CheckRetry = retryablehttp.ErrorPropagatedRetryPolicy
@@ -37,17 +38,24 @@ func (c *Config) Client(ctx context.Context) (interface{}, diag.Diagnostics) {
 
 	ctx = context.WithValue(ctx, oauth2.HTTPClient, retryHTTPClient)
 
-	// Auth
+	// Authentication
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.Token})
 	httpClient := oauth2.NewClient(ctx, ts)
 
+	// Initialize client
+	var cl *sentry.Client
+	var err error
 	if c.BaseURL == "" {
-		return sentry.NewClient(httpClient), nil
+		cl = sentry.NewClient(httpClient)
 	} else {
-		cl, err := sentry.NewOnPremiseClient(c.BaseURL, httpClient)
+		cl, err = sentry.NewOnPremiseClient(c.BaseURL, httpClient)
 		if err != nil {
 			return nil, diag.FromErr(err)
 		}
-		return cl, nil
 	}
+
+	// Set user agent
+	cl.UserAgent = c.UserAgent
+
+	return cl, nil
 }

@@ -9,12 +9,12 @@ import (
 
 var testOrganization = os.Getenv("SENTRY_TEST_ORGANIZATION")
 
+var testAccProvider *schema.Provider
 var testAccProviders map[string]*schema.Provider
 var testAccProviderFactories map[string]func() (*schema.Provider, error)
-var testAccProvider *schema.Provider
 
 func init() {
-	testAccProvider = Provider()
+	testAccProvider = NewProvider("dev")()
 	testAccProviders = map[string]*schema.Provider{
 		"sentry": testAccProvider,
 	}
@@ -26,7 +26,7 @@ func init() {
 }
 
 func TestProvider(t *testing.T) {
-	if err := Provider().InternalValidate(); err != nil {
+	if err := NewProvider("dev")().InternalValidate(); err != nil {
 		t.Fatalf("err: %s", err)
 	}
 }
