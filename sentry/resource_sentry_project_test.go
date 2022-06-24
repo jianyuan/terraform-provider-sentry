@@ -18,23 +18,17 @@ func TestAccSentryProject_basic(t *testing.T) {
 	rn := "sentry_project.test"
 
 	check := func(projectName string) resource.TestCheckFunc {
-		var project sentry.Project
+		var projectID string
 
 		return resource.ComposeTestCheckFunc(
-			testAccCheckSentryProjectExists(rn, &project),
+			testAccCheckSentryProjectExists(rn, &projectID),
 			resource.TestCheckResourceAttr(rn, "organization", testOrganization),
 			resource.TestCheckResourceAttr(rn, "team", teamName),
 			resource.TestCheckResourceAttr(rn, "name", projectName),
 			resource.TestCheckResourceAttrSet(rn, "slug"),
 			resource.TestCheckResourceAttr(rn, "platform", "go"),
 			resource.TestCheckResourceAttrSet(rn, "internal_id"),
-			resource.TestCheckResourceAttrWith(rn, "internal_id", func(v string) error {
-				want := project.ID
-				if v != want {
-					return fmt.Errorf("got project ID %s; want %s", v, want)
-				}
-				return nil
-			}),
+			resource.TestCheckResourceAttrPtr(rn, "internal_id", &projectID),
 			resource.TestCheckResourceAttrPair(rn, "project_id", rn, "internal_id"),
 		)
 	}
@@ -85,7 +79,7 @@ func testAccCheckSentryProjectDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckSentryProjectExists(n string, proj *sentry.Project) resource.TestCheckFunc {
+func testAccCheckSentryProjectExists(n string, projectID *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -106,7 +100,7 @@ func testAccCheckSentryProjectExists(n string, proj *sentry.Project) resource.Te
 		if err != nil {
 			return err
 		}
-		*proj = *gotProj
+		*projectID = gotProj.ID
 		return nil
 	}
 }
