@@ -50,12 +50,24 @@ Required:
 
 Optional:
 
-- `actions` (List of Map of String)
+- `action` (Block List) (see [below for nested schema](#nestedblock--trigger--action))
 - `resolve_threshold` (Number)
 
 Read-Only:
 
-- `alert_rule_id` (String)
+- `id` (String) The ID of this resource.
+
+<a id="nestedblock--trigger--action"></a>
+### Nested Schema for `trigger.action`
+
+Required:
+
+- `target_identifier` (String)
+- `target_type` (String)
+- `type` (String)
+
+Read-Only:
+
 - `id` (String) The ID of this resource.
 
 

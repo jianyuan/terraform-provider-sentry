@@ -46,7 +46,9 @@ func TestAccSentryMetricAlertDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair(dn, "owners", rn, "owners"),
 					resource.TestCheckResourceAttr(dn, "trigger.#", "2"),
 					resource.TestCheckResourceAttrPair(dn, "triggers.0", rn, "triggers.0"),
+					resource.TestCheckResourceAttr(dn, "trigger.0.action.#", "0"),
 					resource.TestCheckResourceAttrPair(dn, "triggers.1", rn, "triggers.1"),
+					resource.TestCheckResourceAttr(dn, "trigger.1.action.#", "1"),
 					testAccCheckSentryMetricAlertExists(rnCopy, &alertCopy),
 					resource.TestCheckResourceAttrPair(rnCopy, "organization", rn, "organization"),
 					resource.TestCheckResourceAttrPair(rnCopy, "project", rn, "project"),
@@ -109,7 +111,6 @@ resource "sentry_metric_alert" "test" {
 	resolve_threshold = 100.0
 
 	trigger {
-		actions           = []
 		alert_threshold   = 1000
 		label             = "critical"
 		resolve_threshold = 100.0
@@ -117,7 +118,12 @@ resource "sentry_metric_alert" "test" {
 	}
 
 	trigger {
-		actions           = []
+		action {
+			type              = "email"
+			target_type       = "team"
+			target_identifier = sentry_team.test.internal_id
+		}
+
 		alert_threshold   = 500
 		label             = "warning"
 		resolve_threshold = 100.0
@@ -145,7 +151,15 @@ resource "sentry_metric_alert" "test_copy" {
 	dynamic "trigger" {
 		for_each = data.sentry_metric_alert.test.trigger
 		content {
-			actions           = trigger.value.actions
+			dynamic "action" {
+				for_each = trigger.value.action
+				content {
+					type              = action.value.type
+					target_type       = action.value.target_type
+					target_identifier = action.value.target_identifier
+				}
+			}
+
 			alert_threshold   = trigger.value.alert_threshold
 			label             = trigger.value.label
 			resolve_threshold = trigger.value.resolve_threshold

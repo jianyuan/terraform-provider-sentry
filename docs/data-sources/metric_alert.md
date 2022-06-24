@@ -41,12 +41,21 @@ description: |-
 
 Read-Only:
 
-- `actions` (List of Map of String)
-- `alert_rule_id` (String)
+- `action` (List of Object) (see [below for nested schema](#nestedobjatt--trigger--action))
 - `alert_threshold` (Number)
 - `id` (String)
 - `label` (String)
 - `resolve_threshold` (Number)
 - `threshold_type` (Number)
+
+<a id="nestedobjatt--trigger--action"></a>
+### Nested Schema for `trigger.action`
+
+Read-Only:
+
+- `id` (String)
+- `target_identifier` (String)
+- `target_type` (String)
+- `type` (String)
 
 
