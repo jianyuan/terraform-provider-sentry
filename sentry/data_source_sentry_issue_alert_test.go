@@ -6,28 +6,27 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
 func TestAccSentryIssueAlertDataSource_basic(t *testing.T) {
-	var alert sentry.IssueAlert
-	var alertCopy sentry.IssueAlert
-
-	teamSlug := acctest.RandomWithPrefix("tf-team")
+	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	alertName := acctest.RandomWithPrefix("tf-issue-alert")
 	rn := "sentry_issue_alert.test"
 	dn := "data.sentry_issue_alert.test"
 	rnCopy := "sentry_issue_alert.test_copy"
 
+	var alertID string
+	var alertCopyID string
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSentryIssueAlertDataSourceConfig(teamSlug, projectName, alertName),
+				Config: testAccSentryIssueAlertDataSourceConfig(teamName, projectName, alertName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSentryIssueAlertExists(rn, &alert),
+					testAccCheckSentryIssueAlertExists(rn, &alertID),
 					resource.TestCheckResourceAttr(dn, "organization", testOrganization),
 					resource.TestCheckResourceAttr(dn, "project", projectName),
 					resource.TestCheckResourceAttrPair(dn, "organization", rn, "organization"),
@@ -42,29 +41,17 @@ func TestAccSentryIssueAlertDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair(dn, "name", rn, "name"),
 					resource.TestCheckResourceAttrPair(dn, "environment", rn, "environment"),
 					resource.TestCheckResourceAttrPair(dn, "actions", rn, "actions"),
-					testAccCheckSentryIssueAlertExists(rnCopy, &alertCopy),
+					testAccCheckSentryIssueAlertExists(rnCopy, &alertCopyID),
 					resource.TestCheckResourceAttrPair(rnCopy, "organization", rn, "organization"),
 					resource.TestCheckResourceAttrPair(rnCopy, "project", rn, "project"),
-					resource.TestCheckResourceAttrWith(rnCopy, "internal_id", func(v string) error {
-						want := sentry.StringValue(alertCopy.ID)
-						if v != want {
-							return fmt.Errorf("got issue alert ID %s; want %s", v, want)
-						}
-						return nil
-					}),
+					resource.TestCheckResourceAttrPtr(rnCopy, "internal_id", &alertCopyID),
 					resource.TestCheckResourceAttrPair(rnCopy, "conditions", rn, "conditions"),
 					resource.TestCheckResourceAttrPair(rnCopy, "filters", rn, "filters"),
 					resource.TestCheckResourceAttrPair(rnCopy, "actions", rn, "actions"),
 					resource.TestCheckResourceAttrPair(rnCopy, "action_match", rn, "action_match"),
 					resource.TestCheckResourceAttrPair(rnCopy, "filter_match", rn, "filter_match"),
 					resource.TestCheckResourceAttrPair(rnCopy, "frequency", rn, "frequency"),
-					resource.TestCheckResourceAttrWith(rnCopy, "name", func(v string) error {
-						want := sentry.StringValue(alertCopy.Name)
-						if v != want {
-							return fmt.Errorf("got name ID %s; want %s", v, want)
-						}
-						return nil
-					}),
+					resource.TestCheckResourceAttr(rnCopy, "name", alertName+"-copy"),
 					resource.TestCheckResourceAttrPair(rnCopy, "environment", rn, "environment"),
 					resource.TestCheckResourceAttrPair(rnCopy, "actions", rn, "actions"),
 				),
@@ -73,24 +60,12 @@ func TestAccSentryIssueAlertDataSource_basic(t *testing.T) {
 	})
 }
 
-func testAccSentryIssueAlertDataSourceConfig(teamSlug, projectName, alertName string) string {
-	return testAccSentryOrganizationDataSourceConfig + fmt.Sprintf(`
-resource "sentry_team" "test" {
-	organization = data.sentry_organization.test.id
-	name         = "%[1]s"
-}
-
-resource "sentry_project" "test" {
-	organization = sentry_team.test.organization
-	team         = sentry_team.test.id
-	name         = "%[2]s"
-	platform     = "go"
-}
-
+func testAccSentryIssueAlertDataSourceConfig(teamName, projectName, alertName string) string {
+	return testAccSentryProjectConfig(teamName, projectName) + fmt.Sprintf(`
 resource "sentry_issue_alert" "test" {
 	organization = sentry_project.test.organization
 	project      = sentry_project.test.id
-	name         = "%[3]s"
+	name         = "%[1]s"
 
 	action_match = "any"
 	filter_match = "any"
@@ -218,5 +193,5 @@ resource "sentry_issue_alert" "test_copy" {
 	filters    = data.sentry_issue_alert.test.filters
 	actions    = data.sentry_issue_alert.test.actions
 }
-	`, teamSlug, projectName, alertName)
+	`, alertName)
 }

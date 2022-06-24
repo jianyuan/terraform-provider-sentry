@@ -13,16 +13,16 @@ import (
 )
 
 func TestAccSentryIssueAlert_basic(t *testing.T) {
-	var alert sentry.IssueAlert
-
-	teamSlug := acctest.RandomWithPrefix("tf-team")
+	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	alertName := acctest.RandomWithPrefix("tf-issue-alert")
 	rn := "sentry_issue_alert.test"
 
+	var alertID string
+
 	check := func(alertName string) resource.TestCheckFunc {
 		return resource.ComposeTestCheckFunc(
-			testAccCheckSentryIssueAlertExists(rn, &alert),
+			testAccCheckSentryIssueAlertExists(rn, &alertID),
 			resource.TestCheckResourceAttr(rn, "organization", testOrganization),
 			resource.TestCheckResourceAttr(rn, "project", projectName),
 			resource.TestCheckResourceAttr(rn, "projects.#", "1"),
@@ -31,7 +31,7 @@ func TestAccSentryIssueAlert_basic(t *testing.T) {
 			resource.TestCheckResourceAttr(rn, "environment", ""),
 			resource.TestCheckResourceAttr(rn, "action_match", "any"),
 			resource.TestCheckResourceAttr(rn, "filter_match", "any"),
-			resource.TestCheckResourceAttrSet(rn, "internal_id"),
+			resource.TestCheckResourceAttrPtr(rn, "internal_id", &alertID),
 			// Conditions
 			resource.TestCheckResourceAttr(rn, "conditions.#", "5"),
 			resource.TestCheckResourceAttr(rn, "conditions.0.id", "sentry.rules.conditions.first_seen_event.FirstSeenEventCondition"),
@@ -149,11 +149,11 @@ func TestAccSentryIssueAlert_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckSentryIssueAlertDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSentryIssueAlertConfig(teamSlug, projectName, alertName),
+				Config: testAccSentryIssueAlertConfig(teamName, projectName, alertName),
 				Check:  check(alertName),
 			},
 			{
-				Config: testAccSentryIssueAlertConfig(teamSlug, projectName, alertName+"-renamed"),
+				Config: testAccSentryIssueAlertConfig(teamName, projectName, alertName+"-renamed"),
 				Check:  check(alertName + "-renamed"),
 			},
 			{
@@ -194,7 +194,7 @@ func testAccCheckSentryIssueAlertDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckSentryIssueAlertExists(n string, alert *sentry.IssueAlert) resource.TestCheckFunc {
+func testAccCheckSentryIssueAlertExists(n string, alertID *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -215,29 +215,17 @@ func testAccCheckSentryIssueAlertExists(n string, alert *sentry.IssueAlert) reso
 		if err != nil {
 			return err
 		}
-		*alert = *gotAlert
+		*alertID = sentry.StringValue(gotAlert.ID)
 		return nil
 	}
 }
 
-func testAccSentryIssueAlertConfig(teamSlug, projectName, alertName string) string {
-	return testAccSentryOrganizationDataSourceConfig + fmt.Sprintf(`
-resource "sentry_team" "test" {
-	organization = data.sentry_organization.test.id
-	name         = "%[1]s"
-}
-
-resource "sentry_project" "test" {
-	organization = sentry_team.test.organization
-	team         = sentry_team.test.id
-	name         = "%[2]s"
-	platform     = "go"
-}
-
+func testAccSentryIssueAlertConfig(teamName, projectName, alertName string) string {
+	return testAccSentryProjectConfig(teamName, projectName) + fmt.Sprintf(`
 resource "sentry_issue_alert" "test" {
 	organization = sentry_project.test.organization
 	project      = sentry_project.test.id
-	name         = "%[3]s"
+	name         = "%[1]s"
 
 	action_match = "any"
 	filter_match = "any"
@@ -339,5 +327,5 @@ resource "sentry_issue_alert" "test" {
 		}
 	]
 }
-	`, teamSlug, projectName, alertName)
+	`, alertName)
 }
