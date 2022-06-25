@@ -72,7 +72,6 @@ func testAccCheckSentryOrganizationDestroy(s *terraform.State) error {
 		ctx := context.Background()
 		organization, resp, err := client.Organizations.Get(ctx, rs.Primary.ID)
 		if err == nil {
-			fmt.Println(organization)
 			if organization != nil && *organization.Status.ID == "active" {
 				return errors.New("organization still exists")
 			}

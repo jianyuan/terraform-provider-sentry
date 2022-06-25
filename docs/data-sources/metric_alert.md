@@ -71,7 +71,6 @@ resource "sentry_metric_alert" "copy" {
 - `id` (String) The ID of this resource.
 - `name` (String) The metric alert name.
 - `owner` (String)
-- `projects` (Set of String)
 - `query` (String)
 - `resolve_threshold` (Number)
 - `threshold_type` (Number)

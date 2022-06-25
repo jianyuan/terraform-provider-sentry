@@ -68,7 +68,6 @@ resource "sentry_metric_alert" "main" {
 
 - `id` (String) The ID of this resource.
 - `internal_id` (String) The internal ID for this metric alert.
-- `projects` (List of String)
 
 <a id="nestedblock--trigger"></a>
 ### Nested Schema for `trigger`

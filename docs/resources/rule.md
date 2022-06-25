@@ -35,6 +35,6 @@ description: |-
 
 - `id` (String) The ID of this resource.
 - `internal_id` (String) The internal ID for this issue alert.
-- `projects` (List of String)
+- `projects` (List of String, Deprecated) Use `project` (singular) instead.
 
 

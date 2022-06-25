@@ -96,8 +96,10 @@ func resourceSentryIssueAlert() *schema.Resource {
 				Computed:    true,
 			},
 			"projects": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Deprecated:  "Use `project` (singular) instead.",
+				Description: "Use `project` (singular) instead.",
+				Type:        schema.TypeList,
+				Computed:    true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},

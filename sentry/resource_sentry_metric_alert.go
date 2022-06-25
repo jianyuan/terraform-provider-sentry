@@ -129,13 +129,6 @@ func resourceSentryMetricAlert() *schema.Resource {
 					},
 				},
 			},
-			"projects": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
 			"owner": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -236,7 +229,6 @@ func resourceSentryMetricAlertRead(ctx context.Context, d *schema.ResourceData, 
 	retError := multierror.Append(
 		d.Set("organization", org),
 		d.Set("name", alert.Name),
-		d.Set("projects", alert.Projects),
 		d.Set("environment", alert.Environment),
 		d.Set("dataset", alert.DataSet),
 		d.Set("query", alert.Query),

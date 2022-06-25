@@ -63,8 +63,6 @@ func TestAccSentryKeyDataSource_name(t *testing.T) {
 	keyName := acctest.RandomWithPrefix("tf-key")
 	dn := "data.sentry_key.test"
 
-	fmt.Println(testAccSentryKeyDataSourceConfig_name(teamName, projectName, keyName))
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,

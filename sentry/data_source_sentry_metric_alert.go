@@ -63,13 +63,6 @@ func dataSourceSentryMetricAlert() *schema.Resource {
 				Type:     schema.TypeFloat,
 				Computed: true,
 			},
-			"projects": {
-				Type:     schema.TypeSet,
-				Computed: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
 			"owner": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -156,7 +149,6 @@ func dataSourceSentryMetricAlertRead(ctx context.Context, d *schema.ResourceData
 		d.Set("time_window", alert.TimeWindow),
 		d.Set("threshold_type", alert.ThresholdType),
 		d.Set("resolve_threshold", alert.ResolveThreshold),
-		d.Set("projects", alert.Projects),
 		d.Set("owner", alert.Owner),
 		d.Set("trigger", flattenMetricAlertTriggers(alert.Triggers)),
 	)
