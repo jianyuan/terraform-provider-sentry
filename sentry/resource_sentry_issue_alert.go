@@ -29,88 +29,114 @@ func resourceSentryIssueAlert() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 
-		Schema: map[string]*schema.Schema{
-			"organization": {
-				Description: "The slug of the organization the issue alert belongs to.",
-				Type:        schema.TypeString,
-				Required:    true,
-			},
-			"project": {
-				Description: "The slug of the project to create the issue alert for.",
-				Type:        schema.TypeString,
-				Required:    true,
-			},
-			"name": {
-				Description: "The issue alert name.",
-				Type:        schema.TypeString,
-				Required:    true,
-			},
-			"conditions": {
-				Description: "List of conditions.",
-				Type:        schema.TypeList,
-				Required:    true,
-				Elem: &schema.Schema{
-					Type: schema.TypeMap,
-				},
-				DiffSuppressFunc: SuppressEquivalentJSONDiffs,
-			},
-			"filters": {
-				Description: "List of filters.",
-				Type:        schema.TypeList,
-				Optional:    true,
-				Elem: &schema.Schema{
-					Type: schema.TypeMap,
-				},
-				DiffSuppressFunc: SuppressEquivalentJSONDiffs,
-			},
-			"actions": {
-				Description: "List of actions.",
-				Type:        schema.TypeList,
-				Required:    true,
-				Elem: &schema.Schema{
-					Type: schema.TypeMap,
-				},
-				DiffSuppressFunc: SuppressEquivalentJSONDiffs,
-			},
-			"action_match": {
-				Description:  "Trigger actions when an event is captured by Sentry and `any` or `all` of the specified conditions happen.",
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validation.StringInSlice([]string{"all", "any"}, false),
-			},
-			"filter_match": {
-				Description:  "Trigger actions if `all`, `any`, or `none` of the specified filters match.",
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validation.StringInSlice([]string{"all", "any", "none"}, false),
-			},
-			"frequency": {
-				Description: "Perform actions at most once every `X` minutes for this issue. Defaults to `30`.",
-				Type:        schema.TypeInt,
-				Required:    true,
-			},
-			"environment": {
-				Description: "Perform issue alert in a specific environment.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-			},
-			"projects": {
-				Deprecated:  "Use `project` (singular) instead.",
-				Description: "Use `project` (singular) instead.",
-				Type:        schema.TypeList,
-				Computed:    true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-			"internal_id": {
-				Description: "The internal ID for this issue alert.",
-				Type:        schema.TypeString,
-				Computed:    true,
+		Schema:        resourceSentryIssueAlertSchema(),
+		SchemaVersion: 1,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Type:    resourceSentryIssueAlertResourceV0().CoreConfigSchema().ImpliedType(),
+				Upgrade: resourceSentryIssueAlertStateUpgradeV0,
+				Version: 0,
 			},
 		},
 	}
+}
+
+func resourceSentryIssueAlertSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"organization": {
+			Description: "The slug of the organization the issue alert belongs to.",
+			Type:        schema.TypeString,
+			Required:    true,
+		},
+		"project": {
+			Description: "The slug of the project to create the issue alert for.",
+			Type:        schema.TypeString,
+			Required:    true,
+		},
+		"name": {
+			Description: "The issue alert name.",
+			Type:        schema.TypeString,
+			Required:    true,
+		},
+		"conditions": {
+			Description: "List of conditions.",
+			Type:        schema.TypeList,
+			Required:    true,
+			Elem: &schema.Schema{
+				Type: schema.TypeMap,
+			},
+			DiffSuppressFunc: SuppressEquivalentJSONDiffs,
+		},
+		"filters": {
+			Description: "List of filters.",
+			Type:        schema.TypeList,
+			Optional:    true,
+			Elem: &schema.Schema{
+				Type: schema.TypeMap,
+			},
+			DiffSuppressFunc: SuppressEquivalentJSONDiffs,
+		},
+		"actions": {
+			Description: "List of actions.",
+			Type:        schema.TypeList,
+			Required:    true,
+			Elem: &schema.Schema{
+				Type: schema.TypeMap,
+			},
+			DiffSuppressFunc: SuppressEquivalentJSONDiffs,
+		},
+		"action_match": {
+			Description:  "Trigger actions when an event is captured by Sentry and `any` or `all` of the specified conditions happen.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringInSlice([]string{"all", "any"}, false),
+		},
+		"filter_match": {
+			Description:  "Trigger actions if `all`, `any`, or `none` of the specified filters match.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringInSlice([]string{"all", "any", "none"}, false),
+		},
+		"frequency": {
+			Description: "Perform actions at most once every `X` minutes for this issue. Defaults to `30`.",
+			Type:        schema.TypeInt,
+			Required:    true,
+		},
+		"environment": {
+			Description: "Perform issue alert in a specific environment.",
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+		},
+		"projects": {
+			Deprecated:  "Use `project` (singular) instead.",
+			Description: "Use `project` (singular) instead.",
+			Type:        schema.TypeList,
+			Computed:    true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"internal_id": {
+			Description: "The internal ID for this issue alert.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+	}
+}
+
+func resourceSentryIssueAlertResourceV0() *schema.Resource {
+	return &schema.Resource{
+		Schema: resourceSentryIssueAlertSchema(),
+	}
+}
+
+func resourceSentryIssueAlertStateUpgradeV0(ctx context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
+	id := rawState["id"].(string)
+	org := rawState["organization"].(string)
+	project := rawState["project"].(string)
+	rawState["id"] = buildThreePartID(org, project, id)
+	return rawState, nil
 }
 
 func resourceSentryIssueAlertObject(d *schema.ResourceData) *sentry.IssueAlert {
