@@ -1,8 +1,16 @@
-# terraform-provider-sentry
+# Terraform Provider Sentry
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/jianyuan/terraform-provider-sentry)](https://goreportcard.com/report/github.com/jianyuan/terraform-provider-sentry)
 
-Terraform provider for [Sentry](https://sentry.io).
+<a href="https://sentry.io/?utm_source=terraform&utm_medium=docs" target="_blank">
+    <img src="templates/sentry-wordmark-dark-280x84.svg" alt="Sentry" width="280">
+</a>
+
+<a href="https://www.terraform.io/" target="_blank">
+    <img src="templates/Terraform_PrimaryLogo_Color_RGB.svg" alt="Terraform" width="280">
+</a>
+
+Terraform provider for [Sentry](https://sentry.io/?utm_source=terraform&utm_medium=docs).
 
 ## Usage
 
