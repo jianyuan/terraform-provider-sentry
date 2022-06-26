@@ -57,7 +57,8 @@ func TestAccSentryProject_basic(t *testing.T) {
 }
 
 func TestAccSentryProject_changeTeam(t *testing.T) {
-	teamName := acctest.RandomWithPrefix("tf-team")
+	teamName1 := acctest.RandomWithPrefix("tf-team")
+	teamName2 := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	rn := "sentry_project.test"
 
@@ -83,12 +84,12 @@ func TestAccSentryProject_changeTeam(t *testing.T) {
 		CheckDestroy:      testAccCheckSentryProjectDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSentryProjectConfig(teamName, projectName),
-				Check:  check(teamName, projectName),
+				Config: testAccSentryProjectConfig_changeTeam(teamName1, teamName2, projectName, "test_1"),
+				Check:  check(teamName1, projectName),
 			},
 			{
-				Config: testAccSentryProjectConfig(teamName+"-renamed", projectName),
-				Check:  check(teamName+"-renamed", projectName),
+				Config: testAccSentryProjectConfig_changeTeam(teamName1, teamName2, projectName, "test_2"),
+				Check:  check(teamName2, projectName),
 			},
 		},
 	})
@@ -164,4 +165,27 @@ resource "sentry_project" "test" {
 	platform     = "go"
 }
 	`, projectName)
+}
+
+func testAccSentryProjectConfig_changeTeam(teamName1, teamName2, projectName, teamResourceName string) string {
+	return testAccSentryOrganizationDataSourceConfig + fmt.Sprintf(`
+resource "sentry_team" "test_1" {
+	organization = data.sentry_organization.test.id
+	name         = "%[1]s"
+	slug         = "%[1]s"
+}
+
+resource "sentry_team" "test_2" {
+	organization = data.sentry_organization.test.id
+	name         = "%[2]s"
+	slug         = "%[2]s"
+}
+
+resource "sentry_project" "test" {
+	organization = sentry_team.%[4]s.organization
+	team         = sentry_team.%[4]s.slug
+	name         = "%[3]s"
+	platform     = "go"
+}
+	`, teamName1, teamName2, projectName, teamResourceName)
 }
