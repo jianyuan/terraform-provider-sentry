@@ -21,6 +21,7 @@ func TestAccSentryTeam_basic(t *testing.T) {
 	check := func(teamName string) resource.TestCheckFunc {
 		return resource.ComposeTestCheckFunc(
 			testAccCheckSentryTeamExists(rn, &teamID),
+			resource.TestCheckResourceAttr(rn, "id", teamName),
 			resource.TestCheckResourceAttrPair(rn, "organization", "data.sentry_organization.test", "id"),
 			resource.TestCheckResourceAttr(rn, "name", teamName),
 			resource.TestCheckResourceAttr(rn, "slug", teamName),

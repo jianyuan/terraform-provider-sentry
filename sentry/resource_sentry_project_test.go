@@ -56,6 +56,44 @@ func TestAccSentryProject_basic(t *testing.T) {
 	})
 }
 
+func TestAccSentryProject_changeTeam(t *testing.T) {
+	teamName := acctest.RandomWithPrefix("tf-team")
+	projectName := acctest.RandomWithPrefix("tf-project")
+	rn := "sentry_project.test"
+
+	check := func(teamName, projectName string) resource.TestCheckFunc {
+		var projectID string
+
+		return resource.ComposeTestCheckFunc(
+			testAccCheckSentryProjectExists(rn, &projectID),
+			resource.TestCheckResourceAttr(rn, "organization", testOrganization),
+			resource.TestCheckResourceAttr(rn, "team", teamName),
+			resource.TestCheckResourceAttr(rn, "name", projectName),
+			resource.TestCheckResourceAttrSet(rn, "slug"),
+			resource.TestCheckResourceAttr(rn, "platform", "go"),
+			resource.TestCheckResourceAttrSet(rn, "internal_id"),
+			resource.TestCheckResourceAttrPtr(rn, "internal_id", &projectID),
+			resource.TestCheckResourceAttrPair(rn, "project_id", rn, "internal_id"),
+		)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckSentryProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccSentryProjectConfig(teamName, projectName),
+				Check:  check(teamName, projectName),
+			},
+			{
+				Config: testAccSentryProjectConfig(teamName+"-renamed", projectName),
+				Check:  check(teamName+"-renamed", projectName),
+			},
+		},
+	})
+}
+
 func testAccCheckSentryProjectDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*sentry.Client)
 
@@ -121,7 +159,7 @@ func testAccSentryProjectConfig(teamName, projectName string) string {
 	return testAccSentryTeamConfig(teamName) + fmt.Sprintf(`
 resource "sentry_project" "test" {
 	organization = sentry_team.test.organization
-	team         = sentry_team.test.id
+	team         = sentry_team.test.slug
 	name         = "%[1]s"
 	platform     = "go"
 }

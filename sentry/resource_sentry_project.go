@@ -2,6 +2,7 @@ package sentry
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -184,7 +185,7 @@ func resourceSentryProjectRead(ctx context.Context, d *schema.ResourceData, meta
 func resourceSentryProjectUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
-	slug := d.Id()
+	project := d.Id()
 	org := d.Get("organization").(string)
 	params := &sentry.UpdateProjectParams{
 		Name: d.Get("name").(string),
@@ -208,21 +209,45 @@ func resourceSentryProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 		params.ResolveAge = sentry.Int(v.(int))
 	}
 
-	tflog.Debug(ctx, "Updating Sentry project", map[string]interface{}{
-		"projectSlug": slug,
-		"org":         org,
+	tflog.Debug(ctx, "Updating project", map[string]interface{}{
+		"org":     org,
+		"project": project,
 	})
-	proj, _, err := client.Projects.Update(ctx, org, slug, params)
+	proj, _, err := client.Projects.Update(ctx, org, project, params)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	tflog.Debug(ctx, "Updated Sentry project", map[string]interface{}{
-		"projectSlug": proj.Slug,
-		"projectID":   proj.ID,
-		"org":         org,
-	})
 
 	d.SetId(proj.Slug)
+
+	if d.HasChange("team") {
+		o, n := d.GetChange("team")
+
+		tflog.Debug(ctx, "Adding team to project", map[string]interface{}{
+			"org":     org,
+			"project": project,
+			"team":    n,
+		})
+		_, _, err = client.Projects.AddTeam(ctx, org, project, n.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		if o := o.(string); o != "" {
+			tflog.Debug(ctx, "Removing team from project", map[string]interface{}{
+				"org":     org,
+				"project": project,
+				"team":    o,
+			})
+			resp, err := client.Projects.RemoveTeam(ctx, org, project, o)
+			if err != nil {
+				if resp.Response.StatusCode != http.StatusNotFound {
+					return diag.FromErr(err)
+				}
+			}
+		}
+	}
+
 	return resourceSentryProjectRead(ctx, d, meta)
 }
 
