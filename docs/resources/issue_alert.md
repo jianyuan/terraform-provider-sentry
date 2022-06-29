@@ -145,4 +145,13 @@ resource "sentry_issue_alert" "main" {
 - `internal_id` (String) The internal ID for this issue alert.
 - `projects` (List of String, Deprecated) Use `project` (singular) instead.
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+# import using the organization, project slugs and rule id from the URL:
+# https://sentry.io/organizations/[org-slug]/projects/[project-slug]/
+# https://sentry.io/organizations/[org-slug]/alerts/rules/details/[rule-id]/
+terraform import sentry_issue_alert.default org-slug/project-slug/rule-id
+```
