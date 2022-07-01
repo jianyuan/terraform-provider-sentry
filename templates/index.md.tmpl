@@ -6,7 +6,52 @@ description: |-
 
 # Sentry Provider
 
-Terraform provider for [Sentry](https://sentry.io).
+Terraform provider for [Sentry](https://sentry.io). The provider utilises the [Web APIs](https://docs.sentry.io/api/) to interact with Sentry resources:
+
+**Organization**
+
+- Manage [sentry_organization](resources/organization.md)
+- Manage [sentry_team](resources/team.md)
+
+**Project**
+
+- Manage [sentry_project](resources/project.md)
+- Manage client keys using [sentry_key](resources/key.md)
+
+**Alerts and Dashboard**
+
+- Manage [sentry_dashboard](resources/dashboard.md)
+- Manage [sentry_issue_alert](resources/issue_alert.md)
+- Manage [sentry_metric_alert](resources/metric_alert.md)
+
+## Setup
+
+### Authentication
+
+You will need to configure the provider by providing an authentication token. You can create an authentication token within Sentry by [creating an internal integration](https://docs.sentry.io/product/integrations/integration-platform/internal-integration/#auth-tokens). This is also available for self-hosted Sentry.
+
+```terraform
+provider "sentry" {
+  token = "my-auth-token"
+}
+```
+
+It's best practice not to store the authentication token in plain text. As an alternative, the provider can source the authentication token from the `SENTRY_AUTH_TOKEN` environment variable. If you choose to do this, you can omit the token variable from the configuration block above.
+
+```terraform
+provider "sentry" {}
+```
+
+### Self-hosted Sentry
+
+If you are self-hosting Sentry, you can set the base URL here. The URL format must be in the format `https://[hostname]/api/`.
+
+```terraform
+# Configure the Sentry Provider
+provider "sentry" {
+  base_url = "https://example.com/api/"
+}
+```
 
 ## Example Usage
 
