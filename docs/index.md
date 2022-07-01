@@ -6,7 +6,23 @@ description: |-
 
 # Sentry Provider
 
-Terraform provider for [Sentry](https://sentry.io). The provider utilises the [Web APIs](https://docs.sentry.io/api/) to interact with Sentry resources.
+Terraform provider for [Sentry](https://sentry.io). The provider utilises the [Web APIs](https://docs.sentry.io/api/) to interact with Sentry resources:
+
+**Organization**
+
+- Manage [sentry_organization](resources/organization.md)
+- Manage [sentry_team](resources/team.md)
+
+**Project**
+
+- Manage [sentry_project](resources/project.md)
+- Manage client keys using [sentry_key](resources/key.md)
+
+**Alerts and Dashboard**
+
+- Manage [sentry_dashboard](resources/dashboard.md)
+- Manage [sentry_issue_alert](resources/issue_alert.md)
+- Manage [sentry_metric_alert](resources/metric_alert.md)
 
 ## Setup
 
