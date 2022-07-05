@@ -1,17 +1,37 @@
 package sentry
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
 
-	"github.com/canva/go-sentry/sentry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
 func TestAccSentryKey_basic(t *testing.T) {
-	var key sentry.ProjectKey
+	teamName := acctest.RandomWithPrefix("tf-team")
+	projectName := acctest.RandomWithPrefix("tf-project")
+	keyName := acctest.RandomWithPrefix("tf-key")
+	rn := "sentry_key.test"
+
+	check := func(keyName string) resource.TestCheckFunc {
+		var keyID string
+
+		return resource.ComposeTestCheckFunc(
+			testAccCheckSentryKeyExists(rn, &keyID),
+			resource.TestCheckResourceAttrPtr(rn, "id", &keyID),
+			resource.TestCheckResourceAttr(rn, "name", keyName),
+			resource.TestCheckResourceAttrSet(rn, "public"),
+			resource.TestCheckResourceAttrSet(rn, "secret"),
+			resource.TestCheckResourceAttrSet(rn, "dsn_secret"),
+			resource.TestCheckResourceAttrSet(rn, "dsn_public"),
+			resource.TestCheckResourceAttrSet(rn, "dsn_csp"),
+		)
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -19,35 +39,45 @@ func TestAccSentryKey_basic(t *testing.T) {
 		CheckDestroy: testAccCheckSentryKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSentryKeyConfig,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSentryKeyExists("sentry_key.test_key", &key),
-					resource.TestCheckResourceAttr("sentry_key.test_key", "name", "Test key"),
-					resource.TestCheckResourceAttrSet("sentry_key.test_key", "public"),
-					resource.TestCheckResourceAttrSet("sentry_key.test_key", "secret"),
-					resource.TestCheckResourceAttrSet("sentry_key.test_key", "dsn_secret"),
-					resource.TestCheckResourceAttrSet("sentry_key.test_key", "dsn_public"),
-					resource.TestCheckResourceAttrSet("sentry_key.test_key", "dsn_csp"),
-				),
+				Config: testAccSentryKeyConfig(teamName, projectName, keyName),
+				Check:  check(keyName),
 			},
 			{
-				Config: testAccSentryKeyUpdateConfig,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSentryKeyExists("sentry_key.test_key", &key),
-					resource.TestCheckResourceAttr("sentry_key.test_key", "name", "Test key changed"),
-					resource.TestCheckResourceAttrSet("sentry_key.test_key", "public"),
-					resource.TestCheckResourceAttrSet("sentry_key.test_key", "secret"),
-					resource.TestCheckResourceAttrSet("sentry_key.test_key", "dsn_secret"),
-					resource.TestCheckResourceAttrSet("sentry_key.test_key", "dsn_public"),
-					resource.TestCheckResourceAttrSet("sentry_key.test_key", "dsn_csp"),
-				),
+				Config: testAccSentryKeyConfig(teamName, projectName, keyName+"-renamed"),
+				Check:  check(keyName + "-renamed"),
+			},
+			{
+				ResourceName:      rn,
+				ImportState:       true,
+				ImportStateIdFunc: testAccSentryKeyImportStateIdFunc(rn),
+				ImportStateVerify: true,
 			},
 		},
 	})
 }
 
 func TestAccSentryKey_RateLimit(t *testing.T) {
-	var key sentry.ProjectKey
+	teamName := acctest.RandomWithPrefix("tf-team")
+	projectName := acctest.RandomWithPrefix("tf-project")
+	keyName := acctest.RandomWithPrefix("tf-key")
+	rn := "sentry_key.test"
+
+	check := func(keyName, rateLimitWindow, rateLimitCount string) resource.TestCheckFunc {
+		var keyID string
+
+		return resource.ComposeTestCheckFunc(
+			testAccCheckSentryKeyExists(rn, &keyID),
+			resource.TestCheckResourceAttrPtr(rn, "id", &keyID),
+			resource.TestCheckResourceAttr(rn, "name", keyName),
+			resource.TestCheckResourceAttrSet(rn, "public"),
+			resource.TestCheckResourceAttrSet(rn, "secret"),
+			resource.TestCheckResourceAttrSet(rn, "dsn_secret"),
+			resource.TestCheckResourceAttrSet(rn, "dsn_public"),
+			resource.TestCheckResourceAttrSet(rn, "dsn_csp"),
+			resource.TestCheckResourceAttr(rn, "rate_limit_window", rateLimitWindow),
+			resource.TestCheckResourceAttr(rn, "rate_limit_count", rateLimitCount),
+		)
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -55,20 +85,18 @@ func TestAccSentryKey_RateLimit(t *testing.T) {
 		CheckDestroy: testAccCheckSentryKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSentryKeyConfig,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSentryKeyExists("sentry_key.test_key_rate_limit", &key),
-					resource.TestCheckResourceAttr("sentry_key.test_key_rate_limit", "rate_limit_window", "86400"),
-					resource.TestCheckResourceAttr("sentry_key.test_key_rate_limit", "rate_limit_count", "1000"),
-				),
+				Config: testAccSentryKeyConfig_rateLimit(teamName, projectName, keyName, "86400", "1000"),
+				Check:  check(keyName, "86400", "1000"),
 			},
 			{
-				Config: testAccSentryKeyUpdateConfig,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSentryKeyExists("sentry_key.test_key_rate_limit", &key),
-					resource.TestCheckResourceAttr("sentry_key.test_key_rate_limit", "rate_limit_window", "100"),
-					resource.TestCheckResourceAttr("sentry_key.test_key_rate_limit", "rate_limit_count", "100"),
-				),
+				Config: testAccSentryKeyConfig_rateLimit(teamName, projectName, keyName, "100", "100"),
+				Check:  check(keyName, "100", "100"),
+			},
+			{
+				ResourceName:      rn,
+				ImportState:       true,
+				ImportStateIdFunc: testAccSentryKeyImportStateIdFunc(rn),
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -82,9 +110,12 @@ func testAccCheckSentryKeyDestroy(s *terraform.State) error {
 			continue
 		}
 
+		ctx := context.Background()
 		keys, resp, err := client.ProjectKeys.List(
+			ctx,
 			rs.Primary.Attributes["organization"],
 			rs.Primary.Attributes["project"],
+			nil,
 		)
 		if err == nil {
 			for _, key := range keys {
@@ -101,21 +132,24 @@ func testAccCheckSentryKeyDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckSentryKeyExists(n string, projectKey *sentry.ProjectKey) resource.TestCheckFunc {
+func testAccCheckSentryKeyExists(n string, keyID *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return fmt.Errorf("not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
-			return errors.New("No key ID is set")
+			return errors.New("no key ID is set")
 		}
 
 		client := testAccProvider.Meta().(*sentry.Client)
+		ctx := context.Background()
 		keys, _, err := client.ProjectKeys.List(
+			ctx,
 			rs.Primary.Attributes["organization"],
 			rs.Primary.Attributes["project"],
+			nil,
 		)
 		if err != nil {
 			return err
@@ -123,64 +157,45 @@ func testAccCheckSentryKeyExists(n string, projectKey *sentry.ProjectKey) resour
 
 		for _, key := range keys {
 			if key.ID == rs.Primary.ID {
-				*projectKey = key
-				break
+				*keyID = key.ID
+				return nil
 			}
 		}
-		return nil
+		return fmt.Errorf("not found: %s", n)
 	}
 }
 
-var testAccSentryKeyConfig = fmt.Sprintf(`
-	resource "sentry_team" "test_team" {
-		organization = "%[1]s"
-		name = "Test team"
+func testAccSentryKeyImportStateIdFunc(n string) resource.ImportStateIdFunc {
+	return func(s *terraform.State) (string, error) {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return "", fmt.Errorf("not found: %s", n)
+		}
+		org := rs.Primary.Attributes["organization"]
+		proj := rs.Primary.Attributes["project"]
+		keyID := rs.Primary.ID
+		return buildThreePartID(org, proj, keyID), nil
 	}
+}
 
-	resource "sentry_project" "test_project" {
-		organization = "%[1]s"
-		team = "${sentry_team.test_team.id}"
-		name = "Test project"
-	}
+func testAccSentryKeyConfig(teamName, projectName, keyName string) string {
+	return testAccSentryProjectConfig(teamName, projectName) + fmt.Sprintf(`
+resource "sentry_key" "test" {
+	organization      = sentry_project.test.organization
+	project           = sentry_project.test.id
+	name              = "%[1]s"
+}
+	`, keyName)
+}
 
-	resource "sentry_key" "test_key" {
-		organization = "%[1]s"
-		project = "${sentry_project.test_project.id}"
-		name = "Test key"
-	}
-
-	resource "sentry_key" "test_key_rate_limit" {
-		organization = "%[1]s"
-		project = "${sentry_project.test_project.id}"
-		name = "Test key"
-		rate_limit_window = 86400
-		rate_limit_count = 1000
-	}
-`, testOrganization)
-
-var testAccSentryKeyUpdateConfig = fmt.Sprintf(`
-	resource "sentry_team" "test_team" {
-		organization = "%[1]s"
-		name = "Test team"
-	}
-
-	resource "sentry_project" "test_project" {
-		organization = "%[1]s"
-		team = "${sentry_team.test_team.id}"
-		name = "Test project"
-	}
-
-	resource "sentry_key" "test_key" {
-		organization = "%[1]s"
-		project = "${sentry_project.test_project.id}"
-		name = "Test key changed"
-	}
-
-	resource "sentry_key" "test_key_rate_limit" {
-		organization = "%[1]s"
-		project = "${sentry_project.test_project.id}"
-		name = "Test key"
-		rate_limit_window = 100
-		rate_limit_count = 100
-	}
-`, testOrganization)
+func testAccSentryKeyConfig_rateLimit(teamName, projectName, keyName, rateLimitWindow, rateLimitCount string) string {
+	return testAccSentryProjectConfig(teamName, projectName) + fmt.Sprintf(`
+resource "sentry_key" "test" {
+	organization      = sentry_project.test.organization
+	project           = sentry_project.test.id
+	name              = "%[1]s"
+	rate_limit_window = %[2]s
+	rate_limit_count  = %[3]s
+}
+	`, keyName, rateLimitWindow, rateLimitCount)
+}

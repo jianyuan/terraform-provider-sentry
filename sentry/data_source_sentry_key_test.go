@@ -5,27 +5,32 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccSentryKeyDataSource_basic(t *testing.T) {
+	teamName := acctest.RandomWithPrefix("tf-team")
+	projectName := acctest.RandomWithPrefix("tf-project")
+	dn := "data.sentry_key.test"
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSentryKeyDataSourceConfig,
+				Config: testAccSentryKeyDataSourceConfig(teamName, projectName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSentryKeyDataSourceID("data.sentry_key.test_key"),
-					resource.TestCheckResourceAttrSet("data.sentry_key.test_key", "name"),
-					resource.TestMatchResourceAttr("data.sentry_key.test_key", "public", regexp.MustCompile(`^[0-9a-f]+$`)),
-					resource.TestMatchResourceAttr("data.sentry_key.test_key", "secret", regexp.MustCompile(`^[0-9a-f]+$`)),
-					resource.TestMatchResourceAttr("data.sentry_key.test_key", "project_id", regexp.MustCompile(`^\d+$`)),
-					resource.TestCheckResourceAttrSet("data.sentry_key.test_key", "is_active"),
-					resource.TestMatchResourceAttr("data.sentry_key.test_key", "dsn_secret", regexp.MustCompile(`^https://`)),
-					resource.TestMatchResourceAttr("data.sentry_key.test_key", "dsn_public", regexp.MustCompile(`^https://`)),
-					resource.TestMatchResourceAttr("data.sentry_key.test_key", "dsn_csp", regexp.MustCompile(`^https://`)),
+					testAccCheckSentryKeyDataSourceID(dn),
+					resource.TestCheckResourceAttr(dn, "name", "Default"),
+					resource.TestMatchResourceAttr(dn, "public", regexp.MustCompile(`^[0-9a-f]+$`)),
+					resource.TestMatchResourceAttr(dn, "secret", regexp.MustCompile(`^[0-9a-f]+$`)),
+					resource.TestMatchResourceAttr(dn, "project_id", regexp.MustCompile(`^\d+$`)),
+					resource.TestCheckResourceAttrSet(dn, "is_active"),
+					resource.TestMatchResourceAttr(dn, "dsn_secret", regexp.MustCompile(`^https://`)),
+					resource.TestMatchResourceAttr(dn, "dsn_public", regexp.MustCompile(`^https://`)),
+					resource.TestMatchResourceAttr(dn, "dsn_csp", regexp.MustCompile(`^https://`)),
 				),
 			},
 		},
@@ -33,14 +38,19 @@ func TestAccSentryKeyDataSource_basic(t *testing.T) {
 }
 
 func TestAccSentryKeyDataSource_first(t *testing.T) {
+	teamName := acctest.RandomWithPrefix("tf-team")
+	projectName := acctest.RandomWithPrefix("tf-project")
+	dn := "data.sentry_key.test"
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSentryKeyDataSourceFirstConfig,
+				Config: testAccSentryKeyDataSourceConfig_first(teamName, projectName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSentryKeyDataSourceID("data.sentry_key.test_key"),
+					testAccCheckSentryKeyDataSourceID(dn),
+					resource.TestCheckResourceAttr(dn, "name", "Default"),
 				),
 			},
 		},
@@ -48,14 +58,20 @@ func TestAccSentryKeyDataSource_first(t *testing.T) {
 }
 
 func TestAccSentryKeyDataSource_name(t *testing.T) {
+	teamName := acctest.RandomWithPrefix("tf-team")
+	projectName := acctest.RandomWithPrefix("tf-project")
+	keyName := acctest.RandomWithPrefix("tf-key")
+	dn := "data.sentry_key.test"
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSentryKeyDataSourceNameConfig,
+				Config: testAccSentryKeyDataSourceConfig_name(teamName, projectName, keyName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSentryKeyDataSourceID("data.sentry_key.default_key"),
+					testAccCheckSentryKeyDataSourceID(dn),
+					resource.TestCheckResourceAttr(dn, "name", keyName),
 				),
 			},
 		},
@@ -77,67 +93,49 @@ func testAccCheckSentryKeyDataSourceID(n string) resource.TestCheckFunc {
 	}
 }
 
-var testAccSentryKeyDataSourceConfig = fmt.Sprintf(`
-resource "sentry_team" "test_team" {
-  organization = "%s"
-  name = "Test team"
+func testAccSentryKeyDataSourceConfig(teamName, projectName string) string {
+	return testAccSentryProjectConfig(teamName, projectName) + `
+data "sentry_key" "test" {
+	organization = sentry_project.test.organization
+	project      = sentry_project.test.id
 }
-
-resource "sentry_project" "test_project" {
-  organization = "%s"
-  team = "${sentry_team.test_team.id}"
-  name = "Test project"
+	`
 }
-
-data "sentry_key" "test_key" {
-  organization = "%s"
-  project = "${sentry_project.test_project.id}"
-}
-`, testOrganization, testOrganization, testOrganization)
 
 // Testing first parameter
-var testAccSentryKeyDataSourceFirstConfig = fmt.Sprintf(`
-resource "sentry_team" "test_team" {
-  organization = "%s"
-  name = "Test team"
+func testAccSentryKeyDataSourceConfig_first(teamName, projectName string) string {
+	return testAccSentryProjectConfig(teamName, projectName) + `
+resource "sentry_key" "test_2" {
+	organization = sentry_project.test.organization
+	project      = sentry_project.test.id
+
+	name = "Test key 2"
 }
 
-resource "sentry_project" "test_project" {
-  organization = "%s"
-  team = "${sentry_team.test_team.id}"
-  name = "Test project"
-}
+data "sentry_key" "test" {
+	organization = sentry_project.test.organization
+	project      = sentry_project.test.id
 
-resource "sentry_key" "test_key_2" {
-  organization = "%s"
-  project = "${sentry_project.test_project.id}"
-  name = "Test key 2"
+	first = true
 }
-
-data "sentry_key" "test_key" {
-  organization = "%s"
-  project = "${sentry_project.test_project.id}"
-  first = true
+	`
 }
-`, testOrganization, testOrganization, testOrganization, testOrganization)
 
 // Testing name parameter
-// A key named "Default" is always created along with the project
-var testAccSentryKeyDataSourceNameConfig = fmt.Sprintf(`
-resource "sentry_team" "test_team" {
-  organization = "%s"
-  name = "Test team"
+func testAccSentryKeyDataSourceConfig_name(teamName, projectName, keyName string) string {
+	return testAccSentryProjectConfig(teamName, projectName) + fmt.Sprintf(`
+resource "sentry_key" "test_2" {
+	organization = sentry_project.test.organization
+	project      = sentry_project.test.id
+
+	name = "%[1]s"
 }
 
-resource "sentry_project" "test_project" {
-  organization = "%s"
-  team = "${sentry_team.test_team.id}"
-  name = "Test project"
-}
+data "sentry_key" "test" {
+	organization = sentry_project.test.organization
+	project      = sentry_project.test.id
 
-data "sentry_key" "default_key" {
-  organization = "%s"
-  project = "${sentry_project.test_project.id}"
-  name = "Default"
+	name = sentry_key.test_2.name
 }
-`, testOrganization, testOrganization, testOrganization)
+	`, keyName)
+}

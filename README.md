@@ -1,24 +1,24 @@
-# terraform-provider-sentry
+# Terraform Provider Sentry
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/jianyuan/terraform-provider-sentry)](https://goreportcard.com/report/github.com/jianyuan/terraform-provider-sentry)
 
-Terraform provider for [Sentry](https://sentry.io).
+<a href="https://sentry.io/?utm_source=terraform&utm_medium=docs" target="_blank">
+    <img src="templates/sentry-wordmark-dark-280x84.svg" alt="Sentry" width="280">
+</a>
 
-[This package is also published on the official Terraform registry](https://registry.terraform.io/providers/jianyuan/sentry/latest).
+<a href="https://www.terraform.io/" target="_blank">
+    <img src="templates/Terraform_PrimaryLogo_Color_RGB.svg" alt="Terraform" width="280">
+</a>
+
+Terraform provider for [Sentry](https://sentry.io/?utm_source=terraform&utm_medium=docs).
 
 ## Usage
 
-[See the docs for usage information](./docs).
-
-## Installation
-
-See the [the Provider Configuration page of the Terraform documentation](https://www.terraform.io/docs/configuration/providers.html#third-party-plugins) for instructions.
-
-Pre-compiled binaries are available from the [Releases](https://github.com/jianyuan/terraform-provider-sentry/releases) page.
+Detailed documentation is available on the [Terraform provider registry](https://registry.terraform.io/providers/jianyuan/sentry/latest).
 
 ## Development
 
-If you wish to work on the provider, you will need to install [Go](https://go.dev/doc/install) (We use >= 1.17) on your machine.
+If you wish to work on the provider, you will need to install [Go](https://go.dev/doc/install) (We use >= 1.18) on your machine.
 
 ### Test
 

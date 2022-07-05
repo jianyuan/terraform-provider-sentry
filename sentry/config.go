@@ -2,37 +2,60 @@ package sentry
 
 import (
 	"context"
-	"net/url"
+	"net/http"
+	"time"
 
-	"github.com/canva/go-sentry/sentry"
+	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/jianyuan/go-sentry/v2/sentry"
+	"golang.org/x/oauth2"
 )
 
 // Config is the configuration structure used to instantiate the Sentry
 // provider.
 type Config struct {
-	Token   string
-	BaseURL string
+	UserAgent string
+	Token     string
+	BaseURL   string
 }
 
 // Client to connect to Sentry.
 func (c *Config) Client(ctx context.Context) (interface{}, diag.Diagnostics) {
-	var baseURL *url.URL
-	var err error
+	tflog.Info(ctx, "Instantiating Sentry client...")
 
-	if c.BaseURL != "" {
-		tflog.Debug(ctx, "Parsing base url", map[string]interface{}{"BaseUrl": c.BaseURL})
-		baseURL, err = url.Parse(c.BaseURL)
+	// Handle rate limit
+	retryClient := retryablehttp.NewClient()
+	retryClient.Logger = nil // Disable DEBUG logs
+	retryClient.CheckRetry = retryablehttp.ErrorPropagatedRetryPolicy
+	retryClient.Backoff = func(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration {
+		if rateLimitErr, ok := sentry.CheckResponse(resp).(*sentry.RateLimitError); ok {
+			return time.Until(rateLimitErr.Rate.Reset)
+		}
+		return retryablehttp.DefaultBackoff(min, max, attemptNum, resp)
+	}
+	retryHTTPClient := retryClient.StandardClient()
+
+	ctx = context.WithValue(ctx, oauth2.HTTPClient, retryHTTPClient)
+
+	// Authentication
+	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.Token})
+	httpClient := oauth2.NewClient(ctx, ts)
+
+	// Initialize client
+	var cl *sentry.Client
+	var err error
+	if c.BaseURL == "" {
+		cl = sentry.NewClient(httpClient)
+	} else {
+		cl, err = sentry.NewOnPremiseClient(c.BaseURL, httpClient)
 		if err != nil {
 			return nil, diag.FromErr(err)
 		}
-	} else {
-		tflog.Warn(ctx, "No base URL was set for the Sentry client")
 	}
 
-	tflog.Info(ctx, "Instantiating Sentry client...")
-	cl := sentry.NewClient(nil, baseURL, c.Token)
+	// Set user agent
+	cl.UserAgent = c.UserAgent
 
 	return cl, nil
 }

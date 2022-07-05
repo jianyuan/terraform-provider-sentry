@@ -1,6 +1,7 @@
 package sentry
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"sort"
@@ -14,64 +15,83 @@ import (
 )
 
 func TestAccSentryProject_basic(t *testing.T) {
-	var project sentry.Project
+	teamName := acctest.RandomWithPrefix("tf-team")
+	projectName := acctest.RandomWithPrefix("tf-project")
+	rn := "sentry_project.test"
 
-	random := acctest.RandInt()
-	newProjectSlug := fmt.Sprintf("test-project-%d", random)
+	check := func(projectName string) resource.TestCheckFunc {
+		var projectID string
 
-	testAccSentryProjectUpdateConfig := fmt.Sprintf(`
-	  resource "sentry_team" "test_team" {
-	    organization = "%s"
-	    name = "Test team"
-	  }
-
-	  resource "sentry_project" "test_project" {
-	    organization = "%s"
-	    team = "${sentry_team.test_team.id}"
-	    name = "Test project changed"
-	    slug = "%s"
-	    platform = "go"
-		allowed_domains = ["www.canva.com", "www.canva.cn"]
-		grouping_enhancements = "function:panic_handler ^-group"
-	  }
-	`, testOrganization, testOrganization, newProjectSlug)
+		return resource.ComposeTestCheckFunc(
+			testAccCheckSentryProjectExists(rn, &projectID),
+			resource.TestCheckResourceAttr(rn, "organization", testOrganization),
+			resource.TestCheckResourceAttr(rn, "team", teamName),
+			resource.TestCheckResourceAttr(rn, "name", projectName),
+			resource.TestCheckResourceAttrSet(rn, "slug"),
+			resource.TestCheckResourceAttr(rn, "platform", "go"),
+			resource.TestCheckResourceAttrSet(rn, "internal_id"),
+			resource.TestCheckResourceAttrPtr(rn, "internal_id", &projectID),
+			resource.TestCheckResourceAttrPair(rn, "project_id", rn, "internal_id"),
+		)
+	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckSentryProjectDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckSentryProjectDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSentryProjectConfig,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSentryProjectExists("sentry_project.test_project", &project),
-					testAccCheckSentryProjectAttributes(&project, &testAccSentryProjectExpectedAttributes{
-						Name:         "Test project",
-						Organization: testOrganization,
-						Team:         "Test team",
-						SlugPresent:  true,
-						Platform:     "go",
-
-						AllowedDomains:       []string{"*"},
-						GroupingEnhancements: "",
-					}),
-				),
+				Config: testAccSentryProjectConfig(teamName, projectName),
+				Check:  check(projectName),
 			},
 			{
-				Config: testAccSentryProjectUpdateConfig,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSentryProjectExists("sentry_project.test_project", &project),
-					testAccCheckSentryProjectAttributes(&project, &testAccSentryProjectExpectedAttributes{
-						Name:         "Test project changed",
-						Organization: testOrganization,
-						Team:         "Test team",
-						Slug:         newProjectSlug,
-						Platform:     "go",
+				Config: testAccSentryProjectConfig(teamName, projectName+"-renamed"),
+				Check:  check(projectName + "-renamed"),
+			},
+			{
+				ResourceName:      rn,
+				ImportState:       true,
+				ImportStateIdFunc: testAccSentryProjectImportStateIdFunc(rn),
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
 
-						AllowedDomains:       []string{"www.canva.com", "www.canva.cn"},
-						GroupingEnhancements: "function:panic_handler ^-group",
-					}),
-				),
+func TestAccSentryProject_changeTeam(t *testing.T) {
+	teamName1 := acctest.RandomWithPrefix("tf-team")
+	teamName2 := acctest.RandomWithPrefix("tf-team")
+	projectName := acctest.RandomWithPrefix("tf-project")
+	rn := "sentry_project.test"
+
+	check := func(teamName, projectName string) resource.TestCheckFunc {
+		var projectID string
+
+		return resource.ComposeTestCheckFunc(
+			testAccCheckSentryProjectExists(rn, &projectID),
+			resource.TestCheckResourceAttr(rn, "organization", testOrganization),
+			resource.TestCheckResourceAttr(rn, "team", teamName),
+			resource.TestCheckResourceAttr(rn, "name", projectName),
+			resource.TestCheckResourceAttrSet(rn, "slug"),
+			resource.TestCheckResourceAttr(rn, "platform", "go"),
+			resource.TestCheckResourceAttrSet(rn, "internal_id"),
+			resource.TestCheckResourceAttrPtr(rn, "internal_id", &projectID),
+			resource.TestCheckResourceAttrPair(rn, "project_id", rn, "internal_id"),
+		)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckSentryProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccSentryProjectConfig_changeTeam(teamName1, teamName2, projectName, "test_1"),
+				Check:  check(teamName1, projectName),
+			},
+			{
+				Config: testAccSentryProjectConfig_changeTeam(teamName1, teamName2, projectName, "test_2"),
+				Check:  check(teamName2, projectName),
 			},
 			{
 				Config: testAccSentryProjectRemoveKeyConfig,
@@ -93,13 +113,14 @@ func testAccCheckSentryProjectDestroy(s *terraform.State) error {
 			continue
 		}
 
-		proj, resp, err := client.Projects.Get(testOrganization, rs.Primary.ID)
+		ctx := context.Background()
+		proj, resp, err := client.Projects.Get(ctx, testOrganization, rs.Primary.ID)
 		if err == nil {
 			if proj != nil {
-				return errors.New("Project still exists")
+				return errors.New("project still exists")
 			}
 		}
-		if resp.StatusCode != 404 {
+		if resp.StatusCode != 403 && resp.StatusCode != 404 {
 			return err
 		}
 		return nil
@@ -107,150 +128,74 @@ func testAccCheckSentryProjectDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckSentryProjectExists(n string, proj *sentry.Project) resource.TestCheckFunc {
+func testAccCheckSentryProjectExists(n string, projectID *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return fmt.Errorf("not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
-			return errors.New("No project ID is set")
+			return errors.New("no ID is set")
 		}
 
 		client := testAccProvider.Meta().(*sentry.Client)
-		sentryProj, _, err := client.Projects.Get(
+		ctx := context.Background()
+		gotProj, _, err := client.Projects.Get(
+			ctx,
 			rs.Primary.Attributes["organization"],
 			rs.Primary.ID,
 		)
 		if err != nil {
 			return err
 		}
-		*proj = *sentryProj
+		*projectID = gotProj.ID
 		return nil
 	}
 }
 
-type testAccSentryProjectExpectedAttributes struct {
-	Name         string
-	Organization string
-	Team         string
-
-	SlugPresent bool
-	Slug        string
-	Platform    string
-
-	AllowedDomains       []string
-	GroupingEnhancements string
-}
-
-func testAccCheckSentryProjectAttributes(proj *sentry.Project, want *testAccSentryProjectExpectedAttributes) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		if proj.Name != want.Name {
-			return fmt.Errorf("got proj %q; want %q", proj.Name, want.Name)
+func testAccSentryProjectImportStateIdFunc(n string) resource.ImportStateIdFunc {
+	return func(s *terraform.State) (string, error) {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return "", fmt.Errorf("not found: %s", n)
 		}
-
-		if proj.Organization.Slug != want.Organization {
-			return fmt.Errorf("got organization %q; want %q", proj.Organization.Slug, want.Organization)
-		}
-
-		if proj.Team.Name != want.Team {
-			return fmt.Errorf("got team %q; want %q", proj.Team.Name, want.Team)
-		}
-
-		if want.SlugPresent && proj.Slug == "" {
-			return errors.New("got empty slug; want non-empty slug")
-		}
-
-		if want.Slug != "" && proj.Slug != want.Slug {
-			return fmt.Errorf("got slug %q; want %q", proj.Slug, want.Slug)
-		}
-
-		if want.Platform != "" && proj.Platform != want.Platform {
-			return fmt.Errorf("got Platform %q; want %q", proj.Platform, want.Platform)
-		}
-
-		if !cmp.Equal(proj.AllowedDomains, want.AllowedDomains, cmp.Transformer("sort", func(in []string) []string {
-			sort.Strings(in)
-			return in
-		})) {
-			return fmt.Errorf("got allowed domain: %q; want %q", proj.AllowedDomains, want.AllowedDomains)
-		}
-
-		if want.GroupingEnhancements != "" && proj.GroupingEnhancements != want.GroupingEnhancements {
-			return fmt.Errorf("got GroupingEnhancements %q; want %q", proj.GroupingEnhancements, want.GroupingEnhancements)
-		}
-
-		return nil
+		org := rs.Primary.Attributes["organization"]
+		projectSlug := rs.Primary.ID
+		return buildTwoPartID(org, projectSlug), nil
 	}
 }
 
-func testAccCheckSentryKeyRemoved(n string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs := s.RootModule().Resources[n]
-		client := testAccProvider.Meta().(*sentry.Client)
-		keys, _, err := client.ProjectKeys.List(rs.Primary.Attributes["organization"], rs.Primary.ID)
-		if err != nil {
-			return err
-		}
-		if len(keys) != 0 {
-			return fmt.Errorf("Default key not removed")
-		}
-		return nil
-	}
+func testAccSentryProjectConfig(teamName, projectName string) string {
+	return testAccSentryTeamConfig(teamName) + fmt.Sprintf(`
+resource "sentry_project" "test" {
+	organization = sentry_team.test.organization
+	team         = sentry_team.test.slug
+	name         = "%[1]s"
+	platform     = "go"
+}
+	`, projectName)
 }
 
-func testAccCheckSentryRuleRemoved(n string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs := s.RootModule().Resources[n]
-		client := testAccProvider.Meta().(*sentry.Client)
-		keys, _, err := client.Rules.List(rs.Primary.Attributes["organization"], rs.Primary.ID)
-		if err != nil {
-			return err
-		}
-		if len(keys) != 0 {
-			return fmt.Errorf("Default rule not removed")
-		}
-		return nil
-	}
+func testAccSentryProjectConfig_changeTeam(teamName1, teamName2, projectName, teamResourceName string) string {
+	return testAccSentryOrganizationDataSourceConfig + fmt.Sprintf(`
+resource "sentry_team" "test_1" {
+	organization = data.sentry_organization.test.id
+	name         = "%[1]s"
+	slug         = "%[1]s"
 }
 
-var testAccSentryProjectConfig = fmt.Sprintf(`
-  resource "sentry_team" "test_team" {
-    organization = "%s"
-    name = "Test team"
-  }
+resource "sentry_team" "test_2" {
+	organization = data.sentry_organization.test.id
+	name         = "%[2]s"
+	slug         = "%[2]s"
+}
 
-  resource "sentry_project" "test_project" {
-    organization = "%s"
-    team = "${sentry_team.test_team.id}"
-    name = "Test project"
-    platform = "go"
-  }
-`, testOrganization, testOrganization)
-
-var testAccSentryProjectRemoveKeyConfig = fmt.Sprintf(`
-  resource "sentry_team" "test_team" {
-    organization = "%s"
-    name = "Test team"
-  }
-  resource "sentry_project" "test_project_remove_key" {
-    organization = "%s"
-    team = "${sentry_team.test_team.id}"
-	name = "Test project"
-	remove_default_key = true
-  }
-`, testOrganization, testOrganization)
-
-var testAccSentryProjectRemoveRuleConfig = fmt.Sprintf(`
-  resource "sentry_team" "test_team" {
-    organization = "%s"
-    name = "Test team"
-  }
-  resource "sentry_project" "test_project_remove_rule" {
-    organization = "%s"
-    team = "${sentry_team.test_team.id}"
-	name = "Test project"
-	remove_default_rule = true
-  }
-`, testOrganization, testOrganization)
+resource "sentry_project" "test" {
+	organization = sentry_team.%[4]s.organization
+	team         = sentry_team.%[4]s.slug
+	name         = "%[3]s"
+	platform     = "go"
+}
+	`, teamName1, teamName2, projectName, teamResourceName)
+}

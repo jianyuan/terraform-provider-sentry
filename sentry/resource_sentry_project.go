@@ -2,65 +2,69 @@ package sentry
 
 import (
 	"context"
-	"errors"
-	"strings"
+	"net/http"
 
-	"github.com/canva/go-sentry/sentry"
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
 func resourceSentryProject() *schema.Resource {
 	return &schema.Resource{
+		Description: "Sentry Project resource.",
+
 		CreateContext: resourceSentryProjectCreate,
 		ReadContext:   resourceSentryProjectRead,
 		UpdateContext: resourceSentryProjectUpdate,
 		DeleteContext: resourceSentryProjectDelete,
+
 		Importer: &schema.ResourceImporter{
-			StateContext: resourceSentryProjectImporter,
+			StateContext: importOrganizationAndID,
 		},
 
 		Schema: map[string]*schema.Schema{
 			"organization": {
+				Description: "The slug of the organization the project belongs to.",
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The slug of the organization the project belongs to",
 			},
 			"team": {
+				Description: "The slug of the team to create the project for.",
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The slug of the team to create the project for",
 			},
 			"name": {
+				Description: "The name for the project.",
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The name for the project",
 			},
 			"slug": {
+				Description: "The optional slug for this project.",
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The optional slug for this project",
 				Computed:    true,
 			},
 			"platform": {
+				Description: "The optional platform for this project.",
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The optional platform for this project",
 				Computed:    true,
 			},
-			"project_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+			"internal_id": {
+				Description: "The internal ID for this project.",
+				Type:        schema.TypeString,
+				Computed:    true,
 			},
 			"is_public": {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
 			"is_bookmarked": {
+				Deprecated: "is_bookmarked is no longer used",
 				Type:       schema.TypeBool,
 				Computed:   true,
-				Deprecated: "is_bookmarked is no longer used",
 			},
 			"color": {
 				Type:     schema.TypeString,
@@ -78,24 +82,29 @@ func resourceSentryProject() *schema.Resource {
 				Computed: true,
 			},
 			"digests_min_delay": {
+				Description: "The minimum amount of time (in seconds) to wait between scheduling digests for delivery after the initial scheduling.",
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "The minimum amount of time (in seconds) to wait between scheduling digests for delivery after the initial scheduling.",
 				Optional:    true,
 			},
 			"digests_max_delay": {
+				Description: "The maximum amount of time (in seconds) to wait between scheduling digests for delivery.",
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "The maximum amount of time (in seconds) to wait between scheduling digests for delivery.",
 				Optional:    true,
 			},
 			"resolve_age": {
+				Description: "Hours in which an issue is automatically resolve if not seen after this amount of time.",
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "Hours in which an issue is automatically resolve if not seen after this amount of time.",
 				Computed:    true,
 			},
-
+			"project_id": {
+				Deprecated:  "Use `internal_id` instead.",
+				Description: "Use `internal_id` instead.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 			// TODO: Project options
 
 			"remove_default_key": {
@@ -139,26 +148,20 @@ func resourceSentryProjectCreate(ctx context.Context, d *schema.ResourceData, me
 		Slug: d.Get("slug").(string),
 	}
 
-	tflog.Debug(ctx, "Creating Sentry project", map[string]interface{}{"teamName": team, "org": org})
-	proj, _, err := client.Projects.Create(org, team, params)
+	tflog.Debug(ctx, "Creating Sentry project", map[string]interface{}{
+		"teamName": team,
+		"org":      org,
+	})
+	proj, _, err := client.Projects.Create(ctx, org, team, params)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	tflog.Debug(ctx, "Created Sentry project", map[string]interface{}{"projectSlug": proj.Slug, "projectID": proj.ID, "team": team, "org": org})
-
-	if _, ok := d.GetOk("remove_default_key"); ok {
-		err = removeDefaultKey(client, org, proj.Slug)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	if _, ok := d.GetOk("remove_default_rule"); ok {
-		err = removeDefaultRule(client, org, proj.Slug)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	}
+	tflog.Debug(ctx, "Created Sentry project", map[string]interface{}{
+		"projectSlug": proj.Slug,
+		"projectID":   proj.ID,
+		"team":        team,
+		"org":         org,
+	})
 
 	d.SetId(proj.Slug)
 	return resourceSentryProjectUpdate(ctx, d, meta)
@@ -170,40 +173,47 @@ func resourceSentryProjectRead(ctx context.Context, d *schema.ResourceData, meta
 	slug := d.Id()
 	org := d.Get("organization").(string)
 
-	tflog.Debug(ctx, "Reading Sentry project", map[string]interface{}{"projectSlug": slug, "org": org})
-	proj, resp, err := client.Projects.Get(org, slug)
+	tflog.Debug(ctx, "Reading Sentry project", map[string]interface{}{
+		"projectSlug": slug,
+		"org":         org,
+	})
+	proj, resp, err := client.Projects.Get(ctx, org, slug)
 	if found, err := checkClientGet(resp, err, d); !found {
 		return diag.FromErr(err)
 	}
-	tflog.Debug(ctx, "Read Sentry project", map[string]interface{}{"projectSlug": proj.Slug, "projectID": proj.ID, "org": org})
+	tflog.Debug(ctx, "Read Sentry project", map[string]interface{}{
+		"projectSlug": proj.Slug,
+		"projectID":   proj.ID,
+		"org":         org,
+	})
 
 	d.SetId(proj.Slug)
-	d.Set("organization", proj.Organization.Slug)
-	d.Set("team", proj.Team.Slug)
-	d.Set("name", proj.Name)
-	d.Set("slug", proj.Slug)
-	d.Set("platform", proj.Platform)
-	d.Set("project_id", proj.ID)
-	d.Set("is_public", proj.IsPublic)
-	d.Set("color", proj.Color)
-	d.Set("features", proj.Features)
-	d.Set("status", proj.Status)
-	d.Set("digests_min_delay", proj.DigestsMinDelay)
-	d.Set("digests_max_delay", proj.DigestsMaxDelay)
-	d.Set("resolve_age", proj.ResolveAge)
+	retErr := multierror.Append(
+		d.Set("organization", proj.Organization.Slug),
+		d.Set("team", proj.Team.Slug),
+		d.Set("name", proj.Name),
+		d.Set("slug", proj.Slug),
+		d.Set("platform", proj.Platform),
+		d.Set("internal_id", proj.ID),
+		d.Set("is_public", proj.IsPublic),
+		d.Set("color", proj.Color),
+		d.Set("features", proj.Features),
+		d.Set("status", proj.Status),
+		d.Set("digests_min_delay", proj.DigestsMinDelay),
+		d.Set("digests_max_delay", proj.DigestsMaxDelay),
+		d.Set("resolve_age", proj.ResolveAge),
+		d.Set("project_id", proj.ID), // Deprecated
+	)
 
 	// TODO: Project options
 
-	d.Set("allowed_domains", proj.AllowedDomains)
-	d.Set("grouping_enhancements", proj.GroupingEnhancements)
-
-	return nil
+	return diag.FromErr(retErr.ErrorOrNil())
 }
 
 func resourceSentryProjectUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
-	slug := d.Id()
+	project := d.Id()
 	org := d.Get("organization").(string)
 	params := &sentry.UpdateProjectParams{
 		Name: d.Get("name").(string),
@@ -216,37 +226,56 @@ func resourceSentryProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	if v, ok := d.GetOk("digests_min_delay"); ok {
-		params.DigestsMinDelay = Int(v.(int))
+		params.DigestsMinDelay = sentry.Int(v.(int))
 	}
 
 	if v, ok := d.GetOk("digests_max_delay"); ok {
-		params.DigestsMaxDelay = Int(v.(int))
+		params.DigestsMaxDelay = sentry.Int(v.(int))
 	}
 
 	if v, ok := d.GetOk("resolve_age"); ok {
-		params.ResolveAge = Int(v.(int))
+		params.ResolveAge = sentry.Int(v.(int))
 	}
 
-	if v, ok := d.GetOk("allowed_domains"); ok {
-		allowedDomains := v.([]interface{})
-		params.AllowedDomains = make([]string, len(allowedDomains))
-		for i, ad := range allowedDomains {
-			params.AllowedDomains[i] = ad.(string)
-		}
-	}
-
-	if v, ok := d.GetOk("grouping_enhancements"); ok {
-		params.GroupingEnhancements = v.(string)
-	}
-
-	tflog.Debug(ctx, "Updating Sentry project", map[string]interface{}{"projectSlug": slug, "org": org})
-	proj, _, err := client.Projects.Update(org, slug, params)
+	tflog.Debug(ctx, "Updating project", map[string]interface{}{
+		"org":     org,
+		"project": project,
+	})
+	proj, _, err := client.Projects.Update(ctx, org, project, params)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	tflog.Debug(ctx, "Updated Sentry project", map[string]interface{}{"projectSlug": proj.Slug, "projectID": proj.ID, "org": org})
 
 	d.SetId(proj.Slug)
+
+	if d.HasChange("team") {
+		o, n := d.GetChange("team")
+
+		tflog.Debug(ctx, "Adding team to project", map[string]interface{}{
+			"org":     org,
+			"project": project,
+			"team":    n,
+		})
+		_, _, err = client.Projects.AddTeam(ctx, org, project, n.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		if o := o.(string); o != "" {
+			tflog.Debug(ctx, "Removing team from project", map[string]interface{}{
+				"org":     org,
+				"project": project,
+				"team":    o,
+			})
+			resp, err := client.Projects.RemoveTeam(ctx, org, project, o)
+			if err != nil {
+				if resp.Response.StatusCode != http.StatusNotFound {
+					return diag.FromErr(err)
+				}
+			}
+		}
+	}
+
 	return resourceSentryProjectRead(ctx, d, meta)
 }
 
@@ -256,58 +285,15 @@ func resourceSentryProjectDelete(ctx context.Context, d *schema.ResourceData, me
 	slug := d.Id()
 	org := d.Get("organization").(string)
 
-	tflog.Debug(ctx, "Deleting Sentry project", map[string]interface{}{"projectSlug": slug, "org": org})
-	_, err := client.Projects.Delete(org, slug)
-	tflog.Debug(ctx, "Deleted Sentry project", map[string]interface{}{"projectSlug": slug, "org": org})
+	tflog.Debug(ctx, "Deleting Sentry project", map[string]interface{}{
+		"projectSlug": slug,
+		"org":         org,
+	})
+	_, err := client.Projects.Delete(ctx, org, slug)
+	tflog.Debug(ctx, "Deleted Sentry project", map[string]interface{}{
+		"projectSlug": slug,
+		"org":         org,
+	})
 
 	return diag.FromErr(err)
-}
-
-func resourceSentryProjectImporter(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-	addrID := d.Id()
-
-	tflog.Debug(ctx, "Importing Sentry project", map[string]interface{}{"projetID": addrID})
-
-	parts := strings.Split(addrID, "/")
-
-	if len(parts) != 2 {
-		return nil, errors.New("Project import requires an ADDR ID of the following schema org-slug/project-slug")
-	}
-
-	d.Set("organization", parts[0])
-	d.SetId(parts[1])
-
-	return []*schema.ResourceData{d}, nil
-}
-
-func removeDefaultKey(client *sentry.Client, org, projSlug string) error {
-	keys, _, err := client.ProjectKeys.List(org, projSlug)
-	if err != nil {
-		return err
-	}
-
-	for _, key := range keys {
-		if key.Name == "Default" {
-			_, err = client.ProjectKeys.Delete(org, projSlug, key.ID)
-			return err
-		}
-	}
-
-	return nil
-}
-
-func removeDefaultRule(client *sentry.Client, org, projSlug string) error {
-	rules, _, err := client.Rules.List(org, projSlug)
-	if err != nil {
-		return err
-	}
-
-	for _, rule := range rules {
-		if rule.Name == "Send a notification for new issues" {
-			_, err = client.Rules.Delete(org, projSlug, rule.ID)
-			return err
-		}
-	}
-
-	return nil
 }
