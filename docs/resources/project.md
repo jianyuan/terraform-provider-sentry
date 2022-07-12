@@ -17,7 +17,7 @@ Sentry Project resource.
 resource "sentry_project" "default" {
   organization = "my-organization"
 
-  team = "my-team"
+  teams = ["my-team"]
   name = "Web App"
   slug = "web-app"
 
@@ -33,7 +33,8 @@ resource "sentry_project" "default" {
 
 - `name` (String) The name for the project.
 - `organization` (String) The slug of the organization the project belongs to.
-- `team` (String) The slug of the team to create the project for.
+- `teams` (List of String) The slug of the teams to create the project for (one of `team` or `teams` is required).
+- `team` (String, Deprecated) Use `teams` instead.
 
 ### Optional
 
