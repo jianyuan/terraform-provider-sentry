@@ -3,6 +3,7 @@ package sentry
 import (
 	"context"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
@@ -10,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"golang.org/x/oauth2"
+	"golang.org/x/sync/semaphore"
 )
 
 // Config is the configuration structure used to instantiate the Sentry
@@ -24,10 +26,15 @@ type Config struct {
 func (c *Config) Client(ctx context.Context) (interface{}, diag.Diagnostics) {
 	tflog.Info(ctx, "Instantiating Sentry client...")
 
+	// Authentication
+	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.Token})
+	oauth2HTTPClient := oauth2.NewClient(ctx, ts)
+
 	// Handle rate limit
 	retryClient := retryablehttp.NewClient()
+	retryClient.HTTPClient = oauth2HTTPClient
+	retryClient.ErrorHandler = retryablehttp.PassthroughErrorHandler
 	retryClient.Logger = nil // Disable DEBUG logs
-	retryClient.CheckRetry = retryablehttp.ErrorPropagatedRetryPolicy
 	retryClient.Backoff = func(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration {
 		if rateLimitErr, ok := sentry.CheckResponse(resp).(*sentry.RateLimitError); ok {
 			return time.Until(rateLimitErr.Rate.Reset)
@@ -36,19 +43,20 @@ func (c *Config) Client(ctx context.Context) (interface{}, diag.Diagnostics) {
 	}
 	retryHTTPClient := retryClient.StandardClient()
 
-	ctx = context.WithValue(ctx, oauth2.HTTPClient, retryHTTPClient)
-
-	// Authentication
-	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.Token})
-	httpClient := oauth2.NewClient(ctx, ts)
+	// Handle concurrency limit
+	semaphoreHTTPClient := &http.Client{
+		Transport: &semaphoreTransport{
+			Delegate: retryHTTPClient.Transport,
+		},
+	}
 
 	// Initialize client
 	var cl *sentry.Client
 	var err error
 	if c.BaseURL == "" {
-		cl = sentry.NewClient(httpClient)
+		cl = sentry.NewClient(semaphoreHTTPClient)
 	} else {
-		cl, err = sentry.NewOnPremiseClient(c.BaseURL, httpClient)
+		cl, err = sentry.NewOnPremiseClient(c.BaseURL, semaphoreHTTPClient)
 		if err != nil {
 			return nil, diag.FromErr(err)
 		}
@@ -58,4 +66,37 @@ func (c *Config) Client(ctx context.Context) (interface{}, diag.Diagnostics) {
 	cl.UserAgent = c.UserAgent
 
 	return cl, nil
+}
+
+type semaphoreTransport struct {
+	Delegate http.RoundTripper
+
+	mu sync.RWMutex
+	w  *semaphore.Weighted
+}
+
+func (t *semaphoreTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	t.mu.RLock()
+	if t.w == nil {
+		t.mu.RUnlock()
+		t.mu.Lock()
+		resp, err := t.Delegate.RoundTrip(req)
+		if resp != nil {
+			rate := sentry.ParseRate(resp)
+			if rate.ConcurrentLimit > 0 {
+				t.w = semaphore.NewWeighted(int64(rate.ConcurrentLimit))
+			}
+		}
+		t.mu.Unlock()
+		return resp, err
+	}
+	t.mu.RUnlock()
+
+	ctx := req.Context()
+	if err := t.w.Acquire(ctx, 1); err != nil {
+		return nil, err
+	}
+	defer t.w.Release(1)
+
+	return t.Delegate.RoundTrip(req)
 }
