@@ -6,7 +6,7 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/go-retryablehttp v0.7.1
 	github.com/hashicorp/terraform-plugin-docs v0.13.0
-	github.com/hashicorp/terraform-plugin-log v0.6.0
+	github.com/hashicorp/terraform-plugin-log v0.7.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.19.0
 	github.com/jianyuan/go-sentry/v2 v2.0.0-20220719223837-ea2d74476beb
 	github.com/mitchellh/mapstructure v1.5.0
