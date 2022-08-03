@@ -35,6 +35,18 @@ resource "sentry_metric_alert" "main" {
     threshold_type  = 0
   }
 
+   trigger {
+    action {
+      type              = "slack"
+      target_type       = "specific"
+      target_identifier = "#slack-channel"
+      integration_id    = 99999
+    }
+    alert_threshold = 300
+    label           = "critical"
+    threshold_type  = 0
+  }
+
   trigger {
     alert_threshold = 100
     label           = "warning"
