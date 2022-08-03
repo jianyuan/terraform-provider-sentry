@@ -100,6 +100,19 @@ resource "sentry_metric_alert" "test" {
 		resolve_threshold = 100.0
 		threshold_type    = 0
 	}
+
+	trigger {
+		action {
+			type              = "slack"
+			target_type       = "specific"
+			target_identifier = "#slack-channel"
+			integration_id    = 99999
+		}
+			
+		alert_threshold = 300
+		label           = "critical"
+		threshold_type  = 0
+  }
 }
 
 data "sentry_metric_alert" "test" {
@@ -128,6 +141,7 @@ resource "sentry_metric_alert" "test_copy" {
 					type              = action.value.type
 					target_type       = action.value.target_type
 					target_identifier = action.value.target_identifier
+					integration_id    = action.value.integration_id
 				}
 			}
 
