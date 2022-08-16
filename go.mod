@@ -74,3 +74,5 @@ require (
 	google.golang.org/grpc v1.48.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 )
+
+replace github.com/jianyuan/go-sentry/v2 => github.com/danielpoonwj/go-sentry/v2 v2.0.0-20220816154213-c926422fbc5b
