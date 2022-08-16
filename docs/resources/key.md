@@ -34,7 +34,7 @@ resource "sentry_key" "default" {
 ### Optional
 
 - `rate_limit_count` (Number) Number of events that can be reported within the rate limit window.
-- `rate_limit_window` (Number) Length of time in seconds that will be considered when checking the rate limit.
+- `rate_limit_window` (Number) Length of time that will be considered when checking the rate limit.
 
 ### Read-Only
 
