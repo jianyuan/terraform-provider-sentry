@@ -10,7 +10,7 @@
     <img src="templates/Terraform_PrimaryLogo_Color_RGB.svg" alt="Terraform" width="280">
 </a>
 
-Terraform provider for [Sentry](https://sentry.io/?utm_source=terraform&utm_medium=docs).
+The Terraform provider for [Sentry](https://sentry.io/?utm_source=terraform&utm_medium=docs) allows teams to configure and update Sentry project parameters via their command line. This provider is officially sponsored by [Sentry](https://sentry.io/?utm_source=terraform&utm_medium=docs).
 
 ## Usage
 
