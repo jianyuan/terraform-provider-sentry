@@ -11,7 +11,7 @@ require (
 	github.com/jianyuan/go-sentry/v2 v2.0.0-20220719223837-ea2d74476beb
 	github.com/mitchellh/mapstructure v1.5.0
 	golang.org/x/oauth2 v0.0.0-20220909003341-f21342109be1
-	golang.org/x/sync v0.0.0-20220819030929-7fc1605a5dde
+	golang.org/x/sync v0.0.0-20220907140024-f12130a52804
 )
 
 require (
