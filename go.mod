@@ -10,7 +10,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.21.0
 	github.com/jianyuan/go-sentry/v2 v2.0.0-20220719223837-ea2d74476beb
 	github.com/mitchellh/mapstructure v1.5.0
-	golang.org/x/oauth2 v0.0.0-20220822191816-0ebed06d0094
+	golang.org/x/oauth2 v0.0.0-20220909003341-f21342109be1
 	golang.org/x/sync v0.0.0-20220819030929-7fc1605a5dde
 )
 
