@@ -262,15 +262,27 @@ func resourceSentryProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 		o, n := d.GetChange("teams")
 
 		olditemsRaw := o.([]interface{})
-		olditems := make([]string, len(olditemsRaw))
+		olditems := make([]string, 0, len(olditemsRaw))
 		for i, raw := range olditemsRaw {
 			olditems[i] = raw.(string)
 		}
 
 		newitemsRaw := n.([]interface{})
-		newitems := make([]string, len(newitemsRaw))
+		newitems := make([]string, 0, len(newitemsRaw))
 		for i, raw := range newitemsRaw {
 			newitems[i] = raw.(string)
+		}
+
+		for _, teamToAdd := range newitems {
+			tflog.Debug(ctx, "Adding team to project", map[string]interface{}{
+				"org":     org,
+				"project": project,
+				"team":    teamToAdd,
+			})
+			_, _, err = client.Projects.AddTeam(ctx, org, project, teamToAdd)
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 
 		for _, teamToRemove := range olditems {
@@ -284,18 +296,6 @@ func resourceSentryProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 				if resp.Response.StatusCode != http.StatusNotFound {
 					return diag.FromErr(err)
 				}
-			}
-		}
-
-		for _, teamToAdd := range newitems {
-			tflog.Debug(ctx, "Adding team to project", map[string]interface{}{
-				"org":     org,
-				"project": project,
-				"team":    teamToAdd,
-			})
-			_, _, err = client.Projects.AddTeam(ctx, org, project, teamToAdd)
-			if err != nil {
-				return diag.FromErr(err)
 			}
 		}
 
