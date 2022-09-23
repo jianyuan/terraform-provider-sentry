@@ -31,9 +31,18 @@ func resourceSentryProject() *schema.Resource {
 				Required:    true,
 			},
 			"team": {
-				Description: "The slug of the team to create the project for.",
+				Description: "The slug of the owner team to create the project for.",
 				Type:        schema.TypeString,
 				Required:    true,
+			},
+			"teams": {
+				Description: "The slug of the additional teams to link the project to.",
+				Type:        schema.TypeList,
+				Required:    true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				DiffSuppressFunc: SuppressEquivalentJSONDiffs,
 			},
 			"name": {
 				Description: "The name for the project.",
@@ -163,6 +172,7 @@ func resourceSentryProjectRead(ctx context.Context, d *schema.ResourceData, meta
 	retErr := multierror.Append(
 		d.Set("organization", proj.Organization.Slug),
 		d.Set("team", proj.Team.Slug),
+		d.Set("teams", proj.Teams),
 		d.Set("name", proj.Name),
 		d.Set("slug", proj.Slug),
 		d.Set("platform", proj.Platform),
@@ -246,6 +256,49 @@ func resourceSentryProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 				}
 			}
 		}
+	}
+
+	if d.HasChange("teams") {
+		o, n := d.GetChange("teams")
+
+		olditemsRaw := o.([]interface{})
+		olditems := make([]string, len(olditemsRaw))
+		for i, raw := range olditemsRaw {
+			olditems[i] = raw.(string)
+		}
+
+		newitemsRaw := n.([]interface{})
+		newitems := make([]string, len(newitemsRaw))
+		for i, raw := range newitemsRaw {
+			newitems[i] = raw.(string)
+		}
+
+		for _, teamToRemove := range olditems {
+			tflog.Debug(ctx, "Removing team from project", map[string]interface{}{
+				"org":     org,
+				"project": project,
+				"team":    teamToRemove,
+			})
+			resp, err := client.Projects.RemoveTeam(ctx, org, project, teamToRemove)
+			if err != nil {
+				if resp.Response.StatusCode != http.StatusNotFound {
+					return diag.FromErr(err)
+				}
+			}
+		}
+
+		for _, teamToAdd := range newitems {
+			tflog.Debug(ctx, "Adding team to project", map[string]interface{}{
+				"org":     org,
+				"project": project,
+				"team":    teamToAdd,
+			})
+			_, _, err = client.Projects.AddTeam(ctx, org, project, teamToAdd)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+
 	}
 
 	return resourceSentryProjectRead(ctx, d, meta)
