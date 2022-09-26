@@ -27,6 +27,7 @@ resource "sentry_metric_alert" "copy" {
           type              = action.value.type
           target_type       = action.value.target_type
           target_identifier = action.value.target_identifier
+          integration_id    = action.value.integration_id
         }
       }
 

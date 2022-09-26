@@ -367,9 +367,7 @@ func flattenMetricAlertTriggerActions(actions []*sentry.MetricAlertTriggerAction
 		actionMap["type"] = action.Type
 		actionMap["target_type"] = action.TargetType
 		actionMap["target_identifier"] = action.TargetIdentifier
-		if action.IntegrationID != nil {
-			actionMap["integration_id"] = action.IntegrationID
-		}
+		actionMap["integration_id"] = action.IntegrationID
 
 		actionList = append(actionList, actionMap)
 	}
