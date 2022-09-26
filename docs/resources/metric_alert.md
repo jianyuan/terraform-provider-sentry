@@ -46,7 +46,7 @@ resource "sentry_metric_alert" "main" {
       type              = "slack"
       target_type       = "specific"
       target_identifier = "#slack-channel"
-      integration_id    = data.sentry_organization_integration.slack.internal_id
+      integration_id    = data.sentry_organization_integration.slack.id
     }
     alert_threshold = 300
     label           = "critical"
