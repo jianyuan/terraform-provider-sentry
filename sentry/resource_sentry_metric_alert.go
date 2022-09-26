@@ -106,6 +106,10 @@ func resourceSentryMetricAlert() *schema.Resource {
 										Type:     schema.TypeString,
 										Required: true,
 									},
+									"integration_id": {
+										Type:     schema.TypeInt,
+										Optional: true,
+									},
 								},
 							},
 						},
@@ -324,6 +328,9 @@ func expandMetricAlertTriggerActions(actionList []interface{}) []*sentry.MetricA
 				action.ID = sentry.String(v)
 			}
 		}
+		if v, _ := actionMap["integration_id"].(int); v != 0 {
+			action.IntegrationID = sentry.Int(v)
+		}
 		actions = append(actions, action)
 	}
 	return actions
@@ -360,7 +367,12 @@ func flattenMetricAlertTriggerActions(actions []*sentry.MetricAlertTriggerAction
 		actionMap["type"] = action.Type
 		actionMap["target_type"] = action.TargetType
 		actionMap["target_identifier"] = action.TargetIdentifier
+		if action.IntegrationID != nil {
+			actionMap["integration_id"] = action.IntegrationID
+		}
+
 		actionList = append(actionList, actionMap)
 	}
+
 	return actionList
 }
