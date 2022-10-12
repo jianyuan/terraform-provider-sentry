@@ -2,12 +2,15 @@ package sentry
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"sort"
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/jianyuan/go-sentry/sentry"
-	"sort"
+	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
 func resourceSentryOrganizationMember() *schema.Resource {
@@ -88,7 +91,7 @@ func resourceSentryOrganizationMemberCreate(ctx context.Context, d *schema.Resou
 		"org":   org,
 		"teams": params.Teams,
 	})
-	member, _, err := client.OrganizationMembers.Create(org, params)
+	member, _, err := client.OrganizationMembers.Create(ctx, org, params)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -113,7 +116,7 @@ func resourceSentryOrganizationMemberRead(ctx context.Context, d *schema.Resourc
 		"memberId": memberId,
 		"org":      org,
 	})
-	member, resp, err := client.OrganizationMembers.Get(org, memberId)
+	member, resp, err := client.OrganizationMembers.Get(ctx, org, memberId)
 	if found, err := checkClientGet(resp, err, d); !found {
 		return diag.FromErr(err)
 	}
@@ -165,7 +168,7 @@ func resourceSentryOrganizationMemberUpdate(ctx context.Context, d *schema.Resou
 		"org":   org,
 	})
 
-	member, _, err := client.OrganizationMembers.Update(org, memberId, params)
+	member, _, err := client.OrganizationMembers.Update(ctx, org, memberId, params)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -192,7 +195,7 @@ func resourceSentryOrganizationMemberDelete(ctx context.Context, d *schema.Resou
 		"email":    d.Get("email"),
 		"org":      org,
 	})
-	_, err := client.OrganizationMembers.Delete(org, memberId)
+	_, err := client.OrganizationMembers.Delete(ctx, org, memberId)
 	tflog.Debug(ctx, "Deleted Sentry organization member", map[string]interface{}{
 		"memberId": memberId,
 		"email":    d.Get("email"),
@@ -200,4 +203,23 @@ func resourceSentryOrganizationMemberDelete(ctx context.Context, d *schema.Resou
 	})
 
 	return diag.FromErr(err)
+}
+
+func resourceOrganizationMemberImporter(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	addrID := d.Id()
+
+	tflog.Debug(ctx, "Importing Sentry organization member", map[string]interface{}{
+		"addrId": addrID,
+	})
+
+	parts := strings.Split(addrID, "/")
+
+	if len(parts) != 2 {
+		return nil, errors.New("organization member import requires an ADDR ID of the following schema org-slug/member-id")
+	}
+
+	d.Set("organization", parts[0])
+	d.SetId(parts[1])
+
+	return []*schema.ResourceData{d}, nil
 }

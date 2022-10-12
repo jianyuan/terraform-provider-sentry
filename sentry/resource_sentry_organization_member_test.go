@@ -1,13 +1,14 @@
 package sentry
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/jianyuan/go-sentry/sentry"
+	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
 func TestAccSentryOrganizationMember_basic(t *testing.T) {
@@ -58,7 +59,9 @@ func testAccCheckSentryOrganizationMemberDestroy(s *terraform.State) error {
 			continue
 		}
 
+		ctx := context.Background()
 		member, resp, err := client.OrganizationMembers.Get(
+			ctx,
 			rs.Primary.Attributes["organization"],
 			rs.Primary.ID,
 		)
@@ -87,7 +90,9 @@ func testAccCheckSentryOrganizationMemberExists(n string, member *sentry.Organiz
 		}
 
 		client := testAccProvider.Meta().(*sentry.Client)
+		ctx := context.Background()
 		sentryOrganizationMember, _, err := client.OrganizationMembers.Get(
+			ctx,
 			rs.Primary.Attributes["organization"],
 			rs.Primary.ID,
 		)
