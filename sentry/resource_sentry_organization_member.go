@@ -2,11 +2,9 @@ package sentry
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"sort"
-	"strings"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -19,48 +17,49 @@ func resourceSentryOrganizationMember() *schema.Resource {
 		ReadContext:   resourceSentryOrganizationMemberRead,
 		UpdateContext: resourceSentryOrganizationMemberUpdate,
 		DeleteContext: resourceSentryOrganizationMemberDelete,
+
 		Importer: &schema.ResourceImporter{
-			StateContext: resourceOrganizationMemberImporter,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
 			"organization": {
+				Description: "The slug of the organization the user should be invited to.",
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The slug of the organization the team should be created for",
 			},
 			"email": {
+				Description: "The email of the organization member.",
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The email of the organization member",
 			},
 			"role": {
+				Description: "This is the role of the organization member.",
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "This is the role of the organization member",
 			},
 			"teams": {
+				Description: "The teams the organization member should be added to.",
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "The slugs of the teams to add the member too",
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
 			},
-			"member_id": {
+			"internal_id": {
+				Description: "The internal ID for this organization membership.",
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The unique member identifier",
 			},
 			"pending": {
+				Description: "The invite is pending.",
 				Type:        schema.TypeBool,
 				Computed:    true,
-				Description: "The invite is pending",
 			},
 			"expired": {
+				Description: "The invite has expired.",
 				Type:        schema.TypeBool,
 				Computed:    true,
-				Description: "The invite is expired",
 			},
 		},
 	}
@@ -76,17 +75,13 @@ func resourceSentryOrganizationMemberCreate(ctx context.Context, d *schema.Resou
 	}
 
 	if v, ok := d.GetOk("teams"); ok {
-		teamsInput := v.([]interface{})
-		teams := make([]string, len(teamsInput))
-		for i, team := range teamsInput {
-			teams[i] = fmt.Sprint(team)
-		}
+		teams := expandStringList(v.([]interface{}))
 		if len(teams) > 0 {
 			params.Teams = teams
 		}
 	}
 
-	tflog.Debug(ctx, "Inviting Sentry organization member", map[string]interface{}{
+	tflog.Debug(ctx, "Inviting organization member", map[string]interface{}{
 		"email": params.Email,
 		"org":   org,
 		"teams": params.Teams,
@@ -95,66 +90,57 @@ func resourceSentryOrganizationMemberCreate(ctx context.Context, d *schema.Resou
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	tflog.Debug(ctx, "Invited Sentry organization member", map[string]interface{}{
-		"email": params.Email,
-		"org":   org,
-		"teams": params.Teams,
-	})
 
-	d.Set("organization", org)
-	d.SetId(member.ID)
+	d.SetId(buildTwoPartID(org, member.ID))
 	return resourceSentryOrganizationMemberRead(ctx, d, meta)
 }
 
 func resourceSentryOrganizationMemberRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
-	memberId := d.Id()
-	org := d.Get("organization").(string)
+	org, memberID, err := splitSentryOrganizationMemberID(d.Id())
 
-	tflog.Debug(ctx, "Reading Sentry organization member", map[string]interface{}{
-		"memberId": memberId,
+	tflog.Debug(ctx, "Reading organization member", map[string]interface{}{
 		"org":      org,
+		"memberID": memberID,
 	})
-	member, resp, err := client.OrganizationMembers.Get(ctx, org, memberId)
+	member, resp, err := client.OrganizationMembers.Get(ctx, org, memberID)
 	if found, err := checkClientGet(resp, err, d); !found {
+		tflog.Info(ctx, "Removed organization membership from state because it no longer exists in Sentry", map[string]interface{}{
+			"org":      org,
+			"memberID": memberID,
+		})
 		return diag.FromErr(err)
 	}
-	tflog.Debug(ctx, "Read Sentry organization member", map[string]interface{}{
-		"email": member.Email,
-		"role":  member.Role,
-		"id":    member.ID,
-		"teams": member.Teams,
-		"org":   org,
-	})
 
 	sort.Strings(member.Teams)
 
-	d.SetId(member.ID)
-	d.Set("member_id", member.ID)
-	d.Set("email", member.Email)
-	d.Set("role", member.Role)
-	d.Set("teams", member.Teams)
-	d.Set("expired", member.Expired)
-	d.Set("pending", member.Pending)
-	return nil
+	d.SetId(buildTwoPartID(org, member.ID))
+	retErr := multierror.Append(
+		d.Set("organization", org),
+		d.Set("internal_id", member.ID),
+		d.Set("email", member.Email),
+		d.Set("role", member.Role),
+		d.Set("teams", member.Teams),
+		d.Set("expired", member.Expired),
+		d.Set("pending", member.Pending),
+	)
+	return diag.FromErr(retErr.ErrorOrNil())
 }
 
 func resourceSentryOrganizationMemberUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
-	memberId := d.Id()
-	org := d.Get("organization").(string)
+	org, memberID, err := splitSentryOrganizationMemberID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	params := &sentry.UpdateOrganizationMemberParams{
 		Role: d.Get("role").(string),
 	}
 
 	if v, ok := d.GetOk("teams"); ok {
-		teamsInput := v.([]interface{})
-		teams := make([]string, len(teamsInput))
-		for i, team := range teamsInput {
-			teams[i] = fmt.Sprint(team)
-		}
+		teams := expandStringList(v.([]interface{}))
 		if len(teams) > 0 {
 			params.Teams = teams
 		}
@@ -163,63 +149,37 @@ func resourceSentryOrganizationMemberUpdate(ctx context.Context, d *schema.Resou
 	tflog.Debug(ctx, "Updating organization member", map[string]interface{}{
 		"email": d.Get("email"),
 		"role":  params.Role,
-		"id":    memberId,
+		"id":    memberID,
 		"teams": params.Teams,
 		"org":   org,
 	})
 
-	member, _, err := client.OrganizationMembers.Update(ctx, org, memberId, params)
+	member, _, err := client.OrganizationMembers.Update(ctx, org, memberID, params)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	tflog.Debug(ctx, "Updated Sentry organization member", map[string]interface{}{
-		"email": d.Get("email"),
-		"role":  params.Role,
-		"id":    memberId,
-		"teams": params.Teams,
-		"org":   org,
-	})
 
-	d.SetId(member.ID)
+	d.SetId(buildTwoPartID(org, member.ID))
 	return resourceSentryOrganizationMemberRead(ctx, d, meta)
 }
 
 func resourceSentryOrganizationMemberDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*sentry.Client)
 
-	memberId := d.Id()
-	org := d.Get("organization").(string)
+	org, memberID, err := splitSentryOrganizationMemberID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	tflog.Debug(ctx, "Deleting Sentry organization member", map[string]interface{}{
-		"memberId": memberId,
-		"email":    d.Get("email"),
+	tflog.Debug(ctx, "Deleting organization member", map[string]interface{}{
 		"org":      org,
+		"memberID": memberID,
 	})
-	_, err := client.OrganizationMembers.Delete(ctx, org, memberId)
-	tflog.Debug(ctx, "Deleted Sentry organization member", map[string]interface{}{
-		"memberId": memberId,
-		"email":    d.Get("email"),
-		"org":      org,
-	})
-
+	_, err = client.OrganizationMembers.Delete(ctx, org, memberID)
 	return diag.FromErr(err)
 }
 
-func resourceOrganizationMemberImporter(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-	addrID := d.Id()
-
-	tflog.Debug(ctx, "Importing Sentry organization member", map[string]interface{}{
-		"addrId": addrID,
-	})
-
-	parts := strings.Split(addrID, "/")
-
-	if len(parts) != 2 {
-		return nil, errors.New("organization member import requires an ADDR ID of the following schema org-slug/member-id")
-	}
-
-	d.Set("organization", parts[0])
-	d.SetId(parts[1])
-
-	return []*schema.ResourceData{d}, nil
+func splitSentryOrganizationMemberID(id string) (org string, memberID string, err error) {
+	org, memberID, err = splitTwoPartID(id, "organization-id", "member-id")
+	return
 }

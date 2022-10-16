@@ -6,46 +6,41 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
 func TestAccSentryOrganizationMember_basic(t *testing.T) {
-	var member sentry.OrganizationMember
+	memberEmail := acctest.RandomWithPrefix("tf-team") + "@example.com"
+	rn := "sentry_organization_member.john_doe"
 
-	testAccSentrySentryOrganizationMemberUpdateConfig := fmt.Sprintf(`
-    resource "sentry_organization_member" "john_doe" {
-      organization = "%s"
-      email = "test2@example.com"
-      role = "manager"
-    }
-	`, testOrganization)
+	check := func(role string) resource.TestCheckFunc {
+		var member sentry.OrganizationMember
+		return resource.ComposeTestCheckFunc(
+			testAccCheckSentryOrganizationMemberExists(rn, &member),
+			resource.TestCheckResourceAttr(rn, "organization", testOrganization),
+			resource.TestCheckResourceAttr(rn, "email", memberEmail),
+			resource.TestCheckResourceAttr(rn, "role", role),
+			resource.TestCheckResourceAttrSet(rn, "internal_id"),
+			resource.TestCheckResourceAttrSet(rn, "pending"),
+			resource.TestCheckResourceAttrSet(rn, "expired"),
+		)
+	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckSentryOrganizationMemberDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckSentryOrganizationMemberDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSentryOrganizationMemberConfig,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSentryOrganizationMemberExists("sentry_organization_member.john_doe", &member),
-					testAccCheckSentryOrganizationMemberAttributes(&member, &testAccSentryOrganizationMemberExpectedAttributes{
-						Email: "test2@example.com",
-						Role:  sentry.RoleMember,
-					}),
-				),
+				Config: testAccSentryOrganizationMemberConfig(memberEmail, "member"),
+				Check:  check("member"),
 			},
 			{
-				Config: testAccSentrySentryOrganizationMemberUpdateConfig,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSentryOrganizationMemberExists("sentry_organization_member.john_doe", &member),
-					testAccCheckSentryOrganizationMemberAttributes(&member, &testAccSentryOrganizationMemberExpectedAttributes{
-						Email: "test2@example.com",
-						Role:  sentry.RoleManager,
-					}),
-				),
+				Config: testAccSentryOrganizationMemberConfig(memberEmail, "manager"),
+				Check:  check("manager"),
 			},
 		},
 	})
@@ -89,50 +84,28 @@ func testAccCheckSentryOrganizationMemberExists(n string, member *sentry.Organiz
 			return errors.New("no member ID is set")
 		}
 
+		org, id, err := splitSentryOrganizationMemberID(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
 		client := testAccProvider.Meta().(*sentry.Client)
 		ctx := context.Background()
-		sentryOrganizationMember, _, err := client.OrganizationMembers.Get(
-			ctx,
-			rs.Primary.Attributes["organization"],
-			rs.Primary.ID,
-		)
+		gotMember, _, err := client.OrganizationMembers.Get(ctx, org, id)
 
 		if err != nil {
 			return err
 		}
-		*member = *sentryOrganizationMember
+		*member = *gotMember
 		return nil
 	}
 }
 
-type testAccSentryOrganizationMemberExpectedAttributes struct {
-	Email string
-	Role  string
-	Teams []string
+func testAccSentryOrganizationMemberConfig(email, role string) string {
+	return testAccSentryOrganizationDataSourceConfig + fmt.Sprintf(`
+resource "sentry_organization_member" "john_doe" {
+	organization = data.sentry_organization.test.id
+	email        = "%[1]s"
+	role         = "%[2]s"
 }
-
-func testAccCheckSentryOrganizationMemberAttributes(member *sentry.OrganizationMember, want *testAccSentryOrganizationMemberExpectedAttributes) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		if member.Email != want.Email {
-			return fmt.Errorf("got email %q; want %q", member.Email, want.Email)
-		}
-
-		if member.Role != want.Role {
-			return fmt.Errorf("got role %q; want %q", member.Role, want.Role)
-		}
-
-		if len(member.Teams) != len(want.Teams) {
-			return fmt.Errorf("got total teams %d; want %d", len(member.Teams), len(want.Teams))
-		}
-
-		return nil
-	}
+	`, email, role)
 }
-
-var testAccSentryOrganizationMemberConfig = fmt.Sprintf(`
-  resource "sentry_organization_member" "john_doe" {
-    organization = "%s"
-    email = "test2@example.com"
-	role = "member"
-  }
-`, testOrganization)
