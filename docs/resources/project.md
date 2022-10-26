@@ -17,9 +17,9 @@ Sentry Project resource.
 resource "sentry_project" "default" {
   organization = "my-organization"
 
-  team = "my-team"
-  name = "Web App"
-  slug = "web-app"
+  teams = ["my-first-team", "my-second-team"]
+  name  = "Web App"
+  slug  = "web-app"
 
   platform    = "javascript"
   resolve_age = 720
@@ -33,7 +33,6 @@ resource "sentry_project" "default" {
 
 - `name` (String) The name for the project.
 - `organization` (String) The slug of the organization the project belongs to.
-- `team` (String) The slug of the team to create the project for.
 
 ### Optional
 
@@ -42,6 +41,8 @@ resource "sentry_project" "default" {
 - `platform` (String) The optional platform for this project.
 - `resolve_age` (Number) Hours in which an issue is automatically resolve if not seen after this amount of time.
 - `slug` (String) The optional slug for this project.
+- `team` (String, Deprecated) The slug of the team to create the project for. One of 'team' or 'teams' must be set.
+- `teams` (Set of String) The slugs of the teams to create the project for. One of 'team' or 'teams' must be set.
 
 ### Read-Only
 
