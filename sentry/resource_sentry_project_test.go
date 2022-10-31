@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -14,6 +16,116 @@ import (
 )
 
 func TestAccSentryProject_basic(t *testing.T) {
+	teamName1 := acctest.RandomWithPrefix("tf-team")
+	teamName2 := acctest.RandomWithPrefix("tf-team")
+	teamName3 := acctest.RandomWithPrefix("tf-team")
+	projectName := acctest.RandomWithPrefix("tf-project")
+	rn := "sentry_project.test"
+
+	check := func(projectName string, teamNames []string) resource.TestCheckFunc {
+		var projectID string
+
+		fs := resource.ComposeTestCheckFunc(
+			testAccCheckSentryProjectExists(rn, &projectID),
+			resource.TestCheckResourceAttr(rn, "organization", testOrganization),
+			resource.TestCheckResourceAttr(rn, "teams.#", strconv.Itoa(len(teamNames))),
+			resource.TestCheckResourceAttr(rn, "name", projectName),
+			resource.TestCheckResourceAttrSet(rn, "slug"),
+			resource.TestCheckResourceAttr(rn, "platform", "go"),
+			resource.TestCheckResourceAttrSet(rn, "internal_id"),
+			resource.TestCheckResourceAttrPtr(rn, "internal_id", &projectID),
+			resource.TestCheckResourceAttrPair(rn, "project_id", rn, "internal_id"),
+		)
+		for _, teamName := range teamNames {
+			fs = resource.ComposeTestCheckFunc(fs, resource.TestCheckTypeSetElemAttr(rn, "teams.*", teamName))
+		}
+		return fs
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckSentryProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccSentryProjectConfig_teams([]string{teamName1}, projectName),
+				Check:  check(projectName, []string{teamName1}),
+			},
+			{
+				Config: testAccSentryProjectConfig_teams([]string{teamName2}, projectName+"-renamed"),
+				Check:  check(projectName+"-renamed", []string{teamName2}),
+			},
+			{
+				Config: testAccSentryProjectConfig_teams([]string{teamName2, teamName3}, projectName+"-renamed"),
+				Check:  check(projectName+"-renamed", []string{teamName2, teamName3}),
+			},
+			{
+				ResourceName:      rn,
+				ImportState:       true,
+				ImportStateIdFunc: testAccSentryProjectImportStateIdFunc(rn),
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccSentryProject_teamMigration(t *testing.T) {
+	teams := []string{
+		acctest.RandomWithPrefix("tf-team"),
+		acctest.RandomWithPrefix("tf-team"),
+		acctest.RandomWithPrefix("tf-team"),
+	}
+	projectName := acctest.RandomWithPrefix("tf-project")
+	rn := "sentry_project.test"
+
+	check := func(team string, teams []string) resource.TestCheckFunc {
+		var projectID string
+
+		fs := resource.ComposeTestCheckFunc(
+			testAccCheckSentryProjectExists(rn, &projectID),
+			resource.TestCheckResourceAttr(rn, "organization", testOrganization),
+			resource.TestCheckResourceAttr(rn, "name", projectName),
+			resource.TestCheckResourceAttrSet(rn, "slug"),
+			resource.TestCheckResourceAttr(rn, "platform", "go"),
+			resource.TestCheckResourceAttrSet(rn, "internal_id"),
+			resource.TestCheckResourceAttrPtr(rn, "internal_id", &projectID),
+			resource.TestCheckResourceAttrPair(rn, "project_id", rn, "internal_id"),
+		)
+		if team != "" {
+			fs = resource.ComposeTestCheckFunc(fs, resource.TestCheckResourceAttr(rn, "team", team))
+		}
+		for _, team := range teams {
+			fs = resource.ComposeTestCheckFunc(fs, resource.TestCheckTypeSetElemAttr(rn, "teams.*", team))
+		}
+
+		return fs
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckSentryProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccSentryProjectConfig_teams_old(teams, projectName),
+				Check:  check(teams[0], nil),
+			},
+			{
+				Config: testAccSentryProjectConfig_teams(teams, projectName),
+				Check:  check("", teams),
+			},
+			{
+				ResourceName:            rn,
+				ImportState:             true,
+				ImportStateIdFunc:       testAccSentryProjectImportStateIdFunc(rn),
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"team"},
+			},
+		},
+	})
+}
+
+func TestAccSentryProject_deprecatedTeam(t *testing.T) {
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	rn := "sentry_project.test"
@@ -40,18 +152,57 @@ func TestAccSentryProject_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckSentryProjectDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSentryProjectConfig(teamName, projectName),
+				Config: testAccSentryProjectConfig_team(teamName, projectName),
 				Check:  check(projectName),
 			},
 			{
-				Config: testAccSentryProjectConfig(teamName, projectName+"-renamed"),
+				Config: testAccSentryProjectConfig_team(teamName, projectName+"-renamed"),
 				Check:  check(projectName + "-renamed"),
 			},
 			{
-				ResourceName:      rn,
-				ImportState:       true,
-				ImportStateIdFunc: testAccSentryProjectImportStateIdFunc(rn),
-				ImportStateVerify: true,
+				ResourceName:            rn,
+				ImportState:             true,
+				ImportStateIdFunc:       testAccSentryProjectImportStateIdFunc(rn),
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"team"},
+			},
+		},
+	})
+}
+
+func TestAccSentryProject_noTeam(t *testing.T) {
+	teamName := acctest.RandomWithPrefix("tf-team")
+	projectName := acctest.RandomWithPrefix("tf-project")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckSentryProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccSentryProjectConfig_noTeam(teamName, projectName),
+				ExpectError: regexp.MustCompile("one of team or teams must be configured"),
+			},
+		},
+	})
+}
+
+func TestAccSentryProject_teamConflict(t *testing.T) {
+	teamName := acctest.RandomWithPrefix("tf-team")
+	projectName := acctest.RandomWithPrefix("tf-project")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckSentryProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccSentryProjectConfig_teamConflict(teamName, projectName),
+				ExpectError: regexp.MustCompile("\"team\": conflicts with teams"),
+			},
+			{
+				Config:      testAccSentryProjectConfig_teamConflict(teamName, projectName),
+				ExpectError: regexp.MustCompile("\"teams\": conflicts with team"),
 			},
 		},
 	})
@@ -91,64 +242,6 @@ func TestAccSentryProject_changeTeam(t *testing.T) {
 			{
 				Config: testAccSentryProjectConfig_changeTeam(teamName1, teamName2, projectName, "test_2"),
 				Check:  check(teamName2, projectName),
-			},
-		},
-	})
-}
-
-func TestAccSentryProject_teams(t *testing.T) {
-	teamNamePrefix := "tf-team-"
-	teams := []string{
-		acctest.RandomWithPrefix(teamNamePrefix + "1"),
-		acctest.RandomWithPrefix(teamNamePrefix + "2"),
-		acctest.RandomWithPrefix(teamNamePrefix + "3"),
-	}
-	projectName := acctest.RandomWithPrefix("tf-project")
-	rn := "sentry_project." + projectName
-
-	check := func(projectName string, team string, teams []string) resource.TestCheckFunc {
-		var projectID string
-
-		testChecks := []resource.TestCheckFunc{
-			testAccCheckSentryProjectExists(rn, &projectID),
-			resource.TestCheckResourceAttr(rn, "organization", testOrganization),
-			resource.TestCheckResourceAttr(rn, "name", projectName),
-			resource.TestCheckResourceAttrSet(rn, "slug"),
-			resource.TestCheckResourceAttr(rn, "platform", "go"),
-			resource.TestCheckResourceAttrSet(rn, "internal_id"),
-			resource.TestCheckResourceAttrPtr(rn, "internal_id", &projectID),
-			resource.TestCheckResourceAttrPair(rn, "project_id", rn, "internal_id"),
-		}
-
-		if team != "" {
-			testChecks = append(testChecks, resource.TestCheckResourceAttr(rn, "team", team))
-		}
-
-		for _, team := range teams {
-			testChecks = append(testChecks, resource.TestCheckTypeSetElemAttr(rn, "teams.*", team))
-		}
-
-		return resource.ComposeTestCheckFunc(testChecks...)
-	}
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: testAccProviderFactories,
-		CheckDestroy:      testAccCheckSentryProjectDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccSentryProjectConfig_teams(projectName, teams[0], []string{}),
-				Check:  check(projectName, teams[0], []string{}),
-			},
-			{
-				Config: testAccSentryProjectConfig_teams(projectName, "", teams),
-				Check:  check(projectName, "", teams),
-			},
-			{
-				ResourceName:      rn,
-				ImportState:       true,
-				ImportStateIdFunc: testAccSentryProjectImportStateIdFunc(rn),
-				ImportStateVerify: true,
 			},
 		},
 	})
@@ -215,11 +308,33 @@ func testAccSentryProjectImportStateIdFunc(n string) resource.ImportStateIdFunc 
 	}
 }
 
-func testAccSentryProjectConfig(teamName, projectName string) string {
+func testAccSentryProjectConfig_team(teamName, projectName string) string {
 	return testAccSentryTeamConfig(teamName) + fmt.Sprintf(`
 resource "sentry_project" "test" {
 	organization = sentry_team.test.organization
 	team         = sentry_team.test.slug
+	name         = "%[1]s"
+	platform     = "go"
+}
+	`, projectName)
+}
+
+func testAccSentryProjectConfig_noTeam(teamName, projectName string) string {
+	return testAccSentryTeamConfig(teamName) + fmt.Sprintf(`
+resource "sentry_project" "test" {
+	organization = sentry_team.test.organization
+	name         = "%[1]s"
+	platform     = "go"
+}
+	`, projectName)
+}
+
+func testAccSentryProjectConfig_teamConflict(teamName, projectName string) string {
+	return testAccSentryTeamConfig(teamName) + fmt.Sprintf(`
+resource "sentry_project" "test" {
+	organization = sentry_team.test.organization
+	team         = sentry_team.test.slug
+	teams        = [sentry_team.test.slug]
 	name         = "%[1]s"
 	platform     = "go"
 }
@@ -249,46 +364,56 @@ resource "sentry_project" "test" {
 	`, teamName1, teamName2, projectName, teamResourceName)
 }
 
-func testAccSentryProjectConfig_teams(projectName string, team string, teams []string) string {
-
+func testAccSentryProjectConfig_teams_old(teamNames []string, projectName string) string {
 	config := testAccSentryOrganizationDataSourceConfig
-	teamSlugs := make([]string, len(teams))
 
-	if team != "" {
-		config += testAccSentryTeam(team)
-		return config + fmt.Sprintf(`
-	resource "sentry_project" "%[1]s"{
-		organization  = sentry_team.%[2]s.organization
-		team         = "%[2]s"
-		name          = "%[1]s"
-		platform      = "go"
-	}
-		`, projectName, team)
-	}
-
-	for i, team := range teams {
-		config += testAccSentryTeam(team)
-		teamSlugs[i] = fmt.Sprintf("sentry_team.%[1]s.slug", team)
-	}
-
-	projectTeams := "[" + strings.Join(teamSlugs, ", ") + "]"
-
-	return config + fmt.Sprintf(`
-	resource "sentry_project" "%[1]s"{
-		organization  = sentry_team.%[2]s.organization
-		teams         = %[3]s
-		name          = "%[1]s"
-		platform      = "go"
-	}
-		`, projectName, teams[0], projectTeams)
-}
-
-func testAccSentryTeam(teamName string) string {
-	return fmt.Sprintf(`
-resource "sentry_team" "%[1]s" {
+	teamSlugs := make([]string, 0, len(teamNames))
+	for i, teamName := range teamNames {
+		config += fmt.Sprintf(`
+resource "sentry_team" "test_%[1]d" {
 	organization = data.sentry_organization.test.id
-	name         = "%[1]s"
-	slug         = "%[1]s"
+	name         = "%[2]s"
+	slug         = "%[2]s"
 }
-	`, teamName)
+		`, i, teamName)
+		teamSlugs = append(teamSlugs, fmt.Sprintf("sentry_team.test_%d.slug", i))
+	}
+
+	config += fmt.Sprintf(`
+resource "sentry_project" "test" {
+	organization = sentry_team.test_0.organization
+	team         = %[2]s
+	name         = "%[1]s"
+	platform     = "go"
+}
+	`, projectName, teamSlugs[0])
+
+	return config
+}
+
+func testAccSentryProjectConfig_teams(teamNames []string, projectName string) string {
+	config := testAccSentryOrganizationDataSourceConfig
+
+	teamSlugs := make([]string, 0, len(teamNames))
+	for i, teamName := range teamNames {
+		config += fmt.Sprintf(`
+resource "sentry_team" "test_%[1]d" {
+	organization = data.sentry_organization.test.id
+	name         = "%[2]s"
+	slug         = "%[2]s"
+}
+		`, i, teamName)
+		teamSlugs = append(teamSlugs, fmt.Sprintf("sentry_team.test_%d.slug", i))
+	}
+
+	config += fmt.Sprintf(`
+resource "sentry_project" "test" {
+	organization = sentry_team.test_0.organization
+	teams        = [%[2]s]
+	name         = "%[1]s"
+	platform     = "go"
+}
+	`, projectName, strings.Join(teamSlugs, ", "))
+
+	return config
 }
