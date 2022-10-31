@@ -286,35 +286,37 @@ func resourceSentryProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 
 	// Ensure old teams and new teams do not overlap.
 	for newTeam := range newTeams {
-		if _, exists := oldTeams[newTeam]; exists {
-			delete(oldTeams, newTeam)
-		}
+		delete(oldTeams, newTeam)
 	}
 
-	tflog.Debug(ctx, "Adding teams to project", map[string]interface{}{
-		"org":        org,
-		"project":    project,
-		"teamsToAdd": newTeams,
-	})
+	if len(newTeams) > 0 {
+		tflog.Debug(ctx, "Adding teams to project", map[string]interface{}{
+			"org":        org,
+			"project":    project,
+			"teamsToAdd": newTeams,
+		})
 
-	for newTeam := range newTeams {
-		_, _, err = client.Projects.AddTeam(ctx, org, project, newTeam)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	tflog.Debug(ctx, "Removing teams from project", map[string]interface{}{
-		"org":           org,
-		"project":       project,
-		"teamsToRemove": oldTeams,
-	})
-
-	for oldTeam := range oldTeams {
-		resp, err := client.Projects.RemoveTeam(ctx, org, project, oldTeam)
-		if err != nil {
-			if resp.Response.StatusCode != http.StatusNotFound {
+		for newTeam := range newTeams {
+			_, _, err = client.Projects.AddTeam(ctx, org, project, newTeam)
+			if err != nil {
 				return diag.FromErr(err)
+			}
+		}
+	}
+
+	if len(oldTeams) > 0 {
+		tflog.Debug(ctx, "Removing teams from project", map[string]interface{}{
+			"org":           org,
+			"project":       project,
+			"teamsToRemove": oldTeams,
+		})
+
+		for oldTeam := range oldTeams {
+			resp, err := client.Projects.RemoveTeam(ctx, org, project, oldTeam)
+			if err != nil {
+				if resp.Response.StatusCode != http.StatusNotFound {
+					return diag.FromErr(err)
+				}
 			}
 		}
 	}

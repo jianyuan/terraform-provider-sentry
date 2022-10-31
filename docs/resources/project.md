@@ -41,8 +41,8 @@ resource "sentry_project" "default" {
 - `platform` (String) The optional platform for this project.
 - `resolve_age` (Number) Hours in which an issue is automatically resolve if not seen after this amount of time.
 - `slug` (String) The optional slug for this project.
-- `team` (String, Deprecated) The slug of the team to create the project for. One of 'team' or 'teams' must be set.
-- `teams` (Set of String) The slugs of the teams to create the project for. One of 'team' or 'teams' must be set.
+- `team` (String, Deprecated) The slug of the team to create the project for. **Deprecated** Use `teams` instead.
+- `teams` (Set of String) The slugs of the teams to create the project for.
 
 ### Read-Only
 
