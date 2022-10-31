@@ -221,7 +221,7 @@ func testAccCheckSentryIssueAlertExists(n string, alertID *string) resource.Test
 }
 
 func testAccSentryIssueAlertConfig(teamName, projectName, alertName string) string {
-	return testAccSentryProjectConfig(teamName, projectName) + fmt.Sprintf(`
+	return testAccSentryProjectConfig_team(teamName, projectName) + fmt.Sprintf(`
 resource "sentry_issue_alert" "test" {
 	organization = sentry_project.test.organization
 	project      = sentry_project.test.id

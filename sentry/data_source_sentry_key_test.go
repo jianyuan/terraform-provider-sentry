@@ -94,7 +94,7 @@ func testAccCheckSentryKeyDataSourceID(n string) resource.TestCheckFunc {
 }
 
 func testAccSentryKeyDataSourceConfig(teamName, projectName string) string {
-	return testAccSentryProjectConfig(teamName, projectName) + `
+	return testAccSentryProjectConfig_team(teamName, projectName) + `
 data "sentry_key" "test" {
 	organization = sentry_project.test.organization
 	project      = sentry_project.test.id
@@ -104,7 +104,7 @@ data "sentry_key" "test" {
 
 // Testing first parameter
 func testAccSentryKeyDataSourceConfig_first(teamName, projectName string) string {
-	return testAccSentryProjectConfig(teamName, projectName) + `
+	return testAccSentryProjectConfig_team(teamName, projectName) + `
 resource "sentry_key" "test_2" {
 	organization = sentry_project.test.organization
 	project      = sentry_project.test.id
@@ -123,7 +123,7 @@ data "sentry_key" "test" {
 
 // Testing name parameter
 func testAccSentryKeyDataSourceConfig_name(teamName, projectName, keyName string) string {
-	return testAccSentryProjectConfig(teamName, projectName) + fmt.Sprintf(`
+	return testAccSentryProjectConfig_team(teamName, projectName) + fmt.Sprintf(`
 resource "sentry_key" "test_2" {
 	organization = sentry_project.test.organization
 	project      = sentry_project.test.id

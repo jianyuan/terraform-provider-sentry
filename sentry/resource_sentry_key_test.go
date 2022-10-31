@@ -179,7 +179,7 @@ func testAccSentryKeyImportStateIdFunc(n string) resource.ImportStateIdFunc {
 }
 
 func testAccSentryKeyConfig(teamName, projectName, keyName string) string {
-	return testAccSentryProjectConfig(teamName, projectName) + fmt.Sprintf(`
+	return testAccSentryProjectConfig_team(teamName, projectName) + fmt.Sprintf(`
 resource "sentry_key" "test" {
 	organization      = sentry_project.test.organization
 	project           = sentry_project.test.id
@@ -189,7 +189,7 @@ resource "sentry_key" "test" {
 }
 
 func testAccSentryKeyConfig_rateLimit(teamName, projectName, keyName, rateLimitWindow, rateLimitCount string) string {
-	return testAccSentryProjectConfig(teamName, projectName) + fmt.Sprintf(`
+	return testAccSentryProjectConfig_team(teamName, projectName) + fmt.Sprintf(`
 resource "sentry_key" "test" {
 	organization      = sentry_project.test.organization
 	project           = sentry_project.test.id

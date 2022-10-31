@@ -2,6 +2,7 @@ package sentry
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/hashicorp/go-multierror"
@@ -31,19 +32,20 @@ func resourceSentryProject() *schema.Resource {
 				Required:    true,
 			},
 			"team": {
-				Description: "The slug of the team to create the project for. One of 'team' or 'teams' must be set.",
-				Type:        schema.TypeString,
-				Deprecated:  "To be replaced by 'teams' in a future release.",
-				Optional:    true,
+				Description:   "The slug of the team to create the project for. **Deprecated** Use `teams` instead.",
+				Type:          schema.TypeString,
+				Deprecated:    "Use `teams` instead.",
+				ConflictsWith: []string{"teams"},
+				Optional:      true,
 			},
 			"teams": {
-				Description: "The slugs of the teams to create the project for. One of 'team' or 'teams' must be set.",
+				Description: "The slugs of the teams to create the project for.",
 				Type:        schema.TypeSet,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				ExactlyOneOf: []string{"team"},
-				Optional:     true,
+				ConflictsWith: []string{"team"},
+				Optional:      true,
 			},
 			"name": {
 				Description: "The name for the project.",
@@ -124,32 +126,42 @@ func resourceSentryProjectCreate(ctx context.Context, d *schema.ResourceData, me
 	client := meta.(*sentry.Client)
 
 	org := d.Get("organization").(string)
-	team := d.Get("team").(string)
-	var teams []interface{}
-	if team == "" {
+
+	team, teamOk := d.GetOk("team")
+	teams, teamsOk := d.GetOk("teams")
+	if !teamOk && !teamsOk {
+		return diag.FromErr(errors.New("one of team or teams must be configured"))
+	}
+
+	var initialTeam string
+	if teamOk {
+		initialTeam = team.(string)
+	} else {
 		// Since `Set.List()` produces deterministic ordering, `teams[0]` should always
 		// resolve to the same value given the same `teams`.
-		teams = d.Get("teams").(*schema.Set).List()
-		team = teams[0].(string)
+		// Pick the first team when creating the project.
+		initialTeam = teams.(*schema.Set).List()[0].(string)
 	}
+
 	params := &sentry.CreateProjectParams{
 		Name: d.Get("name").(string),
 		Slug: d.Get("slug").(string),
 	}
 
 	tflog.Debug(ctx, "Creating Sentry project", map[string]interface{}{
-		"team":  team,
-		"teams": teams,
-		"org":   org,
+		"team":        team,
+		"teams":       teams,
+		"org":         org,
+		"initialTeam": initialTeam,
 	})
-	proj, _, err := client.Projects.Create(ctx, org, team, params)
+	proj, _, err := client.Projects.Create(ctx, org, initialTeam, params)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	tflog.Debug(ctx, "Created Sentry project", map[string]interface{}{
 		"projectSlug": proj.Slug,
 		"projectID":   proj.ID,
-		"team":        team,
+		"team":        initialTeam,
 		"org":         org,
 	})
 
@@ -177,31 +189,11 @@ func resourceSentryProjectRead(ctx context.Context, d *schema.ResourceData, meta
 		"org":         org,
 	})
 
-	setTeams := func() error {
-		if len(proj.Teams) <= 1 {
-			return multierror.Append(
-				d.Set("team", proj.Team.Slug),
-				d.Set("teams", nil),
-			)
-		}
-
-		teams := make([]string, len(proj.Teams))
-		for i, team := range proj.Teams {
-			teams[i] = *team.Slug
-		}
-
-		return multierror.Append(
-			d.Set("team", nil),
-			d.Set("teams", teams),
-		)
-	}
-
 	d.SetId(proj.Slug)
 	retErr := multierror.Append(
 		d.Set("organization", proj.Organization.Slug),
 		d.Set("name", proj.Name),
 		d.Set("slug", proj.Slug),
-		setTeams(),
 		d.Set("platform", proj.Platform),
 		d.Set("internal_id", proj.ID),
 		d.Set("is_public", proj.IsPublic),
@@ -213,6 +205,15 @@ func resourceSentryProjectRead(ctx context.Context, d *schema.ResourceData, meta
 		d.Set("resolve_age", proj.ResolveAge),
 		d.Set("project_id", proj.ID), // Deprecated
 	)
+	if _, ok := d.GetOk("team"); ok {
+		retErr = multierror.Append(retErr, d.Set("team", proj.Team.Slug))
+	} else {
+		teams := make([]string, 0, len(proj.Teams))
+		for _, team := range proj.Teams {
+			teams = append(teams, *team.Slug)
+		}
+		retErr = multierror.Append(retErr, d.Set("teams", flattenStringSet(teams)))
+	}
 
 	// TODO: Project options
 

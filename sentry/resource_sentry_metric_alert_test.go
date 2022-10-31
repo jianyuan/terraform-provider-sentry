@@ -115,7 +115,7 @@ func testAccCheckSentryMetricAlertExists(n string, gotAlertID *string) resource.
 }
 
 func testAccSentryMetricAlertConfig(teamName, projectName, alertName string) string {
-	return testAccSentryProjectConfig(teamName, projectName) + fmt.Sprintf(`
+	return testAccSentryProjectConfig_team(teamName, projectName) + fmt.Sprintf(`
 resource "sentry_metric_alert" "test" {
 	organization      = sentry_project.test.organization
 	project           = sentry_project.test.id
