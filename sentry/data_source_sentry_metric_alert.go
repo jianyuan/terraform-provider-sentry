@@ -97,6 +97,10 @@ func dataSourceSentryMetricAlert() *schema.Resource {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
+									"integration_id": {
+										Type:     schema.TypeInt,
+										Optional: true,
+									},
 								},
 							},
 						},
