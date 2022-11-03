@@ -14,9 +14,9 @@ Sentry Metric Alert resource.
 
 ```terraform
 data "sentry_organization_integration" "slack" {
-  organization = "organization"
+  organization = sentry_project.main.organization
   provider_key = "slack"
-  name         = "organization-slack"
+  name         = "Slack Workspace" # Name of your Slack workspace
 }
 
 resource "sentry_metric_alert" "main" {
