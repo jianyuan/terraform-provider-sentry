@@ -79,6 +79,7 @@ resource "sentry_metric_alert" "main" {
 
 - `dataset` (String) The Sentry Alert category
 - `environment` (String) Perform Alert rule in a specific environment
+- `event_types` (List of String) The events type of dataset.
 - `owner` (String) Specifies the owner id of this Alert rule
 - `resolve_threshold` (Number) The value at which the Alert rule resolves
 

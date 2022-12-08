@@ -51,6 +51,14 @@ func resourceSentryMetricAlert() *schema.Resource {
 				Optional:    true,
 				Description: "The Sentry Alert category",
 			},
+			"event_types": {
+				Description: "The events type of dataset.",
+				Type:        schema.TypeList,
+				Optional:    true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 			"query": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -174,6 +182,12 @@ func resourceSentryMetricAlertObject(d *schema.ResourceData) *sentry.MetricAlert
 	}
 	if v, ok := d.GetOk("project"); ok {
 		alert.Projects = []string{v.(string)}
+	}
+	if v, ok := d.GetOk("event_types"); ok {
+		eventTypes := expandStringList(v.([]interface{}))
+		if len(eventTypes) > 0 {
+			alert.EventTypes = eventTypes
+		}
 	}
 
 	triggersIn := d.Get("trigger").([]interface{})
