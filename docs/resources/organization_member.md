@@ -16,6 +16,7 @@ description: |-
 # Create an organization member
 resource "sentry_organization_member" "john_doe" {
   email = "test@example.com"
+  organization = "my-organization-slug"
   role  = "member"
   teams = ["my-team"]
 }
