@@ -8,7 +8,7 @@ require (
 	github.com/hashicorp/terraform-plugin-docs v0.13.0
 	github.com/hashicorp/terraform-plugin-log v0.7.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.24.1
-	github.com/jianyuan/go-sentry/v2 v2.1.0
+	github.com/jianyuan/go-sentry/v2 v2.1.1
 	github.com/mitchellh/mapstructure v1.5.0
 	golang.org/x/oauth2 v0.3.0
 	golang.org/x/sync v0.1.0
