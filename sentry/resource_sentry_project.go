@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
@@ -59,10 +60,11 @@ func resourceSentryProject() *schema.Resource {
 				Computed:    true,
 			},
 			"platform": {
-				Description: "The optional platform for this project.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
+				Description:      "The optional platform for this project.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				Computed:         true,
+				ValidateDiagFunc: validation.ToDiagFunc(validation.StringInSlice(platformCategories, false)),
 			},
 			"internal_id": {
 				Description: "The internal ID for this project.",
