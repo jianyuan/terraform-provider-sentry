@@ -2,6 +2,7 @@ package sentry
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/hashicorp/go-multierror"
@@ -174,6 +175,12 @@ func resourceSentryMetricAlertObject(d *schema.ResourceData) *sentry.MetricAlert
 	if v, ok := d.GetOk("dataset"); ok {
 		alert.DataSet = sentry.String(v.(string))
 	}
+	if v, ok := d.GetOk("event_types"); ok {
+		eventTypes := expandStringList(v.([]interface{}))
+		if len(eventTypes) > 0 {
+			alert.EventTypes = eventTypes
+		}
+	}
 	if v, ok := d.GetOk("resolve_threshold"); ok {
 		alert.ResolveThreshold = sentry.Float64(v.(float64))
 	}
@@ -182,12 +189,6 @@ func resourceSentryMetricAlertObject(d *schema.ResourceData) *sentry.MetricAlert
 	}
 	if v, ok := d.GetOk("project"); ok {
 		alert.Projects = []string{v.(string)}
-	}
-	if v, ok := d.GetOk("event_types"); ok {
-		eventTypes := expandStringList(v.([]interface{}))
-		if len(eventTypes) > 0 {
-			alert.EventTypes = eventTypes
-		}
 	}
 
 	triggersIn := d.Get("trigger").([]interface{})
@@ -207,7 +208,7 @@ func resourceSentryMetricAlertCreate(ctx context.Context, d *schema.ResourceData
 		"org":      org,
 		"project":  project,
 		"ruleName": alertReq.Name,
-		"params":   alertReq,
+		"params":   fmt.Sprintf("%+v", alertReq),
 	})
 	alert, _, err := client.MetricAlerts.Create(ctx, org, project, alertReq)
 	if err != nil {
@@ -242,6 +243,9 @@ func resourceSentryMetricAlertRead(ctx context.Context, d *schema.ResourceData, 
 		}
 		return diag.FromErr(err)
 	}
+	tflog.Debug(ctx, "Read metric alert", map[string]interface{}{
+		"alert": fmt.Sprintf("%+v", alert),
+	})
 
 	d.SetId(buildThreePartID(org, project, sentry.StringValue(alert.ID)))
 	retError := multierror.Append(
@@ -249,6 +253,7 @@ func resourceSentryMetricAlertRead(ctx context.Context, d *schema.ResourceData, 
 		d.Set("name", alert.Name),
 		d.Set("environment", alert.Environment),
 		d.Set("dataset", alert.DataSet),
+		d.Set("event_types", alert.EventTypes),
 		d.Set("query", alert.Query),
 		d.Set("aggregate", alert.Aggregate),
 		d.Set("time_window", alert.TimeWindow),

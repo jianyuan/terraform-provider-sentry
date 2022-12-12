@@ -43,6 +43,14 @@ func dataSourceSentryMetricAlert() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"event_types": {
+				Description: "The events type of dataset.",
+				Type:        schema.TypeList,
+				Computed:    true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 			"query": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -148,6 +156,7 @@ func dataSourceSentryMetricAlertRead(ctx context.Context, d *schema.ResourceData
 		d.Set("name", alert.Name),
 		d.Set("environment", alert.Environment),
 		d.Set("dataset", alert.DataSet),
+		d.Set("event_types", alert.EventTypes),
 		d.Set("query", alert.Query),
 		d.Set("aggregate", alert.Aggregate),
 		d.Set("time_window", alert.TimeWindow),
