@@ -69,6 +69,7 @@ resource "sentry_metric_alert" "copy" {
 - `aggregate` (String)
 - `dataset` (String)
 - `environment` (String)
+- `event_types` (List of String) The events type of dataset.
 - `id` (String) The ID of this resource.
 - `name` (String) The metric alert name.
 - `owner` (String)
