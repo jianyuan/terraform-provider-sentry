@@ -111,13 +111,13 @@ Read-Only:
 
 Required:
 
-- `target_identifier` (String)
 - `target_type` (String)
 - `type` (String)
 
 Optional:
 
 - `integration_id` (Number)
+- `target_identifier` (String)
 
 Read-Only:
 
