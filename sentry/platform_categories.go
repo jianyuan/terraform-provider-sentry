@@ -93,6 +93,7 @@ var platformCategories = []string{
 	"php-monolog",
 	"php-symfony2",
 	"python",
+	"python-aiohttp",
 	"python-django",
 	"python-flask",
 	"python-fastapi",
