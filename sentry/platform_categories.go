@@ -49,6 +49,7 @@ var platformCategories = []string{
 
 	// Mobile
 	"android",
+	"apple",
 	"apple-ios",
 	"cordova",
 	"capacitor",
