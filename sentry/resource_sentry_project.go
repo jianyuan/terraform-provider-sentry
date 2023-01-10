@@ -3,13 +3,15 @@ package sentry
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
+	"strings"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
@@ -64,7 +66,7 @@ func resourceSentryProject() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				Computed:         true,
-				ValidateDiagFunc: validation.ToDiagFunc(validation.StringInSlice(platformCategories, false)),
+				ValidateDiagFunc: validatePlatform,
 			},
 			"internal_id": {
 				Description: "The internal ID for this project.",
@@ -343,4 +345,35 @@ func resourceSentryProjectDelete(ctx context.Context, d *schema.ResourceData, me
 	})
 
 	return diag.FromErr(err)
+}
+
+func validatePlatform(i interface{}, path cty.Path) diag.Diagnostics {
+	var diagnostics diag.Diagnostics
+
+	v := i.(string)
+	url := fmt.Sprintf(
+		"https://docs.sentry.io/_platforms/%s.json",
+		strings.Replace(v, "-", "/", 1),
+	)
+	resp, err := http.Get(url)
+
+	if err != nil {
+		msg := "could not validate the platform at this time"
+		diagnostics = append(diagnostics, diag.Diagnostic{
+			Severity:      diag.Error,
+			Summary:       msg,
+			Detail:        msg,
+			AttributePath: path,
+		})
+	} else if resp.StatusCode != 200 {
+		msg := fmt.Sprintf("%s is not a valid platform", v)
+		diagnostics = append(diagnostics, diag.Diagnostic{
+			Severity:      diag.Error,
+			Summary:       msg,
+			Detail:        msg,
+			AttributePath: path,
+		})
+	}
+
+	return diagnostics
 }
