@@ -54,9 +54,10 @@ func resourceSentryIssueAlertSchema() map[string]*schema.Schema {
 			Required:    true,
 		},
 		"name": {
-			Description: "The issue alert name.",
-			Type:        schema.TypeString,
-			Required:    true,
+			Description:  "The issue alert name.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringLenBetween(1, 64),
 		},
 		"conditions": {
 			Description: "List of conditions.",
