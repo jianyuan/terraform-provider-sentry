@@ -351,6 +351,10 @@ func validatePlatform(i interface{}, path cty.Path) diag.Diagnostics {
 	var diagnostics diag.Diagnostics
 
 	v := i.(string)
+	if v == "other" {
+		return nil
+	}
+
 	url := fmt.Sprintf(
 		"https://docs.sentry.io/_platforms/%s.json",
 		strings.Replace(v, "-", "/", 1),
