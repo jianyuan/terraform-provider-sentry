@@ -355,29 +355,36 @@ func validatePlatform(i interface{}, path cty.Path) diag.Diagnostics {
 		return nil
 	}
 
-	url := fmt.Sprintf(
-		"https://docs.sentry.io/_platforms/%s.json",
-		strings.Replace(v, "-", "/", 1),
-	)
-	resp, err := http.Get(url)
-
-	if err != nil {
-		msg := "could not validate the platform at this time"
-		diagnostics = append(diagnostics, diag.Diagnostic{
-			Severity:      diag.Error,
-			Summary:       msg,
-			Detail:        msg,
-			AttributePath: path,
-		})
-	} else if resp.StatusCode != 200 {
-		msg := fmt.Sprintf("%s is not a valid platform", v)
-		diagnostics = append(diagnostics, diag.Diagnostic{
-			Severity:      diag.Error,
-			Summary:       msg,
-			Detail:        msg,
-			AttributePath: path,
-		})
+	urls := []string{
+		fmt.Sprintf("https://docs.sentry.io/_platforms/%s.json", v),
+		fmt.Sprintf(
+			"https://docs.sentry.io/_platforms/%s.json",
+			strings.Replace(v, "-", "/", 1),
+		),
 	}
 
+	for _, url := range urls {
+		resp, err := http.Get(url)
+
+		if err != nil {
+			msg := "could not validate the platform at this time"
+			diagnostics = append(diagnostics, diag.Diagnostic{
+				Severity:      diag.Error,
+				Summary:       msg,
+				Detail:        msg,
+				AttributePath: path,
+			})
+		} else if resp.StatusCode == 200 {
+			return nil
+		}
+	}
+
+	msg := fmt.Sprintf("%s is not a valid platform", v)
+	diagnostics = append(diagnostics, diag.Diagnostic{
+		Severity:      diag.Error,
+		Summary:       msg,
+		Detail:        msg,
+		AttributePath: path,
+	})
 	return diagnostics
 }
