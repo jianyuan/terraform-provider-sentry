@@ -151,19 +151,19 @@ resource "sentry_issue_alert" "test" {
 	actions = [
 		{
 			id               = "sentry.mail.actions.NotifyEmailAction"
-			name             = "Send a notification to IssueOwners"
+			name             = "Send a notification to IssueOwners and if none can be found then send a notification to ActiveMembers"
 			targetType       = "IssueOwners"
 			targetIdentifier = ""
 		},
 		{
 			id               = "sentry.mail.actions.NotifyEmailAction"
-			name             = "Send a notification to Team"
+			name             = "Send a notification to Team and if none can be found then send a notification to ActiveMembers"
 			targetType       = "Team"
 			targetIdentifier = sentry_team.test.team_id
 		},
 		{
 			id               = "sentry.mail.actions.NotifyEmailAction"
-			name             = "Send a notification to Member"
+			name             = "Send a notification to Member and if none can be found then send a notification to ActiveMembers"
 			targetType       = "Member"
 			targetIdentifier = 94401
 		},

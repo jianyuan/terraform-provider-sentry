@@ -126,13 +126,13 @@ func TestAccSentryIssueAlert_basic(t *testing.T) {
 			resource.TestCheckResourceAttr(rn, "actions.2.id", "sentry.rules.actions.notify_event.NotifyEventAction"),
 			resource.TestCheckTypeSetElemNestedAttrs(rn, "actions.*", map[string]string{
 				"id":               "sentry.mail.actions.NotifyEmailAction",
-				"name":             "Send a notification to IssueOwners",
+				"name":             "Send a notification to IssueOwners and if none can be found then send a notification to ActiveMembers",
 				"targetType":       "IssueOwners",
 				"targetIdentifier": "",
 			}),
 			resource.TestCheckTypeSetElemNestedAttrs(rn, "actions.*", map[string]string{
 				"id":               "sentry.mail.actions.NotifyEmailAction",
-				"name":             "Send a notification to Team",
+				"name":             "Send a notification to Team and if none can be found then send a notification to ActiveMembers",
 				"targetType":       "Team",
 				"targetIdentifier": "",
 			}),
@@ -311,13 +311,13 @@ resource "sentry_issue_alert" "test" {
 	actions = [
 		{
 			id               = "sentry.mail.actions.NotifyEmailAction"
-			name             = "Send a notification to IssueOwners"
+			name             = "Send a notification to IssueOwners and if none can be found then send a notification to ActiveMembers"
 			targetType       = "IssueOwners"
 			targetIdentifier = ""
 		},
 		{
 			id               = "sentry.mail.actions.NotifyEmailAction"
-			name             = "Send a notification to Team"
+			name             = "Send a notification to Team and if none can be found then send a notification to ActiveMembers"
 			targetType       = "Team"
 			targetIdentifier = sentry_team.test.team_id
 		},
