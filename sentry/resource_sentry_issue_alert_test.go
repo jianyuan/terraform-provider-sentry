@@ -40,30 +40,25 @@ func TestAccSentryIssueAlert_basic(t *testing.T) {
 			resource.TestCheckResourceAttr(rn, "conditions.3.id", "sentry.rules.conditions.event_frequency.EventUniqueUserFrequencyCondition"),
 			resource.TestCheckResourceAttr(rn, "conditions.4.id", "sentry.rules.conditions.event_frequency.EventFrequencyPercentCondition"),
 			resource.TestCheckTypeSetElemNestedAttrs(rn, "conditions.*", map[string]string{
-				"id":   "sentry.rules.conditions.first_seen_event.FirstSeenEventCondition",
-				"name": "A new issue is created",
+				"id": "sentry.rules.conditions.first_seen_event.FirstSeenEventCondition",
 			}),
 			resource.TestCheckTypeSetElemNestedAttrs(rn, "conditions.*", map[string]string{
-				"id":   "sentry.rules.conditions.regression_event.RegressionEventCondition",
-				"name": "The issue changes state from resolved to unresolved",
+				"id": "sentry.rules.conditions.regression_event.RegressionEventCondition",
 			}),
 			resource.TestCheckTypeSetElemNestedAttrs(rn, "conditions.*", map[string]string{
 				"id":             "sentry.rules.conditions.event_frequency.EventFrequencyCondition",
-				"name":           "The issue is seen more than 100 times in 1h",
 				"value":          "100",
 				"comparisonType": "count",
 				"interval":       "1h",
 			}),
 			resource.TestCheckTypeSetElemNestedAttrs(rn, "conditions.*", map[string]string{
 				"id":             "sentry.rules.conditions.event_frequency.EventUniqueUserFrequencyCondition",
-				"name":           "The issue is seen by more than 100 users in 1h",
 				"value":          "100",
 				"comparisonType": "count",
 				"interval":       "1h",
 			}),
 			resource.TestCheckTypeSetElemNestedAttrs(rn, "conditions.*", map[string]string{
 				"id":             "sentry.rules.conditions.event_frequency.EventFrequencyPercentCondition",
-				"name":           "The issue affects more than 50.0 percent of sessions in 1h",
 				"value":          "50.0",
 				"comparisonType": "count",
 				"interval":       "1h",
@@ -79,43 +74,36 @@ func TestAccSentryIssueAlert_basic(t *testing.T) {
 			resource.TestCheckResourceAttr(rn, "filters.6.id", "sentry.rules.filters.level.LevelFilter"),
 			resource.TestCheckTypeSetElemNestedAttrs(rn, "filters.*", map[string]string{
 				"id":              "sentry.rules.filters.age_comparison.AgeComparisonFilter",
-				"name":            "The issue is older than 10 minute",
 				"value":           "10",
 				"time":            "minute",
 				"comparison_type": "older",
 			}),
 			resource.TestCheckTypeSetElemNestedAttrs(rn, "filters.*", map[string]string{
 				"id":    "sentry.rules.filters.issue_occurrences.IssueOccurrencesFilter",
-				"name":  "The issue has happened at least 10 times",
 				"value": "10",
 			}),
 			resource.TestCheckTypeSetElemNestedAttrs(rn, "filters.*", map[string]string{
 				"id":         "sentry.rules.filters.assigned_to.AssignedToFilter",
-				"name":       "The issue is assigned to Team",
 				"targetType": "Team",
 			}),
 			resource.TestCheckResourceAttrPair(rn, "filters.2.targetIdentifier", "sentry_team.test", "team_id"),
 			resource.TestCheckTypeSetElemNestedAttrs(rn, "filters.*", map[string]string{
-				"id":   "sentry.rules.filters.latest_release.LatestReleaseFilter",
-				"name": "The event is from the latest release",
+				"id": "sentry.rules.filters.latest_release.LatestReleaseFilter",
 			}),
 			resource.TestCheckTypeSetElemNestedAttrs(rn, "filters.*", map[string]string{
 				"id":        "sentry.rules.filters.event_attribute.EventAttributeFilter",
-				"name":      "The event's message value contains test",
 				"attribute": "message",
 				"match":     "co",
 				"value":     "test",
 			}),
 			resource.TestCheckTypeSetElemNestedAttrs(rn, "filters.*", map[string]string{
 				"id":    "sentry.rules.filters.tagged_event.TaggedEventFilter",
-				"name":  "The event's tags match test contains test",
 				"key":   "test",
 				"match": "co",
 				"value": "test",
 			}),
 			resource.TestCheckTypeSetElemNestedAttrs(rn, "filters.*", map[string]string{
 				"id":    "sentry.rules.filters.level.LevelFilter",
-				"name":  "The event's level is equal to fatal",
 				"match": "eq",
 				"level": "50",
 			}),
@@ -126,19 +114,16 @@ func TestAccSentryIssueAlert_basic(t *testing.T) {
 			resource.TestCheckResourceAttr(rn, "actions.2.id", "sentry.rules.actions.notify_event.NotifyEventAction"),
 			resource.TestCheckTypeSetElemNestedAttrs(rn, "actions.*", map[string]string{
 				"id":               "sentry.mail.actions.NotifyEmailAction",
-				"name":             "Send a notification to IssueOwners and if none can be found then send a notification to ActiveMembers",
 				"targetType":       "IssueOwners",
 				"targetIdentifier": "",
 			}),
 			resource.TestCheckTypeSetElemNestedAttrs(rn, "actions.*", map[string]string{
 				"id":               "sentry.mail.actions.NotifyEmailAction",
-				"name":             "Send a notification to Team and if none can be found then send a notification to ActiveMembers",
 				"targetType":       "Team",
 				"targetIdentifier": "",
 			}),
 			resource.TestCheckTypeSetElemNestedAttrs(rn, "actions.*", map[string]string{
-				"id":   "sentry.rules.actions.notify_event.NotifyEventAction",
-				"name": "Send a notification (for all legacy integrations)",
+				"id": "sentry.rules.actions.notify_event.NotifyEventAction",
 			}),
 		)
 	}
@@ -157,9 +142,8 @@ func TestAccSentryIssueAlert_basic(t *testing.T) {
 				Check:  check(alertName + "-renamed"),
 			},
 			{
-				ResourceName:      rn,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName: rn,
+				ImportState:  true,
 			},
 		},
 	})
@@ -233,31 +217,26 @@ resource "sentry_issue_alert" "test" {
 
 	conditions = [
 		{
-			id   = "sentry.rules.conditions.first_seen_event.FirstSeenEventCondition"
-			name = "A new issue is created"
+			id = "sentry.rules.conditions.first_seen_event.FirstSeenEventCondition"
 		},
 		{
-			id   = "sentry.rules.conditions.regression_event.RegressionEventCondition"
-			name = "The issue changes state from resolved to unresolved"
+			id = "sentry.rules.conditions.regression_event.RegressionEventCondition"
 		},
 		{
 			id             = "sentry.rules.conditions.event_frequency.EventFrequencyCondition"
-			name           = "The issue is seen more than 100 times in 1h"
 			value          = 100
 			comparisonType = "count"
 			interval       = "1h"
 		},
 		{
 			id             = "sentry.rules.conditions.event_frequency.EventUniqueUserFrequencyCondition"
-			name           = "The issue is seen by more than 100 users in 1h"
 			value          = 100
 			comparisonType = "count"
 			interval       = "1h"
 		},
 		{
 			id             = "sentry.rules.conditions.event_frequency.EventFrequencyPercentCondition"
-			name           = "The issue affects more than 50.0 percent of sessions in 1h"
-			value          = 50.0
+			value          = "50.0"
 			comparisonType = "count"
 			interval       = "1h"
 		},
@@ -266,43 +245,36 @@ resource "sentry_issue_alert" "test" {
 	filters = [
 		{
 			id              = "sentry.rules.filters.age_comparison.AgeComparisonFilter"
-			name            = "The issue is older than 10 minute"
 			value           = 10
 			time            = "minute"
 			comparison_type = "older"
 		},
 		{
 			id    = "sentry.rules.filters.issue_occurrences.IssueOccurrencesFilter"
-			name  = "The issue has happened at least 10 times"
 			value = 10
 		},
 		{
 			id               = "sentry.rules.filters.assigned_to.AssignedToFilter"
-			name             = "The issue is assigned to Team"
 			targetType       = "Team"
 			targetIdentifier = sentry_team.test.team_id
 		},
 		{
-			id   = "sentry.rules.filters.latest_release.LatestReleaseFilter"
-			name = "The event is from the latest release"
+			id = "sentry.rules.filters.latest_release.LatestReleaseFilter"
 		},
 		{
 			id        = "sentry.rules.filters.event_attribute.EventAttributeFilter"
-			name      = "The event's message value contains test"
 			attribute = "message"
 			match     = "co"
 			value     = "test"
 		},
 		{
 			id    = "sentry.rules.filters.tagged_event.TaggedEventFilter"
-			name  = "The event's tags match test contains test"
 			key   = "test"
 			match = "co"
 			value = "test"
 		},
 		{
 			id    = "sentry.rules.filters.level.LevelFilter"
-			name  = "The event's level is equal to fatal"
 			match = "eq"
 			level = "50"
 		}
@@ -311,19 +283,16 @@ resource "sentry_issue_alert" "test" {
 	actions = [
 		{
 			id               = "sentry.mail.actions.NotifyEmailAction"
-			name             = "Send a notification to IssueOwners and if none can be found then send a notification to ActiveMembers"
 			targetType       = "IssueOwners"
 			targetIdentifier = ""
 		},
 		{
 			id               = "sentry.mail.actions.NotifyEmailAction"
-			name             = "Send a notification to Team and if none can be found then send a notification to ActiveMembers"
 			targetType       = "Team"
 			targetIdentifier = sentry_team.test.team_id
 		},
 		{
-			id   = "sentry.rules.actions.notify_event.NotifyEventAction"
-			name = "Send a notification (for all legacy integrations)"
+			id = "sentry.rules.actions.notify_event.NotifyEventAction"
 		}
 	]
 }

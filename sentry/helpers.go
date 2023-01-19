@@ -54,6 +54,36 @@ func SuppressEquivalentJSONDiffs(k, old, new string, d *schema.ResourceData) boo
 	return reflect.DeepEqual(o, n)
 }
 
+// followShape reshapes the value into the provided shape
+func followShape(shape, value interface{}) interface{} {
+	switch shape := shape.(type) {
+	case map[string]interface{}:
+		value, ok := interface{}(value).(map[string]interface{})
+		if !ok {
+			return nil
+		}
+
+		v := make(map[string]interface{})
+		for k, shapeValue := range shape {
+			v[k] = followShape(shapeValue, value[k])
+		}
+		return v
+	case []interface{}:
+		value, ok := interface{}(value).([]interface{})
+		if !ok {
+			return nil
+		}
+
+		v := make([]interface{}, 0, len(shape))
+		for i, shapeValue := range shape {
+			v = append(v, followShape(shapeValue, value[i]))
+		}
+		return v
+	default:
+		return value
+	}
+}
+
 func flattenStringSet(strings []string) *schema.Set {
 	flattenedStrings := schema.NewSet(schema.HashString, []interface{}{})
 	for _, v := range strings {

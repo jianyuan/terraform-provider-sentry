@@ -3,12 +3,12 @@
 page_title: "sentry_issue_alert Resource - terraform-provider-sentry"
 subcategory: ""
 description: |-
-  Sentry Issue Alert resource. Note that there's no public documentation for the values of conditions, filters, and actions. You can either inspect the request payload sent when creating or editing an issue alert on Sentry or inspect Sentry's rules registry in the source code https://github.com/getsentry/sentry/tree/master/src/sentry/rules.
+  Sentry Issue Alert resource. Note that there's no public documentation for the values of conditions, filters, and actions. You can either inspect the request payload sent when creating or editing an issue alert on Sentry or inspect Sentry's rules registry in the source code https://github.com/getsentry/sentry/tree/master/src/sentry/rules. Since v0.11.2, you should also omit the name property of each condition, filter, and action.
 ---
 
 # sentry_issue_alert (Resource)
 
-Sentry Issue Alert resource. Note that there's no public documentation for the values of conditions, filters, and actions. You can either inspect the request payload sent when creating or editing an issue alert on Sentry or inspect [Sentry's rules registry in the source code](https://github.com/getsentry/sentry/tree/master/src/sentry/rules).
+Sentry Issue Alert resource. Note that there's no public documentation for the values of conditions, filters, and actions. You can either inspect the request payload sent when creating or editing an issue alert on Sentry or inspect [Sentry's rules registry in the source code](https://github.com/getsentry/sentry/tree/master/src/sentry/rules). Since v0.11.2, you should also omit the name property of each condition, filter, and action.
 
 ## Example Usage
 
@@ -23,100 +23,130 @@ resource "sentry_issue_alert" "main" {
   frequency    = 30
 
   conditions = [
+    # A new issue is created
     {
-      id   = "sentry.rules.conditions.first_seen_event.FirstSeenEventCondition"
-      name = "A new issue is created"
+      id = "sentry.rules.conditions.first_seen_event.FirstSeenEventCondition"
     },
+
+    # The issue changes state from resolved to unresolved
     {
-      id   = "sentry.rules.conditions.regression_event.RegressionEventCondition"
-      name = "The issue changes state from resolved to unresolved"
+      id = "sentry.rules.conditions.regression_event.RegressionEventCondition"
     },
+
+    # The issue is seen more than 100 times in 1h
     {
       id             = "sentry.rules.conditions.event_frequency.EventFrequencyCondition"
-      name           = "The issue is seen more than 100 times in 1h"
       value          = 100
       comparisonType = "count"
       interval       = "1h"
     },
+
+    # The issue is seen by more than 100 users in 1h
     {
       id             = "sentry.rules.conditions.event_frequency.EventUniqueUserFrequencyCondition"
-      name           = "The issue is seen by more than 100 users in 1h"
       value          = 100
       comparisonType = "count"
       interval       = "1h"
     },
+
+    # The issue affects more than 50.0 percent of sessions in 1h
     {
       id             = "sentry.rules.conditions.event_frequency.EventFrequencyPercentCondition"
-      name           = "The issue affects more than 50.0 percent of sessions in 1h"
-      value          = 50.0
+      value          = "50.0" # Express the percentage as a string
       comparisonType = "count"
       interval       = "1h"
     },
   ]
 
   filters = [
+    # The issue is older than 10 minute
     {
       id              = "sentry.rules.filters.age_comparison.AgeComparisonFilter"
-      name            = "The issue is older than 10 minute"
       value           = 10
       time            = "minute"
       comparison_type = "older"
     },
+
+    # The issue has happened at least 10 times
     {
       id    = "sentry.rules.filters.issue_occurrences.IssueOccurrencesFilter"
-      name  = "The issue has happened at least 10 times"
       value = 10
     },
+
+    # The issue is assigned to Team
     {
       id               = "sentry.rules.filters.assigned_to.AssignedToFilter"
-      name             = "The issue is assigned to Team"
       targetType       = "Team"
       targetIdentifier = sentry_team.main.team_id
     },
+
+    # The event is from the latest release
     {
-      id   = "sentry.rules.filters.latest_release.LatestReleaseFilter"
-      name = "The event is from the latest release"
+      id = "sentry.rules.filters.latest_release.LatestReleaseFilter"
     },
+
+    # The event's message value contains test
     {
       id        = "sentry.rules.filters.event_attribute.EventAttributeFilter"
-      name      = "The event's message value contains test"
       attribute = "message"
       match     = "co"
       value     = "test"
     },
+
+    # The event's tags match test contains test
     {
       id    = "sentry.rules.filters.tagged_event.TaggedEventFilter"
-      name  = "The event's tags match test contains test"
       key   = "test"
       match = "co"
       value = "test"
     },
+
+    # The event's level is equal to fatal
     {
       id    = "sentry.rules.filters.level.LevelFilter"
-      name  = "The event's level is equal to fatal"
       match = "eq"
       level = "50"
     }
   ]
 
   actions = [
+    # Send a notification to IssueOwners
     {
       id               = "sentry.mail.actions.NotifyEmailAction"
-      name             = "Send a notification to IssueOwners"
       targetType       = "IssueOwners"
       targetIdentifier = ""
     },
+
+    # Send a notification to Team
     {
       id               = "sentry.mail.actions.NotifyEmailAction"
-      name             = "Send a notification to Team"
       targetType       = "Team"
       targetIdentifier = sentry_team.main.team_id
     },
+
+    # Send a notification (for all legacy integrations)
     {
-      id   = "sentry.rules.actions.notify_event.NotifyEventAction"
-      name = "Send a notification (for all legacy integrations)"
-    }
+      id = "sentry.rules.actions.notify_event.NotifyEventAction"
+    },
+
+    # Send a notification to the Slack workspace to #general
+    {
+      id      = "sentry.integrations.slack.notify_action.SlackNotifyServiceAction"
+      channel = "#general"
+
+      # From: https://sentry.io/settings/[org-slug]/integrations/slack/[slack-integration-id]/
+      # Or use the sentry_organization_integration data source to retrieve the integration ID:
+      workspace = data.sentry_organization_integration.slack.internal_id
+    },
   ]
+}
+
+# Retrieve a Slack integration
+data "sentry_organization_integration" "slack" {
+  organization = sentry_project.test.organization
+
+  provider_key = "slack"
+  name         = "Slack Workspace" # Name of your Slack workspace
 }
 ```
 
@@ -151,7 +181,6 @@ Import is supported using the following syntax:
 
 ```shell
 # import using the organization, project slugs and rule id from the URL:
-# https://sentry.io/organizations/[org-slug]/projects/[project-slug]/
-# https://sentry.io/organizations/[org-slug]/alerts/rules/details/[rule-id]/
+# https://sentry.io/organizations/[org-slug]/alerts/rules/[project-slug]/[rule-id]/details/
 terraform import sentry_issue_alert.default org-slug/project-slug/rule-id
 ```

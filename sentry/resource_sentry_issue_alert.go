@@ -18,7 +18,8 @@ func resourceSentryIssueAlert() *schema.Resource {
 		Description: "Sentry Issue Alert resource. Note that there's no public documentation for the " +
 			"values of conditions, filters, and actions. You can either inspect the request " +
 			"payload sent when creating or editing an issue alert on Sentry or inspect " +
-			"[Sentry's rules registry in the source code](https://github.com/getsentry/sentry/tree/master/src/sentry/rules).",
+			"[Sentry's rules registry in the source code](https://github.com/getsentry/sentry/tree/master/src/sentry/rules). " +
+			"Since v0.11.2, you should also omit the name property of each condition, filter, and action.",
 
 		CreateContext: resourceSentryIssueAlertCreate,
 		ReadContext:   resourceSentryIssueAlertRead,
@@ -66,7 +67,6 @@ func resourceSentryIssueAlertSchema() map[string]*schema.Schema {
 			Elem: &schema.Schema{
 				Type: schema.TypeMap,
 			},
-			DiffSuppressFunc: SuppressEquivalentJSONDiffs,
 		},
 		"filters": {
 			Description: "List of filters.",
@@ -75,7 +75,6 @@ func resourceSentryIssueAlertSchema() map[string]*schema.Schema {
 			Elem: &schema.Schema{
 				Type: schema.TypeMap,
 			},
-			DiffSuppressFunc: SuppressEquivalentJSONDiffs,
 		},
 		"actions": {
 			Description: "List of actions.",
@@ -84,7 +83,6 @@ func resourceSentryIssueAlertSchema() map[string]*schema.Schema {
 			Elem: &schema.Schema{
 				Type: schema.TypeMap,
 			},
-			DiffSuppressFunc: SuppressEquivalentJSONDiffs,
 		},
 		"action_match": {
 			Description:  "Trigger actions when an event is captured by Sentry and `any` or `all` of the specified conditions happen.",
@@ -224,18 +222,9 @@ func resourceSentryIssueAlertRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	conditions := make([]interface{}, 0, len(alert.Conditions))
-	for _, condition := range alert.Conditions {
-		conditions = append(conditions, *condition)
-	}
-	filters := make([]interface{}, 0, len(alert.Filters))
-	for _, filter := range alert.Filters {
-		filters = append(filters, *filter)
-	}
-	actions := make([]interface{}, 0, len(alert.Actions))
-	for _, action := range alert.Actions {
-		actions = append(actions, *action)
-	}
+	conditions := followShape(d.Get("conditions"), normalizeSentryIssueAlertProperty(alert.Conditions))
+	filters := followShape(d.Get("filters"), normalizeSentryIssueAlertProperty(alert.Filters))
+	actions := followShape(d.Get("actions"), normalizeSentryIssueAlertProperty(alert.Actions))
 
 	d.SetId(buildThreePartID(org, project, sentry.StringValue(alert.ID)))
 	retErr := multierror.Append(
@@ -296,4 +285,16 @@ func resourceSentryIssueAlertDelete(ctx context.Context, d *schema.ResourceData,
 	})
 	_, err = client.IssueAlerts.Delete(ctx, org, project, alertID)
 	return diag.FromErr(err)
+}
+
+func normalizeSentryIssueAlertProperty[T interface{ ~map[string]interface{} }](v []*T) []interface{} {
+	out := make([]interface{}, 0, len(v))
+	for _, c := range v {
+		m := make(map[string]interface{})
+		for k, v := range *c {
+			m[k] = v
+		}
+		out = append(out, m)
+	}
+	return out
 }
