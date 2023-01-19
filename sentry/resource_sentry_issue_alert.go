@@ -18,7 +18,8 @@ func resourceSentryIssueAlert() *schema.Resource {
 		Description: "Sentry Issue Alert resource. Note that there's no public documentation for the " +
 			"values of conditions, filters, and actions. You can either inspect the request " +
 			"payload sent when creating or editing an issue alert on Sentry or inspect " +
-			"[Sentry's rules registry in the source code](https://github.com/getsentry/sentry/tree/master/src/sentry/rules).",
+			"[Sentry's rules registry in the source code](https://github.com/getsentry/sentry/tree/master/src/sentry/rules). " +
+			"Since v0.11.2, you should also omit the name property of each condition, filter, and action.",
 
 		CreateContext: resourceSentryIssueAlertCreate,
 		ReadContext:   resourceSentryIssueAlertRead,
