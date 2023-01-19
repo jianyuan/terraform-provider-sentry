@@ -37,7 +37,7 @@ resource "sentry_issue_alert" "main" {
     # The issue affects more than 50.0 percent of sessions in 1h
     {
       id             = "sentry.rules.conditions.event_frequency.EventFrequencyPercentCondition"
-      value          = 50.0
+      value          = "50.0" # Express the percentage as a string
       comparisonType = "count"
       interval       = "1h"
     },
