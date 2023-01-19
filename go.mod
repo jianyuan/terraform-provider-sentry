@@ -3,7 +3,7 @@ module github.com/jianyuan/terraform-provider-sentry
 go 1.19
 
 require (
-	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320
+	github.com/hashicorp/go-cty v1.4.1-0.20200723130312-85980079f637
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/go-retryablehttp v0.7.2
 	github.com/hashicorp/terraform-plugin-docs v0.13.0
