@@ -12,7 +12,7 @@ import (
 )
 
 func TestAccSentryReleaseDeployment_basic(t *testing.T) {
-	rn := "sentry_organization_member.john_doe"
+	rn := "sentry_release_deployment.my-release"
 	environment := "test"
 
 	check := func(role string) resource.TestCheckFunc {
