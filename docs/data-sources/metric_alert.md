@@ -43,6 +43,7 @@ resource "sentry_metric_alert" "copy" {
           target_type       = action.value.target_type
           target_identifier = action.value.target_identifier
           integration_id    = action.value.integration_id
+          input_channel_id  = action.value.input_channel_id
         }
       }
 
@@ -97,6 +98,7 @@ Read-Only:
 Read-Only:
 
 - `id` (String)
+- `input_channel_id` (String)
 - `integration_id` (Number)
 - `target_identifier` (String)
 - `target_type` (String)

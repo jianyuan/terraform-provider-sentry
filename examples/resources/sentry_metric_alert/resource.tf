@@ -31,6 +31,7 @@ resource "sentry_metric_alert" "main" {
       type              = "slack"
       target_type       = "specific"
       target_identifier = "#slack-channel"
+      input_channel_id  = "C0XXXXXXXXX" #
       integration_id    = data.sentry_organization_integration.slack.id
     }
     alert_threshold = 300

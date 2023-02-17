@@ -109,6 +109,10 @@ func dataSourceSentryMetricAlert() *schema.Resource {
 										Type:     schema.TypeInt,
 										Computed: true,
 									},
+									"input_channel_id": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
 								},
 							},
 						},
