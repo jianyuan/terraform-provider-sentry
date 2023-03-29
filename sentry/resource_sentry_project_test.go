@@ -34,6 +34,8 @@ func TestAccSentryProject_basic(t *testing.T) {
 			resource.TestCheckResourceAttrSet(rn, "internal_id"),
 			resource.TestCheckResourceAttrPtr(rn, "internal_id", &projectID),
 			resource.TestCheckResourceAttrPair(rn, "project_id", rn, "internal_id"),
+			resource.TestCheckResourceAttr(rn, "fingerprinting_rules", "message:\"test\" -> test-error"),
+			resource.TestCheckResourceAttr(rn, "grouping_enhancements", "stack.function:mylibrary_* +app"),
 		)
 		for _, teamName := range teamNames {
 			fs = resource.ComposeTestCheckFunc(fs, resource.TestCheckTypeSetElemAttr(rn, "teams.*", teamName))
@@ -448,6 +450,8 @@ resource "sentry_project" "test" {
 	teams        = [%[2]s]
 	name         = "%[1]s"
 	platform     = "go"
+	fingerprinting_rules = "message:\"test\" -> test-error"
+	grouping_enhancements = "stack.function:mylibrary_* +app"
 }
 	`, projectName, strings.Join(teamSlugs, ", "))
 
