@@ -101,14 +101,7 @@ func resourceSentryOrganizationIntegrationPagerdutyCreate(ctx context.Context, d
 		return diag.FromErr(err)
 	}
 
-	var foundServiceRow map[string]interface{}
-	for _, row := range serviceTable {
-		serviceRow := row.(map[string]interface{})
-		if serviceRow["service"] == serviceName && serviceRow["integration_key"] == integrationKey {
-			foundServiceRow = serviceRow
-			break
-		}
-	}
+	_, foundServiceRow := findServiceRowByNameAndKey(serviceTable, serviceName, integrationKey)
 	if foundServiceRow == nil {
 		return diag.Errorf("Unable to find PagerDuty service %s", serviceName)
 	}
@@ -140,15 +133,7 @@ func resourceSentryOrganizationIntegrationPagerdutyRead(ctx context.Context, d *
 		return diag.FromErr(err)
 	}
 
-	var foundServiceRow map[string]interface{}
-	for _, row := range serviceTable {
-		serviceRow := row.(map[string]interface{})
-		if string(serviceRow["id"].(json.Number)) == internalId {
-			foundServiceRow = serviceRow
-			break
-		}
-	}
-
+	_, foundServiceRow := findServiceRowById(serviceTable, internalId)
 	if foundServiceRow != nil {
 		internalId := string(foundServiceRow["id"].(json.Number))
 		d.SetId(buildThreePartID(org, integrationId, internalId))
@@ -191,15 +176,7 @@ func resourceSentryOrganizationIntegrationPagerdutyUpdate(ctx context.Context, d
 		return diag.FromErr(err)
 	}
 
-	foundIndex := -1
-	var serviceRow map[string]interface{}
-	for index, row := range serviceTable {
-		serviceRow = row.(map[string]interface{})
-		if string(serviceRow["id"].(json.Number)) == internalId {
-			foundIndex = index
-			break
-		}
-	}
+	foundIndex, _ := findServiceRowById(serviceTable, internalId)
 	if foundIndex >= 0 {
 		serviceTable[foundIndex] = map[string]interface{}{
 			"service":         serviceName,
@@ -245,15 +222,7 @@ func resourceSentryOrganizationIntegrationPagerdutyDelete(ctx context.Context, d
 		return diag.FromErr(err)
 	}
 
-	foundIndex := -1
-	var serviceRow map[string]interface{}
-	for index, row := range serviceTable {
-		serviceRow = row.(map[string]interface{})
-		if string(serviceRow["id"].(json.Number)) == internalId {
-			foundIndex = index
-			break
-		}
-	}
+	foundIndex, _ := findServiceRowById(serviceTable, internalId)
 	if foundIndex < 0 {
 		return diag.Errorf("Unable to find PagerDuty service with id %s.", internalId)
 	}
@@ -289,4 +258,34 @@ func extractServiceTable(orgIntegration *sentry.OrganizationIntegration) ([]inte
 		return nil, fmt.Errorf("unable to find service_table in orgIntegration configData")
 	}
 	return serviceTable, nil
+}
+
+func findServiceRowById(serviceTable []interface{}, id string) (int, map[string]interface{}) {
+	foundIndex := -1
+	var foundServiceRow map[string]interface{}
+	var serviceRow map[string]interface{}
+	for index, row := range serviceTable {
+		serviceRow = row.(map[string]interface{})
+		if string(serviceRow["id"].(json.Number)) == id {
+			foundServiceRow = serviceRow
+			foundIndex = index
+			break
+		}
+	}
+	return foundIndex, foundServiceRow
+}
+
+func findServiceRowByNameAndKey(serviceTable []interface{}, serviceName string, integrationKey string) (int, map[string]interface{}) {
+	foundIndex := -1
+	var foundServiceRow map[string]interface{}
+	var serviceRow map[string]interface{}
+	for index, row := range serviceTable {
+		serviceRow = row.(map[string]interface{})
+		if serviceRow["service"] == serviceName && serviceRow["integration_key"] == integrationKey {
+			foundServiceRow = serviceRow
+			foundIndex = index
+			break
+		}
+	}
+	return foundIndex, foundServiceRow
 }
