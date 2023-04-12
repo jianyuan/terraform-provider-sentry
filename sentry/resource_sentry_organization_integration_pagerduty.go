@@ -3,6 +3,7 @@ package sentry
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -72,8 +73,11 @@ func resourceSentryOrganizationIntegrationPagerdutyCreate(ctx context.Context, d
 		return diag.FromErr(err)
 	}
 
-	configData := *orgIntegration.ConfigData
-	serviceTable := configData["service_table"].([]interface{})
+	serviceTable, err := extractServiceTable(orgIntegration)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	serviceTable = append(serviceTable, map[string]interface{}{
 		"service":         serviceName,
 		"integration_key": integrationKey,
@@ -91,18 +95,19 @@ func resourceSentryOrganizationIntegrationPagerdutyCreate(ctx context.Context, d
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	configData = *orgIntegration.ConfigData
+
+	serviceTable, err = extractServiceTable(orgIntegration)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	var foundServiceRow map[string]interface{}
-	if serviceTable, found := configData["service_table"]; found {
-		for _, row := range serviceTable.([]interface{}) {
-			serviceRow := row.(map[string]interface{})
-			if serviceRow["service"] == serviceName && serviceRow["integration_key"] == integrationKey {
-				foundServiceRow = serviceRow
-				break
-			}
+	for _, row := range serviceTable {
+		serviceRow := row.(map[string]interface{})
+		if serviceRow["service"] == serviceName && serviceRow["integration_key"] == integrationKey {
+			foundServiceRow = serviceRow
+			break
 		}
-	} else {
-		return diag.Errorf("Unable to find PagerDuty service_table information. Is %s a PagerDuty integration?", integrationId)
 	}
 	if foundServiceRow == nil {
 		return diag.Errorf("Unable to find PagerDuty service %s", serviceName)
@@ -130,8 +135,10 @@ func resourceSentryOrganizationIntegrationPagerdutyRead(ctx context.Context, d *
 		return diag.FromErr(err)
 	}
 
-	configData := *orgIntegration.ConfigData
-	serviceTable := configData["service_table"].([]interface{})
+	serviceTable, err := extractServiceTable(orgIntegration)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	var foundServiceRow map[string]interface{}
 	for _, row := range serviceTable {
@@ -179,8 +186,10 @@ func resourceSentryOrganizationIntegrationPagerdutyUpdate(ctx context.Context, d
 		return diag.FromErr(err)
 	}
 
-	configData := *orgIntegration.ConfigData
-	serviceTable := configData["service_table"].([]interface{})
+	serviceTable, err := extractServiceTable(orgIntegration)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	foundIndex := -1
 	var serviceRow map[string]interface{}
@@ -231,8 +240,11 @@ func resourceSentryOrganizationIntegrationPagerdutyDelete(ctx context.Context, d
 		return diag.FromErr(err)
 	}
 
-	configData := *orgIntegration.ConfigData
-	serviceTable := configData["service_table"].([]interface{})
+	serviceTable, err := extractServiceTable(orgIntegration)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	foundIndex := -1
 	var serviceRow map[string]interface{}
 	for index, row := range serviceTable {
@@ -268,4 +280,13 @@ func importSentryOrganizationIntegrationPagerduty(ctx context.Context, d *schema
 	resourceSentryOrganizationIntegrationPagerdutyRead(ctx, d, meta)
 
 	return []*schema.ResourceData{d}, nil
+}
+
+func extractServiceTable(orgIntegration *sentry.OrganizationIntegration) ([]interface{}, error) {
+	configData := *orgIntegration.ConfigData
+	serviceTable, ok := configData["service_table"].([]interface{})
+	if !ok {
+		return nil, fmt.Errorf("unable to find service_table in orgIntegration configData")
+	}
+	return serviceTable, nil
 }
