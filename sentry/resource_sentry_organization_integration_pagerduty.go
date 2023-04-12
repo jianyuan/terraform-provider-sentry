@@ -20,8 +20,9 @@ func resourceSentryOrganizationIntegrationPagerduty() *schema.Resource {
 		ReadContext:   resourceSentryOrganizationIntegrationPagerdutyRead,
 		UpdateContext: resourceSentryOrganizationIntegrationPagerdutyUpdate,
 		DeleteContext: resourceSentryOrganizationIntegrationPagerdutyDelete,
+
 		Importer: &schema.ResourceImporter{
-			StateContext: importSentryOrganizationIntegrationPagerduty,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -233,22 +234,6 @@ func resourceSentryOrganizationIntegrationPagerdutyDelete(ctx context.Context, d
 	}
 	_, err = client.OrganizationIntegrations.UpdateConfig(ctx, org, integrationId, &updatedConfigData)
 	return diag.FromErr(err)
-}
-
-func importSentryOrganizationIntegrationPagerduty(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-
-	org, integrationId, internalId, err := splitThreePartID(d.Id(), "organization-slug", "integration-id", "service-id")
-	if err != nil {
-		return nil, err
-	}
-
-	d.Set("internal_id", internalId)
-	d.Set("integration_id", integrationId)
-	d.Set("organization", org)
-
-	resourceSentryOrganizationIntegrationPagerdutyRead(ctx, d, meta)
-
-	return []*schema.ResourceData{d}, nil
 }
 
 func extractServiceTable(orgIntegration *sentry.OrganizationIntegration) ([]interface{}, error) {
