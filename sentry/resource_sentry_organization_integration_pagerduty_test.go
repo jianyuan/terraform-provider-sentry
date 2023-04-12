@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -14,7 +15,11 @@ import (
 )
 
 func TestAccSentryOrganizationIntegrationPagerduty_basic(t *testing.T) {
-	integrationId := "177025" // TODO: use sentry_organization_integration and an env variable to gate running these tests
+	integrationId := os.Getenv("SENTRY_TEST_PAGERDUTY_INTEGRATION_ID")
+	if integrationId == "" {
+		t.Skip("Skipping because SENTRY_TEST_PAGERDUTY_INTEGRATION_ID is not set")
+	}
+
 	serviceName := acctest.RandomWithPrefix("tf-pagerduty-service")
 	integrationKey := acctest.RandomWithPrefix("tf-pagerduty-integration-key")
 	rn := "sentry_organization_integration_pagerduty.test"
