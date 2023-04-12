@@ -82,10 +82,6 @@ func resourceSentryOrganizationIntegrationPagerdutyCreate(ctx context.Context, d
 	updatedConfigData := sentry.UpdateConfigOrganizationIntegrationsParams{
 		"service_table": serviceTable,
 	}
-	tflog.Debug(ctx, "Updating Sentry PagerDuty Organization Integration with configData", map[string]interface{}{
-		"configData":        updatedConfigData,
-		"new service_table": serviceTable,
-	})
 	_, err = client.OrganizationIntegrations.UpdateConfig(ctx, org, integrationId, &updatedConfigData)
 	if err != nil {
 		return diag.FromErr(err)
@@ -136,9 +132,6 @@ func resourceSentryOrganizationIntegrationPagerdutyRead(ctx context.Context, d *
 
 	configData := *orgIntegration.ConfigData
 	serviceTable := configData["service_table"].([]interface{})
-	tflog.Debug(ctx, "Found serviceTable", map[string]interface{}{
-		"serviceTable": serviceTable,
-	})
 
 	var foundServiceRow map[string]interface{}
 	for _, row := range serviceTable {
@@ -188,9 +181,6 @@ func resourceSentryOrganizationIntegrationPagerdutyUpdate(ctx context.Context, d
 
 	configData := *orgIntegration.ConfigData
 	serviceTable := configData["service_table"].([]interface{})
-	tflog.Debug(ctx, "Found serviceTable", map[string]interface{}{
-		"serviceTable": serviceTable,
-	})
 
 	foundIndex := -1
 	var serviceRow map[string]interface{}
@@ -214,10 +204,6 @@ func resourceSentryOrganizationIntegrationPagerdutyUpdate(ctx context.Context, d
 	updatedConfigData := sentry.UpdateConfigOrganizationIntegrationsParams{
 		"service_table": serviceTable,
 	}
-	tflog.Debug(ctx, "Updating Sentry PagerDuty Organization Integration with configData", map[string]interface{}{
-		"configData":        updatedConfigData,
-		"new service_table": serviceTable,
-	})
 	_, err = client.OrganizationIntegrations.UpdateConfig(ctx, org, integrationId, &updatedConfigData)
 	if err != nil {
 		return diag.FromErr(err)
@@ -264,9 +250,6 @@ func resourceSentryOrganizationIntegrationPagerdutyDelete(ctx context.Context, d
 	updatedConfigData := sentry.UpdateConfigOrganizationIntegrationsParams{
 		"service_table": updatedServiceTable,
 	}
-	tflog.Debug(ctx, "For Delete: Updating Sentry PagerDuty Organization Integration with configData", map[string]interface{}{
-		"configData": updatedConfigData,
-	})
 	_, err = client.OrganizationIntegrations.UpdateConfig(ctx, org, integrationId, &updatedConfigData)
 	return diag.FromErr(err)
 }
