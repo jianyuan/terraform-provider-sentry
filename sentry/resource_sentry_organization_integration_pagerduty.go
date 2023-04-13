@@ -117,12 +117,19 @@ func resourceSentryOrganizationIntegrationPagerdutyCreate(ctx context.Context, d
 		return diag.FromErr(err)
 	}
 
-	_, foundServiceRow := findServiceRowByNameAndKey(serviceTable, serviceName, integrationKey)
+	_, foundServiceRow, err := findServiceRowByNameAndKey(serviceTable, serviceName, integrationKey)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	if foundServiceRow == nil {
 		return diag.Errorf("Unable to find PagerDuty service %s", serviceName)
 	}
 
-	d.SetId(buildThreePartID(org, integrationId, string(foundServiceRow["id"].(json.Number))))
+	serviceId, err := getId(foundServiceRow)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	d.SetId(buildThreePartID(org, integrationId, serviceId))
 
 	return resourceSentryOrganizationIntegrationPagerdutyRead(ctx, d, meta)
 }
@@ -153,9 +160,15 @@ func resourceSentryOrganizationIntegrationPagerdutyRead(ctx context.Context, d *
 		return diag.FromErr(err)
 	}
 
-	_, foundServiceRow := findServiceRowById(serviceTable, internalId)
+	_, foundServiceRow, err := findServiceRowById(serviceTable, internalId)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	if foundServiceRow != nil {
-		internalId := string(foundServiceRow["id"].(json.Number))
+		internalId, err := getId(foundServiceRow)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 		d.SetId(buildThreePartID(org, integrationId, internalId))
 		retErr := multierror.Append(
 			d.Set("organization", org),
@@ -200,7 +213,10 @@ func resourceSentryOrganizationIntegrationPagerdutyUpdate(ctx context.Context, d
 		return diag.FromErr(err)
 	}
 
-	foundIndex, _ := findServiceRowById(serviceTable, internalId)
+	foundIndex, _, err := findServiceRowById(serviceTable, internalId)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	if foundIndex >= 0 {
 		serviceTable[foundIndex] = map[string]interface{}{
 			"service":         serviceName,
@@ -250,7 +266,10 @@ func resourceSentryOrganizationIntegrationPagerdutyDelete(ctx context.Context, d
 		return diag.FromErr(err)
 	}
 
-	foundIndex, _ := findServiceRowById(serviceTable, internalId)
+	foundIndex, _, err := findServiceRowById(serviceTable, internalId)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	if foundIndex < 0 {
 		return diag.Errorf("Unable to find PagerDuty service with id %s.", internalId)
 	}
@@ -272,32 +291,52 @@ func extractServiceTable(orgIntegration *sentry.OrganizationIntegration) ([]inte
 	return serviceTable, nil
 }
 
-func findServiceRowById(serviceTable []interface{}, id string) (int, map[string]interface{}) {
+func getId(serviceRow map[string]interface{}) (string, error) {
+	id, ok := serviceRow["id"].(json.Number)
+	if !ok {
+		return "", fmt.Errorf("unable to assert type json.Number on serviceRow[id]: %q", serviceRow)
+	}
+	return string(id), nil
+}
+
+func findServiceRowById(serviceTable []interface{}, id string) (int, map[string]interface{}, error) {
 	foundIndex := -1
 	var foundServiceRow map[string]interface{}
 	var serviceRow map[string]interface{}
+	var ok bool
 	for index, row := range serviceTable {
-		serviceRow = row.(map[string]interface{})
-		if string(serviceRow["id"].(json.Number)) == id {
+		serviceRow, ok = row.(map[string]interface{})
+		if !ok {
+			return -1, nil, fmt.Errorf("unable to assert type map[string]interface{} on serviceRow: %q", serviceRow)
+		}
+		currRowId, err := getId(serviceRow)
+		if err != nil {
+			return -1, nil, err
+		}
+		if currRowId == id {
 			foundServiceRow = serviceRow
 			foundIndex = index
 			break
 		}
 	}
-	return foundIndex, foundServiceRow
+	return foundIndex, foundServiceRow, nil
 }
 
-func findServiceRowByNameAndKey(serviceTable []interface{}, serviceName string, integrationKey string) (int, map[string]interface{}) {
+func findServiceRowByNameAndKey(serviceTable []interface{}, serviceName string, integrationKey string) (int, map[string]interface{}, error) {
 	foundIndex := -1
 	var foundServiceRow map[string]interface{}
 	var serviceRow map[string]interface{}
+	var ok bool
 	for index, row := range serviceTable {
-		serviceRow = row.(map[string]interface{})
+		serviceRow, ok = row.(map[string]interface{})
+		if !ok {
+			return -1, nil, fmt.Errorf("unable to assert type map[string]interface{} on serviceRow: %q", serviceRow)
+		}
 		if serviceRow["service"] == serviceName && serviceRow["integration_key"] == integrationKey {
 			foundServiceRow = serviceRow
 			foundIndex = index
 			break
 		}
 	}
-	return foundIndex, foundServiceRow
+	return foundIndex, foundServiceRow, nil
 }
