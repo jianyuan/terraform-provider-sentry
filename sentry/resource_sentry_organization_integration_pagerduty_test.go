@@ -109,7 +109,7 @@ func testAccCheckSentryOrganizationIntegrationPagerdutyExists(n string, serviceI
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return fmt.Errorf("not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
@@ -146,7 +146,6 @@ func testAccCheckSentryOrganizationIntegrationPagerdutyExists(n string, serviceI
 }
 
 func testAccSentryOrganizationIntegrationPagerdutyConfig(integrationId, serviceName, integrationKey string) string {
-	// TODO: get the integration id from sentry_organization_integration data source
 	return testAccSentryOrganizationDataSourceConfig + fmt.Sprintf(`
 resource "sentry_organization_integration_pagerduty" "test" {
 	organization    = data.sentry_organization.test.id
