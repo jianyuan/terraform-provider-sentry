@@ -57,12 +57,27 @@ func resourceSentryOrganizationIntegrationPagerduty() *schema.Resource {
 }
 
 func resourceSentryOrganizationIntegrationPagerdutyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client, ok := meta.(*sentry.Client)
+	if !ok {
+		return diag.Errorf("unable to assert type sentry.Client on meta")
+	}
 
-	org := d.Get("organization").(string)
-	integrationId := d.Get("integration_id").(string)
-	serviceName := d.Get("service_name").(string)
-	integrationKey := d.Get("integration_key").(string)
+	org, ok := d.Get("organization").(string)
+	if !ok {
+		return diag.Errorf("unable to assert type string on organization")
+	}
+	integrationId, ok := d.Get("integration_id").(string)
+	if !ok {
+		return diag.Errorf("unable to assert type string on integration_id")
+	}
+	serviceName, ok := d.Get("service_name").(string)
+	if !ok {
+		return diag.Errorf("unable to assert type string on service_name")
+	}
+	integrationKey, ok := d.Get("integration_key").(string)
+	if !ok {
+		return diag.Errorf("unable to assert type string on integration_key")
+	}
 
 	tflog.Debug(ctx, "Creating PagerDuty service integration", map[string]interface{}{
 		"org":            org,
@@ -113,7 +128,11 @@ func resourceSentryOrganizationIntegrationPagerdutyCreate(ctx context.Context, d
 }
 
 func resourceSentryOrganizationIntegrationPagerdutyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client, ok := meta.(*sentry.Client)
+	if !ok {
+		return diag.Errorf("unable to assert type sentry.Client on meta")
+	}
+
 	org, integrationId, internalId, err := splitThreePartID(d.Id(), "organization-slug", "integration-id", "service-id")
 	if err != nil {
 		diag.FromErr(err)
@@ -154,7 +173,11 @@ func resourceSentryOrganizationIntegrationPagerdutyRead(ctx context.Context, d *
 }
 
 func resourceSentryOrganizationIntegrationPagerdutyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client, ok := meta.(*sentry.Client)
+	if !ok {
+		return diag.Errorf("unable to assert type sentry.Client on meta")
+	}
+
 	serviceName := d.Get("service_name")
 	integrationKey := d.Get("integration_key")
 	org, integrationId, internalId, err := splitThreePartID(d.Id(), "organization-slug", "integration-id", "service-id")
@@ -202,7 +225,11 @@ func resourceSentryOrganizationIntegrationPagerdutyUpdate(ctx context.Context, d
 }
 
 func resourceSentryOrganizationIntegrationPagerdutyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client, ok := meta.(*sentry.Client)
+	if !ok {
+		return diag.Errorf("unable to assert type sentry.Client on meta")
+	}
+
 	org, integrationId, internalId, err := splitThreePartID(d.Id(), "organization-slug", "integration-id", "service-id")
 	if err != nil {
 		diag.FromErr(err)
