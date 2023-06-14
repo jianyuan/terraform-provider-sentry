@@ -1,8 +1,8 @@
-# Terraform Provider Sentry
+# Terraform Provider Sentry (fork)
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/labd/terraform-provider-sentry)](https://goreportcard.com/report/github.com/labd/terraform-provider-sentry)
 
-<a href="https://sentry.io/?utm_source=terraform&utm_medium=docs" target="_blank">
+<a href="https://sentry.io/?utm_source=terraform-labd&utm_medium=docs" target="_blank">
     <img src="templates/sentry-wordmark-dark-280x84.svg" alt="Sentry" width="280">
 </a>
 
@@ -10,11 +10,12 @@
     <img src="templates/Terraform_PrimaryLogo_Color_RGB.svg" alt="Terraform" width="280">
 </a>
 
-The Terraform provider for [Sentry](https://sentry.io/?utm_source=terraform&utm_medium=docs) allows teams to configure and update Sentry project parameters via their command line. This provider is officially sponsored by [Sentry](https://sentry.io/?utm_source=terraform&utm_medium=docs).
+The Terraform provider for [Sentry](https://sentry.io/?utm_source=terraform&utm_medium=docs) allows teams to 
+configure and update Sentry project parameters via their command line. 
 
 ## Usage
 
-Detailed documentation is available on the [Terraform provider registry](https://registry.terraform.io/providers/jianyuan/sentry/latest).
+Detailed documentation is available on the [Terraform provider registry](https://registry.terraform.io/providers/labd/sentry/latest).
 
 ## Development
 
