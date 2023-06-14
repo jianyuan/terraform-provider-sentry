@@ -1,4 +1,4 @@
-module github.com/jianyuan/terraform-provider-sentry
+module github.com/labd/terraform-provider-sentry
 
 go 1.19
 
