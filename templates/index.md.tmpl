@@ -1,16 +1,29 @@
 ---
-page_title: "Official Sentry Terraform Provider"
+page_title: "Sentry Terraform Provider (fork)"
 description: |-
-  The Terraform provider for Sentry allows teams to configure and update Sentry project parameters via their command line. This provider is built and maintained by a community developer and officially sponsored by Sentry.
+  The Terraform provider for Sentry allows teams to configure and update Sentry
+  project parameters via their command line. This provider is built and
+  maintained by a community developer and officially sponsored by Sentry.
 ---
 
-# Official Sentry Terraform Provider
+# Sentry Terraform Provider (fork)
 
-The Sentry Terraform provider is an open-source project built and maintained by a community developer and officially sponsored by [Sentry](https://sentry.io). 
 
-The Sentry Terraform provider allows your team to configure and update Sentry project parameters including Projects, Alerts (Issues & Transactions), Dashboards, Teams, and Organizations - programmatically. This helps you easily provision Sentry while also giving you the option to work from an interface you are already familiar with. If you have questions, feature requests, or issues you'd like to report, please [contact Sentry](https://help.sentry.io/) or click on 'report an issue' to the right.
+This is a fork of https://registry.terraform.io/providers/jianyuan/sentry/latest
 
-This provider utilizes the [Web APIs](https://docs.sentry.io/api/) to interact with Sentry resources.
+The Sentry Terraform provider is an open-source project built and maintained by
+a community developer and officially sponsored by [Sentry](https://sentry.io).
+
+The Sentry Terraform provider allows your team to configure and update Sentry
+project parameters including Projects, Alerts (Issues & Transactions),
+Dashboards, Teams, and Organizations - programmatically. This helps you easily
+provision Sentry while also giving you the option to work from an interface you
+are already familiar with. If you have questions, feature requests, or issues
+you'd like to report, please [contact Sentry](https://help.sentry.io/) or click
+on 'report an issue' to the right.
+
+This provider utilizes the [Web APIs](https://docs.sentry.io/api/) to interact
+with Sentry resources.
 
 **Organization**
 
@@ -40,7 +53,10 @@ provider "sentry" {
 }
 ```
 
-It's best practice not to store the authentication token in plain text. As an alternative, the provider can source the authentication token from the `SENTRY_AUTH_TOKEN` environment variable. If you choose to do this, you can omit the token variable from the configuration block above.
+It's best practice not to store the authentication token in plain text. As an
+alternative, the provider can source the authentication token from the
+`SENTRY_AUTH_TOKEN` environment variable. If you choose to do this, you can omit
+the token variable from the configuration block above.
 
 ```terraform
 provider "sentry" {}
@@ -48,7 +64,8 @@ provider "sentry" {}
 
 ### Self-hosted Sentry
 
-If you are self-hosting Sentry, you can set the base URL here. The URL format must be in the format `https://[hostname]/api/`.
+If you are self-hosting Sentry, you can set the base URL here. The URL format
+must be in the format `https://[hostname]/api/`.
 
 ```terraform
 # Configure the Sentry Provider

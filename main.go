@@ -4,7 +4,7 @@ import (
 	"flag"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
-	"github.com/jianyuan/terraform-provider-sentry/sentry"
+	"github.com/labd/terraform-provider-sentry/sentry"
 )
 
 // Run "go generate" to format example terraform files and generate the docs for the registry/website
