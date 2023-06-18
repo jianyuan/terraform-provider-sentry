@@ -12,7 +12,7 @@ require (
 	github.com/jianyuan/go-sentry/v2 v2.5.0
 	github.com/mitchellh/mapstructure v1.5.0
 	golang.org/x/oauth2 v0.7.0
-	golang.org/x/sync v0.2.0
+	golang.org/x/sync v0.3.0
 )
 
 require (
