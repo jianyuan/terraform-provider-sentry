@@ -141,66 +141,38 @@ func resourceSentryKeyRead(ctx context.Context, d *schema.ResourceData, meta int
 		"project": project,
 	})
 
-	listParams := &sentry.ListCursorParams{}
-	var allKeys []*sentry.ProjectKey
-	for {
-		keys, resp, err := client.ProjectKeys.List(ctx, org, project, listParams)
-		if found, err := checkClientGet(resp, err, d); !found {
-			return diag.FromErr(err)
-		}
-		allKeys = append(allKeys, keys...)
-		if resp.Cursor == "" {
-			break
-		}
-		listParams.Cursor = resp.Cursor
-	}
-	tflog.Trace(ctx, "Read Sentry keys", map[string]interface{}{
-		"keyCount": len(allKeys),
-		"keys":     allKeys,
-	})
-
-	found := false
-
-	for _, key := range allKeys {
-		if key.ID == id {
-			tflog.Debug(ctx, "Found Sentry key", map[string]interface{}{
-				"keyID":   id,
-				"org":     org,
-				"project": project,
-			})
-			d.SetId(key.ID)
-			retErr := multierror.Append(
-				d.Set("name", key.Name),
-				d.Set("public", key.Public),
-				d.Set("secret", key.Secret),
-				d.Set("project_id", key.ProjectID),
-				d.Set("is_active", key.IsActive),
-				d.Set("dsn_secret", key.DSN.Secret),
-				d.Set("dsn_public", key.DSN.Public),
-				d.Set("dsn_csp", key.DSN.CSP),
-			)
-			if key.RateLimit != nil {
-				retErr = multierror.Append(
-					retErr,
-					d.Set("rate_limit_window", key.RateLimit.Window),
-					d.Set("rate_limit_count", key.RateLimit.Count),
-				)
-			}
-			if err := retErr.ErrorOrNil(); err != nil {
-				return diag.FromErr(err)
-			}
-
-			found = true
-
-			break
-		}
-	}
-
-	if !found {
-		tflog.Warn(ctx, "Sentry key could not be found...", map[string]interface{}{
-			"keyID": id,
+	key, resp, err := client.ProjectKeys.Get(ctx, org, project, id)
+	if found, err := checkClientGet(resp, err, d); !found {
+		tflog.Debug(ctx, "Failed to get Sentry key", map[string]interface{}{
+			"keyID":   id,
+			"org":     org,
+			"project": project,
 		})
-		d.SetId("")
+		return diag.FromErr(err)
+	}
+
+	d.SetId(key.ID)
+	retErr := multierror.Append(
+		d.Set("name", key.Name),
+		d.Set("public", key.Public),
+		d.Set("secret", key.Secret),
+		d.Set("project_id", key.ProjectID),
+		d.Set("is_active", key.IsActive),
+		d.Set("dsn_secret", key.DSN.Secret),
+		d.Set("dsn_public", key.DSN.Public),
+		d.Set("dsn_csp", key.DSN.CSP),
+	)
+
+	if key.RateLimit != nil {
+		retErr = multierror.Append(
+			retErr,
+			d.Set("rate_limit_window", key.RateLimit.Window),
+			d.Set("rate_limit_count", key.RateLimit.Count),
+		)
+	}
+
+	if err := retErr.ErrorOrNil(); err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil

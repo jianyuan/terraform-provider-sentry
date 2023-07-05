@@ -2,6 +2,8 @@ module github.com/labd/terraform-provider-sentry
 
 go 1.19
 
+replace github.com/jianyuan/go-sentry/v2 => github.com/labd/go-sentry/v2 v2.0.0-20230705210640-df8c4ec2f99a
+
 require (
 	github.com/hashicorp/go-cty v1.4.1-0.20200723130312-85980079f637
 	github.com/hashicorp/go-multierror v1.1.1
