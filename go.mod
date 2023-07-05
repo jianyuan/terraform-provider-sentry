@@ -2,7 +2,7 @@ module github.com/labd/terraform-provider-sentry
 
 go 1.19
 
-replace github.com/jianyuan/go-sentry/v2 => github.com/labd/go-sentry/v2 v2.0.0-20230705210640-df8c4ec2f99a
+replace github.com/jianyuan/go-sentry/v2 => github.com/labd/go-sentry/v2 v2.0.0-20230705221521-60726b2c7649
 
 require (
 	github.com/hashicorp/go-cty v1.4.1-0.20200723130312-85980079f637
@@ -13,7 +13,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.26.1
 	github.com/jianyuan/go-sentry/v2 v2.5.0
 	github.com/mitchellh/mapstructure v1.5.0
-	golang.org/x/oauth2 v0.7.0
+	golang.org/x/oauth2 v0.9.0
 	golang.org/x/sync v0.2.0
 )
 
@@ -65,11 +65,11 @@ require (
 	github.com/vmihailenco/msgpack/v4 v4.3.12 // indirect
 	github.com/vmihailenco/tagparser v0.1.2 // indirect
 	github.com/zclconf/go-cty v1.13.1 // indirect
-	golang.org/x/crypto v0.7.0 // indirect
+	golang.org/x/crypto v0.10.0 // indirect
 	golang.org/x/mod v0.8.0 // indirect
-	golang.org/x/net v0.9.0 // indirect
-	golang.org/x/sys v0.7.0 // indirect
-	golang.org/x/text v0.9.0 // indirect
+	golang.org/x/net v0.11.0 // indirect
+	golang.org/x/sys v0.9.0 // indirect
+	golang.org/x/text v0.10.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20221018160656-63c7b68cfc55 // indirect
 	google.golang.org/grpc v1.51.0 // indirect
