@@ -1,0 +1,27 @@
+name: Triage
+
+on:
+  pull_request:
+    types:
+      - opened
+  issues:
+    types:
+      - opened
+
+jobs:
+  add_to_project:
+    name: Push issue or PR to board
+    runs-on: ubuntu-latest
+    steps:
+      - name: get app token
+        id: get-app-token
+        uses: labd/action-gh-app-token@main
+        with:
+          app-id: ${{ secrets.RD_APP_ID }}
+          private-key: ${{ secrets.RD_APP_PRIVATE_KEY }}
+          installation-id: ${{ secrets.RD_APP_INSTALLATION_ID }}
+      - name: set to project board
+        uses: actions/add-to-project@v0.5.0
+        with:
+          project-url: https://github.com/orgs/labd/projects/3
+          github-token: ${{ steps.get-app-token.outputs.app-token }}
