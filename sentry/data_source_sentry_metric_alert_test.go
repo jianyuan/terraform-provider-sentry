@@ -76,7 +76,7 @@ resource "sentry_metric_alert" "test" {
 	organization      = sentry_project.test.organization
 	project           = sentry_project.test.id
 	name              = "%[1]s"
-	dataset           = "transactions"
+	dataset           = "generic_metrics"
 	event_types       = ["transaction"]
 	query             = "http.url:http://testservice.com/stats"
 	aggregate         = "p50(transaction.duration)"

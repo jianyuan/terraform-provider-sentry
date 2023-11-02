@@ -61,7 +61,6 @@ func resourceSentryDashboard() *schema.Resource {
 									"stacked_area",
 									"bar",
 									"table",
-									"world_map",
 									"big_number",
 									"top_n",
 								},

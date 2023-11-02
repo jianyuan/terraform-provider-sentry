@@ -24,15 +24,17 @@ func TestAccSentryDashboardDataSource_basic(t *testing.T) {
 			resource.TestCheckResourceAttr(name, "widget.#", "1"),
 			resource.TestCheckTypeSetElemNestedAttrs(name, "widget.*", map[string]string{
 				"title":        "Custom Widget",
-				"display_type": "world_map",
+				"display_type": "table",
 			}),
 			resource.TestCheckResourceAttr(name, "widget.0.query.#", "1"),
 			resource.TestCheckTypeSetElemNestedAttrs(name, "widget.0.query.*", map[string]string{
 				"name":       "Metric",
-				"conditions": "!event.type:transaction",
+				"conditions": "!event.type:transaction has:geo.country_code",
 			}),
-			resource.TestCheckResourceAttr(name, "widget.0.query.0.fields.#", "1"),
-			resource.TestCheckResourceAttr(name, "widget.0.query.0.fields.0", "count()"),
+			resource.TestCheckResourceAttr(name, "widget.0.query.0.fields.#", "3"),
+			resource.TestCheckResourceAttr(name, "widget.0.query.0.fields.0", "geo.country_code"),
+			resource.TestCheckResourceAttr(name, "widget.0.query.0.fields.1", "geo.region"),
+			resource.TestCheckResourceAttr(name, "widget.0.query.0.fields.2", "count()"),
 			resource.TestCheckResourceAttr(name, "widget.0.query.0.aggregates.#", "1"),
 			resource.TestCheckResourceAttr(name, "widget.0.query.0.aggregates.0", "count()"),
 			resource.TestCheckResourceAttr(name, "widget.0.layout.#", "1"),
@@ -71,14 +73,14 @@ resource "sentry_dashboard" "test" {
 
 	widget {
 		title        = "Custom Widget"
-		display_type = "world_map"
+		display_type = "table"
 
 		query {
 			name       = "Metric"
 
-			fields     = ["count()"]
+			fields     = ["geo.country_code", "geo.region", "count()"]
 			aggregates = ["count()"]
-			conditions = "!event.type:transaction"
+			conditions = "!event.type:transaction has:geo.country_code"
 		}
 
 		layout {
