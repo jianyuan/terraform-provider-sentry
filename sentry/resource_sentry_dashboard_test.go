@@ -25,16 +25,18 @@ func TestAccSentryDashboard_basic(t *testing.T) {
 			resource.TestCheckResourceAttr(rn, "title", dashboardTitle),
 			resource.TestCheckResourceAttr(rn, "widget.#", "1"),
 			resource.TestCheckResourceAttr(rn, "widget.0.title", "Custom Widget"),
-			resource.TestCheckResourceAttr(rn, "widget.0.display_type", "world_map"),
+			resource.TestCheckResourceAttr(rn, "widget.0.display_type", "table"),
 			resource.TestCheckResourceAttr(rn, "widget.0.query.#", "1"),
 			resource.TestCheckResourceAttr(rn, "widget.0.query.0.name", "Metric"),
-			resource.TestCheckResourceAttr(rn, "widget.0.query.0.fields.#", "1"),
-			resource.TestCheckResourceAttr(rn, "widget.0.query.0.fields.0", "count()"),
+			resource.TestCheckResourceAttr(rn, "widget.0.query.0.fields.#", "3"),
+			resource.TestCheckResourceAttr(rn, "widget.0.query.0.fields.0", "geo.country_code"),
+			resource.TestCheckResourceAttr(rn, "widget.0.query.0.fields.1", "geo.region"),
+			resource.TestCheckResourceAttr(rn, "widget.0.query.0.fields.2", "count()"),
 			resource.TestCheckResourceAttr(rn, "widget.0.query.0.aggregates.#", "1"),
 			resource.TestCheckResourceAttr(rn, "widget.0.query.0.aggregates.0", "count()"),
 			resource.TestCheckResourceAttr(rn, "widget.0.query.0.columns.#", "0"),
 			resource.TestCheckResourceAttr(rn, "widget.0.query.0.field_aliases.#", "0"),
-			resource.TestCheckResourceAttr(rn, "widget.0.query.0.conditions", "!event.type:transaction"),
+			resource.TestCheckResourceAttr(rn, "widget.0.query.0.conditions", "!event.type:transaction has:geo.country_code"),
 			resource.TestCheckResourceAttr(rn, "widget.0.query.0.order_by", ""),
 			resource.TestCheckResourceAttrSet(rn, "widget.0.query.0.id"),
 			resource.TestCheckResourceAttrPtr(rn, "internal_id", &dashboardID),
@@ -97,14 +99,14 @@ resource "sentry_dashboard" "test" {
 
 	widget {
 		title        = "Custom Widget"
-		display_type = "world_map"
+		display_type = "table"
 
 		query {
 			name       = "Metric"
 
-			fields     = ["count()"]
+			fields     = ["geo.country_code", "geo.region", "count()"]
 			aggregates = ["count()"]
-			conditions = "!event.type:transaction"
+			conditions = "!event.type:transaction has:geo.country_code"
 		}
 
 		layout {
