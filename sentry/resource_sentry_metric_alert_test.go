@@ -27,7 +27,7 @@ func TestAccSentryMetricAlert_basic(t *testing.T) {
 			resource.TestCheckResourceAttr(rn, "project", projectName),
 			resource.TestCheckResourceAttr(rn, "name", alertName),
 			resource.TestCheckResourceAttr(rn, "environment", ""),
-			resource.TestCheckResourceAttr(rn, "dataset", "transactions"),
+			resource.TestCheckResourceAttr(rn, "dataset", "generic_metrics"),
 			resource.TestCheckResourceAttr(rn, "event_types.#", "1"),
 			resource.TestCheckResourceAttr(rn, "event_types.0", "transaction"),
 			resource.TestCheckResourceAttr(rn, "query", "http.url:http://testservice.com/stats"),
@@ -122,7 +122,7 @@ resource "sentry_metric_alert" "test" {
 	organization      = sentry_project.test.organization
 	project           = sentry_project.test.id
 	name              = "%[1]s"
-	dataset           = "transactions"
+	dataset           = "generic_metrics"
 	event_types       = ["transaction"]
 	query             = "http.url:http://testservice.com/stats"
 	aggregate         = "p50(transaction.duration)"
