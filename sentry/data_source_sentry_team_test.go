@@ -15,8 +15,8 @@ func TestAccSentryTeamDataSource_basic(t *testing.T) {
 	var teamID string
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: testAccProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccSentryTeamDataSourceConfig(teamSlug),

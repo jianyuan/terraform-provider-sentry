@@ -7,10 +7,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 )
 
 func TestAccSentryOrganization_basic(t *testing.T) {
@@ -19,7 +20,7 @@ func TestAccSentryOrganization_basic(t *testing.T) {
 		t.Skip("Skipping Organization tests. Set SENTRY_RUN_ORGANIZATION_TEST=true to enable.")
 	}
 
-	orgName := acctest.RandomWithPrefix("tf-org")
+	orgName := sdkacctest.RandomWithPrefix("tf-org")
 	rn := "sentry_organization.test_organization"
 
 	check := func(orgName string) resource.TestCheckFunc {
@@ -40,9 +41,9 @@ func TestAccSentryOrganization_basic(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: testAccProviderFactories,
-		CheckDestroy:      testAccCheckSentryOrganizationDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccCheckSentryOrganizationDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccSentryOrganizationConfig(orgName),
@@ -62,15 +63,13 @@ func TestAccSentryOrganization_basic(t *testing.T) {
 }
 
 func testAccCheckSentryOrganizationDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*sentry.Client)
-
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "sentry_organization" {
 			continue
 		}
 
 		ctx := context.Background()
-		organization, resp, err := client.Organizations.Get(ctx, rs.Primary.ID)
+		organization, resp, err := acctest.SharedClient.Organizations.Get(ctx, rs.Primary.ID)
 		if err == nil {
 			if organization != nil && *organization.Status.ID == "active" {
 				return errors.New("organization still exists")
@@ -97,9 +96,8 @@ func testAccCheckSentryOrganizationExists(n string, organization *sentry.Organiz
 		}
 
 		org := rs.Primary.ID
-		client := testAccProvider.Meta().(*sentry.Client)
 		ctx := context.Background()
-		gotOrganization, _, err := client.Organizations.Get(ctx, org)
+		gotOrganization, _, err := acctest.SharedClient.Organizations.Get(ctx, org)
 		if err != nil {
 			return err
 		}

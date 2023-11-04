@@ -1,28 +1,34 @@
 package sentry
 
 import (
+	"context"
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-framework/providerserver"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
+	"github.com/hashicorp/terraform-plugin-mux/tf5muxserver"
+	"github.com/jianyuan/terraform-provider-sentry/internal/provider"
 )
 
 var testOrganization = os.Getenv("SENTRY_TEST_ORGANIZATION")
 
-var testAccProvider *schema.Provider
-var testAccProviders map[string]*schema.Provider
-var testAccProviderFactories map[string]func() (*schema.Provider, error)
+var testAccProtoV5ProviderFactories = map[string]func() (tfprotov5.ProviderServer, error){
+	"sentry": func() (tfprotov5.ProviderServer, error) {
+		ctx := context.Background()
+		providers := []func() tfprotov5.ProviderServer{
+			providerserver.NewProtocol5(provider.New("test")()),
+			NewProvider("test")().GRPCProvider,
+		}
 
-func init() {
-	testAccProvider = NewProvider("dev")()
-	testAccProviders = map[string]*schema.Provider{
-		"sentry": testAccProvider,
-	}
-	testAccProviderFactories = map[string]func() (*schema.Provider, error){
-		"sentry": func() (*schema.Provider, error) {
-			return testAccProvider, nil
-		},
-	}
+		muxServer, err := tf5muxserver.NewMuxServer(ctx, providers...)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return muxServer.ProviderServer(), nil
+	},
 }
 
 func TestProvider(t *testing.T) {

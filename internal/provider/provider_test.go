@@ -1,21 +1,38 @@
 package provider
 
 import (
+	"context"
 	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
+	"github.com/hashicorp/terraform-plugin-mux/tf5muxserver"
+	"github.com/jianyuan/terraform-provider-sentry/sentry"
 )
 
 var testOrganization = os.Getenv("SENTRY_TEST_ORGANIZATION")
 
-// testAccProtoV6ProviderFactories are used to instantiate a provider during
+// testAccProtoV5ProviderFactories are used to instantiate a provider during
 // acceptance testing. The factory function will be invoked for every Terraform
 // CLI command executed to create a provider server to which the CLI can
 // reattach.
-var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
-	"sentry": providerserver.NewProtocol6WithError(New("test")()),
+var testAccProtoV5ProviderFactories = map[string]func() (tfprotov5.ProviderServer, error){
+	"sentry": func() (tfprotov5.ProviderServer, error) {
+		ctx := context.Background()
+		providers := []func() tfprotov5.ProviderServer{
+			providerserver.NewProtocol5(New("test")()),
+			sentry.NewProvider("test")().GRPCProvider,
+		}
+
+		muxServer, err := tf5muxserver.NewMuxServer(ctx, providers...)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return muxServer.ProviderServer(), nil
+	},
 }
 
 func testAccPreCheck(t *testing.T) {

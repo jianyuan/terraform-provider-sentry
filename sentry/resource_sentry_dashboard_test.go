@@ -6,14 +6,15 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 )
 
 func TestAccSentryDashboard_basic(t *testing.T) {
-	dashboardTitle := acctest.RandomWithPrefix("tf-dashboard")
+	dashboardTitle := sdkacctest.RandomWithPrefix("tf-dashboard")
 	rn := "sentry_dashboard.test"
 
 	var dashboardID string
@@ -44,9 +45,9 @@ func TestAccSentryDashboard_basic(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: testAccProviderFactories,
-		CheckDestroy:      testAccCheckSentryIssueAlertDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccCheckSentryIssueAlertDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccSentryDashboardConfig(dashboardTitle),
@@ -80,9 +81,8 @@ func testAccCheckSentryDashboardExists(n string, dashboardID *string) resource.T
 		if err != nil {
 			return err
 		}
-		client := testAccProvider.Meta().(*sentry.Client)
 		ctx := context.Background()
-		gotDashboard, _, err := client.Dashboards.Get(ctx, org, id)
+		gotDashboard, _, err := acctest.SharedClient.Dashboards.Get(ctx, org, id)
 		if err != nil {
 			return err
 		}

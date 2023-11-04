@@ -33,6 +33,36 @@ func testAccCheckOrganizationExists(ctx context.Context, n string, v *sentry.Org
 	}
 }
 
+func TestAccOrganizationDataSource_MigrateFromPluginSDK(t *testing.T) {
+	ctx := context.Background()
+
+	var v sentry.Organization
+	resourceName := "data.sentry_organization.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"sentry": {
+						Source:            "jianyuan/sentry",
+						VersionConstraint: "0.11.2",
+					},
+				},
+				Config: testAccOrganizationDataSourceConfig,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOrganizationExists(ctx, resourceName, &v),
+				),
+			},
+			{
+				ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+				Config:                   testAccOrganizationDataSourceConfig,
+				PlanOnly:                 true,
+			},
+		},
+	})
+}
+
 func TestAccOrganizationDataSource(t *testing.T) {
 	ctx := context.Background()
 
@@ -41,12 +71,13 @@ func TestAccOrganizationDataSource(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOrganizationDataSourceConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOrganizationExists(ctx, resourceName, &v),
+					resource.TestCheckResourceAttr(resourceName, "id", testOrganization),
 					resource.TestCheckResourceAttr(resourceName, "slug", testOrganization),
 					func(s *terraform.State) error {
 						return resource.TestCheckResourceAttr(resourceName, "internal_id", sentry.StringValue(v.ID))(s)

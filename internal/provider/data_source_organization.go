@@ -91,6 +91,7 @@ func (d *OrganizationDataSource) Read(ctx context.Context, req datasource.ReadRe
 	}
 
 	data.Id = types.StringPointerValue(organization.Slug)
+	data.Slug = types.StringPointerValue(organization.Slug)
 	data.InternalId = types.StringPointerValue(organization.ID)
 	data.Name = types.StringPointerValue(organization.Name)
 

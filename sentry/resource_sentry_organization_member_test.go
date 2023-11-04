@@ -6,14 +6,15 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 )
 
 func TestAccSentryOrganizationMember_basic(t *testing.T) {
-	memberEmail := acctest.RandomWithPrefix("tf-team") + "@example.com"
+	memberEmail := sdkacctest.RandomWithPrefix("tf-team") + "@example.com"
 	rn := "sentry_organization_member.john_doe"
 
 	check := func(role string) resource.TestCheckFunc {
@@ -30,9 +31,9 @@ func TestAccSentryOrganizationMember_basic(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: testAccProviderFactories,
-		CheckDestroy:      testAccCheckSentryOrganizationMemberDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccCheckSentryOrganizationMemberDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccSentryOrganizationMemberConfig(memberEmail, "member"),
@@ -47,15 +48,13 @@ func TestAccSentryOrganizationMember_basic(t *testing.T) {
 }
 
 func testAccCheckSentryOrganizationMemberDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*sentry.Client)
-
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "sentry_organization_member" {
 			continue
 		}
 
 		ctx := context.Background()
-		member, resp, err := client.OrganizationMembers.Get(
+		member, resp, err := acctest.SharedClient.OrganizationMembers.Get(
 			ctx,
 			rs.Primary.Attributes["organization"],
 			rs.Primary.ID,
@@ -88,9 +87,8 @@ func testAccCheckSentryOrganizationMemberExists(n string, member *sentry.Organiz
 		if err != nil {
 			return err
 		}
-		client := testAccProvider.Meta().(*sentry.Client)
 		ctx := context.Background()
-		gotMember, _, err := client.OrganizationMembers.Get(ctx, org, id)
+		gotMember, _, err := acctest.SharedClient.OrganizationMembers.Get(ctx, org, id)
 
 		if err != nil {
 			return err

@@ -16,8 +16,8 @@ func TestAccSentryKeyDataSource_basic(t *testing.T) {
 	dn := "data.sentry_key.test"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccSentryKeyDataSourceConfig(teamName, projectName),
@@ -43,8 +43,8 @@ func TestAccSentryKeyDataSource_first(t *testing.T) {
 	dn := "data.sentry_key.test"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccSentryKeyDataSourceConfig_first(teamName, projectName),
@@ -64,8 +64,8 @@ func TestAccSentryKeyDataSource_name(t *testing.T) {
 	dn := "data.sentry_key.test"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccSentryKeyDataSourceConfig_name(teamName, projectName, keyName),

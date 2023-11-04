@@ -20,8 +20,8 @@ func TestAccSentryIssueAlertDataSource_basic(t *testing.T) {
 	var alertCopyID string
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: testAccProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccSentryIssueAlertDataSourceConfig(teamName, projectName, alertName),
