@@ -2,13 +2,15 @@ package provider
 
 import (
 	"context"
-	"net/http"
+	"fmt"
+	"os"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
 )
 
 var _ provider.Provider = &SentryProvider{}
@@ -57,11 +59,35 @@ func (p *SentryProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		return
 	}
 
-	// Configuration values are now available.
-	// if data.Endpoint.IsNull() { /* ... */ }
+	var token string
+	if !data.Token.IsNull() {
+		token = data.Token.ValueString()
+	} else if v := os.Getenv("SENTRY_AUTH_TOKEN"); v != "" {
+		token = v
+	} else if v := os.Getenv("SENTRY_TOKEN"); v != "" {
+		token = v
+	}
 
-	// Example client configuration for data sources and resources
-	client := http.DefaultClient
+	var baseUrl string
+	if !data.BaseUrl.IsNull() {
+		baseUrl = data.BaseUrl.ValueString()
+	} else if v := os.Getenv("SENTRY_BASE_URL"); v != "" {
+		baseUrl = v
+	} else {
+		baseUrl = "https://sentry.io/api/"
+	}
+
+	config := sentryclient.Config{
+		UserAgent: fmt.Sprintf("Terraform/%s (+https://www.terraform.io) terraform-provider-sentry/%s", req.TerraformVersion, p.version),
+		Token:     token,
+		BaseURL:   baseUrl,
+	}
+	client, err := config.Client(ctx)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to create Sentry client", err.Error())
+		return
+	}
+
 	resp.DataSourceData = client
 	resp.ResourceData = client
 }
@@ -71,7 +97,9 @@ func (p *SentryProvider) Resources(ctx context.Context) []func() resource.Resour
 }
 
 func (p *SentryProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return []func() datasource.DataSource{
+		NewOrganizationDataSource,
+	}
 }
 
 func New(version string) func() provider.Provider {
