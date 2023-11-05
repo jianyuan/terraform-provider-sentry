@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"testing"
 
-	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/jianyuan/go-sentry/v2/sentry"
@@ -14,9 +13,9 @@ import (
 )
 
 func TestAccSentryIssueAlert_basic(t *testing.T) {
-	teamName := sdkacctest.RandomWithPrefix("tf-team")
-	projectName := sdkacctest.RandomWithPrefix("tf-project")
-	alertName := sdkacctest.RandomWithPrefix("tf-issue-alert")
+	teamName := acctest.RandomWithPrefix("tf-team")
+	projectName := acctest.RandomWithPrefix("tf-project")
+	alertName := acctest.RandomWithPrefix("tf-issue-alert")
 	rn := "sentry_issue_alert.test"
 
 	var alertID string
@@ -24,7 +23,7 @@ func TestAccSentryIssueAlert_basic(t *testing.T) {
 	check := func(alertName string) resource.TestCheckFunc {
 		return resource.ComposeTestCheckFunc(
 			testAccCheckSentryIssueAlertExists(rn, &alertID),
-			resource.TestCheckResourceAttr(rn, "organization", testOrganization),
+			resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
 			resource.TestCheckResourceAttr(rn, "project", projectName),
 			resource.TestCheckResourceAttr(rn, "projects.#", "1"),
 			resource.TestCheckResourceAttr(rn, "projects.0", projectName),
@@ -130,7 +129,7 @@ func TestAccSentryIssueAlert_basic(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
+		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
 		CheckDestroy:             testAccCheckSentryIssueAlertDestroy,
 		Steps: []resource.TestStep{

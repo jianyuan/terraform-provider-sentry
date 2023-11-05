@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"testing"
 
-	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/jianyuan/go-sentry/v2/sentry"
@@ -14,14 +13,14 @@ import (
 )
 
 func TestAccSentryOrganizationMember_basic(t *testing.T) {
-	memberEmail := sdkacctest.RandomWithPrefix("tf-team") + "@example.com"
+	memberEmail := acctest.RandomWithPrefix("tf-team") + "@example.com"
 	rn := "sentry_organization_member.john_doe"
 
 	check := func(role string) resource.TestCheckFunc {
 		var member sentry.OrganizationMember
 		return resource.ComposeTestCheckFunc(
 			testAccCheckSentryOrganizationMemberExists(rn, &member),
-			resource.TestCheckResourceAttr(rn, "organization", testOrganization),
+			resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
 			resource.TestCheckResourceAttr(rn, "email", memberEmail),
 			resource.TestCheckResourceAttr(rn, "role", role),
 			resource.TestCheckResourceAttrSet(rn, "internal_id"),
@@ -31,7 +30,7 @@ func TestAccSentryOrganizationMember_basic(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
+		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
 		CheckDestroy:             testAccCheckSentryOrganizationMemberDestroy,
 		Steps: []resource.TestStep{

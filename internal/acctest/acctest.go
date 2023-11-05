@@ -3,13 +3,27 @@ package acctest
 import (
 	"context"
 	"os"
+	"testing"
 
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
 )
 
-// SharedClient is a shared Sentry client for acceptance tests.
-var SharedClient *sentry.Client
+const (
+	// ProviderName is the name of the Terraform provider.
+	ProviderName = "sentry"
+
+	// ProviderVersion is the version of the Terraform provider.
+	ProviderVersion = "test"
+)
+
+var (
+	// TestOrganization is the organization used for acceptance tests.
+	TestOrganization = os.Getenv("SENTRY_TEST_ORGANIZATION")
+
+	// SharedClient is a shared Sentry client for acceptance tests.
+	SharedClient *sentry.Client
+)
 
 func init() {
 	var err error
@@ -34,5 +48,14 @@ func init() {
 	SharedClient, err = config.Client(context.Background())
 	if err != nil {
 		panic(err)
+	}
+}
+
+func PreCheck(t *testing.T) {
+	if v := os.Getenv("SENTRY_AUTH_TOKEN"); v == "" {
+		t.Fatal("SENTRY_AUTH_TOKEN must be set for acceptance tests")
+	}
+	if v := os.Getenv("SENTRY_TEST_ORGANIZATION"); v == "" {
+		t.Fatal("SENTRY_TEST_ORGANIZATION must be set for acceptance tests")
 	}
 }

@@ -40,11 +40,11 @@ func TestAccOrganizationDataSource_MigrateFromPluginSDK(t *testing.T) {
 	resourceName := "data.sentry_organization.test"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() { testAccPreCheck(t) },
+		PreCheck: func() { acctest.PreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"sentry": {
+					acctest.ProviderName: {
 						Source:            "jianyuan/sentry",
 						VersionConstraint: "0.11.2",
 					},
@@ -70,15 +70,15 @@ func TestAccOrganizationDataSource(t *testing.T) {
 	resourceName := "data.sentry_organization.test"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
+		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOrganizationDataSourceConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOrganizationExists(ctx, resourceName, &v),
-					resource.TestCheckResourceAttr(resourceName, "id", testOrganization),
-					resource.TestCheckResourceAttr(resourceName, "slug", testOrganization),
+					resource.TestCheckResourceAttr(resourceName, "id", acctest.TestOrganization),
+					resource.TestCheckResourceAttr(resourceName, "slug", acctest.TestOrganization),
 					func(s *terraform.State) error {
 						return resource.TestCheckResourceAttr(resourceName, "internal_id", sentry.StringValue(v.ID))(s)
 					},
@@ -95,4 +95,4 @@ var testAccOrganizationDataSourceConfig = fmt.Sprintf(`
 data "sentry_organization" "test" {
   slug = "%s"
 }
-`, testOrganization)
+`, acctest.TestOrganization)

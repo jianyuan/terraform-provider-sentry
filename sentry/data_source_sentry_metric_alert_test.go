@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 )
 
 func TestAccSentryMetricAlertDataSource_basic(t *testing.T) {
@@ -20,14 +20,14 @@ func TestAccSentryMetricAlertDataSource_basic(t *testing.T) {
 	var alertCopyID string
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
+		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccSentryMetricAlertDataSourceConfig(teamName, projectName, alertName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSentryMetricAlertExists(rn, &alertID),
-					resource.TestCheckResourceAttr(dn, "organization", testOrganization),
+					resource.TestCheckResourceAttr(dn, "organization", acctest.TestOrganization),
 					resource.TestCheckResourceAttr(dn, "project", projectName),
 					resource.TestCheckResourceAttrPair(dn, "organization", rn, "organization"),
 					resource.TestCheckResourceAttrPair(dn, "project", rn, "project"),

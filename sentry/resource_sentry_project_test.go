@@ -9,17 +9,16 @@ import (
 	"strings"
 	"testing"
 
-	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 )
 
 func TestAccSentryProject_basic(t *testing.T) {
-	teamName1 := sdkacctest.RandomWithPrefix("tf-team")
-	teamName2 := sdkacctest.RandomWithPrefix("tf-team")
-	teamName3 := sdkacctest.RandomWithPrefix("tf-team")
-	projectName := sdkacctest.RandomWithPrefix("tf-project")
+	teamName1 := acctest.RandomWithPrefix("tf-team")
+	teamName2 := acctest.RandomWithPrefix("tf-team")
+	teamName3 := acctest.RandomWithPrefix("tf-team")
+	projectName := acctest.RandomWithPrefix("tf-project")
 	rn := "sentry_project.test"
 
 	check := func(projectName string, teamNames []string) resource.TestCheckFunc {
@@ -27,7 +26,7 @@ func TestAccSentryProject_basic(t *testing.T) {
 
 		fs := resource.ComposeTestCheckFunc(
 			testAccCheckSentryProjectExists(rn, &projectID),
-			resource.TestCheckResourceAttr(rn, "organization", testOrganization),
+			resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
 			resource.TestCheckResourceAttr(rn, "teams.#", strconv.Itoa(len(teamNames))),
 			resource.TestCheckResourceAttr(rn, "name", projectName),
 			resource.TestCheckResourceAttrSet(rn, "slug"),
@@ -43,7 +42,7 @@ func TestAccSentryProject_basic(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
+		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
 		CheckDestroy:             testAccCheckSentryProjectDestroy,
 		Steps: []resource.TestStep{
@@ -71,11 +70,11 @@ func TestAccSentryProject_basic(t *testing.T) {
 
 func TestAccSentryProject_teamMigration(t *testing.T) {
 	teams := []string{
-		sdkacctest.RandomWithPrefix("tf-team"),
-		sdkacctest.RandomWithPrefix("tf-team"),
-		sdkacctest.RandomWithPrefix("tf-team"),
+		acctest.RandomWithPrefix("tf-team"),
+		acctest.RandomWithPrefix("tf-team"),
+		acctest.RandomWithPrefix("tf-team"),
 	}
-	projectName := sdkacctest.RandomWithPrefix("tf-project")
+	projectName := acctest.RandomWithPrefix("tf-project")
 	rn := "sentry_project.test"
 
 	check := func(team string, teams []string) resource.TestCheckFunc {
@@ -83,7 +82,7 @@ func TestAccSentryProject_teamMigration(t *testing.T) {
 
 		fs := resource.ComposeTestCheckFunc(
 			testAccCheckSentryProjectExists(rn, &projectID),
-			resource.TestCheckResourceAttr(rn, "organization", testOrganization),
+			resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
 			resource.TestCheckResourceAttr(rn, "name", projectName),
 			resource.TestCheckResourceAttrSet(rn, "slug"),
 			resource.TestCheckResourceAttr(rn, "platform", "go"),
@@ -102,7 +101,7 @@ func TestAccSentryProject_teamMigration(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
+		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
 		CheckDestroy:             testAccCheckSentryProjectDestroy,
 		Steps: []resource.TestStep{
@@ -126,8 +125,8 @@ func TestAccSentryProject_teamMigration(t *testing.T) {
 }
 
 func TestAccSentryProject_deprecatedTeam(t *testing.T) {
-	teamName := sdkacctest.RandomWithPrefix("tf-team")
-	projectName := sdkacctest.RandomWithPrefix("tf-project")
+	teamName := acctest.RandomWithPrefix("tf-team")
+	projectName := acctest.RandomWithPrefix("tf-project")
 	rn := "sentry_project.test"
 
 	check := func(projectName string) resource.TestCheckFunc {
@@ -135,7 +134,7 @@ func TestAccSentryProject_deprecatedTeam(t *testing.T) {
 
 		return resource.ComposeTestCheckFunc(
 			testAccCheckSentryProjectExists(rn, &projectID),
-			resource.TestCheckResourceAttr(rn, "organization", testOrganization),
+			resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
 			resource.TestCheckResourceAttr(rn, "team", teamName),
 			resource.TestCheckResourceAttr(rn, "name", projectName),
 			resource.TestCheckResourceAttrSet(rn, "slug"),
@@ -147,7 +146,7 @@ func TestAccSentryProject_deprecatedTeam(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
+		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
 		CheckDestroy:             testAccCheckSentryProjectDestroy,
 		Steps: []resource.TestStep{
@@ -171,11 +170,11 @@ func TestAccSentryProject_deprecatedTeam(t *testing.T) {
 }
 
 func TestAccSentryProject_noTeam(t *testing.T) {
-	teamName := sdkacctest.RandomWithPrefix("tf-team")
-	projectName := sdkacctest.RandomWithPrefix("tf-project")
+	teamName := acctest.RandomWithPrefix("tf-team")
+	projectName := acctest.RandomWithPrefix("tf-project")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
+		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
 		CheckDestroy:             testAccCheckSentryProjectDestroy,
 		Steps: []resource.TestStep{
@@ -188,11 +187,11 @@ func TestAccSentryProject_noTeam(t *testing.T) {
 }
 
 func TestAccSentryProject_teamConflict(t *testing.T) {
-	teamName := sdkacctest.RandomWithPrefix("tf-team")
-	projectName := sdkacctest.RandomWithPrefix("tf-project")
+	teamName := acctest.RandomWithPrefix("tf-team")
+	projectName := acctest.RandomWithPrefix("tf-project")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
+		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
 		CheckDestroy:             testAccCheckSentryProjectDestroy,
 		Steps: []resource.TestStep{
@@ -209,9 +208,9 @@ func TestAccSentryProject_teamConflict(t *testing.T) {
 }
 
 func TestAccSentryProject_changeTeam(t *testing.T) {
-	teamName1 := sdkacctest.RandomWithPrefix("tf-team")
-	teamName2 := sdkacctest.RandomWithPrefix("tf-team")
-	projectName := sdkacctest.RandomWithPrefix("tf-project")
+	teamName1 := acctest.RandomWithPrefix("tf-team")
+	teamName2 := acctest.RandomWithPrefix("tf-team")
+	projectName := acctest.RandomWithPrefix("tf-project")
 	rn := "sentry_project.test"
 
 	check := func(teamName, projectName string) resource.TestCheckFunc {
@@ -219,7 +218,7 @@ func TestAccSentryProject_changeTeam(t *testing.T) {
 
 		return resource.ComposeTestCheckFunc(
 			testAccCheckSentryProjectExists(rn, &projectID),
-			resource.TestCheckResourceAttr(rn, "organization", testOrganization),
+			resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
 			resource.TestCheckResourceAttr(rn, "team", teamName),
 			resource.TestCheckResourceAttr(rn, "name", projectName),
 			resource.TestCheckResourceAttrSet(rn, "slug"),
@@ -231,7 +230,7 @@ func TestAccSentryProject_changeTeam(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
+		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
 		CheckDestroy:             testAccCheckSentryProjectDestroy,
 		Steps: []resource.TestStep{
@@ -254,7 +253,7 @@ func testAccCheckSentryProjectDestroy(s *terraform.State) error {
 		}
 
 		ctx := context.Background()
-		proj, resp, err := acctest.SharedClient.Projects.Get(ctx, testOrganization, rs.Primary.ID)
+		proj, resp, err := acctest.SharedClient.Projects.Get(ctx, acctest.TestOrganization, rs.Primary.ID)
 		if err == nil {
 			if proj != nil {
 				return errors.New("project still exists")
