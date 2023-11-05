@@ -36,12 +36,12 @@ resource "sentry_team" "default" {
 
 ### Read-Only
 
-- `has_access` (Boolean)
+- `has_access` (Boolean) Whether the authenticated user has access to this team.
 - `id` (String) The ID of this resource.
 - `internal_id` (String) The internal ID for this team.
-- `is_member` (Boolean)
-- `is_pending` (Boolean)
-- `team_id` (String, Deprecated) Use `internal_id` instead.
+- `is_member` (Boolean) Whether the authenticated user is a member of this team.
+- `is_pending` (Boolean) Whether the team is pending.
+- `team_id` (String, Deprecated) The internal ID of this team.
 
 ## Import
 
