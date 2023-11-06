@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -12,6 +14,36 @@ import (
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 )
+
+func init() {
+	resource.AddTestSweepers("sentry_team", &resource.Sweeper{
+		Name: "sentry_team",
+		F: func(r string) error {
+			ctx := context.Background()
+
+			teams, _, err := acctest.SharedClient.Teams.List(ctx, acctest.TestOrganization)
+			if err != nil {
+				return err
+			}
+
+			for _, team := range teams {
+				if !strings.HasPrefix(sentry.StringValue(team.Slug), "tf-team") {
+					continue
+				}
+
+				log.Printf("[INFO] Destroying Team: %s", sentry.StringValue(team.Slug))
+				_, err := acctest.SharedClient.Teams.Delete(ctx, acctest.TestOrganization, sentry.StringValue(team.Slug))
+				if err != nil {
+					return err
+				}
+
+				log.Printf("[INFO] Team destroyed: %s", sentry.StringValue(team.Slug))
+			}
+
+			return nil
+		},
+	})
+}
 
 func testAccCheckTeamExists(ctx context.Context, n string, v *sentry.Team) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
