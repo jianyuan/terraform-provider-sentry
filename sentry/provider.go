@@ -57,7 +57,6 @@ func NewProvider(version string) func() *schema.Provider {
 				"sentry_key":                      dataSourceSentryKey(),
 				"sentry_metric_alert":             dataSourceSentryMetricAlert(),
 				"sentry_organization_integration": dataSourceSentryOrganizationIntegration(),
-				"sentry_team":                     dataSourceSentryTeam(),
 			},
 		}
 

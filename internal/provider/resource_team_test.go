@@ -107,7 +107,7 @@ func TestAccTeamResource_MigrateFromPluginSDK(t *testing.T) {
 
 	var v sentry.Team
 	teamName := acctest.RandomWithPrefix("tf-team")
-	resourceName := "sentry_team.test"
+	rn := "sentry_team.test"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() { acctest.PreCheck(t) },
@@ -121,7 +121,7 @@ func TestAccTeamResource_MigrateFromPluginSDK(t *testing.T) {
 				},
 				Config: testAccTeamConfig(teamName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckTeamExists(ctx, resourceName, &v),
+					testAccCheckTeamExists(ctx, rn, &v),
 				),
 			},
 			{
@@ -138,26 +138,26 @@ func TestAccTeamResource(t *testing.T) {
 
 	var v sentry.Team
 	teamName := acctest.RandomWithPrefix("tf-team")
-	resourceName := "sentry_team.test"
+	rn := "sentry_team.test"
 
 	check := func(teamName string) resource.TestCheckFunc {
 		return resource.ComposeAggregateTestCheckFunc(
-			testAccCheckTeamExists(ctx, resourceName, &v),
-			resource.TestCheckResourceAttr(resourceName, "id", teamName),
-			resource.TestCheckResourceAttrPair(resourceName, "organization", "data.sentry_organization.test", "id"),
-			resource.TestCheckResourceAttr(resourceName, "name", teamName),
-			resource.TestCheckResourceAttr(resourceName, "slug", teamName),
+			testAccCheckTeamExists(ctx, rn, &v),
+			resource.TestCheckResourceAttr(rn, "id", teamName),
+			resource.TestCheckResourceAttrPair(rn, "organization", "data.sentry_organization.test", "id"),
+			resource.TestCheckResourceAttr(rn, "name", teamName),
+			resource.TestCheckResourceAttr(rn, "slug", teamName),
 			func(s *terraform.State) error {
-				return resource.TestCheckResourceAttr(resourceName, "internal_id", sentry.StringValue(v.ID))(s)
+				return resource.TestCheckResourceAttr(rn, "internal_id", sentry.StringValue(v.ID))(s)
 			},
 			func(s *terraform.State) error {
-				return resource.TestCheckResourceAttr(resourceName, "has_access", strconv.FormatBool(sentry.BoolValue(v.HasAccess)))(s)
+				return resource.TestCheckResourceAttr(rn, "has_access", strconv.FormatBool(sentry.BoolValue(v.HasAccess)))(s)
 			},
 			func(s *terraform.State) error {
-				return resource.TestCheckResourceAttr(resourceName, "is_pending", strconv.FormatBool(sentry.BoolValue(v.IsPending)))(s)
+				return resource.TestCheckResourceAttr(rn, "is_pending", strconv.FormatBool(sentry.BoolValue(v.IsPending)))(s)
 			},
 			func(s *terraform.State) error {
-				return resource.TestCheckResourceAttr(resourceName, "is_member", strconv.FormatBool(sentry.BoolValue(v.IsMember)))(s)
+				return resource.TestCheckResourceAttr(rn, "is_member", strconv.FormatBool(sentry.BoolValue(v.IsMember)))(s)
 			},
 		)
 	}
@@ -172,9 +172,9 @@ func TestAccTeamResource(t *testing.T) {
 				Check:  check(teamName),
 			},
 			{
-				ResourceName:      resourceName,
+				ResourceName:      rn,
 				ImportState:       true,
-				ImportStateIdFunc: testAccTeamImportStateIdFunc(resourceName),
+				ImportStateIdFunc: testAccTeamImportStateIdFunc(rn),
 				ImportStateVerify: true,
 			},
 			{

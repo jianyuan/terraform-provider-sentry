@@ -86,7 +86,7 @@ func (d *OrganizationDataSource) Read(ctx context.Context, req datasource.ReadRe
 
 	organization, _, err := d.client.Organizations.Get(ctx, data.Slug.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("failed to read organization", err.Error())
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read organization, got error: %s", err))
 		return
 	}
 

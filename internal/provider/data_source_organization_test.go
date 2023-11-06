@@ -37,7 +37,7 @@ func TestAccOrganizationDataSource_MigrateFromPluginSDK(t *testing.T) {
 	ctx := context.Background()
 
 	var v sentry.Organization
-	resourceName := "data.sentry_organization.test"
+	dsn := "data.sentry_organization.test"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() { acctest.PreCheck(t) },
@@ -51,7 +51,7 @@ func TestAccOrganizationDataSource_MigrateFromPluginSDK(t *testing.T) {
 				},
 				Config: testAccOrganizationDataSourceConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOrganizationExists(ctx, resourceName, &v),
+					testAccCheckOrganizationExists(ctx, dsn, &v),
 				),
 			},
 			{
@@ -67,7 +67,7 @@ func TestAccOrganizationDataSource(t *testing.T) {
 	ctx := context.Background()
 
 	var v sentry.Organization
-	resourceName := "data.sentry_organization.test"
+	dsn := "data.sentry_organization.test"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
@@ -76,14 +76,14 @@ func TestAccOrganizationDataSource(t *testing.T) {
 			{
 				Config: testAccOrganizationDataSourceConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOrganizationExists(ctx, resourceName, &v),
-					resource.TestCheckResourceAttr(resourceName, "id", acctest.TestOrganization),
-					resource.TestCheckResourceAttr(resourceName, "slug", acctest.TestOrganization),
+					testAccCheckOrganizationExists(ctx, dsn, &v),
+					resource.TestCheckResourceAttr(dsn, "id", acctest.TestOrganization),
+					resource.TestCheckResourceAttr(dsn, "slug", acctest.TestOrganization),
 					func(s *terraform.State) error {
-						return resource.TestCheckResourceAttr(resourceName, "internal_id", sentry.StringValue(v.ID))(s)
+						return resource.TestCheckResourceAttr(dsn, "internal_id", sentry.StringValue(v.ID))(s)
 					},
 					func(s *terraform.State) error {
-						return resource.TestCheckResourceAttr(resourceName, "name", sentry.StringValue(v.Name))(s)
+						return resource.TestCheckResourceAttr(dsn, "name", sentry.StringValue(v.Name))(s)
 					},
 				),
 			},
