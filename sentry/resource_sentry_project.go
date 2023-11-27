@@ -7,12 +7,12 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/deste-org/terraform-provider-sentry/sentry/lib"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
 func resourceSentryProject() *schema.Resource {

@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/deste-org/terraform-provider-sentry/sentry/lib"
 )
 
 func TestAccSentryDashboard_basic(t *testing.T) {

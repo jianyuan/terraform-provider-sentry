@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/deste-org/terraform-provider-sentry/sentry/lib"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
 func TestAccSentryOrganizationDataSource_basic(t *testing.T) {
