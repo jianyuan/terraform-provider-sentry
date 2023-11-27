@@ -55,7 +55,7 @@ type MetricAlertTriggerAction struct {
 	AlertRuleTriggerID *string    `json:"alertRuleTriggerId,omitempty"`
 	Type               *string    `json:"type,omitempty"`
 	TargetType         *string    `json:"targetType,omitempty"`
-	TargetIdentifier   *string    `json:"targetIdentifier,omitempty"`
+	TargetIdentifier   *int       `json:"targetIdentifier,omitempty"`
 	InputChannelID     *string    `json:"inputChannelId,omitempty"`
 	IntegrationID      *int       `json:"integrationId,omitempty"`
 	SentryAppID        *string    `json:"sentryAppId,omitempty"`
