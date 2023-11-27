@@ -10,7 +10,6 @@ require (
 	github.com/hashicorp/terraform-plugin-docs v0.14.1
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.26.1
-	github.com/jianyuan/go-sentry/v2 v2.5.0
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/peterhellberg/link v1.2.0
 	github.com/stretchr/testify v1.8.2
