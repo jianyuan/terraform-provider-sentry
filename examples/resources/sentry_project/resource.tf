@@ -8,4 +8,6 @@ resource "sentry_project" "default" {
 
   platform    = "javascript"
   resolve_age = 720
+
+  default_rules = false
 }
