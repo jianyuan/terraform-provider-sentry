@@ -63,6 +63,7 @@ func resourceSentryOrganizationMemberCreate(ctx context.Context, d *schema.Resou
 	params := &sentry.CreateOrganizationMemberParams{
 		Email: d.Get("email").(string),
 		Role:  d.Get("role").(string),
+		Teams: []string{},
 	}
 
 	tflog.Debug(ctx, "Inviting organization member", map[string]interface{}{
@@ -115,8 +116,15 @@ func resourceSentryOrganizationMemberUpdate(ctx context.Context, d *schema.Resou
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	orgMember, _, err := client.OrganizationMembers.Get(ctx, org, memberID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	params := &sentry.UpdateOrganizationMemberParams{
 		OrganizationRole: d.Get("role").(string),
+		TeamRoles:        orgMember.TeamRoles,
 	}
 
 	tflog.Debug(ctx, "Updating organization member", map[string]interface{}{

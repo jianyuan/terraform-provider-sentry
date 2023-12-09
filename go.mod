@@ -11,7 +11,7 @@ require (
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/hashicorp/terraform-plugin-mux v0.12.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.30.0
-	github.com/jianyuan/go-sentry/v2 v2.5.1-0.20231207013239-9f4943bc48d7
+	github.com/jianyuan/go-sentry/v2 v2.5.1-0.20231209111347-e63a506909a6
 	github.com/mitchellh/mapstructure v1.5.0
 	golang.org/x/oauth2 v0.11.0
 	golang.org/x/sync v0.3.0

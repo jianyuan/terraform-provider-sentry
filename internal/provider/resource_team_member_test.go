@@ -46,16 +46,28 @@ func TestAccTeamMemberResource(t *testing.T) {
 		CheckDestroy:             testAccCheckTeamMemberDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccTeamMemberConfig(teamSlug, member1Email, member2Email, "sentry_organization_member.test_1"),
+				Config: testAccTeamMemberConfig(teamSlug, member1Email, member2Email, "sentry_organization_member.test_1", "contributor"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
+					resource.TestCheckResourceAttr(rn, "role", "contributor"),
 					resource.TestCheckResourceAttrPair(rn, "member_id", "sentry_organization_member.test_1", "internal_id"),
 					resource.TestCheckResourceAttrPair(rn, "team_slug", "sentry_team.test", "slug"),
 				),
-			}, {
-				Config: testAccTeamMemberConfig(teamSlug, member1Email, member2Email, "sentry_organization_member.test_2"),
+			},
+			{
+				Config: testAccTeamMemberConfig(teamSlug, member1Email, member2Email, "sentry_organization_member.test_1", "admin"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
+					resource.TestCheckResourceAttr(rn, "role", "admin"),
+					resource.TestCheckResourceAttrPair(rn, "member_id", "sentry_organization_member.test_1", "internal_id"),
+					resource.TestCheckResourceAttrPair(rn, "team_slug", "sentry_team.test", "slug"),
+				),
+			},
+			{
+				Config: testAccTeamMemberConfig(teamSlug, member1Email, member2Email, "sentry_organization_member.test_2", "contributor"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
+					resource.TestCheckResourceAttr(rn, "role", "contributor"),
 					resource.TestCheckResourceAttrPair(rn, "member_id", "sentry_organization_member.test_2", "internal_id"),
 					resource.TestCheckResourceAttrPair(rn, "team_slug", "sentry_team.test", "slug"),
 				),
@@ -69,7 +81,7 @@ func TestAccTeamMemberResource(t *testing.T) {
 	})
 }
 
-func testAccTeamMemberConfig(teamName, member1Email, member2Email, memberResourceName string) string {
+func testAccTeamMemberConfig(teamName, member1Email, member2Email, memberResourceName, memberRole string) string {
 	return testAccOrganizationDataSourceConfig + fmt.Sprintf(`
 resource "sentry_team" "test" {
   organization = data.sentry_organization.test.id
@@ -93,6 +105,7 @@ resource "sentry_team_member" "test" {
   organization = data.sentry_organization.test.id
   team_slug    = sentry_team.test.slug
   member_id    = %[4]s.internal_id
+  role         = "%[5]s"
 }
-`, teamName, member1Email, member2Email, memberResourceName)
+`, teamName, member1Email, member2Email, memberResourceName, memberRole)
 }

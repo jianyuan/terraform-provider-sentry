@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -22,13 +23,16 @@ func NewTeamMemberResource() resource.Resource {
 
 type TeamMemberResource struct {
 	client *sentry.Client
+
+	roleMu sync.Mutex
 }
 
 type TeamMemberResourceModel struct {
 	Id           types.String `tfsdk:"id"`
 	Organization types.String `tfsdk:"organization"`
-	MemberId     types.String `tfsdk:"member_id"`
+	MemberID     types.String `tfsdk:"member_id"`
 	TeamSlug     types.String `tfsdk:"team_slug"`
+	Role         types.String `tfsdk:"role"`
 }
 
 func (r *TeamMemberResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -65,6 +69,10 @@ func (r *TeamMemberResource) Schema(ctx context.Context, req resource.SchemaRequ
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
+			"role": schema.StringAttribute{
+				Description: "The role of the member in the team. When not set, resolve to the minimum team role given by this member's organization role.",
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -89,6 +97,63 @@ func (r *TeamMemberResource) Configure(ctx context.Context, req resource.Configu
 	r.client = client
 }
 
+func (r *TeamMemberResource) readRole(ctx context.Context, orgSlug string, memberID string, teamSlug string) (*string, error) {
+	r.roleMu.Lock()
+	defer r.roleMu.Unlock()
+
+	orgMember, _, err := r.client.OrganizationMembers.Get(ctx, orgSlug, memberID)
+	if err != nil {
+		return nil, fmt.Errorf("unable to read organization member, got error: %s", err)
+	}
+
+	for _, teamRole := range orgMember.TeamRoles {
+		if teamRole.TeamSlug == teamSlug {
+			return &teamRole.Role, nil
+		}
+	}
+
+	return nil, fmt.Errorf("unable to find team member")
+}
+
+func (r *TeamMemberResource) updateRole(ctx context.Context, orgSlug string, memberID string, teamSlug string, role string) (*string, error) {
+	r.roleMu.Lock()
+	defer r.roleMu.Unlock()
+
+	orgMember, _, err := r.client.OrganizationMembers.Get(ctx, orgSlug, memberID)
+	if err != nil {
+		return nil, fmt.Errorf("unable to read organization member, got error: %s", err)
+	}
+
+	teamRoles := make([]sentry.TeamRole, 0, len(orgMember.TeamRoles))
+	for _, teamRole := range orgMember.TeamRoles {
+		if teamRole.TeamSlug == teamSlug {
+			teamRole.Role = role
+		}
+		teamRoles = append(teamRoles, teamRole)
+	}
+
+	orgMember, _, err = r.client.OrganizationMembers.Update(
+		ctx,
+		orgSlug,
+		memberID,
+		&sentry.UpdateOrganizationMemberParams{
+			OrganizationRole: orgMember.OrganizationRole,
+			TeamRoles:        teamRoles,
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("unable to update organization member's team role, got error: %s", err)
+	}
+
+	for _, teamRole := range orgMember.TeamRoles {
+		if teamRole.TeamSlug == teamSlug {
+			return &teamRole.Role, nil
+		}
+	}
+
+	return nil, fmt.Errorf("unable to find team member")
+}
+
 func (r *TeamMemberResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data TeamMemberResourceModel
 
@@ -102,7 +167,7 @@ func (r *TeamMemberResource) Create(ctx context.Context, req resource.CreateRequ
 	member, _, err := r.client.TeamMembers.Create(
 		ctx,
 		data.Organization.ValueString(),
-		data.MemberId.ValueString(),
+		data.MemberID.ValueString(),
 		data.TeamSlug.ValueString(),
 	)
 	if err != nil {
@@ -110,8 +175,17 @@ func (r *TeamMemberResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	data.Id = types.StringValue(buildThreePartID(data.Organization.ValueString(), sentry.StringValue(member.Slug), data.MemberId.ValueString()))
+	data.Id = types.StringValue(buildThreePartID(data.Organization.ValueString(), sentry.StringValue(member.Slug), data.MemberID.ValueString()))
 	data.TeamSlug = types.StringPointerValue(member.Slug)
+
+	if !data.Role.IsNull() {
+		role, err := r.updateRole(ctx, data.Organization.ValueString(), data.MemberID.ValueString(), data.TeamSlug.ValueString(), data.Role.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddError("Client Error", err.Error())
+			return
+		}
+		data.Role = types.StringPointerValue(role)
+	}
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -127,32 +201,41 @@ func (r *TeamMemberResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	member, _, err := r.client.OrganizationMembers.Get(ctx, data.Organization.ValueString(), data.MemberId.ValueString())
+	role, err := r.readRole(ctx, data.Organization.ValueString(), data.MemberID.ValueString(), data.TeamSlug.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read organization member, got error: %s", err))
+		resp.Diagnostics.AddError("Client Error", err.Error())
+		resp.State.RemoveResource(ctx)
 		return
 	}
 
-	for _, teamSlug := range member.Teams {
-		if teamSlug == data.TeamSlug.ValueString() {
-			data.Id = types.StringValue(buildThreePartID(data.Organization.ValueString(), teamSlug, data.MemberId.ValueString()))
-			data.TeamSlug = types.StringValue(teamSlug)
+	data.Id = types.StringValue(buildThreePartID(data.Organization.ValueString(), data.TeamSlug.ValueString(), data.MemberID.ValueString()))
+	data.Role = types.StringPointerValue(role)
 
-			// Save updated data into Terraform state
-			resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-			return
-		}
-	}
-
-	resp.Diagnostics.AddError("Client Error", "Unable to find team member")
-	resp.State.RemoveResource(ctx)
+	// Save updated data into Terraform state
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *TeamMemberResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	resp.Diagnostics.AddError(
-		"Unexpected Resource Update",
-		"Resource does not support updates. Please report this issue to the provider developers.",
-	)
+	var plan, state TeamMemberResourceModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Update the role if it has changed
+	if !plan.Role.Equal(state.Role) {
+		role, err := r.updateRole(ctx, plan.Organization.ValueString(), plan.MemberID.ValueString(), plan.TeamSlug.ValueString(), plan.Role.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddError("Client Error", err.Error())
+			return
+		}
+		state.Role = types.StringPointerValue(role)
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
 func (r *TeamMemberResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -168,7 +251,7 @@ func (r *TeamMemberResource) Delete(ctx context.Context, req resource.DeleteRequ
 	_, _, err := r.client.TeamMembers.Delete(
 		ctx,
 		data.Organization.ValueString(),
-		data.MemberId.ValueString(),
+		data.MemberID.ValueString(),
 		data.TeamSlug.ValueString(),
 	)
 	if err != nil {
