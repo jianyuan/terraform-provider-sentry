@@ -104,7 +104,7 @@ func resourceSentryOrganizationMemberRead(ctx context.Context, d *schema.Resourc
 		d.Set("organization", org),
 		d.Set("internal_id", member.ID),
 		d.Set("email", member.Email),
-		d.Set("role", member.Role),
+		d.Set("role", member.OrganizationRole),
 		d.Set("expired", member.Expired),
 		d.Set("pending", member.Pending),
 	)
