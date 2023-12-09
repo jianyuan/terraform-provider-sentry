@@ -2,7 +2,6 @@ package sentry
 
 import (
 	"context"
-	"sort"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -38,14 +37,6 @@ func resourceSentryOrganizationMember() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
-			"teams": {
-				Description: "The teams the organization member should be added to.",
-				Type:        schema.TypeList,
-				Optional:    true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
 			"internal_id": {
 				Description: "The internal ID for this organization membership.",
 				Type:        schema.TypeString,
@@ -74,17 +65,9 @@ func resourceSentryOrganizationMemberCreate(ctx context.Context, d *schema.Resou
 		Role:  d.Get("role").(string),
 	}
 
-	if v, ok := d.GetOk("teams"); ok {
-		teams := expandStringList(v.([]interface{}))
-		if len(teams) > 0 {
-			params.Teams = teams
-		}
-	}
-
 	tflog.Debug(ctx, "Inviting organization member", map[string]interface{}{
 		"email": params.Email,
 		"org":   org,
-		"teams": params.Teams,
 	})
 	member, _, err := client.OrganizationMembers.Create(ctx, org, params)
 	if err != nil {
@@ -113,15 +96,12 @@ func resourceSentryOrganizationMemberRead(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	sort.Strings(member.Teams)
-
 	d.SetId(buildTwoPartID(org, member.ID))
 	retErr := multierror.Append(
 		d.Set("organization", org),
 		d.Set("internal_id", member.ID),
 		d.Set("email", member.Email),
 		d.Set("role", member.Role),
-		d.Set("teams", member.Teams),
 		d.Set("expired", member.Expired),
 		d.Set("pending", member.Pending),
 	)
@@ -136,21 +116,13 @@ func resourceSentryOrganizationMemberUpdate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 	params := &sentry.UpdateOrganizationMemberParams{
-		Role: d.Get("role").(string),
-	}
-
-	if v, ok := d.GetOk("teams"); ok {
-		teams := expandStringList(v.([]interface{}))
-		if len(teams) > 0 {
-			params.Teams = teams
-		}
+		OrganizationRole: d.Get("role").(string),
 	}
 
 	tflog.Debug(ctx, "Updating organization member", map[string]interface{}{
 		"email": d.Get("email"),
-		"role":  params.Role,
+		"role":  params.OrganizationRole,
 		"id":    memberID,
-		"teams": params.Teams,
 		"org":   org,
 	})
 
