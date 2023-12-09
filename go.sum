@@ -107,6 +107,8 @@ github.com/hashicorp/terraform-plugin-docs v0.14.1 h1:MikFi59KxrP/ewrZoaowrB9he5
 github.com/hashicorp/terraform-plugin-docs v0.14.1/go.mod h1:k2NW8+t113jAus6bb5tQYQgEAX/KueE/u8X2Z45V1GM=
 github.com/hashicorp/terraform-plugin-framework v1.4.2 h1:P7a7VP1GZbjc4rv921Xy5OckzhoiO3ig6SGxwelD2sI=
 github.com/hashicorp/terraform-plugin-framework v1.4.2/go.mod h1:GWl3InPFZi2wVQmdVnINPKys09s9mLmTZr95/ngLnbY=
+github.com/hashicorp/terraform-plugin-framework-validators v0.12.0 h1:HOjBuMbOEzl7snOdOoUfE2Jgeto6JOjLVQ39Ls2nksc=
+github.com/hashicorp/terraform-plugin-framework-validators v0.12.0/go.mod h1:jfHGE/gzjxYz6XoUwi/aYiiKrJDeutQNUtGQXkaHklg=
 github.com/hashicorp/terraform-plugin-go v0.19.1 h1:lf/jTGTeELcz5IIbn/94mJdmnTjRYm6S6ct/JqCSr50=
 github.com/hashicorp/terraform-plugin-go v0.19.1/go.mod h1:5NMIS+DXkfacX6o5HCpswda5yjkSYfKzn1Nfl9l+qRs=
 github.com/hashicorp/terraform-plugin-log v0.9.0 h1:i7hOA+vdAItN1/7UrfBqBwvYPQ9TFvymaRGZED3FCV0=
@@ -135,6 +137,8 @@ github.com/jhump/protoreflect v1.15.1 h1:HUMERORf3I3ZdX05WaQ6MIpd/NJ434hTp5YiKgf
 github.com/jhump/protoreflect v1.15.1/go.mod h1:jD/2GMKKE6OqX8qTjhADU1e6DShO+gavG9e0Q693nKo=
 github.com/jianyuan/go-sentry/v2 v2.5.1-0.20231209111347-e63a506909a6 h1:4kL6kXwbaulfGKc7kjYFdwcXTITzTY5AW3WDMz+vPhM=
 github.com/jianyuan/go-sentry/v2 v2.5.1-0.20231209111347-e63a506909a6/go.mod h1:YN4yg9u6/b5TfsmXy8OauRu3cyvVXRe1mJY7Pe+/Dt4=
+github.com/jianyuan/go-sentry/v2 v2.5.1-0.20231209212342-881b50c9d298 h1:DGsNaCcW44q+eo+TuFp9HiTU8/r6C5xd6feP+buDfIU=
+github.com/jianyuan/go-sentry/v2 v2.5.1-0.20231209212342-881b50c9d298/go.mod h1:YN4yg9u6/b5TfsmXy8OauRu3cyvVXRe1mJY7Pe+/Dt4=
 github.com/kevinburke/ssh_config v1.2.0 h1:x584FjTGwHzMwvHx18PXxbBVzfnxogHaAReU4gf13a4=
 github.com/kevinburke/ssh_config v1.2.0/go.mod h1:CT57kijsi8u/K/BOFA39wgDQJ9CxiF4nAY/ojJ6r6mM=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
