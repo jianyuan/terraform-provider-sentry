@@ -32,10 +32,6 @@ resource "sentry_organization_member" "john_doe" {
 - `organization` (String) The slug of the organization the user should be invited to.
 - `role` (String) This is the role of the organization member.
 
-### Optional
-
-- `teams` (List of String) The teams the organization member should be added to.
-
 ### Read-Only
 
 - `expired` (Boolean) The invite has expired.
