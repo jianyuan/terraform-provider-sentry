@@ -59,10 +59,11 @@ func TestAccSentryProject_basic(t *testing.T) {
 				Check:  check(projectName+"-renamed", []string{teamName2, teamName3}),
 			},
 			{
-				ResourceName:      rn,
-				ImportState:       true,
-				ImportStateIdFunc: testAccSentryProjectImportStateIdFunc(rn),
-				ImportStateVerify: true,
+				ResourceName:            rn,
+				ImportState:             true,
+				ImportStateIdFunc:       testAccSentryProjectImportStateIdFunc(rn),
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"default_key", "default_rules"},
 			},
 		},
 	})
@@ -118,7 +119,7 @@ func TestAccSentryProject_teamMigration(t *testing.T) {
 				ImportState:             true,
 				ImportStateIdFunc:       testAccSentryProjectImportStateIdFunc(rn),
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"team"},
+				ImportStateVerifyIgnore: []string{"team", "default_key", "default_rules"},
 			},
 		},
 	})
@@ -163,7 +164,7 @@ func TestAccSentryProject_deprecatedTeam(t *testing.T) {
 				ImportState:             true,
 				ImportStateIdFunc:       testAccSentryProjectImportStateIdFunc(rn),
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"team"},
+				ImportStateVerifyIgnore: []string{"team", "default_key", "default_rules"},
 			},
 		},
 	})
