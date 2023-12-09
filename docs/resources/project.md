@@ -23,6 +23,8 @@ resource "sentry_project" "default" {
 
   platform    = "javascript"
   resolve_age = 720
+
+  default_rules = false
 }
 ```
 
@@ -36,6 +38,7 @@ resource "sentry_project" "default" {
 
 ### Optional
 
+- `default_rules` (Boolean) Whether to create a default issue alert
 - `digests_max_delay` (Number) The maximum amount of time (in seconds) to wait between scheduling digests for delivery.
 - `digests_min_delay` (Number) The minimum amount of time (in seconds) to wait between scheduling digests for delivery after the initial scheduling.
 - `platform` (String) The optional platform for this project.

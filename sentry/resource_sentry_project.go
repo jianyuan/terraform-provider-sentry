@@ -68,6 +68,11 @@ func resourceSentryProject() *schema.Resource {
 				Computed:         true,
 				ValidateDiagFunc: validatePlatform,
 			},
+			"default_rules": {
+				Description: "Whether to create a default issue alert",
+				Type:        schema.TypeBool,
+				Optional:    true,
+			},
 			"internal_id": {
 				Description: "The internal ID for this project.",
 				Type:        schema.TypeString,
@@ -152,11 +157,17 @@ func resourceSentryProjectCreate(ctx context.Context, d *schema.ResourceData, me
 		Slug: d.Get("slug").(string),
 	}
 
+	defaultRules, defaultRulesOk := d.GetOkExists("default_rules")
+	if defaultRulesOk {
+		params.DefaultRules = sentry.Bool(defaultRules.(bool))
+	}
+
 	tflog.Debug(ctx, "Creating Sentry project", map[string]interface{}{
 		"team":        team,
 		"teams":       teams,
 		"org":         org,
 		"initialTeam": initialTeam,
+		"defaultRules": params.DefaultRules,
 	})
 	proj, _, err := client.Projects.Create(ctx, org, initialTeam, params)
 	if err != nil {
