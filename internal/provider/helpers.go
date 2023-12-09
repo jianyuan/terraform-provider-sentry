@@ -10,7 +10,7 @@ func buildTwoPartID(a, b string) string {
 }
 
 func splitTwoPartID(id, a, b string) (string, string, error) {
-	parts := strings.SplitN(id, "/", 2)
+	parts := strings.Split(id, "/")
 	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
 		return "", "", fmt.Errorf("unexpected format of ID (%s), expected %s/%s", id, a, b)
 	}
@@ -22,7 +22,7 @@ func buildThreePartID(a, b, c string) string {
 }
 
 func splitThreePartID(id, a, b, c string) (string, string, string, error) {
-	parts := strings.SplitN(id, "/", 3)
+	parts := strings.Split(id, "/")
 	if len(parts) != 3 || parts[0] == "" || parts[1] == "" || parts[2] == "" {
 		return "", "", "", fmt.Errorf("unexpected format of ID (%s), expected %s/%s/%s", id, a, b, c)
 	}

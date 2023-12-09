@@ -3,12 +3,12 @@
 page_title: "sentry_organization_member Resource - terraform-provider-sentry"
 subcategory: ""
 description: |-
-  
+  Resource for managing Sentry organization members. To add a member to a team, use the sentry_team_member resource.
 ---
 
 # sentry_organization_member (Resource)
 
-
+Resource for managing Sentry organization members. To add a member to a team, use the `sentry_team_member` resource.
 
 ## Example Usage
 
@@ -19,7 +19,6 @@ resource "sentry_organization_member" "john_doe" {
 
   email = "test@example.com"
   role  = "member"
-  teams = ["my-team"]
 }
 ```
 
@@ -31,10 +30,6 @@ resource "sentry_organization_member" "john_doe" {
 - `email` (String) The email of the organization member.
 - `organization` (String) The slug of the organization the user should be invited to.
 - `role` (String) This is the role of the organization member.
-
-### Optional
-
-- `teams` (List of String) The teams the organization member should be added to.
 
 ### Read-Only
 

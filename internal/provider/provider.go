@@ -93,7 +93,9 @@ func (p *SentryProvider) Configure(ctx context.Context, req provider.ConfigureRe
 }
 
 func (p *SentryProvider) Resources(ctx context.Context) []func() resource.Resource {
-	return []func() resource.Resource{}
+	return []func() resource.Resource{
+		NewTeamMemberResource,
+	}
 }
 
 func (p *SentryProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
