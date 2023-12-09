@@ -17,7 +17,6 @@ func TestAccProjectInboundDataFilterResource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
-		CheckDestroy:             testAccCheckTeamMemberDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccProjectInboundDataFilterConfig(teamSlug, projectSlug, filterId, "active = true"),
@@ -57,7 +56,6 @@ func TestAccProjectInboundDataFilterResource_LegacyBrowser(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
-		CheckDestroy:             testAccCheckTeamMemberDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccProjectInboundDataFilterConfig(teamSlug, projectSlug, filterId, "subfilters = [\"ie_pre_9\"]"),
