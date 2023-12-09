@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
 )
 
 func init() {
@@ -70,11 +71,17 @@ func NewProvider(version string) func() *schema.Provider {
 
 func configure(version string, p *schema.Provider) func(context.Context, *schema.ResourceData) (interface{}, diag.Diagnostics) {
 	return func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-		config := Config{
+		config := sentryclient.Config{
 			UserAgent: p.UserAgent("terraform-provider-sentry", version),
 			Token:     d.Get("token").(string),
 			BaseURL:   d.Get("base_url").(string),
 		}
-		return config.Client(ctx)
+		client, err := config.Client(ctx)
+
+		if err != nil {
+			return nil, diag.FromErr(err)
+		}
+
+		return client, nil
 	}
 }

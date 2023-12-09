@@ -6,10 +6,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 )
 
 func TestAccSentryKey_basic(t *testing.T) {
@@ -34,9 +33,9 @@ func TestAccSentryKey_basic(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckSentryKeyDestroy,
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccCheckSentryKeyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccSentryKeyConfig(teamName, projectName, keyName),
@@ -80,9 +79,9 @@ func TestAccSentryKey_RateLimit(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckSentryKeyDestroy,
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccCheckSentryKeyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccSentryKeyConfig_rateLimit(teamName, projectName, keyName, "86400", "1000"),
@@ -103,15 +102,13 @@ func TestAccSentryKey_RateLimit(t *testing.T) {
 }
 
 func testAccCheckSentryKeyDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*sentry.Client)
-
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "sentry_key" {
 			continue
 		}
 
 		ctx := context.Background()
-		keys, resp, err := client.ProjectKeys.List(
+		keys, resp, err := acctest.SharedClient.ProjectKeys.List(
 			ctx,
 			rs.Primary.Attributes["organization"],
 			rs.Primary.Attributes["project"],
@@ -143,9 +140,8 @@ func testAccCheckSentryKeyExists(n string, keyID *string) resource.TestCheckFunc
 			return errors.New("no key ID is set")
 		}
 
-		client := testAccProvider.Meta().(*sentry.Client)
 		ctx := context.Background()
-		keys, _, err := client.ProjectKeys.List(
+		keys, _, err := acctest.SharedClient.ProjectKeys.List(
 			ctx,
 			rs.Primary.Attributes["organization"],
 			rs.Primary.Attributes["project"],
