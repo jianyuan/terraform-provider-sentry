@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 )
 
 func TestAccSentryIssueAlert_basic(t *testing.T) {
@@ -23,7 +23,7 @@ func TestAccSentryIssueAlert_basic(t *testing.T) {
 	check := func(alertName string) resource.TestCheckFunc {
 		return resource.ComposeTestCheckFunc(
 			testAccCheckSentryIssueAlertExists(rn, &alertID),
-			resource.TestCheckResourceAttr(rn, "organization", testOrganization),
+			resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
 			resource.TestCheckResourceAttr(rn, "project", projectName),
 			resource.TestCheckResourceAttr(rn, "projects.#", "1"),
 			resource.TestCheckResourceAttr(rn, "projects.0", projectName),
@@ -129,9 +129,9 @@ func TestAccSentryIssueAlert_basic(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: testAccProviderFactories,
-		CheckDestroy:      testAccCheckSentryIssueAlertDestroy,
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccCheckSentryIssueAlertDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccSentryIssueAlertConfig(teamName, projectName, alertName),
@@ -150,8 +150,6 @@ func TestAccSentryIssueAlert_basic(t *testing.T) {
 }
 
 func testAccCheckSentryIssueAlertDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*sentry.Client)
-
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "sentry_issue_alert" {
 			continue
@@ -163,7 +161,7 @@ func testAccCheckSentryIssueAlertDestroy(s *terraform.State) error {
 		}
 
 		ctx := context.Background()
-		alert, resp, err := client.IssueAlerts.Get(ctx, org, project, id)
+		alert, resp, err := acctest.SharedClient.IssueAlerts.Get(ctx, org, project, id)
 		if err == nil {
 			if alert != nil {
 				return errors.New("issue alert still exists")
@@ -193,9 +191,8 @@ func testAccCheckSentryIssueAlertExists(n string, alertID *string) resource.Test
 		if err != nil {
 			return err
 		}
-		client := testAccProvider.Meta().(*sentry.Client)
 		ctx := context.Background()
-		gotAlert, _, err := client.IssueAlerts.Get(ctx, org, project, id)
+		gotAlert, _, err := acctest.SharedClient.IssueAlerts.Get(ctx, org, project, id)
 		if err != nil {
 			return err
 		}

@@ -1,9 +1,15 @@
 package main
 
 import (
+	"context"
 	"flag"
+	"log"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
+	"github.com/hashicorp/terraform-plugin-framework/providerserver"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov5/tf5server"
+	"github.com/hashicorp/terraform-plugin-mux/tf5muxserver"
+	"github.com/jianyuan/terraform-provider-sentry/internal/provider"
 	"github.com/jianyuan/terraform-provider-sentry/sentry"
 )
 
@@ -21,16 +27,37 @@ var (
 )
 
 func main() {
-	var debugMode bool
+	ctx := context.Background()
 
-	flag.BoolVar(&debugMode, "debug", false, "set to true to run the provider with support for debuggers like delve")
+	var debug bool
+
+	flag.BoolVar(&debug, "debug", false, "set to true to run the provider with support for debuggers like delve")
 	flag.Parse()
 
-	opts := &plugin.ServeOpts{
-		Debug: debugMode,
-
-		ProviderFunc: sentry.NewProvider(version),
+	providers := []func() tfprotov5.ProviderServer{
+		providerserver.NewProtocol5(provider.New(version)()),
+		sentry.NewProvider(version)().GRPCProvider,
 	}
 
-	plugin.Serve(opts)
+	muxServer, err := tf5muxserver.NewMuxServer(ctx, providers...)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var serveOpts []tf5server.ServeOpt
+
+	if debug {
+		serveOpts = append(serveOpts, tf5server.WithManagedDebug())
+	}
+
+	err = tf5server.Serve(
+		"registry.terraform.io/jianyuan/sentry",
+		muxServer.ProviderServer,
+		serveOpts...,
+	)
+
+	if err != nil {
+		log.Fatal(err)
+	}
 }
