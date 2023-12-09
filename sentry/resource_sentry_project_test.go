@@ -59,10 +59,11 @@ func TestAccSentryProject_basic(t *testing.T) {
 				Check:  check(projectName+"-renamed", []string{teamName2, teamName3}),
 			},
 			{
-				ResourceName:      rn,
-				ImportState:       true,
-				ImportStateIdFunc: testAccSentryProjectImportStateIdFunc(rn),
-				ImportStateVerify: true,
+				ResourceName:            rn,
+				ImportState:             true,
+				ImportStateIdFunc:       testAccSentryProjectImportStateIdFunc(rn),
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"default_key", "default_rules"},
 			},
 		},
 	})
@@ -118,7 +119,7 @@ func TestAccSentryProject_teamMigration(t *testing.T) {
 				ImportState:             true,
 				ImportStateIdFunc:       testAccSentryProjectImportStateIdFunc(rn),
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"team"},
+				ImportStateVerifyIgnore: []string{"team", "default_key", "default_rules"},
 			},
 		},
 	})
@@ -163,7 +164,7 @@ func TestAccSentryProject_deprecatedTeam(t *testing.T) {
 				ImportState:             true,
 				ImportStateIdFunc:       testAccSentryProjectImportStateIdFunc(rn),
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"team"},
+				ImportStateVerifyIgnore: []string{"team", "default_key", "default_rules"},
 			},
 		},
 	})
@@ -246,6 +247,24 @@ func TestAccSentryProject_changeTeam(t *testing.T) {
 	})
 }
 
+func TestAccSentryProject_noDefaultKey(t *testing.T) {
+	teamName := acctest.RandomWithPrefix("tf-team")
+	projectName := acctest.RandomWithPrefix("tf-project")
+	rn := "sentry_project.test"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccCheckSentryProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccSentryProjectConfig_noDefaultKey(teamName, projectName),
+				Check:  testAccCheckSentryProjectDefaultKeyRemoved(rn),
+			},
+		},
+	})
+}
+
 func testAccCheckSentryProjectDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "sentry_project" {
@@ -288,6 +307,27 @@ func testAccCheckSentryProjectExists(n string, projectID *string) resource.TestC
 			return err
 		}
 		*projectID = gotProj.ID
+		return nil
+	}
+}
+
+func testAccCheckSentryProjectDefaultKeyRemoved(n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs := s.RootModule().Resources[n]
+		ctx := context.Background()
+
+		keys, _, err := acctest.SharedClient.ProjectKeys.List(
+			ctx,
+			rs.Primary.Attributes["organization"],
+			rs.Primary.ID,
+			nil,
+		)
+		if err != nil {
+			return err
+		}
+		if len(keys) != 0 {
+			return fmt.Errorf("expected no keys, got %d", len(keys))
+		}
 		return nil
 	}
 }
@@ -412,4 +452,21 @@ resource "sentry_project" "test" {
 	`, projectName, strings.Join(teamSlugs, ", "))
 
 	return config
+}
+
+func testAccSentryProjectConfig_noDefaultKey(teamName, projectName string) string {
+	return fmt.Sprintf(`
+resource "sentry_team" "test" {
+  organization = "%[1]s"
+  name		   = "%[2]s"
+}
+
+resource "sentry_project" "test" {
+  organization = sentry_team.test.organization
+  teams        = [sentry_team.test.id]
+  name         = "%[3]s"
+  platform     = "go"
+  default_key  = false
+}
+`, acctest.TestOrganization, teamName, projectName)
 }
