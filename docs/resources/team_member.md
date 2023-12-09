@@ -42,6 +42,10 @@ resource "sentry_team_member" "default" {
 - `organization` (String) The slug of the organization the team should be created for.
 - `team_slug` (String) The slug of the team to add the member to.
 
+### Optional
+
+- `role` (String) The role of the member in the team. When not set, resolve to the minimum team role given by this member's organization role.
+
 ### Read-Only
 
 - `id` (String) The ID of this resource.

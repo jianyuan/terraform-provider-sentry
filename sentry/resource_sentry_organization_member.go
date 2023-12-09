@@ -12,6 +12,8 @@ import (
 
 func resourceSentryOrganizationMember() *schema.Resource {
 	return &schema.Resource{
+		Description: "Resource for managing Sentry organization members. To add a member to a team, use the `sentry_team_member` resource.",
+
 		CreateContext: resourceSentryOrganizationMemberCreate,
 		ReadContext:   resourceSentryOrganizationMemberRead,
 		UpdateContext: resourceSentryOrganizationMemberUpdate,
