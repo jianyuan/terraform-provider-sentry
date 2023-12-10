@@ -18,7 +18,9 @@ Detailed documentation is available on the [Terraform provider registry](https:/
 
 ## Development
 
-If you wish to work on the provider, you will need to install [Go](https://go.dev/doc/install) (We use >= 1.18) on your machine.
+If you wish to work on the provider, you will need to install [Go](https://go.dev/doc/install) (We use >= 1.21) on your machine.
+
+We are currently in the process of migrating from the Terraform Plugin SDKv2 to the [Terraform Plugin Framework](https://github.com/hashicorp/terraform-plugin-framework). As part of this transition, any future resources and data sources should be implemented using the Terraform Plugin Framework, located in the `internal/provider` directory.
 
 ### Test
 
