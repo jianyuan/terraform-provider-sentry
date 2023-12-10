@@ -412,4 +412,12 @@ Read-Only:
 
 - `id` (String) The ID of this resource.
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+# import using the dashboard id from the URL:
+# https://sentry.io/dashboard/[dashboard-id]
+terraform import sentry_dashboard.default org-slug/dashboard-id
+```
