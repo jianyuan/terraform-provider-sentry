@@ -16,7 +16,7 @@ func TestAccTeamMemberResource(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccTeamMemberConfig(teamSlug, member1Email, member2Email, "sentry_organization_member.test_1", "contributor"),

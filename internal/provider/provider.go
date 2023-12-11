@@ -96,6 +96,7 @@ func (p *SentryProvider) Resources(ctx context.Context) []func() resource.Resour
 	return []func() resource.Resource{
 		NewProjectInboundDataFilterResource,
 		NewProjectSpikeProtectionResource,
+		NewProjectSymbolSourcesResource,
 		NewTeamMemberResource,
 	}
 }
