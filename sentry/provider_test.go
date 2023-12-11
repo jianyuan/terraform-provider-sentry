@@ -5,21 +5,30 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
-	"github.com/hashicorp/terraform-plugin-mux/tf5muxserver"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
+	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
+	"github.com/jianyuan/terraform-provider-sentry/internal/pkg/must"
 	"github.com/jianyuan/terraform-provider-sentry/internal/provider"
 )
 
-var testAccProtoV5ProviderFactories = map[string]func() (tfprotov5.ProviderServer, error){
-	acctest.ProviderName: func() (tfprotov5.ProviderServer, error) {
+var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
+	acctest.ProviderName: func() (tfprotov6.ProviderServer, error) {
 		ctx := context.Background()
-		providers := []func() tfprotov5.ProviderServer{
-			providerserver.NewProtocol5(provider.New(acctest.ProviderVersion)()),
+
+		upgradedSdkProvider := must.Get(tf5to6server.UpgradeServer(
+			context.Background(),
 			NewProvider(acctest.ProviderVersion)().GRPCProvider,
+		))
+		providers := []func() tfprotov6.ProviderServer{
+			providerserver.NewProtocol6(provider.New(acctest.ProviderVersion)()),
+			func() tfprotov6.ProviderServer {
+				return upgradedSdkProvider
+			},
 		}
 
-		muxServer, err := tf5muxserver.NewMuxServer(ctx, providers...)
+		muxServer, err := tf6muxserver.NewMuxServer(ctx, providers...)
 
 		if err != nil {
 			return nil, err
