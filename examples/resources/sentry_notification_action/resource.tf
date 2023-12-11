@@ -13,6 +13,6 @@ resource "sentry_notification_action" "default" {
   trigger_type      = "spike-protection"
   service_type      = "sentry_notification"
   target_identifier = "default"
-  target_display	  = "default"
+  target_display    = "default"
   project_slugs     = [sentry_project.default.slug]
 }

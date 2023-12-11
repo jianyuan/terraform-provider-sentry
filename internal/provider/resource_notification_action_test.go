@@ -17,7 +17,7 @@ func TestAccNotificationActionResource(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNotificationActionConfig(teamSlug, project1Slug, project2Slug, "[sentry_project.test_1.slug]"),
