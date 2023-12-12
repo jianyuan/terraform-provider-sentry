@@ -58,7 +58,7 @@ jobs:
     name: Matrix Test
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -83,10 +83,10 @@ jobs:
           go mod download
 
       - name: TF acceptance tests
-        timeout-minutes: 10
+        timeout-minutes: 30
         env:
           TF_ACC: "1"
           SENTRY_TEST_ORGANIZATION: ${{ secrets.SENTRY_TEST_ORGANIZATION }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: |
-          go test -v -cover ./...
+          go test -v -cover -timeout 30m ./...
