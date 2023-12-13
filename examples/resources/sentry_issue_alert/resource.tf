@@ -114,15 +114,107 @@ resource "sentry_issue_alert" "main" {
       id = "sentry.rules.actions.notify_event.NotifyEventAction"
     },
 
-    # Send a notification to the Slack workspace to #general
+    # Send a Slack notification
     {
-      id      = "sentry.integrations.slack.notify_action.SlackNotifyServiceAction"
-      channel = "#general"
-
+      id = "sentry.integrations.slack.notify_action.SlackNotifyServiceAction"
       # From: https://sentry.io/settings/[org-slug]/integrations/slack/[slack-integration-id]/
       # Or use the sentry_organization_integration data source to retrieve the integration ID:
-      workspace = data.sentry_organization_integration.slack.internal_id
+      workspace = data.sentry_organization_integration.slack.id
+      channel   = "#general"
+      tags      = "environment,level"
     },
+
+    # Send a Microsoft Teams notification
+    {
+      id      = "sentry.integrations.msteams.notify_action.MsTeamsNotifyServiceAction"
+      team    = 23465424
+      channel = "General"
+    },
+
+    # Send a Discord notification
+    {
+      id         = "sentry.integrations.discord.notify_action.DiscordNotifyServiceAction"
+      server     = 63408298
+      channel_id = 94732897
+      tags       = "browser,user"
+    },
+
+    # Create a Jira Ticket
+    {
+      id          = "sentry.integrations.jira.notify_action.JiraCreateTicketAction"
+      integration = data.sentry_organization_integration.jira.id,
+      project     = "349719"
+      issueType   = "1"
+    },
+
+    # Create a Jira Server Ticket
+    {
+      id          = "sentry.integrations.jira_server.notify_action.JiraServerCreateTicketAction"
+      integration = data.sentry_organization_integration.jira_server.id,
+      project     = "349719"
+      issueType   = "1"
+    },
+
+    # Create a GitHub Issue
+    {
+      id          = "sentry.integrations.github.notify_action.GitHubCreateTicketAction"
+      integration = data.sentry_organization_integration.github.id
+      repo        = "default"
+      title       = "My Test Issue"
+      assignee    = "Baxter the Hacker"
+      labels      = ["bug", "p1"]
+    },
+
+    # Create an Azure DevOps work item
+    {
+      id             = "sentry.integrations.vsts.notify_action.AzureDevopsCreateTicketAction"
+      integration    = data.sentry_organization_integration.azure_devops.id
+      project        = "0389485"
+      work_item_type = "Microsoft.VSTS.WorkItemTypes.Task"
+    },
+
+
+    # Send a PagerDuty notification
+    {
+      id      = "sentry.integrations.pagerduty.notify_action.PagerDutyNotifyServiceAction"
+      account = data.sentry_organization_integration.pagerduty.id
+      service = 9823924
+    },
+
+    # Send an Opsgenie notification
+    {
+      id      = "sentry.integrations.opsgenie.notify_action.OpsgenieNotifyTeamAction"
+      account = data.sentry_organization_integration.opsgenie.id
+      team    = "9438930258-fairy"
+    },
+
+    # Send a notification to a service
+    {
+      id      = "sentry.rules.actions.notify_event_service.NotifyEventServiceAction"
+      service = "mail"
+    },
+
+    # Send a notification to a Sentry app with a custom webhook payload
+    {
+      id = "sentry.rules.actions.notify_event_sentry_app.NotifyEventSentryAppAction"
+      settings = [
+        {
+          name  = "title"
+          value = "Team Rocket"
+        },
+        {
+          name  = "summary"
+          value = "We're blasting off again."
+        }
+      ]
+      sentryAppInstallationUuid = 643522
+      hasSchemaFormConfig       = true
+    },
+
+    # Send a notification (for all legacy integrations)
+    {
+      id = "sentry.rules.actions.notify_event.NotifyEventAction"
+    }
   ]
 }
 
