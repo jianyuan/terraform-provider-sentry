@@ -103,7 +103,9 @@ func (p *SentryProvider) Resources(ctx context.Context) []func() resource.Resour
 }
 
 func (p *SentryProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return []func() datasource.DataSource{
+		NewOrganizationIntegrationDataSource,
+	}
 }
 
 func New(version string) func() provider.Provider {
