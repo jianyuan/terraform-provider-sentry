@@ -31,7 +31,7 @@ type ProjectInboundDataFilterResource struct {
 type ProjectInboundDataFilterResourceModel struct {
 	Id           types.String `tfsdk:"id"`
 	Organization types.String `tfsdk:"organization"`
-	ProjectSlug  types.String `tfsdk:"project_slug"`
+	Project      types.String `tfsdk:"project"`
 	FilterId     types.String `tfsdk:"filter_id"`
 	Active       types.Bool   `tfsdk:"active"`
 	Subfilters   types.List   `tfsdk:"subfilters"`
@@ -57,7 +57,7 @@ func (r *ProjectInboundDataFilterResource) Schema(ctx context.Context, req resou
 				Description: "The slug of the organization the project belongs to.",
 				Required:    true,
 			},
-			"project_slug": schema.StringAttribute{
+			"project": schema.StringAttribute{
 				Description: "The slug of the project to create the filter for.",
 				Required:    true,
 			},
@@ -125,7 +125,7 @@ func (r *ProjectInboundDataFilterResource) Create(ctx context.Context, req resou
 	_, err := r.client.ProjectInboundDataFilters.Update(
 		ctx,
 		data.Organization.ValueString(),
-		data.ProjectSlug.ValueString(),
+		data.Project.ValueString(),
 		data.FilterId.ValueString(),
 		&sentry.UpdateProjectInboundDataFilterParams{
 			Active:     data.Active.ValueBoolPointer(),
@@ -137,7 +137,7 @@ func (r *ProjectInboundDataFilterResource) Create(ctx context.Context, req resou
 		return
 	}
 
-	data.Id = types.StringValue(buildThreePartID(data.Organization.ValueString(), data.ProjectSlug.ValueString(), data.FilterId.ValueString()))
+	data.Id = types.StringValue(buildThreePartID(data.Organization.ValueString(), data.Project.ValueString(), data.FilterId.ValueString()))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -154,7 +154,7 @@ func (r *ProjectInboundDataFilterResource) Read(ctx context.Context, req resourc
 	filters, _, err := r.client.ProjectInboundDataFilters.List(
 		ctx,
 		data.Organization.ValueString(),
-		data.ProjectSlug.ValueString(),
+		data.Project.ValueString(),
 	)
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error reading project inbound data filters: %s", err.Error()))
@@ -165,7 +165,7 @@ func (r *ProjectInboundDataFilterResource) Read(ctx context.Context, req resourc
 	found := false
 	for _, filter := range filters {
 		if filter.ID == data.FilterId.ValueString() {
-			data.Id = types.StringValue(buildThreePartID(data.Organization.ValueString(), data.ProjectSlug.ValueString(), data.FilterId.ValueString()))
+			data.Id = types.StringValue(buildThreePartID(data.Organization.ValueString(), data.Project.ValueString(), data.FilterId.ValueString()))
 
 			if filter.Active.IsBool {
 				data.Active = types.BoolValue(filter.Active.BoolVal)
@@ -205,7 +205,7 @@ func (r *ProjectInboundDataFilterResource) Update(ctx context.Context, req resou
 	_, err := r.client.ProjectInboundDataFilters.Update(
 		ctx,
 		plan.Organization.ValueString(),
-		plan.ProjectSlug.ValueString(),
+		plan.Project.ValueString(),
 		plan.FilterId.ValueString(),
 		&sentry.UpdateProjectInboundDataFilterParams{
 			Active:     plan.Active.ValueBoolPointer(),
@@ -232,7 +232,7 @@ func (r *ProjectInboundDataFilterResource) Delete(ctx context.Context, req resou
 	apiResp, err := r.client.ProjectInboundDataFilters.Update(
 		ctx,
 		data.Organization.ValueString(),
-		data.ProjectSlug.ValueString(),
+		data.Project.ValueString(),
 		data.FilterId.ValueString(),
 		&sentry.UpdateProjectInboundDataFilterParams{
 			Active: sentry.Bool(false),
@@ -249,16 +249,16 @@ func (r *ProjectInboundDataFilterResource) Delete(ctx context.Context, req resou
 }
 
 func (r *ProjectInboundDataFilterResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	org, projectSlug, filterID, err := splitThreePartID(req.ID, "organization", "project-slug", "filter-id")
+	organization, project, filterID, err := splitThreePartID(req.ID, "organization", "project-slug", "filter-id")
 	if err != nil {
 		resp.Diagnostics.AddError("Import Error", fmt.Sprintf("Unable to import team, got error: %s", err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("organization"), org,
+		ctx, path.Root("organization"), organization,
 	)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("project_slug"), projectSlug,
+		ctx, path.Root("project"), project,
 	)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(
 		ctx, path.Root("filter_id"), filterID,

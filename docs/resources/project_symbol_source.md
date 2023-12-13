@@ -25,7 +25,7 @@ resource "sentry_project" "default" {
 # Add an App Store Connect source to the project
 resource "sentry_project_symbol_source" "http" {
   organization = sentry_project.default.organization
-  project_slug = sentry_project.default.slug
+  project      = sentry_project.default.id
   type         = "appStoreConnect"
   name         = "App Store Connect"
   layout = {
@@ -45,7 +45,7 @@ EOT
 # Add a SymbolServer (HTTP) symbol source to the project
 resource "sentry_project_symbol_source" "http" {
   organization = sentry_project.default.organization
-  project_slug = sentry_project.default.slug
+  project      = sentry_project.default.id
   type         = "http"
   name         = "SymbolServer (HTTP)"
   layout = {
@@ -58,7 +58,7 @@ resource "sentry_project_symbol_source" "http" {
 # Add a Google Cloud Storage symbol source to the project
 resource "sentry_project_symbol_source" "gcs" {
   organization = sentry_project.default.organization
-  project_slug = sentry_project.default.slug
+  project      = sentry_project.default.id
   type         = "s3"
   name         = "Google Cloud Storage"
   layout = {
@@ -77,7 +77,7 @@ EOT
 # Add an Amazon S3 symbol source to the project
 resource "sentry_project_symbol_source" "s3" {
   organization = sentry_project.default.organization
-  project_slug = sentry_project.default.slug
+  project      = sentry_project.default.id
   type         = "s3"
   name         = "Amazon S3"
   layout = {
@@ -98,7 +98,7 @@ resource "sentry_project_symbol_source" "s3" {
 
 - `name` (String) The human-readable name of the source.
 - `organization` (String) The slug of the organization the project belongs to.
-- `project_slug` (String) The slug of the project to create the filter for.
+- `project` (String) The slug of the project to create the filter for.
 - `type` (String) The type of symbol source. One of `appStoreConnect` (App Store Connect), `http` (SymbolServer (HTTP)), `gcs` (Google Cloud Storage), `s3` (Amazon S3).
 
 ### Optional

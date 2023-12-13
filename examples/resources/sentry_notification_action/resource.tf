@@ -14,5 +14,5 @@ resource "sentry_notification_action" "default" {
   service_type      = "sentry_notification"
   target_identifier = "default"
   target_display    = "default"
-  project_slugs     = [sentry_project.default.slug]
+  projects          = [sentry_project.default.id]
 }

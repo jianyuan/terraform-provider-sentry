@@ -47,7 +47,7 @@ func dataSourceSentryProjectRead(ctx context.Context, d *schema.ResourceData, me
 	projectSlug := d.Get("slug").(string)
 
 	tflog.Debug(ctx, "Reading project", map[string]interface{}{
-		"org":  org,
+		"org":     org,
 		"project": projectSlug,
 	})
 	project, _, err := client.Projects.Get(ctx, org, projectSlug)

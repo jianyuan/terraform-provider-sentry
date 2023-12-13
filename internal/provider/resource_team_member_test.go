@@ -10,7 +10,7 @@ import (
 
 func TestAccTeamMemberResource(t *testing.T) {
 	rn := "sentry_team_member.test"
-	teamSlug := acctest.RandomWithPrefix("tf-team")
+	team := acctest.RandomWithPrefix("tf-team")
 	member1Email := acctest.RandomWithPrefix("tf-member") + "@example.com"
 	member2Email := acctest.RandomWithPrefix("tf-member") + "@example.com"
 
@@ -19,30 +19,30 @@ func TestAccTeamMemberResource(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccTeamMemberConfig(teamSlug, member1Email, member2Email, "sentry_organization_member.test_1", "contributor"),
+				Config: testAccTeamMemberConfig(team, member1Email, member2Email, "sentry_organization_member.test_1", "contributor"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
 					resource.TestCheckResourceAttr(rn, "role", "contributor"),
 					resource.TestCheckResourceAttrPair(rn, "member_id", "sentry_organization_member.test_1", "internal_id"),
-					resource.TestCheckResourceAttrPair(rn, "team_slug", "sentry_team.test", "slug"),
+					resource.TestCheckResourceAttrPair(rn, "team", "sentry_team.test", "slug"),
 				),
 			},
 			{
-				Config: testAccTeamMemberConfig(teamSlug, member1Email, member2Email, "sentry_organization_member.test_1", "admin"),
+				Config: testAccTeamMemberConfig(team, member1Email, member2Email, "sentry_organization_member.test_1", "admin"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
 					resource.TestCheckResourceAttr(rn, "role", "admin"),
 					resource.TestCheckResourceAttrPair(rn, "member_id", "sentry_organization_member.test_1", "internal_id"),
-					resource.TestCheckResourceAttrPair(rn, "team_slug", "sentry_team.test", "slug"),
+					resource.TestCheckResourceAttrPair(rn, "team", "sentry_team.test", "slug"),
 				),
 			},
 			{
-				Config: testAccTeamMemberConfig(teamSlug, member1Email, member2Email, "sentry_organization_member.test_2", "contributor"),
+				Config: testAccTeamMemberConfig(team, member1Email, member2Email, "sentry_organization_member.test_2", "contributor"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
 					resource.TestCheckResourceAttr(rn, "role", "contributor"),
 					resource.TestCheckResourceAttrPair(rn, "member_id", "sentry_organization_member.test_2", "internal_id"),
-					resource.TestCheckResourceAttrPair(rn, "team_slug", "sentry_team.test", "slug"),
+					resource.TestCheckResourceAttrPair(rn, "team", "sentry_team.test", "slug"),
 				),
 			},
 			{
@@ -76,7 +76,7 @@ resource "sentry_organization_member" "test_2" {
 
 resource "sentry_team_member" "test" {
 	organization = data.sentry_organization.test.id
-	team_slug    = sentry_team.test.slug
+	team         = sentry_team.test.id
 	member_id    = %[4]s.internal_id
 	role         = "%[5]s"
 }

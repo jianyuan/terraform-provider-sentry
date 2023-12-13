@@ -28,7 +28,7 @@ resource "sentry_team" "default" {
 
 resource "sentry_team_member" "default" {
   organization = "my-organization"
-  team_slug    = sentry_team.default.slug
+  team         = sentry_team.default.id
   member_id    = sentry_organization_member.default.internal_id
 }
 ```
@@ -40,7 +40,7 @@ resource "sentry_team_member" "default" {
 
 - `member_id` (String) The ID of the member to add to the team.
 - `organization` (String) The slug of the organization the team should be created for.
-- `team_slug` (String) The slug of the team to add the member to.
+- `team` (String) The slug of the team to add the member to.
 
 ### Optional
 

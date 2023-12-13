@@ -32,7 +32,7 @@ type ProjectSymbolSourcesResource struct {
 type ProjectSymbolSourcesResourceModel struct {
 	Id                   types.String `tfsdk:"id"`
 	Organization         types.String `tfsdk:"organization"`
-	ProjectSlug          types.String `tfsdk:"project_slug"`
+	Project              types.String `tfsdk:"project"`
 	Type                 types.String `tfsdk:"type"`
 	Name                 types.String `tfsdk:"name"`
 	Layout               types.Object `tfsdk:"layout"`
@@ -83,7 +83,7 @@ func (r *ProjectSymbolSourcesResource) Schema(ctx context.Context, req resource.
 				Description: "The slug of the organization the project belongs to.",
 				Required:    true,
 			},
-			"project_slug": schema.StringAttribute{
+			"project": schema.StringAttribute{
 				Description: "The slug of the project to create the filter for.",
 				Required:    true,
 			},
@@ -263,7 +263,7 @@ func (r *ProjectSymbolSourcesResource) Create(ctx context.Context, req resource.
 	source, _, err := r.client.ProjectSymbolSources.Create(
 		ctx,
 		data.Organization.ValueString(),
-		data.ProjectSlug.ValueString(),
+		data.Project.ValueString(),
 		params,
 	)
 	if err != nil {
@@ -306,7 +306,7 @@ func (r *ProjectSymbolSourcesResource) Read(ctx context.Context, req resource.Re
 	sources, apiResp, err := r.client.ProjectSymbolSources.List(
 		ctx,
 		data.Organization.ValueString(),
-		data.ProjectSlug.ValueString(),
+		data.Project.ValueString(),
 		&sentry.ProjectSymbolSourceQueryParams{
 			ID: data.Id.ValueStringPointer(),
 		},
@@ -388,7 +388,7 @@ func (r *ProjectSymbolSourcesResource) Update(ctx context.Context, req resource.
 	source, _, err := r.client.ProjectSymbolSources.Update(
 		ctx,
 		data.Organization.ValueString(),
-		data.ProjectSlug.ValueString(),
+		data.Project.ValueString(),
 		data.Id.ValueString(),
 		params,
 	)
@@ -431,7 +431,7 @@ func (r *ProjectSymbolSourcesResource) Delete(ctx context.Context, req resource.
 	apiResp, err := r.client.ProjectSymbolSources.Delete(
 		ctx,
 		data.Organization.ValueString(),
-		data.ProjectSlug.ValueString(),
+		data.Project.ValueString(),
 		data.Id.ValueString(),
 	)
 	if apiResp.StatusCode == http.StatusNotFound {
@@ -445,16 +445,16 @@ func (r *ProjectSymbolSourcesResource) Delete(ctx context.Context, req resource.
 }
 
 func (r *ProjectSymbolSourcesResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	org, projectSlug, symbolSourceId, err := splitThreePartID(req.ID, "organization", "project-slug", "symbol-source-id")
+	organization, project, symbolSourceId, err := splitThreePartID(req.ID, "organization", "project-slug", "symbol-source-id")
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Error parsing ID: %s", err.Error()))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("organization"), org,
+		ctx, path.Root("organization"), organization,
 	)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("project_slug"), projectSlug,
+		ctx, path.Root("project"), project,
 	)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(
 		ctx, path.Root("id"), symbolSourceId,

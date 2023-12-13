@@ -28,7 +28,7 @@ type ProjectSpikeProtectionResource struct {
 type ProjectSpikeProtectionResourceModel struct {
 	Id           types.String `tfsdk:"id"`
 	Organization types.String `tfsdk:"organization"`
-	ProjectSlug  types.String `tfsdk:"project_slug"`
+	Project      types.String `tfsdk:"project"`
 	Enabled      types.Bool   `tfsdk:"enabled"`
 }
 
@@ -52,7 +52,7 @@ func (r *ProjectSpikeProtectionResource) Schema(ctx context.Context, req resourc
 				Description: "The slug of the organization the project belongs to.",
 				Required:    true,
 			},
-			"project_slug": schema.StringAttribute{
+			"project": schema.StringAttribute{
 				Description: "The slug of the project to create the filter for.",
 				Required:    true,
 			},
@@ -98,7 +98,7 @@ func (r *ProjectSpikeProtectionResource) Create(ctx context.Context, req resourc
 			ctx,
 			data.Organization.ValueString(),
 			&sentry.SpikeProtectionParams{
-				Projects: []string{data.ProjectSlug.ValueString()},
+				Projects: []string{data.Project.ValueString()},
 			},
 		)
 		if err != nil {
@@ -110,7 +110,7 @@ func (r *ProjectSpikeProtectionResource) Create(ctx context.Context, req resourc
 			ctx,
 			data.Organization.ValueString(),
 			&sentry.SpikeProtectionParams{
-				Projects: []string{data.ProjectSlug.ValueString()},
+				Projects: []string{data.Project.ValueString()},
 			},
 		)
 		if err != nil {
@@ -119,7 +119,7 @@ func (r *ProjectSpikeProtectionResource) Create(ctx context.Context, req resourc
 		}
 	}
 
-	data.Id = types.StringValue(buildTwoPartID(data.Organization.ValueString(), data.ProjectSlug.ValueString()))
+	data.Id = types.StringValue(buildTwoPartID(data.Organization.ValueString(), data.Project.ValueString()))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -136,7 +136,7 @@ func (r *ProjectSpikeProtectionResource) Read(ctx context.Context, req resource.
 	project, apiResp, err := r.client.Projects.Get(
 		ctx,
 		data.Organization.ValueString(),
-		data.ProjectSlug.ValueString(),
+		data.Project.ValueString(),
 	)
 	if apiResp.StatusCode == http.StatusNotFound {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Project not found: %s", err.Error()))
@@ -150,7 +150,7 @@ func (r *ProjectSpikeProtectionResource) Read(ctx context.Context, req resource.
 
 	data.Id = types.StringValue(buildTwoPartID(data.Organization.ValueString(), project.Slug))
 	data.Organization = types.StringPointerValue(project.Organization.Slug)
-	data.ProjectSlug = types.StringValue(project.Slug)
+	data.Project = types.StringValue(project.Slug)
 	if disabled, ok := project.Options["quotas:spike-protection-disabled"].(bool); ok {
 		data.Enabled = types.BoolValue(!disabled)
 	}
@@ -172,7 +172,7 @@ func (r *ProjectSpikeProtectionResource) Update(ctx context.Context, req resourc
 			ctx,
 			data.Organization.ValueString(),
 			&sentry.SpikeProtectionParams{
-				Projects: []string{data.ProjectSlug.ValueString()},
+				Projects: []string{data.Project.ValueString()},
 			},
 		)
 		if err != nil {
@@ -184,7 +184,7 @@ func (r *ProjectSpikeProtectionResource) Update(ctx context.Context, req resourc
 			ctx,
 			data.Organization.ValueString(),
 			&sentry.SpikeProtectionParams{
-				Projects: []string{data.ProjectSlug.ValueString()},
+				Projects: []string{data.Project.ValueString()},
 			},
 		)
 		if err != nil {
@@ -209,7 +209,7 @@ func (r *ProjectSpikeProtectionResource) Delete(ctx context.Context, req resourc
 		ctx,
 		data.Organization.ValueString(),
 		&sentry.SpikeProtectionParams{
-			Projects: []string{data.ProjectSlug.ValueString()},
+			Projects: []string{data.Project.ValueString()},
 		},
 	)
 	if apiResp.StatusCode == http.StatusNotFound {
@@ -223,16 +223,16 @@ func (r *ProjectSpikeProtectionResource) Delete(ctx context.Context, req resourc
 }
 
 func (r *ProjectSpikeProtectionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	org, projectSlug, err := splitTwoPartID(req.ID, "organization", "project-slug")
+	organization, project, err := splitTwoPartID(req.ID, "organization", "project-slug")
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Error parsing ID: %s", err.Error()))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("organization"), org,
+		ctx, path.Root("organization"), organization,
 	)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("project_slug"), projectSlug,
+		ctx, path.Root("project"), project,
 	)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(
 		ctx, path.Root("id"), req.ID,

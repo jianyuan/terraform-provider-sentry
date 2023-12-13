@@ -10,26 +10,26 @@ import (
 
 func TestAccProjectSpikeProtectionResource(t *testing.T) {
 	rn := "sentry_project_spike_protection.test"
-	teamSlug := acctest.RandomWithPrefix("tf-team")
-	projectSlug := acctest.RandomWithPrefix("tf-project")
+	team := acctest.RandomWithPrefix("tf-team")
+	project := acctest.RandomWithPrefix("tf-project")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccProjectSpikeProtectionConfig(teamSlug, projectSlug, true),
+				Config: testAccProjectSpikeProtectionConfig(team, project, true),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
-					resource.TestCheckResourceAttr(rn, "project_slug", projectSlug),
+					resource.TestCheckResourceAttr(rn, "project", project),
 					resource.TestCheckResourceAttr(rn, "enabled", "true"),
 				),
 			},
 			{
-				Config: testAccProjectSpikeProtectionConfig(teamSlug, projectSlug, false),
+				Config: testAccProjectSpikeProtectionConfig(team, project, false),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
-					resource.TestCheckResourceAttr(rn, "project_slug", projectSlug),
+					resource.TestCheckResourceAttr(rn, "project", project),
 					resource.TestCheckResourceAttr(rn, "enabled", "false"),
 				),
 			},
@@ -59,7 +59,7 @@ resource "sentry_project" "test" {
 
 resource "sentry_project_spike_protection" "test" {
 	organization = sentry_project.test.organization
-	project_slug = sentry_project.test.slug
+	project      = sentry_project.test.id
 	enabled      = %[3]t
 }
 `, teamName, projectName, enabled)

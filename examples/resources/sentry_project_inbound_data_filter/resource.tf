@@ -10,7 +10,7 @@ resource "sentry_project" "default" {
 # Create an inbound data filter for a project
 resource "sentry_project_inbound_data_filter" "test" {
   organization = sentry_project.default.organization
-  project_slug = sentry_project.default.slug
+  project      = sentry_project.default.id
   filter_id    = "browser-extensions"
   active       = true
 }
@@ -19,7 +19,7 @@ resource "sentry_project_inbound_data_filter" "test" {
 # `legacy-browser` filter.
 resource "sentry_project_inbound_data_filter" "test" {
   organization = sentry_project.default.organization
-  project_slug = sentry_project.default.slug
+  project      = sentry_project.default.id
   filter_id    = "legacy-browser"
   subfilters   = ["ie_pre_9", "ie9"]
 }
