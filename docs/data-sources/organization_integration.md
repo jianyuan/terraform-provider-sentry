@@ -3,12 +3,12 @@
 page_title: "sentry_organization_integration Data Source - terraform-provider-sentry"
 subcategory: ""
 description: |-
-  Sentry Organization Integration data source.
+  Sentry Organization Integration data source. See the Sentry documentation https://docs.sentry.io/api/integrations/list-an-organizations-available-integrations/ for more information.
 ---
 
 # sentry_organization_integration (Data Source)
 
-Sentry Organization Integration data source.
+Sentry Organization Integration data source. See the [Sentry documentation](https://docs.sentry.io/api/integrations/list-an-organizations-available-integrations/) for more information.
 
 ## Example Usage
 
@@ -35,13 +35,13 @@ data "sentry_organization_integration" "slack" {
 
 ### Required
 
-- `name` (String) The name of the organization integration.
-- `organization` (String) The slug of the organization the integration belongs to.
-- `provider_key` (String) The key of the organization integration provider.
+- `name` (String) The name of the integration.
+- `organization` (String) The slug of the organization.
+- `provider_key` (String) Specific integration provider to filter by such as `slack`. See [the list of supported providers](https://docs.sentry.io/product/integrations/).
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `internal_id` (String) The internal ID for this organization integration.
+- `internal_id` (String, Deprecated) The internal ID for this organization integration. **Deprecated** Use `id` instead.
 
 

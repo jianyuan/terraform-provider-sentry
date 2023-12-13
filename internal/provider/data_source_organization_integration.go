@@ -48,17 +48,17 @@ func (d *OrganizationIntegrationDataSource) Schema(ctx context.Context, req data
 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				MarkdownDescription: "The ID of this resource.",
-				Computed:            true,
+				Description: "The ID of this resource.",
+				Computed:    true,
 			},
 			"internal_id": schema.StringAttribute{
-				Description:        "The internal ID for this organization integration.",
-				Computed:           true,
-				DeprecationMessage: "This field is deprecated and will be removed in a future version. Use `id` instead.",
+				MarkdownDescription: "The internal ID for this organization integration. **Deprecated** Use `id` instead.",
+				Computed:            true,
+				DeprecationMessage:  "This field is deprecated and will be removed in a future version. Use `id` instead.",
 			},
 			"organization": schema.StringAttribute{
-				MarkdownDescription: "The slug of the organization.",
-				Required:            true,
+				Description: "The slug of the organization.",
+				Required:    true,
 			},
 			"provider_key": schema.StringAttribute{
 				Description: "Specific integration provider to filter by such as `slack`. See [the list of supported providers](https://docs.sentry.io/product/integrations/).",
