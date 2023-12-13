@@ -29,7 +29,7 @@ resource "sentry_notification_action" "default" {
   service_type      = "sentry_notification"
   target_identifier = "default"
   target_display    = "default"
-  project_slugs     = [sentry_project.default.slug]
+  projects          = [sentry_project.default.id]
 }
 ```
 
@@ -39,7 +39,7 @@ resource "sentry_notification_action" "default" {
 ### Required
 
 - `organization` (String) The slug of the organization the project belongs to.
-- `project_slugs` (List of String) The list of project slugs that the Notification Action is created for.
+- `projects` (List of String) The list of project slugs that the Notification Action is created for.
 - `service_type` (String) The service that is used for sending the notification.
 - `trigger_type` (String) The type of trigger that will activate this action. Valid values are `spike_protection`.
 

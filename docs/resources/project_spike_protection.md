@@ -25,7 +25,7 @@ resource "sentry_project" "default" {
 # Enable spike protection for the project
 resource "sentry_project_spike_protection" "default" {
   organization = sentry_project.default.organization
-  project_slug = sentry_project.default.slug
+  project      = sentry_project.default.id
   enabled      = true
 }
 ```
@@ -37,7 +37,7 @@ resource "sentry_project_spike_protection" "default" {
 
 - `enabled` (Boolean) Toggle the browser-extensions, localhost, filtered-transaction, or web-crawlers filter on or off.
 - `organization` (String) The slug of the organization the project belongs to.
-- `project_slug` (String) The slug of the project to create the filter for.
+- `project` (String) The slug of the project to create the filter for.
 
 ### Read-Only
 

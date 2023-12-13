@@ -10,6 +10,6 @@ resource "sentry_project" "default" {
 # Enable spike protection for the project
 resource "sentry_project_spike_protection" "default" {
   organization = sentry_project.default.organization
-  project_slug = sentry_project.default.slug
+  project      = sentry_project.default.id
   enabled      = true
 }

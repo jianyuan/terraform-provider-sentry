@@ -11,36 +11,36 @@ import (
 
 func TestAccNotificationActionResource(t *testing.T) {
 	rn := "sentry_notification_action.test"
-	teamSlug := acctest.RandomWithPrefix("tf-team")
-	project1Slug := acctest.RandomWithPrefix("tf-project")
-	project2Slug := acctest.RandomWithPrefix("tf-project")
+	team := acctest.RandomWithPrefix("tf-team")
+	project1 := acctest.RandomWithPrefix("tf-project")
+	project2 := acctest.RandomWithPrefix("tf-project")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNotificationActionConfig(teamSlug, project1Slug, project2Slug, "[sentry_project.test_1.slug]"),
+				Config: testAccNotificationActionConfig(team, project1, project2, "[sentry_project.test_1.slug]"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
 					resource.TestCheckResourceAttr(rn, "trigger_type", "spike-protection"),
 					resource.TestCheckResourceAttr(rn, "service_type", "sentry_notification"),
 					resource.TestCheckResourceAttr(rn, "target_identifier", "default"),
 					resource.TestCheckResourceAttr(rn, "target_display", "default"),
-					resource.TestCheckResourceAttr(rn, "project_slugs.#", "1"),
-					resource.TestCheckResourceAttr(rn, "project_slugs.0", project1Slug),
+					resource.TestCheckResourceAttr(rn, "projects.#", "1"),
+					resource.TestCheckResourceAttr(rn, "projects.0", project1),
 				),
 			},
 			{
-				Config: testAccNotificationActionConfig(teamSlug, project1Slug, project2Slug, "[sentry_project.test_2.slug]"),
+				Config: testAccNotificationActionConfig(team, project1, project2, "[sentry_project.test_2.slug]"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
 					resource.TestCheckResourceAttr(rn, "trigger_type", "spike-protection"),
 					resource.TestCheckResourceAttr(rn, "service_type", "sentry_notification"),
 					resource.TestCheckResourceAttr(rn, "target_identifier", "default"),
 					resource.TestCheckResourceAttr(rn, "target_display", "default"),
-					resource.TestCheckResourceAttr(rn, "project_slugs.#", "1"),
-					resource.TestCheckResourceAttr(rn, "project_slugs.0", project2Slug),
+					resource.TestCheckResourceAttr(rn, "projects.#", "1"),
+					resource.TestCheckResourceAttr(rn, "projects.0", project2),
 				),
 			},
 			{
@@ -61,7 +61,7 @@ func TestAccNotificationActionResource(t *testing.T) {
 	})
 }
 
-func testAccNotificationActionConfig(teamName string, project1Name string, project2Name string, projectSlugs string) string {
+func testAccNotificationActionConfig(teamName string, project1Name string, project2Name string, projects string) string {
 	return testAccOrganizationDataSourceConfig + fmt.Sprintf(`
 resource "sentry_team" "test" {
 	organization = data.sentry_organization.test.id
@@ -89,7 +89,7 @@ resource "sentry_notification_action" "test" {
 	service_type      = "sentry_notification"
 	target_identifier = "default"
 	target_display    = "default"
-	project_slugs     = %[4]s
+	projects          = %[4]s
 }
-`, teamName, project1Name, project2Name, projectSlugs)
+`, teamName, project1Name, project2Name, projects)
 }

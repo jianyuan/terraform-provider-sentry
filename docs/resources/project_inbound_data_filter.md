@@ -25,7 +25,7 @@ resource "sentry_project" "default" {
 # Create an inbound data filter for a project
 resource "sentry_project_inbound_data_filter" "test" {
   organization = sentry_project.default.organization
-  project_slug = sentry_project.default.slug
+  project      = sentry_project.default.id
   filter_id    = "browser-extensions"
   active       = true
 }
@@ -34,7 +34,7 @@ resource "sentry_project_inbound_data_filter" "test" {
 # `legacy-browser` filter.
 resource "sentry_project_inbound_data_filter" "test" {
   organization = sentry_project.default.organization
-  project_slug = sentry_project.default.slug
+  project      = sentry_project.default.id
   filter_id    = "legacy-browser"
   subfilters   = ["ie_pre_9", "ie9"]
 }
@@ -47,7 +47,7 @@ resource "sentry_project_inbound_data_filter" "test" {
 
 - `filter_id` (String) The type of filter toggle to update. See the [Sentry documentation](https://docs.sentry.io/api/projects/update-an-inbound-data-filter/) for a list of available filters.
 - `organization` (String) The slug of the organization the project belongs to.
-- `project_slug` (String) The slug of the project to create the filter for.
+- `project` (String) The slug of the project to create the filter for.
 
 ### Optional
 

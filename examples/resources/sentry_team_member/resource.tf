@@ -13,6 +13,6 @@ resource "sentry_team" "default" {
 
 resource "sentry_team_member" "default" {
   organization = "my-organization"
-  team_slug    = sentry_team.default.slug
+  team         = sentry_team.default.id
   member_id    = sentry_organization_member.default.internal_id
 }

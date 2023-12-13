@@ -10,8 +10,8 @@ import (
 
 func TestAccProjectInboundDataFilterResource(t *testing.T) {
 	rn := "sentry_project_inbound_data_filter.test"
-	teamSlug := acctest.RandomWithPrefix("tf-team")
-	projectSlug := acctest.RandomWithPrefix("tf-project")
+	team := acctest.RandomWithPrefix("tf-team")
+	project := acctest.RandomWithPrefix("tf-project")
 	filterId := "browser-extensions"
 
 	resource.Test(t, resource.TestCase{
@@ -19,20 +19,20 @@ func TestAccProjectInboundDataFilterResource(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccProjectInboundDataFilterConfig(teamSlug, projectSlug, filterId, "active = true"),
+				Config: testAccProjectInboundDataFilterConfig(team, project, filterId, "active = true"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
-					resource.TestCheckResourceAttr(rn, "project_slug", projectSlug),
+					resource.TestCheckResourceAttr(rn, "project", project),
 					resource.TestCheckResourceAttr(rn, "filter_id", filterId),
 					resource.TestCheckResourceAttr(rn, "active", "true"),
 					resource.TestCheckNoResourceAttr(rn, "subfilters"),
 				),
 			},
 			{
-				Config: testAccProjectInboundDataFilterConfig(teamSlug, projectSlug, filterId, "active = false"),
+				Config: testAccProjectInboundDataFilterConfig(team, project, filterId, "active = false"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
-					resource.TestCheckResourceAttr(rn, "project_slug", projectSlug),
+					resource.TestCheckResourceAttr(rn, "project", project),
 					resource.TestCheckResourceAttr(rn, "filter_id", filterId),
 					resource.TestCheckResourceAttr(rn, "active", "false"),
 					resource.TestCheckNoResourceAttr(rn, "subfilters"),
@@ -49,8 +49,8 @@ func TestAccProjectInboundDataFilterResource(t *testing.T) {
 
 func TestAccProjectInboundDataFilterResource_LegacyBrowser(t *testing.T) {
 	rn := "sentry_project_inbound_data_filter.test"
-	teamSlug := acctest.RandomWithPrefix("tf-team")
-	projectSlug := acctest.RandomWithPrefix("tf-project")
+	team := acctest.RandomWithPrefix("tf-team")
+	project := acctest.RandomWithPrefix("tf-project")
 	filterId := "legacy-browsers"
 
 	resource.Test(t, resource.TestCase{
@@ -58,10 +58,10 @@ func TestAccProjectInboundDataFilterResource_LegacyBrowser(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccProjectInboundDataFilterConfig(teamSlug, projectSlug, filterId, "subfilters = [\"ie_pre_9\"]"),
+				Config: testAccProjectInboundDataFilterConfig(team, project, filterId, "subfilters = [\"ie_pre_9\"]"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
-					resource.TestCheckResourceAttr(rn, "project_slug", projectSlug),
+					resource.TestCheckResourceAttr(rn, "project", project),
 					resource.TestCheckResourceAttr(rn, "filter_id", filterId),
 					resource.TestCheckNoResourceAttr(rn, "active"),
 					resource.TestCheckResourceAttr(rn, "subfilters.#", "1"),
@@ -69,10 +69,10 @@ func TestAccProjectInboundDataFilterResource_LegacyBrowser(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccProjectInboundDataFilterConfig(teamSlug, projectSlug, filterId, "subfilters = [\"safari_pre_6\"]"),
+				Config: testAccProjectInboundDataFilterConfig(team, project, filterId, "subfilters = [\"safari_pre_6\"]"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
-					resource.TestCheckResourceAttr(rn, "project_slug", projectSlug),
+					resource.TestCheckResourceAttr(rn, "project", project),
 					resource.TestCheckResourceAttr(rn, "filter_id", filterId),
 					resource.TestCheckNoResourceAttr(rn, "active"),
 					resource.TestCheckResourceAttr(rn, "subfilters.#", "1"),
@@ -104,8 +104,8 @@ resource "sentry_project" "test" {
 }
 
 resource "sentry_project_inbound_data_filter" "test" {
-	organization = sentry_team.test.organization
-	project_slug = sentry_project.test.slug
+	organization = sentry_project.test.organization
+	project      = sentry_project.test.id
 	filter_id    = "%[3]s"
 	%[4]s
 }

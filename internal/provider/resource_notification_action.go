@@ -40,7 +40,7 @@ type NotificationActionResourceModel struct {
 	IntegrationId    types.String `tfsdk:"integration_id"`
 	TargetIdentifier types.String `tfsdk:"target_identifier"`
 	TargetDisplay    types.String `tfsdk:"target_display"`
-	ProjectSlugs     types.List   `tfsdk:"project_slugs"`
+	Projects         types.List   `tfsdk:"projects"`
 }
 
 func (r *NotificationActionResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -86,7 +86,7 @@ func (r *NotificationActionResource) Schema(ctx context.Context, req resource.Sc
 				Description: "The display name of the target that is used for sending the notification (e.g. Slack channel name). Required if `service_type` is `slack` or `opsgenie`.",
 				Optional:    true,
 			},
-			"project_slugs": schema.ListAttribute{
+			"projects": schema.ListAttribute{
 				Description: "The list of project slugs that the Notification Action is created for.",
 				Required:    true,
 				ElementType: types.StringType,
@@ -124,8 +124,8 @@ func (r *NotificationActionResource) Create(ctx context.Context, req resource.Cr
 		return
 	}
 
-	projectSlugs := []string{}
-	resp.Diagnostics.Append(data.ProjectSlugs.ElementsAs(ctx, &projectSlugs, false)...)
+	projects := []string{}
+	resp.Diagnostics.Append(data.Projects.ElementsAs(ctx, &projects, false)...)
 	action, _, err := r.client.NotificationActions.Create(
 		ctx,
 		data.Organization.ValueString(),
@@ -135,7 +135,7 @@ func (r *NotificationActionResource) Create(ctx context.Context, req resource.Cr
 			IntegrationId:    (*json.Number)(data.IntegrationId.ValueStringPointer()),
 			TargetIdentifier: data.TargetIdentifier.ValueStringPointer(),
 			TargetDisplay:    data.TargetDisplay.ValueStringPointer(),
-			Projects:         projectSlugs,
+			Projects:         projects,
 		},
 	)
 	if err != nil {
@@ -192,8 +192,8 @@ func (r *NotificationActionResource) Update(ctx context.Context, req resource.Up
 		return
 	}
 
-	projectSlugs := []string{}
-	resp.Diagnostics.Append(data.ProjectSlugs.ElementsAs(ctx, &projectSlugs, false)...)
+	projects := []string{}
+	resp.Diagnostics.Append(data.Projects.ElementsAs(ctx, &projects, false)...)
 	action, apiResp, err := r.client.NotificationActions.Update(
 		ctx,
 		data.Organization.ValueString(),
@@ -204,7 +204,7 @@ func (r *NotificationActionResource) Update(ctx context.Context, req resource.Up
 			IntegrationId:    (*json.Number)(data.IntegrationId.ValueStringPointer()),
 			TargetIdentifier: data.TargetIdentifier.ValueStringPointer(),
 			TargetDisplay:    data.TargetDisplay.ValueStringPointer(),
-			Projects:         projectSlugs,
+			Projects:         projects,
 		},
 	)
 	if apiResp.StatusCode == http.StatusNotFound {
@@ -287,13 +287,13 @@ func (r *NotificationActionResource) mapToModel(ctx context.Context, action *sen
 			return diagnostics
 		}
 
-		projectSlugElements := []attr.Value{}
+		projectElements := []attr.Value{}
 		for _, projectId := range action.Projects {
-			projectSlugElements = append(projectSlugElements, types.StringValue(projectIdToSlugMap[projectId.String()]))
+			projectElements = append(projectElements, types.StringValue(projectIdToSlugMap[projectId.String()]))
 		}
 
-		projectSlugs, diags := types.ListValue(types.StringType, projectSlugElements)
-		data.ProjectSlugs = projectSlugs
+		projects, diags := types.ListValue(types.StringType, projectElements)
+		data.Projects = projects
 		diagnostics.Append(diags...)
 	}
 

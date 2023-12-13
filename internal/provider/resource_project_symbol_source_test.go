@@ -11,18 +11,18 @@ import (
 
 func TestAccProjectSymbolSourceResource(t *testing.T) {
 	rn := "sentry_project_symbol_source.test"
-	teamSlug := acctest.RandomWithPrefix("tf-team")
-	projectSlug := acctest.RandomWithPrefix("tf-project")
+	team := acctest.RandomWithPrefix("tf-team")
+	project := acctest.RandomWithPrefix("tf-project")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccProjectSymbolSourceConfig(teamSlug, projectSlug, "s3"),
+				Config: testAccProjectSymbolSourceConfig(team, project, "s3"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
-					resource.TestCheckResourceAttr(rn, "project_slug", projectSlug),
+					resource.TestCheckResourceAttr(rn, "project", project),
 					resource.TestCheckResourceAttr(rn, "type", "s3"),
 					resource.TestCheckResourceAttr(rn, "name", "s3"),
 					resource.TestCheckResourceAttr(rn, "layout.%", "2"),
@@ -35,10 +35,10 @@ func TestAccProjectSymbolSourceResource(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccProjectSymbolSourceConfig(teamSlug, projectSlug, "s3-edited"),
+				Config: testAccProjectSymbolSourceConfig(team, project, "s3-edited"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
-					resource.TestCheckResourceAttr(rn, "project_slug", projectSlug),
+					resource.TestCheckResourceAttr(rn, "project", project),
 					resource.TestCheckResourceAttr(rn, "type", "s3"),
 					resource.TestCheckResourceAttr(rn, "name", "s3-edited"),
 					resource.TestCheckResourceAttr(rn, "layout.%", "2"),
@@ -58,10 +58,10 @@ func TestAccProjectSymbolSourceResource(t *testing.T) {
 					if !ok {
 						return "", fmt.Errorf("not found: %s", rn)
 					}
-					org := rs.Primary.Attributes["organization"]
-					projectSlug := rs.Primary.Attributes["project_slug"]
+					organization := rs.Primary.Attributes["organization"]
+					project := rs.Primary.Attributes["project"]
 					sourceId := rs.Primary.ID
-					return buildThreePartID(org, projectSlug, sourceId), nil
+					return buildThreePartID(organization, project, sourceId), nil
 				},
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"secret_key"},
@@ -87,7 +87,7 @@ resource "sentry_project" "test" {
 
 resource "sentry_project_symbol_source" "test" {
 	organization = sentry_project.test.organization
-	project_slug = sentry_project.test.slug
+	project      = sentry_project.test.id
 	type         = "s3"
 	name         = "%[3]s"
 	layout       = {
