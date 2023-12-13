@@ -115,6 +115,11 @@ func resourceSentryMetricAlert() *schema.Resource {
 										Type:     schema.TypeString,
 										Optional: true,
 									},
+									"input_channel_id": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Slack channel ID to avoid rate-limiting, see [here](https://docs.sentry.io/product/integrations/notification-incidents/slack/#rate-limiting-error)",
+									},
 									"integration_id": {
 										Type:     schema.TypeInt,
 										Optional: true,
@@ -351,6 +356,11 @@ func expandMetricAlertTriggerActions(actionList []interface{}) []*sentry.MetricA
 				action.TargetIdentifier = sentry.String(v)
 			}
 		}
+		if v, ok := actionMap["input_channel_id"].(string); ok {
+			if v != "" {
+				action.InputChannelID = sentry.String(v)
+			}
+		}
 		if v, ok := actionMap["integration_id"].(int); ok {
 			if v != 0 {
 				action.IntegrationID = sentry.Int(v)
@@ -392,6 +402,7 @@ func flattenMetricAlertTriggerActions(actions []*sentry.MetricAlertTriggerAction
 		actionMap["type"] = action.Type
 		actionMap["target_type"] = action.TargetType
 		actionMap["target_identifier"] = action.TargetIdentifier
+		actionMap["input_channel_id"] = action.InputChannelID
 		actionMap["integration_id"] = action.IntegrationID
 
 		actionList = append(actionList, actionMap)
