@@ -12,13 +12,15 @@ require (
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/hashicorp/terraform-plugin-mux v0.12.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.30.0
-	github.com/jianyuan/go-sentry/v2 v2.5.1-0.20231213095245-b3fa073010c8
-	github.com/mitchellh/mapstructure v1.5.0
+	github.com/jianyuan/go-sentry/v2 v2.5.1-0.20231214003649-288c5a250675
 	golang.org/x/oauth2 v0.15.0
 	golang.org/x/sync v0.5.0
 )
 
-require golang.org/x/exp v0.0.0-20230809150735-7b3493d9a819 // indirect
+require (
+	github.com/mitchellh/mapstructure v1.5.0 // indirect
+	golang.org/x/exp v0.0.0-20230809150735-7b3493d9a819 // indirect
+)
 
 require (
 	github.com/Masterminds/goutils v1.1.1 // indirect

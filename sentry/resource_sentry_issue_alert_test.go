@@ -212,7 +212,7 @@ resource "sentry_issue_alert" "test" {
 	filter_match = "any"
 	frequency    = 30
 
-	conditions = [
+	conditions = jsonencode([
 		{
 			id = "sentry.rules.conditions.first_seen_event.FirstSeenEventCondition"
 		},
@@ -237,9 +237,9 @@ resource "sentry_issue_alert" "test" {
 			comparisonType = "count"
 			interval       = "1h"
 		},
-	]
+	])
 
-	filters = [
+	filters = jsonencode([
 		{
 			id              = "sentry.rules.filters.age_comparison.AgeComparisonFilter"
 			value           = 10
@@ -275,9 +275,9 @@ resource "sentry_issue_alert" "test" {
 			match = "eq"
 			level = "50"
 		}
-	]
+	])
 
-	actions = [
+	actions = jsonencode([
 		{
 			id               = "sentry.mail.actions.NotifyEmailAction"
 			targetType       = "IssueOwners"
@@ -291,7 +291,7 @@ resource "sentry_issue_alert" "test" {
 		{
 			id = "sentry.rules.actions.notify_event.NotifyEventAction"
 		}
-	]
+	])
 }
 	`, alertName)
 }
