@@ -58,7 +58,7 @@ func dataSourceSentryKey() *schema.Resource {
 			},
 			"project_id": {
 				Description: "The ID of the project that the key belongs to.",
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Computed:    true,
 			},
 			"is_active": {
@@ -166,7 +166,7 @@ func sentryKeyAttributes(d *schema.ResourceData, key *sentry.ProjectKey) error {
 		d.Set("name", key.Name),
 		d.Set("public", key.Public),
 		d.Set("secret", key.Secret),
-		d.Set("project_id", key.ProjectID),
+		d.Set("project_id", key.ProjectID.String()),
 		d.Set("is_active", key.IsActive),
 		d.Set("dsn_secret", key.DSN.Secret),
 		d.Set("dsn_public", key.DSN.Public),
