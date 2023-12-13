@@ -91,23 +91,23 @@ func TestAccProjectInboundDataFilterResource_LegacyBrowser(t *testing.T) {
 func testAccProjectInboundDataFilterConfig(teamName, projectName, filterId, body string) string {
 	return testAccOrganizationDataSourceConfig + fmt.Sprintf(`
 resource "sentry_team" "test" {
-  organization = data.sentry_organization.test.id
-  name         = "%[1]s"
-  slug         = "%[1]s"
+	organization = data.sentry_organization.test.id
+	name         = "%[1]s"
+	slug         = "%[1]s"
 }
 
 resource "sentry_project" "test" {
-  organization = sentry_team.test.organization
-  teams        = [sentry_team.test.id]
-  name         = "%[2]s"
-  platform     = "go"
+	organization = sentry_team.test.organization
+	teams        = [sentry_team.test.id]
+	name         = "%[2]s"
+	platform     = "go"
 }
 
 resource "sentry_project_inbound_data_filter" "test" {
-  organization = sentry_team.test.organization
-  project_slug = sentry_project.test.slug
-  filter_id    = "%[3]s"
-  %[4]s
+	organization = sentry_team.test.organization
+	project_slug = sentry_project.test.slug
+	filter_id    = "%[3]s"
+	%[4]s
 }
 `, teamName, projectName, filterId, body)
 }

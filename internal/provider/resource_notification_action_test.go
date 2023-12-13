@@ -64,32 +64,32 @@ func TestAccNotificationActionResource(t *testing.T) {
 func testAccNotificationActionConfig(teamName string, project1Name string, project2Name string, projectSlugs string) string {
 	return testAccOrganizationDataSourceConfig + fmt.Sprintf(`
 resource "sentry_team" "test" {
-  organization = data.sentry_organization.test.id
-  name         = "%[1]s"
-  slug         = "%[1]s"
+	organization = data.sentry_organization.test.id
+	name         = "%[1]s"
+	slug         = "%[1]s"
 }
 
 resource "sentry_project" "test_1" {
-  organization = sentry_team.test.organization
-  teams        = [sentry_team.test.id]
-  name         = "%[2]s"
-  platform     = "go"
+	organization = sentry_team.test.organization
+	teams        = [sentry_team.test.id]
+	name         = "%[2]s"
+	platform     = "go"
 }
 
 resource "sentry_project" "test_2" {
-  organization = sentry_team.test.organization
-  teams        = [sentry_team.test.id]
-  name         = "%[3]s"
-  platform     = "go"
+	organization = sentry_team.test.organization
+	teams        = [sentry_team.test.id]
+	name         = "%[3]s"
+	platform     = "go"
 }
 
 resource "sentry_notification_action" "test" {
-  organization      = sentry_team.test.organization
-  trigger_type      = "spike-protection"
-  service_type      = "sentry_notification"
-  target_identifier = "default"
-  target_display    = "default"
-  project_slugs     = %[4]s
+	organization      = sentry_team.test.organization
+	trigger_type      = "spike-protection"
+	service_type      = "sentry_notification"
+	target_identifier = "default"
+	target_display    = "default"
+	project_slugs     = %[4]s
 }
 `, teamName, project1Name, project2Name, projectSlugs)
 }

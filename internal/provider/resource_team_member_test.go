@@ -57,28 +57,28 @@ func TestAccTeamMemberResource(t *testing.T) {
 func testAccTeamMemberConfig(teamName, member1Email, member2Email, memberResourceName, memberRole string) string {
 	return testAccOrganizationDataSourceConfig + fmt.Sprintf(`
 resource "sentry_team" "test" {
-  organization = data.sentry_organization.test.id
-  name         = "%[1]s"
-  slug         = "%[1]s"
+	organization = data.sentry_organization.test.id
+	name         = "%[1]s"
+	slug         = "%[1]s"
 }
 
 resource "sentry_organization_member" "test_1" {
-  organization = data.sentry_organization.test.id
-  email        = "%[2]s"
-  role         = "member"
+	organization = data.sentry_organization.test.id
+	email        = "%[2]s"
+	role         = "member"
 }
 
 resource "sentry_organization_member" "test_2" {
-  organization = data.sentry_organization.test.id
-  email        = "%[3]s"
-  role         = "member"
+	organization = data.sentry_organization.test.id
+	email        = "%[3]s"
+	role         = "member"
 }
 
 resource "sentry_team_member" "test" {
-  organization = data.sentry_organization.test.id
-  team_slug    = sentry_team.test.slug
-  member_id    = %[4]s.internal_id
-  role         = "%[5]s"
+	organization = data.sentry_organization.test.id
+	team_slug    = sentry_team.test.slug
+	member_id    = %[4]s.internal_id
+	role         = "%[5]s"
 }
 `, teamName, member1Email, member2Email, memberResourceName, memberRole)
 }

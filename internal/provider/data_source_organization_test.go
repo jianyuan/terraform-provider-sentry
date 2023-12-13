@@ -8,6 +8,6 @@ import (
 
 var testAccOrganizationDataSourceConfig = fmt.Sprintf(`
 data "sentry_organization" "test" {
-  slug = "%s"
+	slug = "%s"
 }
 `, acctest.TestOrganization)
