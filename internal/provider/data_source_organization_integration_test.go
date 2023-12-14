@@ -8,7 +8,7 @@ import (
 )
 
 func TestAccOrganizationIntegrationDataSource(t *testing.T) {
-	dsn := "data.sentry_organization_integration.test"
+	dn := "data.sentry_organization_integration.test"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
@@ -17,11 +17,11 @@ func TestAccOrganizationIntegrationDataSource(t *testing.T) {
 			{
 				Config: testAccOrganizationIntegrationDataSourceConfig,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(dsn, "id"),
-					resource.TestCheckResourceAttrPair(dsn, "internal_id", dsn, "id"),
-					resource.TestCheckResourceAttr(dsn, "organization", acctest.TestOrganization),
-					resource.TestCheckResourceAttr(dsn, "provider_key", "github"),
-					resource.TestCheckResourceAttr(dsn, "name", "jianyuan"),
+					resource.TestCheckResourceAttrSet(dn, "id"),
+					resource.TestCheckResourceAttrPair(dn, "internal_id", dn, "id"),
+					resource.TestCheckResourceAttr(dn, "organization", acctest.TestOrganization),
+					resource.TestCheckResourceAttr(dn, "provider_key", "github"),
+					resource.TestCheckResourceAttr(dn, "name", "jianyuan"),
 				),
 			},
 		},
@@ -29,7 +29,7 @@ func TestAccOrganizationIntegrationDataSource(t *testing.T) {
 }
 
 func TestAccOrganizationIntegrationDataSource_MigrateFromPluginSDK(t *testing.T) {
-	dsn := "data.sentry_organization_integration.test"
+	dn := "data.sentry_organization_integration.test"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.PreCheck(t) },
@@ -43,11 +43,11 @@ func TestAccOrganizationIntegrationDataSource_MigrateFromPluginSDK(t *testing.T)
 				},
 				Config: testAccOrganizationIntegrationDataSourceConfig,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(dsn, "id"),
-					resource.TestCheckResourceAttrPair(dsn, "internal_id", dsn, "id"),
-					resource.TestCheckResourceAttr(dsn, "organization", acctest.TestOrganization),
-					resource.TestCheckResourceAttr(dsn, "provider_key", "github"),
-					resource.TestCheckResourceAttr(dsn, "name", "jianyuan"),
+					resource.TestCheckResourceAttrSet(dn, "id"),
+					resource.TestCheckResourceAttrPair(dn, "internal_id", dn, "id"),
+					resource.TestCheckResourceAttr(dn, "organization", acctest.TestOrganization),
+					resource.TestCheckResourceAttr(dn, "provider_key", "github"),
+					resource.TestCheckResourceAttr(dn, "name", "jianyuan"),
 				),
 			},
 			{
