@@ -102,7 +102,7 @@ func (r *IssueAlertResource) Metadata(ctx context.Context, req resource.Metadata
 
 func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Create an Issue Alert Rule for a Project. See the [Sentry Documentation](https://docs.sentry.io/api/alerts/create-an-issue-alert-rule-for-a-project/) for more information.",
+		MarkdownDescription: "Create an Issue Alert Rule for a Project. See the [Sentry Documentation](https://docs.sentry.io/api/alerts/create-an-issue-alert-rule-for-a-project/) for more information. Please note that the attributes `conditions`, `filters`, and `actions` are in JSON string format. The types must match the Sentry API, otherwise Terraform will incorrectly detect a diff. Use `parseint(\"string\", 10)` to convert a string to an integer.",
 
 		Version: 2,
 
@@ -130,17 +130,17 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 				},
 			},
 			"conditions": schema.StringAttribute{
-				MarkdownDescription: "List of conditions.",
+				MarkdownDescription: "List of conditions. In JSON string format.",
 				Required:            true,
 				CustomType:          jsontypes.NormalizedType{},
 			},
 			"filters": schema.StringAttribute{
-				MarkdownDescription: "A list of filters that determine if a rule fires after the necessary conditions have been met.",
+				MarkdownDescription: "A list of filters that determine if a rule fires after the necessary conditions have been met. In JSON string format.",
 				Optional:            true,
 				CustomType:          jsontypes.NormalizedType{},
 			},
 			"actions": schema.StringAttribute{
-				MarkdownDescription: "List of actions.",
+				MarkdownDescription: "List of actions. In JSON string format.",
 				Required:            true,
 				CustomType:          jsontypes.NormalizedType{},
 			},

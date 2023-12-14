@@ -115,17 +115,17 @@ func (d *IssueAlertDataSource) Schema(ctx context.Context, req datasource.Schema
 				Computed:            true,
 			},
 			"conditions": schema.StringAttribute{
-				MarkdownDescription: "List of conditions.",
+				MarkdownDescription: "List of conditions. In JSON string format.",
 				Computed:            true,
 				CustomType:          jsontypes.NormalizedType{},
 			},
 			"filters": schema.StringAttribute{
-				MarkdownDescription: "A list of filters that determine if a rule fires after the necessary conditions have been met.",
+				MarkdownDescription: "A list of filters that determine if a rule fires after the necessary conditions have been met. In JSON string format.",
 				Computed:            true,
 				CustomType:          jsontypes.NormalizedType{},
 			},
 			"actions": schema.StringAttribute{
-				MarkdownDescription: "List of actions.",
+				MarkdownDescription: "List of actions. In JSON string format.",
 				Computed:            true,
 				CustomType:          jsontypes.NormalizedType{},
 			},
