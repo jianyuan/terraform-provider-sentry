@@ -35,6 +35,16 @@ type TeamMemberResourceModel struct {
 	Role         types.String `tfsdk:"role"`
 }
 
+func (data *TeamMemberResourceModel) Fill(organization string, team string, memberId string, role string) error {
+	data.Id = types.StringValue(buildThreePartID(organization, team, memberId))
+	data.Organization = types.StringValue(organization)
+	data.MemberId = types.StringValue(memberId)
+	data.Team = types.StringValue(team)
+	data.Role = types.StringValue(role)
+
+	return nil
+}
+
 func (r *TeamMemberResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_team_member"
 }
@@ -101,18 +111,27 @@ func (r *TeamMemberResource) readRole(ctx context.Context, organization string, 
 	r.roleMu.Lock()
 	defer r.roleMu.Unlock()
 
-	orgMember, _, err := r.client.OrganizationMembers.Get(ctx, organization, memberId)
+	member, _, err := r.client.OrganizationMembers.Get(ctx, organization, memberId)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read organization member, got error: %s", err)
 	}
 
-	for _, teamRole := range orgMember.TeamRoles {
+	teamRole := r.readTeamRole(member.TeamRoles, team)
+	if teamRole == nil {
+		return nil, fmt.Errorf("unable to find team member")
+	}
+
+	return teamRole, nil
+}
+
+func (r *TeamMemberResource) readTeamRole(teamRoles []sentry.TeamRole, team string) *string {
+	for _, teamRole := range teamRoles {
 		if teamRole.TeamSlug == team {
-			return &teamRole.Role, nil
+			return &teamRole.Role
 		}
 	}
 
-	return nil, fmt.Errorf("unable to find team member")
+	return nil
 }
 
 func (r *TeamMemberResource) updateRole(ctx context.Context, organization string, memberId string, team string, role string) (*string, error) {
@@ -175,16 +194,25 @@ func (r *TeamMemberResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	data.Id = types.StringValue(buildThreePartID(data.Organization.ValueString(), sentry.StringValue(member.Slug), data.MemberId.ValueString()))
-	data.Team = types.StringPointerValue(member.Slug)
-
-	if !data.Role.IsNull() {
-		role, err := r.updateRole(ctx, data.Organization.ValueString(), data.MemberId.ValueString(), data.Team.ValueString(), data.Role.ValueString())
+	var teamRole *string
+	if data.Role.IsNull() {
+		teamRole = member.TeamRole
+	} else {
+		teamRole, err = r.updateRole(ctx, data.Organization.ValueString(), data.MemberId.ValueString(), data.Team.ValueString(), data.Role.ValueString())
 		if err != nil {
-			resp.Diagnostics.AddError("Client Error", err.Error())
+			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read team member, got error: %s", err))
 			return
 		}
-		data.Role = types.StringPointerValue(role)
+	}
+
+	if teamRole == nil {
+		resp.Diagnostics.AddError("Client Error", "Unable to find team member")
+		return
+	}
+
+	if err := data.Fill(data.Organization.ValueString(), data.Team.ValueString(), data.MemberId.ValueString(), *teamRole); err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to fill team member, got error: %s", err))
+		return
 	}
 
 	// Save data into Terraform state
@@ -208,8 +236,10 @@ func (r *TeamMemberResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	data.Id = types.StringValue(buildThreePartID(data.Organization.ValueString(), data.Team.ValueString(), data.MemberId.ValueString()))
-	data.Role = types.StringPointerValue(role)
+	if err := data.Fill(data.Organization.ValueString(), data.Team.ValueString(), data.MemberId.ValueString(), *role); err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to fill team member, got error: %s", err))
+		return
+	}
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -232,7 +262,11 @@ func (r *TeamMemberResource) Update(ctx context.Context, req resource.UpdateRequ
 			resp.Diagnostics.AddError("Client Error", err.Error())
 			return
 		}
-		state.Role = types.StringPointerValue(role)
+
+		if err := state.Fill(plan.Organization.ValueString(), plan.Team.ValueString(), plan.MemberId.ValueString(), *role); err != nil {
+			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to fill team member, got error: %s", err))
+			return
+		}
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -261,19 +295,19 @@ func (r *TeamMemberResource) Delete(ctx context.Context, req resource.DeleteRequ
 }
 
 func (r *TeamMemberResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	org, teamSlug, memberID, err := splitThreePartID(req.ID, "organization", "team-slug", "member-id")
+	organization, team, memberId, err := splitThreePartID(req.ID, "organization", "team-slug", "member-id")
 	if err != nil {
 		resp.Diagnostics.AddError("Import Error", fmt.Sprintf("Unable to import team, got error: %s", err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("organization"), org,
+		ctx, path.Root("organization"), organization,
 	)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("team"), teamSlug,
+		ctx, path.Root("team"), team,
 	)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("member_id"), memberID,
+		ctx, path.Root("member_id"), memberId,
 	)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(
 		ctx, path.Root("id"), req.ID,

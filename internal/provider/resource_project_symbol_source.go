@@ -14,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
@@ -30,30 +29,60 @@ type ProjectSymbolSourcesResource struct {
 }
 
 type ProjectSymbolSourcesResourceModel struct {
-	Id                   types.String `tfsdk:"id"`
-	Organization         types.String `tfsdk:"organization"`
-	Project              types.String `tfsdk:"project"`
-	Type                 types.String `tfsdk:"type"`
-	Name                 types.String `tfsdk:"name"`
-	Layout               types.Object `tfsdk:"layout"`
-	AppConnectIssuer     types.String `tfsdk:"app_connect_issuer"`
-	AppConnectPrivateKey types.String `tfsdk:"app_connect_private_key"`
-	AppId                types.String `tfsdk:"app_id"`
-	Url                  types.String `tfsdk:"url"`
-	Username             types.String `tfsdk:"username"`
-	Password             types.String `tfsdk:"password"`
-	Bucket               types.String `tfsdk:"bucket"`
-	Region               types.String `tfsdk:"region"`
-	AccessKey            types.String `tfsdk:"access_key"`
-	SecretKey            types.String `tfsdk:"secret_key"`
-	Prefix               types.String `tfsdk:"prefix"`
-	ClientEmail          types.String `tfsdk:"client_email"`
-	PrivateKey           types.String `tfsdk:"private_key"`
+	Id                   types.String                             `tfsdk:"id"`
+	Organization         types.String                             `tfsdk:"organization"`
+	Project              types.String                             `tfsdk:"project"`
+	Type                 types.String                             `tfsdk:"type"`
+	Name                 types.String                             `tfsdk:"name"`
+	Layout               *ProjectSymbolSourcesResourceLayoutModel `tfsdk:"layout"`
+	AppConnectIssuer     types.String                             `tfsdk:"app_connect_issuer"`
+	AppConnectPrivateKey types.String                             `tfsdk:"app_connect_private_key"`
+	AppId                types.String                             `tfsdk:"app_id"`
+	Url                  types.String                             `tfsdk:"url"`
+	Username             types.String                             `tfsdk:"username"`
+	Password             types.String                             `tfsdk:"password"`
+	Bucket               types.String                             `tfsdk:"bucket"`
+	Region               types.String                             `tfsdk:"region"`
+	AccessKey            types.String                             `tfsdk:"access_key"`
+	SecretKey            types.String                             `tfsdk:"secret_key"`
+	Prefix               types.String                             `tfsdk:"prefix"`
+	ClientEmail          types.String                             `tfsdk:"client_email"`
+	PrivateKey           types.String                             `tfsdk:"private_key"`
+}
+
+func (data *ProjectSymbolSourcesResourceModel) Fill(source sentry.ProjectSymbolSource) error {
+	data.Id = types.StringPointerValue(source.ID)
+	data.Type = types.StringPointerValue(source.Type)
+	data.Name = types.StringPointerValue(source.Name)
+	if source.Layout != nil {
+		data.Layout = &ProjectSymbolSourcesResourceLayoutModel{}
+		if err := data.Layout.Fill(*source.Layout); err != nil {
+			return err
+		}
+	}
+	data.AppConnectIssuer = types.StringPointerValue(source.AppConnectIssuer)
+	data.AppId = types.StringPointerValue(source.AppId)
+	data.Url = types.StringPointerValue(source.Url)
+	data.Username = types.StringPointerValue(source.Username)
+	data.Bucket = types.StringPointerValue(source.Bucket)
+	data.Region = types.StringPointerValue(source.Region)
+	data.AccessKey = types.StringPointerValue(source.AccessKey)
+	data.Prefix = types.StringPointerValue(source.Prefix)
+	data.ClientEmail = types.StringPointerValue(source.ClientEmail)
+
+	return nil
 }
 
 type ProjectSymbolSourcesResourceLayoutModel struct {
 	Type   types.String `tfsdk:"type"`
 	Casing types.String `tfsdk:"casing"`
+}
+
+func (m *ProjectSymbolSourcesResourceLayoutModel) Fill(layout sentry.ProjectSymbolSourceLayout) error {
+	m.Type = types.StringPointerValue(layout.Type)
+	m.Casing = types.StringPointerValue(layout.Casing)
+
+	return nil
 }
 
 func (m ProjectSymbolSourcesResourceLayoutModel) AttributeTypes() map[string]attr.Type {
@@ -228,7 +257,6 @@ func (r *ProjectSymbolSourcesResource) Configure(ctx context.Context, req resour
 
 func (r *ProjectSymbolSourcesResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data ProjectSymbolSourcesResourceModel
-	var layoutData ProjectSymbolSourcesResourceLayoutModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -236,15 +264,9 @@ func (r *ProjectSymbolSourcesResource) Create(ctx context.Context, req resource.
 		return
 	}
 
-	resp.Diagnostics.Append(data.Layout.As(ctx, &layoutData, basetypes.ObjectAsOptions{})...)
-
 	params := &sentry.CreateProjectSymbolSourceParams{
-		Type: data.Type.ValueStringPointer(),
-		Name: data.Name.ValueStringPointer(),
-		Layout: &sentry.ProjectSymbolSourceLayout{
-			Type:   layoutData.Type.ValueStringPointer(),
-			Casing: layoutData.Casing.ValueStringPointer(),
-		},
+		Type:                 data.Type.ValueStringPointer(),
+		Name:                 data.Name.ValueStringPointer(),
 		AppConnectIssuer:     data.AppConnectIssuer.ValueStringPointer(),
 		AppConnectPrivateKey: data.AppConnectPrivateKey.ValueStringPointer(),
 		AppId:                data.AppId.ValueStringPointer(),
@@ -259,6 +281,12 @@ func (r *ProjectSymbolSourcesResource) Create(ctx context.Context, req resource.
 		ClientEmail:          data.ClientEmail.ValueStringPointer(),
 		PrivateKey:           data.PrivateKey.ValueStringPointer(),
 	}
+	if data.Layout != nil {
+		params.Layout = &sentry.ProjectSymbolSourceLayout{
+			Type:   data.Layout.Type.ValueStringPointer(),
+			Casing: data.Layout.Casing.ValueStringPointer(),
+		}
+	}
 
 	source, _, err := r.client.ProjectSymbolSources.Create(
 		ctx,
@@ -271,31 +299,16 @@ func (r *ProjectSymbolSourcesResource) Create(ctx context.Context, req resource.
 		return
 	}
 
-	layoutData.Type = types.StringPointerValue(source.Layout.Type)
-	layoutData.Casing = types.StringPointerValue(source.Layout.Casing)
-	layout, diags := types.ObjectValueFrom(ctx, layoutData.AttributeTypes(), layoutData)
-	resp.Diagnostics.Append(diags...)
-
-	data.Id = types.StringPointerValue(source.ID)
-	data.Type = types.StringPointerValue(source.Type)
-	data.Name = types.StringPointerValue(source.Name)
-	data.Layout = layout
-	data.AppConnectIssuer = types.StringPointerValue(source.AppConnectIssuer)
-	data.AppId = types.StringPointerValue(source.AppId)
-	data.Url = types.StringPointerValue(source.Url)
-	data.Username = types.StringPointerValue(source.Username)
-	data.Bucket = types.StringPointerValue(source.Bucket)
-	data.Region = types.StringPointerValue(source.Region)
-	data.AccessKey = types.StringPointerValue(source.AccessKey)
-	data.Prefix = types.StringPointerValue(source.Prefix)
-	data.ClientEmail = types.StringPointerValue(source.ClientEmail)
+	if err := data.Fill(*source); err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error filling project symbol source: %s", err.Error()))
+		return
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *ProjectSymbolSourcesResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data ProjectSymbolSourcesResourceModel
-	var layoutData ProjectSymbolSourcesResourceLayoutModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
@@ -328,31 +341,17 @@ func (r *ProjectSymbolSourcesResource) Read(ctx context.Context, req resource.Re
 	}
 
 	source := sources[0]
-	layoutData.Type = types.StringPointerValue(source.Layout.Type)
-	layoutData.Casing = types.StringPointerValue(source.Layout.Casing)
-	layout, diags := types.ObjectValueFrom(ctx, layoutData.AttributeTypes(), layoutData)
-	resp.Diagnostics.Append(diags...)
 
-	data.Id = types.StringPointerValue(source.ID)
-	data.Type = types.StringPointerValue(source.Type)
-	data.Name = types.StringPointerValue(source.Name)
-	data.Layout = layout
-	data.AppConnectIssuer = types.StringPointerValue(source.AppConnectIssuer)
-	data.AppId = types.StringPointerValue(source.AppId)
-	data.Url = types.StringPointerValue(source.Url)
-	data.Username = types.StringPointerValue(source.Username)
-	data.Bucket = types.StringPointerValue(source.Bucket)
-	data.Region = types.StringPointerValue(source.Region)
-	data.AccessKey = types.StringPointerValue(source.AccessKey)
-	data.Prefix = types.StringPointerValue(source.Prefix)
-	data.ClientEmail = types.StringPointerValue(source.ClientEmail)
+	if err := data.Fill(*source); err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error filling project symbol source: %s", err.Error()))
+		return
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *ProjectSymbolSourcesResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var data ProjectSymbolSourcesResourceModel
-	var layoutData ProjectSymbolSourcesResourceLayoutModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -360,16 +359,10 @@ func (r *ProjectSymbolSourcesResource) Update(ctx context.Context, req resource.
 		return
 	}
 
-	resp.Diagnostics.Append(data.Layout.As(ctx, &layoutData, basetypes.ObjectAsOptions{})...)
-
 	params := &sentry.UpdateProjectSymbolSourceParams{
-		ID:   data.Id.ValueStringPointer(),
-		Type: data.Type.ValueStringPointer(),
-		Name: data.Name.ValueStringPointer(),
-		Layout: &sentry.ProjectSymbolSourceLayout{
-			Type:   layoutData.Type.ValueStringPointer(),
-			Casing: layoutData.Casing.ValueStringPointer(),
-		},
+		ID:                   data.Id.ValueStringPointer(),
+		Type:                 data.Type.ValueStringPointer(),
+		Name:                 data.Name.ValueStringPointer(),
 		AppConnectIssuer:     data.AppConnectIssuer.ValueStringPointer(),
 		AppConnectPrivateKey: data.AppConnectPrivateKey.ValueStringPointer(),
 		AppId:                data.AppId.ValueStringPointer(),
@@ -384,6 +377,12 @@ func (r *ProjectSymbolSourcesResource) Update(ctx context.Context, req resource.
 		ClientEmail:          data.ClientEmail.ValueStringPointer(),
 		PrivateKey:           data.PrivateKey.ValueStringPointer(),
 	}
+	if data.Layout != nil {
+		params.Layout = &sentry.ProjectSymbolSourceLayout{
+			Type:   data.Layout.Type.ValueStringPointer(),
+			Casing: data.Layout.Casing.ValueStringPointer(),
+		}
+	}
 
 	source, _, err := r.client.ProjectSymbolSources.Update(
 		ctx,
@@ -397,24 +396,10 @@ func (r *ProjectSymbolSourcesResource) Update(ctx context.Context, req resource.
 		return
 	}
 
-	layoutData.Type = types.StringPointerValue(source.Layout.Type)
-	layoutData.Casing = types.StringPointerValue(source.Layout.Casing)
-	layout, diags := types.ObjectValueFrom(ctx, layoutData.AttributeTypes(), layoutData)
-	resp.Diagnostics.Append(diags...)
-
-	data.Id = types.StringPointerValue(source.ID)
-	data.Type = types.StringPointerValue(source.Type)
-	data.Name = types.StringPointerValue(source.Name)
-	data.Layout = layout
-	data.AppConnectIssuer = types.StringPointerValue(source.AppConnectIssuer)
-	data.AppId = types.StringPointerValue(source.AppId)
-	data.Url = types.StringPointerValue(source.Url)
-	data.Username = types.StringPointerValue(source.Username)
-	data.Bucket = types.StringPointerValue(source.Bucket)
-	data.Region = types.StringPointerValue(source.Region)
-	data.AccessKey = types.StringPointerValue(source.AccessKey)
-	data.Prefix = types.StringPointerValue(source.Prefix)
-	data.ClientEmail = types.StringPointerValue(source.ClientEmail)
+	if err := data.Fill(*source); err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error filling project symbol source: %s", err.Error()))
+		return
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

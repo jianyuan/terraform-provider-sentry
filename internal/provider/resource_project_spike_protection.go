@@ -32,6 +32,17 @@ type ProjectSpikeProtectionResourceModel struct {
 	Enabled      types.Bool   `tfsdk:"enabled"`
 }
 
+func (data *ProjectSpikeProtectionResourceModel) Fill(organization string, project sentry.Project) error {
+	data.Id = types.StringValue(buildTwoPartID(organization, project.Slug))
+	data.Organization = types.StringPointerValue(project.Organization.Slug)
+	data.Project = types.StringValue(project.Slug)
+	if disabled, ok := project.Options["quotas:spike-protection-disabled"].(bool); ok {
+		data.Enabled = types.BoolValue(!disabled)
+	}
+
+	return nil
+}
+
 func (r *ProjectSpikeProtectionResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_project_spike_protection"
 }
@@ -148,11 +159,9 @@ func (r *ProjectSpikeProtectionResource) Read(ctx context.Context, req resource.
 		return
 	}
 
-	data.Id = types.StringValue(buildTwoPartID(data.Organization.ValueString(), project.Slug))
-	data.Organization = types.StringPointerValue(project.Organization.Slug)
-	data.Project = types.StringValue(project.Slug)
-	if disabled, ok := project.Options["quotas:spike-protection-disabled"].(bool); ok {
-		data.Enabled = types.BoolValue(!disabled)
+	if err := data.Fill(data.Organization.ValueString(), *project); err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error filling project spike protection: %s", err.Error()))
+		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

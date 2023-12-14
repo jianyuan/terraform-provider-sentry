@@ -9,7 +9,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -41,6 +40,33 @@ type NotificationActionResourceModel struct {
 	TargetIdentifier types.String `tfsdk:"target_identifier"`
 	TargetDisplay    types.String `tfsdk:"target_display"`
 	Projects         types.List   `tfsdk:"projects"`
+}
+
+func (m *NotificationActionResourceModel) Fill(action sentry.NotificationAction, projectIdToSlugMap map[string]string) error {
+	m.Id = types.StringPointerValue((*string)(action.ID))
+	m.TriggerType = types.StringPointerValue(action.TriggerType)
+	m.ServiceType = types.StringPointerValue(action.ServiceType)
+	m.IntegrationId = types.StringPointerValue((*string)(action.IntegrationId))
+	switch targetIdentifier := action.TargetIdentifier.(type) {
+	case string:
+		m.TargetIdentifier = types.StringValue(targetIdentifier)
+	case int64:
+		m.TargetIdentifier = types.StringValue(strconv.FormatInt(targetIdentifier, 10))
+	case nil:
+		m.TargetIdentifier = types.StringNull()
+	}
+	m.TargetDisplay = types.StringPointerValue(action.TargetDisplay)
+
+	if len(action.Projects) > 0 {
+		projectElements := []attr.Value{}
+		for _, projectId := range action.Projects {
+			projectElements = append(projectElements, types.StringValue(projectIdToSlugMap[projectId.String()]))
+		}
+
+		m.Projects = types.ListValueMust(types.StringType, projectElements)
+	}
+
+	return nil
 }
 
 func (r *NotificationActionResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -143,8 +169,17 @@ func (r *NotificationActionResource) Create(ctx context.Context, req resource.Cr
 		return
 	}
 
-	resp.Diagnostics.Append(r.mapToModel(ctx, action, &data)...)
-	if resp.Diagnostics.HasError() {
+	var projectIdToSlugMap map[string]string
+	if len(action.Projects) > 0 {
+		projectIdToSlugMap, err = sentryclient.GetProjectIdToSlugMap(ctx, r.client)
+		if err != nil {
+			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error reading projects: %s", err.Error()))
+			return
+		}
+	}
+
+	if err := data.Fill(*action, projectIdToSlugMap); err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error filling notification action: %s", err.Error()))
 		return
 	}
 
@@ -175,8 +210,17 @@ func (r *NotificationActionResource) Read(ctx context.Context, req resource.Read
 		return
 	}
 
-	resp.Diagnostics.Append(r.mapToModel(ctx, action, &data)...)
-	if resp.Diagnostics.HasError() {
+	var projectIdToSlugMap map[string]string
+	if len(action.Projects) > 0 {
+		projectIdToSlugMap, err = sentryclient.GetProjectIdToSlugMap(ctx, r.client)
+		if err != nil {
+			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error reading projects: %s", err.Error()))
+			return
+		}
+	}
+
+	if err := data.Fill(*action, projectIdToSlugMap); err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error filling notification action: %s", err.Error()))
 		return
 	}
 
@@ -217,8 +261,17 @@ func (r *NotificationActionResource) Update(ctx context.Context, req resource.Up
 		return
 	}
 
-	resp.Diagnostics.Append(r.mapToModel(ctx, action, &data)...)
-	if resp.Diagnostics.HasError() {
+	var projectIdToSlugMap map[string]string
+	if len(action.Projects) > 0 {
+		projectIdToSlugMap, err = sentryclient.GetProjectIdToSlugMap(ctx, r.client)
+		if err != nil {
+			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error reading projects: %s", err.Error()))
+			return
+		}
+	}
+
+	if err := data.Fill(*action, projectIdToSlugMap); err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error filling notification action: %s", err.Error()))
 		return
 	}
 
@@ -261,41 +314,4 @@ func (r *NotificationActionResource) ImportState(ctx context.Context, req resour
 	resp.Diagnostics.Append(resp.State.SetAttribute(
 		ctx, path.Root("id"), actionId,
 	)...)
-}
-
-func (r *NotificationActionResource) mapToModel(ctx context.Context, action *sentry.NotificationAction, data *NotificationActionResourceModel) diag.Diagnostics {
-	var diagnostics diag.Diagnostics
-
-	data.Id = types.StringPointerValue((*string)(action.ID))
-	data.TriggerType = types.StringPointerValue(action.TriggerType)
-	data.ServiceType = types.StringPointerValue(action.ServiceType)
-	data.IntegrationId = types.StringPointerValue((*string)(action.IntegrationId))
-	switch targetIdentifier := action.TargetIdentifier.(type) {
-	case string:
-		data.TargetIdentifier = types.StringValue(targetIdentifier)
-	case int64:
-		data.TargetIdentifier = types.StringValue(strconv.FormatInt(targetIdentifier, 10))
-	case nil:
-		data.TargetIdentifier = types.StringNull()
-	}
-	data.TargetDisplay = types.StringPointerValue(action.TargetDisplay)
-
-	if len(action.Projects) > 0 {
-		projectIdToSlugMap, err := sentryclient.GetProjectIdToSlugMap(ctx, r.client)
-		if err != nil {
-			diagnostics.AddError("Client Error", fmt.Sprintf("Error reading projects: %s", err.Error()))
-			return diagnostics
-		}
-
-		projectElements := []attr.Value{}
-		for _, projectId := range action.Projects {
-			projectElements = append(projectElements, types.StringValue(projectIdToSlugMap[projectId.String()]))
-		}
-
-		projects, diags := types.ListValue(types.StringType, projectElements)
-		data.Projects = projects
-		diagnostics.Append(diags...)
-	}
-
-	return diagnostics
 }

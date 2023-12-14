@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/boolvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -35,6 +36,26 @@ type ProjectInboundDataFilterResourceModel struct {
 	FilterId     types.String `tfsdk:"filter_id"`
 	Active       types.Bool   `tfsdk:"active"`
 	Subfilters   types.List   `tfsdk:"subfilters"`
+}
+
+func (m *ProjectInboundDataFilterResourceModel) Fill(organization string, project string, filterId string, filter sentry.ProjectInboundDataFilter) error {
+	m.Id = types.StringValue(buildThreePartID(organization, project, filterId))
+	m.Organization = types.StringValue(organization)
+	m.Project = types.StringValue(project)
+	m.FilterId = types.StringValue(filterId)
+
+	if filter.Active.IsBool {
+		m.Active = types.BoolValue(filter.Active.BoolVal)
+	} else {
+		subfilterElements := []attr.Value{}
+		for _, subfilter := range filter.Active.SliceVal {
+			subfilterElements = append(subfilterElements, types.StringValue(subfilter))
+		}
+
+		m.Subfilters = types.ListValueMust(types.StringType, subfilterElements)
+	}
+
+	return nil
 }
 
 func (r *ProjectInboundDataFilterResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -162,26 +183,23 @@ func (r *ProjectInboundDataFilterResource) Read(ctx context.Context, req resourc
 		return
 	}
 
-	found := false
+	var foundFilter *sentry.ProjectInboundDataFilter
+
 	for _, filter := range filters {
 		if filter.ID == data.FilterId.ValueString() {
-			data.Id = types.StringValue(buildThreePartID(data.Organization.ValueString(), data.Project.ValueString(), data.FilterId.ValueString()))
-
-			if filter.Active.IsBool {
-				data.Active = types.BoolValue(filter.Active.BoolVal)
-			} else {
-				listValue, diags := types.ListValueFrom(ctx, types.StringType, filter.Active.SliceVal)
-				data.Subfilters = listValue
-				resp.Diagnostics.Append(diags...)
-			}
-			found = true
+			foundFilter = filter
 			break
 		}
 	}
 
-	if !found {
+	if foundFilter == nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error reading project inbound data filters: %s", "Filter not found"))
 		resp.State.RemoveResource(ctx)
+		return
+	}
+
+	if err := data.Fill(data.Organization.ValueString(), data.Project.ValueString(), data.FilterId.ValueString(), *foundFilter); err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error filling project inbound data filter: %s", err.Error()))
 		return
 	}
 
@@ -216,6 +234,8 @@ func (r *ProjectInboundDataFilterResource) Update(ctx context.Context, req resou
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error updating project inbound data filter: %s", err.Error()))
 		return
 	}
+
+	plan.Id = types.StringValue(buildThreePartID(plan.Organization.ValueString(), plan.Project.ValueString(), plan.FilterId.ValueString()))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
