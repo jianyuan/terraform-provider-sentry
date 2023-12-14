@@ -1,3 +1,4 @@
+
 resource "sentry_issue_alert" "main" {
   organization = sentry_project.main.organization
   project      = sentry_project.main.id
@@ -33,90 +34,7 @@ resource "sentry_issue_alert" "main" {
 ]
 EOT
 
-  actions = <<EOT
-[
-  {
-    "id" - "sentry.mail.actions.NotifyEmailAction",
-    "targetType" - "IssueOwners",
-    "fallthroughType" - "ActiveMembers"
-  },
-  {
-    "id": "sentry.mail.actions.NotifyEmailAction",
-    "targetType": "Team"
-    "fallthroughType": "AllMembers"
-    "targetIdentifier": 4524986223
-  },
-  {
-    "id": "sentry.integrations.slack.notify_action.SlackNotifyServiceAction",
-    "workspace": ${parseint(data.sentry_organization_integration.slack.id, 10)},
-    "channel": "#warning",
-    "tags": "environment,level"
-  },
-  {
-    "id": "sentry.integrations.msteams.notify_action.MsTeamsNotifyServiceAction",
-    "team": 23465424,
-    "channel": "General"
-  },
-  {
-    "id": "sentry.integrations.discord.notify_action.DiscordNotifyServiceAction",
-    "server": 63408298,
-    "channel_id": 94732897,
-    "tags": "browser,user"
-  },
-  {
-    "id": "sentry.integrations.jira.notify_action.JiraCreateTicketAction",
-    "integration": 321424,
-    "project": "349719"
-    "issueType": "1"
-  },
-  {
-    "id": "sentry.integrations.jira_server.notify_action.JiraServerCreateTicketAction",
-    "integration": 321424,
-    "project": "349719"
-    "issueType": "1"
-  },
-  {
-    "id": "sentry.integrations.github.notify_action.GitHubCreateTicketAction",
-    "integration": 93749,
-    "repo": default,
-    "title": "My Test Issue",
-    "assignee": "Baxter the Hacker",
-    "labels": ["bug", "p1"]
-  },
-  {
-    "id": "sentry.integrations.vsts.notify_action.AzureDevopsCreateTicketAction",
-    "integration": 294838,
-    "project": "0389485",
-    "work_item_type": "Microsoft.VSTS.WorkItemTypes.Task",
-  },
-  {
-    "id": "sentry.integrations.pagerduty.notify_action.PagerDutyNotifyServiceAction",
-    "account": 92385907,
-    "service": 9823924
-  },
-  {
-    "id": "sentry.integrations.opsgenie.notify_action.OpsgenieNotifyTeamAction",
-    "account": 8723897589,
-    "team": "9438930258-fairy"
-  },
-  {
-    "id": "sentry.rules.actions.notify_event_service.NotifyEventServiceAction",
-    "service": "mail"
-  },
-  {
-    "id": "sentry.rules.actions.notify_event_sentry_app.NotifyEventSentryAppAction",
-    "settings": [
-        {"name": "title", "value": "Team Rocket"},
-        {"name": "summary", "value": "We're blasting off again."},
-    ],
-    "sentryAppInstallationUuid": 643522
-    "hasSchemaFormConfig": true
-  },
-  {
-    "id": "sentry.rules.actions.notify_event.NotifyEventAction"
-  }
-]
-EOT
+  actions = "[]" # Please see below for examples
 
   filters = <<EOT
 [
@@ -167,10 +85,343 @@ EOT
 EOT
 }
 
+#
+# Send a notification to Suggested Assignees
+#
+
+resource "sentry_issue_alert" "member_alert" {
+  actions = <<EOT
+[
+  {
+    "id": "sentry.mail.actions.NotifyEmailAction",
+    "targetType": "IssueOwners",
+    "fallthroughType": "ActiveMembers"
+  }
+]
+EOT
+  // ...
+}
+
+#
+# Send a notification to a Member
+#
+
+resource "sentry_organization_member" "member" {
+  organization = data.sentry_organization.test.id
+  email        = "test@example.com"
+  role         = "member"
+}
+
+resource "sentry_issue_alert" "member_alert" {
+  actions = <<EOT
+[
+  {
+    "id": "sentry.mail.actions.NotifyEmailAction",
+    "targetType": "Member"
+    "fallthroughType": "AllMembers"
+    "targetIdentifier": ${parseint(sentry_organization_member.member.internal_id, 10)}
+  }
+]
+EOT
+  // ...
+}
+
+#
+# Send a notification to a Team
+#
+
+data "sentry_team" "team" {
+  organization = sentry_project.test.organization
+  slug         = "my-team"
+}
+
+resource "sentry_issue_alert" "team_alert" {
+  actions = <<EOT
+[
+  {
+    "id": "sentry.mail.actions.NotifyEmailAction",
+    "targetType": "Team"
+    "fallthroughType": "AllMembers"
+    "targetIdentifier": ${parseint(data.sentry_team.team.internal_id, 10)}
+  }
+]
+EOT
+  // ...
+}
+
+#
+# Send a Slack notification
+#
+
 # Retrieve a Slack integration
 data "sentry_organization_integration" "slack" {
   organization = sentry_project.test.organization
 
   provider_key = "slack"
   name         = "Slack Workspace" # Name of your Slack workspace
+}
+
+resource "sentry_issue_alert" "slack_alert" {
+  actions = <<EOT
+[
+  {
+    "id": "sentry.integrations.slack.notify_action.SlackNotifyServiceAction",
+    "workspace": ${parseint(data.sentry_organization_integration.slack.id, 10)},
+    "channel": "#warning",
+    "tags": "environment,level"
+  }
+]
+EOT
+  // ...
+}
+
+#
+# Send a Microsoft Teams notification
+#
+
+data "sentry_organization_integration" "msteams" {
+  organization = sentry_project.test.organization
+
+  provider_key = "msteams"
+  name         = "My Team" # Name of your Microsoft Teams team
+}
+
+resource "sentry_issue_alert" "msteams_alert" {
+  actions = <<EOT
+[
+  {
+    "id": "sentry.integrations.msteams.notify_action.MsTeamsNotifyServiceAction",
+    "team": ${parseint(data.sentry_organization_integration.msteams.id, 10)},
+    "channel": "General"
+  }
+]
+EOT
+  // ...
+}
+
+#
+# Send a Discord notification
+#
+
+data "sentry_organization_integration" "discord" {
+  organization = sentry_project.test.organization
+
+  provider_key = "discord"
+  name         = "Discord Server" # Name of your Discord server
+}
+
+resource "sentry_issue_alert" "discord_alert" {
+  actions = <<EOT
+[
+  {
+    "id": "sentry.integrations.discord.notify_action.DiscordNotifyServiceAction",
+    "server": ${parseint(data.sentry_organization_integration.discord.id, 10)},
+    "channel_id": 94732897,
+    "tags": "browser,user"
+  }
+]
+EOT
+  // ...
+}
+
+#
+# Create a Jira Ticket
+#
+
+data "sentry_organization_integration" "jira" {
+  organization = sentry_project.test.organization
+
+  provider_key = "jira"
+  name         = "JIRA" # Name of your Jira server
+}
+
+resource "sentry_issue_alert" "jira_alert" {
+  actions = <<EOT
+[
+  {
+    "id": "sentry.integrations.jira.notify_action.JiraCreateTicketAction",
+    "integration": ${parseint(data.sentry_organization_integration.jira.id, 10)},
+    "project": "349719"
+    "issueType": "1"
+  }
+]
+EOT
+  // ...
+}
+
+#
+# Create a Jira Server Ticket
+#
+
+data "sentry_organization_integration" "jira_server" {
+  organization = sentry_project.test.organization
+
+  provider_key = "jira_server"
+  name         = "JIRA" # Name of your Jira server
+}
+
+resource "sentry_issue_alert" "jira_server_alert" {
+  actions = <<EOT
+[
+  {
+    "id": "sentry.integrations.jira_server.notify_action.JiraServerCreateTicketAction",
+    "integration": ${parseint(data.sentry_organization_integration.jira_server.id, 10)},
+    "project": "349719"
+    "issueType": "1"
+  }
+]
+EOT
+  // ...
+}
+
+#
+# Create a GitHub Issue
+#
+
+data "sentry_organization_integration" "github" {
+  organization = sentry_project.test.organization
+
+  provider_key = "github"
+  name         = "GitHub"
+}
+
+resource "sentry_issue_alert" "github_alert" {
+  actions = <<EOT
+[
+  {
+    "id": "sentry.integrations.github.notify_action.GitHubCreateTicketAction",
+    "integration": ${parseint(data.sentry_organization_integration.github.id, 10)},
+    "repo": default,
+    "title": "My Test Issue",
+    "assignee": "Baxter the Hacker",
+    "labels": ["bug", "p1"]
+  }
+]
+EOT
+  // ...
+}
+
+#
+# Create an Azure DevOps work item
+#
+
+data "sentry_organization_integration" "vsts" {
+  organization = sentry_project.test.organization
+
+  provider_key = "vsts"
+  name         = "Azure DevOps"
+}
+
+resource "sentry_issue_alert" "vsts_alert" {
+  actions = <<EOT
+[
+  {
+    "id": "sentry.integrations.vsts.notify_action.AzureDevopsCreateTicketAction",
+    "integration": ${parseint(data.sentry_organization_integration.vsts.id, 10)},
+    "project": "0389485",
+    "work_item_type": "Microsoft.VSTS.WorkItemTypes.Task",
+  }
+]
+EOT
+  // ...
+}
+
+#
+# Send a PagerDuty notification
+#
+
+data "sentry_organization_integration" "pagerduty" {
+  organization = sentry_project.test.organization
+
+  provider_key = "pagerduty"
+  name         = "PagerDuty"
+}
+
+resource "sentry_issue_alert" "pagerduty_alert" {
+  actions = <<EOT
+[
+  {
+    "id": "sentry.integrations.pagerduty.notify_action.PagerDutyNotifyServiceAction",
+    "account": ${parseint(data.sentry_organization_integration.pagerduty.id, 10)},
+    "service": 9823924
+  }
+]
+EOT
+  // ...
+}
+
+#
+# Send an Opsgenie notification
+#
+
+data "sentry_organization_integration" "opsgenie" {
+  organization = sentry_project.test.organization
+
+  provider_key = "opsgenie"
+  name         = "Opsgenie"
+}
+
+resource "sentry_issue_alert" "opsgenie_alert" {
+  actions = <<EOT
+[
+  {
+    "id": "sentry.integrations.opsgenie.notify_action.OpsgenieNotifyTeamAction",
+    "account": ${parseint(data.sentry_organization_integration.opsgenie.id, 10)},
+    "team": "9438930258-fairy"
+  }
+]
+EOT
+  // ...
+}
+
+#
+# Send a notification to a service
+#
+
+resource "sentry_issue_alert" "notification_alert" {
+  actions = <<EOT
+[
+  {
+    "id": "sentry.rules.actions.notify_event_service.NotifyEventServiceAction",
+    "service": "mail"
+  }
+]
+EOT
+  // ...
+}
+
+#
+# Send a notification to a Sentry app with a custom webhook payload
+#
+
+resource "sentry_issue_alert" "notification_alert" {
+  actions = <<EOT
+[
+  {
+    "id": "sentry.rules.actions.notify_event_sentry_app.NotifyEventSentryAppAction",
+    "settings": [
+        {"name": "title", "value": "Team Rocket"},
+        {"name": "summary", "value": "We're blasting off again."},
+    ],
+    "sentryAppInstallationUuid": 643522
+    "hasSchemaFormConfig": true
+  }
+]
+EOT
+  // ...
+}
+
+#
+# Send a notification (for all legacy integrations)
+#
+
+resource "sentry_issue_alert" "notification_alert" {
+  actions = <<EOT
+[
+  {
+    "id": "sentry.rules.actions.notify_event.NotifyEventAction"
+  }
+]
+EOT
+  // ...
 }
