@@ -133,7 +133,7 @@ func (d *OrganizationIntegrationDataSource) Read(ctx context.Context, req dataso
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), *matchedIntegrations[0]); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read organization integration, got error: %s", err))
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error filling organization integration: %s", err.Error()))
 		return
 	}
 
