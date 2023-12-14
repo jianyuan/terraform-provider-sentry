@@ -3,12 +3,12 @@
 page_title: "sentry_issue_alert Resource - terraform-provider-sentry"
 subcategory: ""
 description: |-
-  Sentry Issue Alert resource. Note that there's no public documentation for the values of conditions, filters, and actions. You can either inspect the request payload sent when creating or editing an issue alert on Sentry or inspect Sentry's rules registry in the source code https://github.com/getsentry/sentry/tree/master/src/sentry/rules. Since v0.11.2, you should also omit the name property of each condition, filter, and action.
+  Create an Issue Alert Rule for a Project. See the Sentry Documentation https://docs.sentry.io/api/alerts/create-an-issue-alert-rule-for-a-project/ for more information. Please note that the attributes conditions, filters, and actions are in JSON string format. The types must match the Sentry API, otherwise Terraform will incorrectly detect a diff. Use parseint("string", 10) to convert a string to an integer.
 ---
 
 # sentry_issue_alert (Resource)
 
-Sentry Issue Alert resource. Note that there's no public documentation for the values of conditions, filters, and actions. You can either inspect the request payload sent when creating or editing an issue alert on Sentry or inspect [Sentry's rules registry in the source code](https://github.com/getsentry/sentry/tree/master/src/sentry/rules). Since v0.11.2, you should also omit the name property of each condition, filter, and action.
+Create an Issue Alert Rule for a Project. See the [Sentry Documentation](https://docs.sentry.io/api/alerts/create-an-issue-alert-rule-for-a-project/) for more information. Please note that the attributes `conditions`, `filters`, and `actions` are in JSON string format. The types must match the Sentry API, otherwise Terraform will incorrectly detect a diff. Use `parseint("string", 10)` to convert a string to an integer.
 
 ## Example Usage
 
@@ -22,124 +22,150 @@ resource "sentry_issue_alert" "main" {
   filter_match = "any"
   frequency    = 30
 
-  conditions = [
-    # A new issue is created
-    {
-      id = "sentry.rules.conditions.first_seen_event.FirstSeenEventCondition"
-    },
+  conditions = <<EOT
+[
+  {
+    "id": "sentry.rules.conditions.first_seen_event.FirstSeenEventCondition"
+  },
+  {
+    "id": "sentry.rules.conditions.regression_event.RegressionEventCondition"
+  },
+  {
+    "id": "sentry.rules.conditions.event_frequency.EventFrequencyCondition",
+    "value": 500,
+    "interval": "1h"
+  },
+  {
+    "id": "sentry.rules.conditions.event_frequency.EventUniqueUserFrequencyCondition",
+    "value": 1000,
+    "interval": "15m"
+  },
+  {
+    "id": "sentry.rules.conditions.event_frequency.EventFrequencyPercentCondition",
+    "value": 50,
+    "interval": "10m"
+  }
+]
+EOT
 
-    # The issue changes state from resolved to unresolved
-    {
-      id = "sentry.rules.conditions.regression_event.RegressionEventCondition"
-    },
+  actions = "[]" # Please see below for examples
 
-    # The issue is seen more than 100 times in 1h
-    {
-      id             = "sentry.rules.conditions.event_frequency.EventFrequencyCondition"
-      value          = 100
-      comparisonType = "count"
-      interval       = "1h"
-    },
-
-    # The issue is seen by more than 100 users in 1h
-    {
-      id             = "sentry.rules.conditions.event_frequency.EventUniqueUserFrequencyCondition"
-      value          = 100
-      comparisonType = "count"
-      interval       = "1h"
-    },
-
-    # The issue affects more than 50.0 percent of sessions in 1h
-    {
-      id             = "sentry.rules.conditions.event_frequency.EventFrequencyPercentCondition"
-      value          = "50.0" # Express the percentage as a string
-      comparisonType = "count"
-      interval       = "1h"
-    },
-  ]
-
-  filters = [
-    # The issue is older than 10 minute
-    {
-      id              = "sentry.rules.filters.age_comparison.AgeComparisonFilter"
-      value           = 10
-      time            = "minute"
-      comparison_type = "older"
-    },
-
-    # The issue has happened at least 10 times
-    {
-      id    = "sentry.rules.filters.issue_occurrences.IssueOccurrencesFilter"
-      value = 10
-    },
-
-    # The issue is assigned to Team
-    {
-      id               = "sentry.rules.filters.assigned_to.AssignedToFilter"
-      targetType       = "Team"
-      targetIdentifier = sentry_team.main.team_id
-    },
-
-    # The event is from the latest release
-    {
-      id = "sentry.rules.filters.latest_release.LatestReleaseFilter"
-    },
-
-    # The event's message value contains test
-    {
-      id        = "sentry.rules.filters.event_attribute.EventAttributeFilter"
-      attribute = "message"
-      match     = "co"
-      value     = "test"
-    },
-
-    # The event's tags match test contains test
-    {
-      id    = "sentry.rules.filters.tagged_event.TaggedEventFilter"
-      key   = "test"
-      match = "co"
-      value = "test"
-    },
-
-    # The event's level is equal to fatal
-    {
-      id    = "sentry.rules.filters.level.LevelFilter"
-      match = "eq"
-      level = "50"
-    }
-  ]
-
-  actions = [
-    # Send a notification to IssueOwners
-    {
-      id               = "sentry.mail.actions.NotifyEmailAction"
-      targetType       = "IssueOwners"
-      targetIdentifier = ""
-    },
-
-    # Send a notification to Team
-    {
-      id               = "sentry.mail.actions.NotifyEmailAction"
-      targetType       = "Team"
-      targetIdentifier = sentry_team.main.team_id
-    },
-
-    # Send a notification (for all legacy integrations)
-    {
-      id = "sentry.rules.actions.notify_event.NotifyEventAction"
-    },
-
-    # Send a notification to the Slack workspace to #general
-    {
-      id      = "sentry.integrations.slack.notify_action.SlackNotifyServiceAction"
-      channel = "#general"
-
-      # From: https://sentry.io/settings/[org-slug]/integrations/slack/[slack-integration-id]/
-      # Or use the sentry_organization_integration data source to retrieve the integration ID:
-      workspace = data.sentry_organization_integration.slack.internal_id
-    },
-  ]
+  filters = <<EOT
+[
+  {
+    "id": "sentry.rules.filters.age_comparison.AgeComparisonFilter",
+    "comparison_type": "older",
+    "value": 3,
+    "time": "week"
+  },
+  {
+    "id": "sentry.rules.filters.issue_occurrences.IssueOccurrencesFilter",
+    "value": 120
+  },
+  {
+    "id": "sentry.rules.filters.assigned_to.AssignedToFilter",
+    "targetType": "Unassigned"
+  },
+  {
+    "id": "sentry.rules.filters.assigned_to.AssignedToFilter",
+    "targetType": "Member",
+    "targetIdentifier": 895329789
+  },
+  {
+    "id": "sentry.rules.filters.latest_release.LatestReleaseFilter"
+  },
+  {
+    "id": "sentry.rules.filters.issue_category.IssueCategoryFilter",
+    "value": 2
+  },
+  {
+    "id": "sentry.rules.conditions.event_attribute.EventAttributeCondition",
+    "attribute": "http.url",
+    "match": "nc",
+    "value": "localhost"
+  },
+  {
+    "id": "sentry.rules.filters.tagged_event.TaggedEventFilter",
+    "key": "level",
+    "match": "eq"
+    "value": "error"
+  },
+  {
+    "id": "sentry.rules.filters.level.LevelFilter",
+    "match": "gte"
+    "level": "50"
+  }
+]
+EOT
 }
+
+#
+# Send a notification to Suggested Assignees
+#
+
+resource "sentry_issue_alert" "member_alert" {
+  actions = <<EOT
+[
+  {
+    "id": "sentry.mail.actions.NotifyEmailAction",
+    "targetType": "IssueOwners",
+    "fallthroughType": "ActiveMembers"
+  }
+]
+EOT
+  // ...
+}
+
+#
+# Send a notification to a Member
+#
+
+resource "sentry_organization_member" "member" {
+  organization = data.sentry_organization.test.id
+  email        = "test@example.com"
+  role         = "member"
+}
+
+resource "sentry_issue_alert" "member_alert" {
+  actions = <<EOT
+[
+  {
+    "id": "sentry.mail.actions.NotifyEmailAction",
+    "targetType": "Member"
+    "fallthroughType": "AllMembers"
+    "targetIdentifier": ${parseint(sentry_organization_member.member.internal_id, 10)}
+  }
+]
+EOT
+  // ...
+}
+
+#
+# Send a notification to a Team
+#
+
+data "sentry_team" "team" {
+  organization = sentry_project.test.organization
+  slug         = "my-team"
+}
+
+resource "sentry_issue_alert" "team_alert" {
+  actions = <<EOT
+[
+  {
+    "id": "sentry.mail.actions.NotifyEmailAction",
+    "targetType": "Team"
+    "fallthroughType": "AllMembers"
+    "targetIdentifier": ${parseint(data.sentry_team.team.internal_id, 10)}
+  }
+]
+EOT
+  // ...
+}
+
+#
+# Send a Slack notification
+#
 
 # Retrieve a Slack integration
 data "sentry_organization_integration" "slack" {
@@ -147,6 +173,271 @@ data "sentry_organization_integration" "slack" {
 
   provider_key = "slack"
   name         = "Slack Workspace" # Name of your Slack workspace
+}
+
+resource "sentry_issue_alert" "slack_alert" {
+  actions = <<EOT
+[
+  {
+    "id": "sentry.integrations.slack.notify_action.SlackNotifyServiceAction",
+    "workspace": ${parseint(data.sentry_organization_integration.slack.id, 10)},
+    "channel": "#warning",
+    "tags": "environment,level"
+  }
+]
+EOT
+  // ...
+}
+
+#
+# Send a Microsoft Teams notification
+#
+
+data "sentry_organization_integration" "msteams" {
+  organization = sentry_project.test.organization
+
+  provider_key = "msteams"
+  name         = "My Team" # Name of your Microsoft Teams team
+}
+
+resource "sentry_issue_alert" "msteams_alert" {
+  actions = <<EOT
+[
+  {
+    "id": "sentry.integrations.msteams.notify_action.MsTeamsNotifyServiceAction",
+    "team": ${parseint(data.sentry_organization_integration.msteams.id, 10)},
+    "channel": "General"
+  }
+]
+EOT
+  // ...
+}
+
+#
+# Send a Discord notification
+#
+
+data "sentry_organization_integration" "discord" {
+  organization = sentry_project.test.organization
+
+  provider_key = "discord"
+  name         = "Discord Server" # Name of your Discord server
+}
+
+resource "sentry_issue_alert" "discord_alert" {
+  actions = <<EOT
+[
+  {
+    "id": "sentry.integrations.discord.notify_action.DiscordNotifyServiceAction",
+    "server": ${parseint(data.sentry_organization_integration.discord.id, 10)},
+    "channel_id": 94732897,
+    "tags": "browser,user"
+  }
+]
+EOT
+  // ...
+}
+
+#
+# Create a Jira Ticket
+#
+
+data "sentry_organization_integration" "jira" {
+  organization = sentry_project.test.organization
+
+  provider_key = "jira"
+  name         = "JIRA" # Name of your Jira server
+}
+
+resource "sentry_issue_alert" "jira_alert" {
+  actions = <<EOT
+[
+  {
+    "id": "sentry.integrations.jira.notify_action.JiraCreateTicketAction",
+    "integration": ${parseint(data.sentry_organization_integration.jira.id, 10)},
+    "project": "349719"
+    "issueType": "1"
+  }
+]
+EOT
+  // ...
+}
+
+#
+# Create a Jira Server Ticket
+#
+
+data "sentry_organization_integration" "jira_server" {
+  organization = sentry_project.test.organization
+
+  provider_key = "jira_server"
+  name         = "JIRA" # Name of your Jira server
+}
+
+resource "sentry_issue_alert" "jira_server_alert" {
+  actions = <<EOT
+[
+  {
+    "id": "sentry.integrations.jira_server.notify_action.JiraServerCreateTicketAction",
+    "integration": ${parseint(data.sentry_organization_integration.jira_server.id, 10)},
+    "project": "349719"
+    "issueType": "1"
+  }
+]
+EOT
+  // ...
+}
+
+#
+# Create a GitHub Issue
+#
+
+data "sentry_organization_integration" "github" {
+  organization = sentry_project.test.organization
+
+  provider_key = "github"
+  name         = "GitHub"
+}
+
+resource "sentry_issue_alert" "github_alert" {
+  actions = <<EOT
+[
+  {
+    "id": "sentry.integrations.github.notify_action.GitHubCreateTicketAction",
+    "integration": ${parseint(data.sentry_organization_integration.github.id, 10)},
+    "repo": default,
+    "title": "My Test Issue",
+    "assignee": "Baxter the Hacker",
+    "labels": ["bug", "p1"]
+  }
+]
+EOT
+  // ...
+}
+
+#
+# Create an Azure DevOps work item
+#
+
+data "sentry_organization_integration" "vsts" {
+  organization = sentry_project.test.organization
+
+  provider_key = "vsts"
+  name         = "Azure DevOps"
+}
+
+resource "sentry_issue_alert" "vsts_alert" {
+  actions = <<EOT
+[
+  {
+    "id": "sentry.integrations.vsts.notify_action.AzureDevopsCreateTicketAction",
+    "integration": ${parseint(data.sentry_organization_integration.vsts.id, 10)},
+    "project": "0389485",
+    "work_item_type": "Microsoft.VSTS.WorkItemTypes.Task",
+  }
+]
+EOT
+  // ...
+}
+
+#
+# Send a PagerDuty notification
+#
+
+data "sentry_organization_integration" "pagerduty" {
+  organization = sentry_project.test.organization
+
+  provider_key = "pagerduty"
+  name         = "PagerDuty"
+}
+
+resource "sentry_issue_alert" "pagerduty_alert" {
+  actions = <<EOT
+[
+  {
+    "id": "sentry.integrations.pagerduty.notify_action.PagerDutyNotifyServiceAction",
+    "account": ${parseint(data.sentry_organization_integration.pagerduty.id, 10)},
+    "service": 9823924
+  }
+]
+EOT
+  // ...
+}
+
+#
+# Send an Opsgenie notification
+#
+
+data "sentry_organization_integration" "opsgenie" {
+  organization = sentry_project.test.organization
+
+  provider_key = "opsgenie"
+  name         = "Opsgenie"
+}
+
+resource "sentry_issue_alert" "opsgenie_alert" {
+  actions = <<EOT
+[
+  {
+    "id": "sentry.integrations.opsgenie.notify_action.OpsgenieNotifyTeamAction",
+    "account": ${parseint(data.sentry_organization_integration.opsgenie.id, 10)},
+    "team": "9438930258-fairy"
+  }
+]
+EOT
+  // ...
+}
+
+#
+# Send a notification to a service
+#
+
+resource "sentry_issue_alert" "notification_alert" {
+  actions = <<EOT
+[
+  {
+    "id": "sentry.rules.actions.notify_event_service.NotifyEventServiceAction",
+    "service": "mail"
+  }
+]
+EOT
+  // ...
+}
+
+#
+# Send a notification to a Sentry app with a custom webhook payload
+#
+
+resource "sentry_issue_alert" "notification_alert" {
+  actions = <<EOT
+[
+  {
+    "id": "sentry.rules.actions.notify_event_sentry_app.NotifyEventSentryAppAction",
+    "settings": [
+        {"name": "title", "value": "Team Rocket"},
+        {"name": "summary", "value": "We're blasting off again."},
+    ],
+    "sentryAppInstallationUuid": 643522
+    "hasSchemaFormConfig": true
+  }
+]
+EOT
+  // ...
+}
+
+#
+# Send a notification (for all legacy integrations)
+#
+
+resource "sentry_issue_alert" "notification_alert" {
+  actions = <<EOT
+[
+  {
+    "id": "sentry.rules.actions.notify_event.NotifyEventAction"
+  }
+]
+EOT
+  // ...
 }
 ```
 
@@ -156,24 +447,23 @@ data "sentry_organization_integration" "slack" {
 ### Required
 
 - `action_match` (String) Trigger actions when an event is captured by Sentry and `any` or `all` of the specified conditions happen.
-- `actions` (List of Map of String) List of actions.
-- `conditions` (List of Map of String) List of conditions.
-- `filter_match` (String) Trigger actions if `all`, `any`, or `none` of the specified filters match.
-- `frequency` (Number) Perform actions at most once every `X` minutes for this issue. Defaults to `30`.
+- `actions` (String) List of actions. In JSON string format.
+- `conditions` (String) List of conditions. In JSON string format.
+- `frequency` (Number) Perform actions at most once every `X` minutes for this issue.
 - `name` (String) The issue alert name.
-- `organization` (String) The slug of the organization the issue alert belongs to.
-- `project` (String) The slug of the project to create the issue alert for.
+- `organization` (String) The slug of the organization the resource belongs to.
+- `project` (String) The slug of the project the resource belongs to.
 
 ### Optional
 
 - `environment` (String) Perform issue alert in a specific environment.
-- `filters` (List of Map of String) List of filters.
+- `filter_match` (String) A string determining which filters need to be true before any actions take place. Required when a value is provided for `filters`.
+- `filters` (String) A list of filters that determine if a rule fires after the necessary conditions have been met. In JSON string format.
+- `owner` (String) The ID of the team or user that owns the rule.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `internal_id` (String) The internal ID for this issue alert.
-- `projects` (List of String, Deprecated) Use `project` (singular) instead.
 
 ## Import
 

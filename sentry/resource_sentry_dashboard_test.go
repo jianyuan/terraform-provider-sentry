@@ -46,7 +46,6 @@ func TestAccSentryDashboard_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckSentryIssueAlertDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccSentryDashboardConfig(dashboardTitle),
