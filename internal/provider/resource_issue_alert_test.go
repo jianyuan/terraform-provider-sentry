@@ -70,6 +70,137 @@ func TestAccIssueAlertResource(t *testing.T) {
 	})
 }
 
+func TestAccIssueAlertResource_MigrateFromPluginSDK(t *testing.T) {
+	rn := "sentry_issue_alert.test"
+	team := acctest.RandomWithPrefix("tf-team")
+	project := acctest.RandomWithPrefix("tf-project")
+	alert := acctest.RandomWithPrefix("tf-issue-alert")
+	var alertId string
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { acctest.PreCheck(t) },
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					acctest.ProviderName: {
+						Source:            "jianyuan/sentry",
+						VersionConstraint: "0.11.2",
+					},
+				},
+				Config: testAccOrganizationDataSourceConfig + fmt.Sprintf(`
+resource "sentry_team" "test" {
+	organization = data.sentry_organization.test.id
+	name         = "%[1]s"
+	slug         = "%[1]s"
+}
+
+resource "sentry_project" "test" {
+	organization = sentry_team.test.organization
+	teams        = [sentry_team.test.id]
+	name         = "%[2]s"
+	platform     = "go"
+}
+
+resource "sentry_issue_alert" "test" {
+	organization = sentry_project.test.organization
+	project      = sentry_project.test.id
+	name         = "%[3]s"
+
+	action_match = "any"
+	filter_match = "any"
+	frequency    = 30
+
+	conditions = [
+		{
+			id = "sentry.rules.conditions.first_seen_event.FirstSeenEventCondition"
+		},
+		{
+			id = "sentry.rules.conditions.regression_event.RegressionEventCondition"
+		}
+	]
+
+	actions = [
+		{
+			id = "sentry.rules.actions.notify_event.NotifyEventAction"
+		}
+	]
+}
+`, team, project, alert),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(rn, "id"),
+					resource.TestCheckResourceAttrSet(rn, "internal_id"),
+					resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
+					resource.TestCheckResourceAttr(rn, "project", project),
+					resource.TestCheckResourceAttr(rn, "name", alert),
+				),
+			},
+			{
+				ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+				Config: testAccOrganizationDataSourceConfig + fmt.Sprintf(`
+resource "sentry_team" "test" {
+	organization = data.sentry_organization.test.id
+	name         = "%[1]s"
+	slug         = "%[1]s"
+}
+
+resource "sentry_project" "test" {
+	organization = sentry_team.test.organization
+	teams        = [sentry_team.test.id]
+	name         = "%[2]s"
+	platform     = "go"
+}
+
+resource "sentry_issue_alert" "test" {
+	organization = sentry_project.test.organization
+	project      = sentry_project.test.id
+	name         = "%[3]s"
+
+	action_match = "any"
+	filter_match = "any"
+	frequency    = 30
+
+	conditions = jsonencode(
+		[
+			{
+				id = "sentry.rules.conditions.first_seen_event.FirstSeenEventCondition"
+			},
+			{
+				id = "sentry.rules.conditions.regression_event.RegressionEventCondition"
+			}
+		]
+	)
+
+	actions = jsonencode(
+		[
+			{
+				"id": "sentry.rules.actions.notify_event.NotifyEventAction"
+			}
+		]
+	)
+}
+`, team, project, alert),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIssueAlertExists(rn, &alertId),
+					resource.TestCheckResourceAttrWith(rn, "id", func(value string) error {
+						if alertId != value {
+							return fmt.Errorf("expected %s, got %s", alertId, value)
+						}
+						return nil
+					}),
+					resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
+					resource.TestCheckResourceAttr(rn, "project", project),
+					resource.TestCheckResourceAttr(rn, "name", alert),
+					resource.TestCheckResourceAttr(rn, "action_match", "any"),
+					resource.TestCheckResourceAttr(rn, "filter_match", "any"),
+					resource.TestCheckResourceAttr(rn, "frequency", "30"),
+					resource.TestCheckResourceAttrSet(rn, "conditions"),
+					resource.TestCheckResourceAttrSet(rn, "actions"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIssueAlertDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "sentry_issue_alert" {
@@ -103,8 +234,16 @@ func testAccCheckIssueAlertExists(n string, alertId *string) resource.TestCheckF
 			return errors.New("No project ID is set")
 		}
 
+		var resolvedAlertId string
+		// Support schema v1 and below
+		if value, ok := rs.Primary.Attributes["internal_id"]; ok {
+			resolvedAlertId = value
+		} else {
+			resolvedAlertId = rs.Primary.ID
+		}
+
 		ctx := context.Background()
-		gotAlert, _, err := acctest.SharedClient.IssueAlerts.Get(ctx, rs.Primary.Attributes["organization"], rs.Primary.Attributes["project"], rs.Primary.ID)
+		gotAlert, _, err := acctest.SharedClient.IssueAlerts.Get(ctx, rs.Primary.Attributes["organization"], rs.Primary.Attributes["project"], resolvedAlertId)
 		if err != nil {
 			return err
 		}

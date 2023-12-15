@@ -3,16 +3,21 @@
 page_title: "sentry_issue_alert Resource - terraform-provider-sentry"
 subcategory: ""
 description: |-
-  Create an Issue Alert Rule for a Project. See the [Sentry Documentation](https://docs.sentry.io/api/alerts/create-an-issue-alert-rule-for-a-project/) for more information.
-  
-          Please note that since v0.12.0, the attributes `conditions`, `filters`, and `actions` are in JSON string format. The types must match the Sentry API, otherwise Terraform will incorrectly detect a drift. Use `parseint("string", 10)` to convert a string to an integer. Avoid using `jsonencode()` as it is unable to disinguish between an integer and a float.
+  Create an Issue Alert Rule for a Project. See the Sentry Documentation https://docs.sentry.io/api/alerts/create-an-issue-alert-rule-for-a-project/ for more information.
+  Please note the following changes since v0.12.0:
+  - The attributes conditions, filters, and actions are in JSON string format. The types must match the Sentry API, otherwise Terraform will incorrectly detect a drift. Use parseint("string", 10) to convert a string to an integer. Avoid using jsonencode() as it is unable to disinguish between an integer and a float.
+  - The attribute internal_id has been removed. Use id instead.
+  - The attribute id is now the ID of the issue alert. Previously, it was a combination of the organization, project, and issue alert ID.
 ---
 
 # sentry_issue_alert (Resource)
 
 Create an Issue Alert Rule for a Project. See the [Sentry Documentation](https://docs.sentry.io/api/alerts/create-an-issue-alert-rule-for-a-project/) for more information.
-			
-			Please note that since v0.12.0, the attributes `conditions`, `filters`, and `actions` are in JSON string format. The types must match the Sentry API, otherwise Terraform will incorrectly detect a drift. Use `parseint("string", 10)` to convert a string to an integer. Avoid using `jsonencode()` as it is unable to disinguish between an integer and a float.
+
+Please note the following changes since v0.12.0:
+- The attributes `conditions`, `filters`, and `actions` are in JSON string format. The types must match the Sentry API, otherwise Terraform will incorrectly detect a drift. Use `parseint("string", 10)` to convert a string to an integer. Avoid using `jsonencode()` as it is unable to disinguish between an integer and a float.
+- The attribute `internal_id` has been removed. Use `id` instead.
+- The attribute `id` is now the ID of the issue alert. Previously, it was a combination of the organization, project, and issue alert ID.
 
 ## Example Usage
 

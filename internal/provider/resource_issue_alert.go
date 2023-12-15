@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/pkg/must"
 )
 
 var _ resource.Resource = &IssueAlertResource{}
@@ -66,22 +67,25 @@ func (m *IssueAlertResourceModel) Fill(organization string, alert sentry.IssueAl
 		delete(m, "name")
 	}
 
-	if conditions, err := json.Marshal(alert.Conditions); err == nil {
-		m.Conditions = jsontypes.NewNormalizedValue(string(conditions))
-	} else {
-		m.Conditions = jsontypes.NewNormalizedNull()
+	m.Conditions = jsontypes.NewNormalizedNull()
+	if len(alert.Conditions) > 0 {
+		if conditions, err := json.Marshal(alert.Conditions); err == nil {
+			m.Conditions = jsontypes.NewNormalizedValue(string(conditions))
+		}
 	}
 
-	if filters, err := json.Marshal(alert.Filters); err == nil {
-		m.Filters = jsontypes.NewNormalizedValue(string(filters))
-	} else {
-		m.Filters = jsontypes.NewNormalizedNull()
+	m.Filters = jsontypes.NewNormalizedNull()
+	if len(alert.Filters) > 0 {
+		if filters, err := json.Marshal(alert.Filters); err == nil {
+			m.Filters = jsontypes.NewNormalizedValue(string(filters))
+		}
 	}
 
-	if actions, err := json.Marshal(alert.Actions); err == nil {
-		m.Actions = jsontypes.NewNormalizedValue(string(actions))
-	} else {
-		m.Actions = jsontypes.NewNormalizedNull()
+	m.Actions = jsontypes.NewNormalizedNull()
+	if len(alert.Actions) > 0 {
+		if actions, err := json.Marshal(alert.Actions); err == nil && len(actions) > 0 {
+			m.Actions = jsontypes.NewNormalizedValue(string(actions))
+		}
 	}
 
 	frequency, err := alert.Frequency.Int64()
@@ -102,10 +106,12 @@ func (r *IssueAlertResource) Metadata(ctx context.Context, req resource.Metadata
 
 func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: `
-			Create an Issue Alert Rule for a Project. See the [Sentry Documentation](https://docs.sentry.io/api/alerts/create-an-issue-alert-rule-for-a-project/) for more information.
-			
-			Please note that since v0.12.0, the attributes ` + "`conditions`" + `, ` + "`filters`" + `, and ` + "`actions`" + ` are in JSON string format. The types must match the Sentry API, otherwise Terraform will incorrectly detect a drift. Use ` + "`parseint(\"string\", 10)`" + ` to convert a string to an integer. Avoid using ` + "`jsonencode()`" + ` as it is unable to disinguish between an integer and a float.
+		MarkdownDescription: `Create an Issue Alert Rule for a Project. See the [Sentry Documentation](https://docs.sentry.io/api/alerts/create-an-issue-alert-rule-for-a-project/) for more information.
+
+Please note the following changes since v0.12.0:
+- The attributes ` + "`conditions`" + `, ` + "`filters`" + `, and ` + "`actions`" + ` are in JSON string format. The types must match the Sentry API, otherwise Terraform will incorrectly detect a drift. Use ` + "`parseint(\"string\", 10)`" + ` to convert a string to an integer. Avoid using ` + "`jsonencode()`" + ` as it is unable to disinguish between an integer and a float.
+- The attribute ` + "`internal_id`" + ` has been removed. Use ` + "`id`" + ` instead.
+- The attribute ` + "`id`" + ` is now the ID of the issue alert. Previously, it was a combination of the organization, project, and issue alert ID.
 		`,
 
 		Version: 2,
@@ -216,9 +222,15 @@ func (r *IssueAlertResource) Create(ctx context.Context, req resource.CreateRequ
 		Environment: data.Environment.ValueStringPointer(),
 		Projects:    []string{data.Project.String()},
 	}
-	resp.Diagnostics.Append(data.Conditions.Unmarshal(&params.Conditions)...)
-	resp.Diagnostics.Append(data.Filters.Unmarshal(&params.Filters)...)
-	resp.Diagnostics.Append(data.Actions.Unmarshal(&params.Actions)...)
+	if !data.Conditions.IsNull() {
+		resp.Diagnostics.Append(data.Conditions.Unmarshal(&params.Conditions)...)
+	}
+	if !data.Filters.IsNull() {
+		resp.Diagnostics.Append(data.Filters.Unmarshal(&params.Filters)...)
+	}
+	if !data.Actions.IsNull() {
+		resp.Diagnostics.Append(data.Actions.Unmarshal(&params.Actions)...)
+	}
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -298,9 +310,15 @@ func (r *IssueAlertResource) Update(ctx context.Context, req resource.UpdateRequ
 		Environment: data.Environment.ValueStringPointer(),
 		Projects:    []string{data.Project.String()},
 	}
-	resp.Diagnostics.Append(data.Conditions.Unmarshal(&params.Conditions)...)
-	resp.Diagnostics.Append(data.Filters.Unmarshal(&params.Filters)...)
-	resp.Diagnostics.Append(data.Actions.Unmarshal(&params.Actions)...)
+	if !data.Conditions.IsNull() {
+		resp.Diagnostics.Append(data.Conditions.Unmarshal(&params.Conditions)...)
+	}
+	if !data.Filters.IsNull() {
+		resp.Diagnostics.Append(data.Filters.Unmarshal(&params.Filters)...)
+	}
+	if !data.Actions.IsNull() {
+		resp.Diagnostics.Append(data.Actions.Unmarshal(&params.Actions)...)
+	}
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -374,43 +392,139 @@ func (r *IssueAlertResource) ImportState(ctx context.Context, req resource.Impor
 }
 
 func (r *IssueAlertResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
+	type modelV0 struct {
+		Id           types.String `tfsdk:"id"`
+		Organization types.String `tfsdk:"organization"`
+		Project      types.String `tfsdk:"project"`
+		Name         types.String `tfsdk:"name"`
+		Conditions   types.List   `tfsdk:"conditions"`
+		Filters      types.List   `tfsdk:"filters"`
+		Actions      types.List   `tfsdk:"actions"`
+		ActionMatch  types.String `tfsdk:"action_match"`
+		FilterMatch  types.String `tfsdk:"filter_match"`
+		Frequency    types.Int64  `tfsdk:"frequency"`
+		Environment  types.String `tfsdk:"environment"`
+	}
+
 	return map[int64]resource.StateUpgrader{
 		0: {
 			StateUpgrader: func(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
-				var data IssueAlertResourceModel
-
-				resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-
-				if resp.Diagnostics.HasError() {
-					return
-				}
-
-				data.Id = types.StringValue(buildThreePartID(data.Organization.ValueString(), data.Project.ValueString(), data.Id.ValueString()))
-
-				resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+				// No-op
 			},
 		},
 		1: {
+			PriorSchema: &schema.Schema{
+				Attributes: map[string]schema.Attribute{
+					"id": schema.StringAttribute{
+						Computed: true,
+					},
+					"organization": schema.StringAttribute{
+						Required: true,
+					},
+					"project": schema.StringAttribute{
+						Required: true,
+					},
+					"name": schema.StringAttribute{
+						Required: true,
+					},
+					"conditions": schema.ListAttribute{
+						ElementType: types.MapType{
+							ElemType: types.StringType,
+						},
+						Required: true,
+					},
+					"filters": schema.ListAttribute{
+						ElementType: types.MapType{
+							ElemType: types.StringType,
+						},
+						Optional: true,
+					},
+					"actions": schema.ListAttribute{
+						ElementType: types.MapType{
+							ElemType: types.StringType,
+						},
+						Required: true,
+					},
+					"action_match": schema.StringAttribute{
+						Optional: true,
+					},
+					"filter_match": schema.StringAttribute{
+						Optional: true,
+					},
+					"frequency": schema.Int64Attribute{
+						Optional: true,
+					},
+					"environment": schema.StringAttribute{
+						Optional: true,
+					},
+				},
+			},
 			StateUpgrader: func(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
-				var data IssueAlertResourceModel
+				var priorStateData modelV0
 
-				resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+				resp.Diagnostics.Append(req.State.Get(ctx, &priorStateData)...)
 
 				if resp.Diagnostics.HasError() {
 					return
 				}
 
-				organization, project, alertId, err := splitThreePartID(data.Id.ValueString(), "organization", "project-slug", "alert-id")
+				organization, project, actionId, err := splitThreePartID(priorStateData.Id.ValueString(), "organization", "project-slug", "alert-id")
 				if err != nil {
 					resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Error parsing ID: %s", err.Error()))
 					return
 				}
 
-				data.Id = types.StringValue(alertId)
-				data.Organization = types.StringValue(organization)
-				data.Project = types.StringValue(project)
+				upgradedStateData := IssueAlertResourceModel{
+					Id:           types.StringValue(actionId),
+					Organization: types.StringValue(organization),
+					Project:      types.StringValue(project),
+					Name:         priorStateData.Name,
+					ActionMatch:  priorStateData.ActionMatch,
+					FilterMatch:  priorStateData.FilterMatch,
+					Frequency:    priorStateData.Frequency,
+					Environment:  priorStateData.Environment,
+				}
 
-				resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+				upgradedStateData.Conditions = jsontypes.NewNormalizedNull()
+				if !priorStateData.Conditions.IsNull() {
+					conditions := []map[string]string{}
+					resp.Diagnostics.Append(priorStateData.Conditions.ElementsAs(ctx, &conditions, false)...)
+					if resp.Diagnostics.HasError() {
+						return
+					}
+
+					if len(conditions) > 0 {
+						upgradedStateData.Conditions = jsontypes.NewNormalizedValue(string(must.Get(json.Marshal(conditions))))
+					}
+				}
+
+				upgradedStateData.Filters = jsontypes.NewNormalizedNull()
+				if !priorStateData.Filters.IsNull() {
+					filters := []map[string]string{}
+					resp.Diagnostics.Append(priorStateData.Filters.ElementsAs(ctx, &filters, false)...)
+					if resp.Diagnostics.HasError() {
+						return
+					}
+
+					if len(filters) > 0 {
+						upgradedStateData.Filters = jsontypes.NewNormalizedValue(string(must.Get(json.Marshal(filters))))
+					}
+				}
+
+				upgradedStateData.Actions = jsontypes.NewNormalizedNull()
+				if !priorStateData.Actions.IsNull() {
+					actions := []map[string]string{}
+					resp.Diagnostics.Append(priorStateData.Actions.ElementsAs(ctx, &actions, false)...)
+					if resp.Diagnostics.HasError() {
+						return
+					}
+
+					if len(actions) > 0 {
+						upgradedStateData.Actions = jsontypes.NewNormalizedValue(string(must.Get(json.Marshal(actions))))
+					}
+				}
+
+				resp.Diagnostics.Append(resp.State.Set(ctx, &upgradedStateData)...)
 			},
 		},
 	}
