@@ -106,10 +106,9 @@ EOT
 # Send a notification to a Member
 #
 
-resource "sentry_organization_member" "member" {
+data "sentry_organization_member" "member" {
   organization = data.sentry_organization.test.id
   email        = "test@example.com"
-  role         = "member"
 }
 
 resource "sentry_issue_alert" "member_alert" {
@@ -119,7 +118,7 @@ resource "sentry_issue_alert" "member_alert" {
     "id": "sentry.mail.actions.NotifyEmailAction",
     "targetType": "Member"
     "fallthroughType": "AllMembers"
-    "targetIdentifier": ${parseint(sentry_organization_member.member.internal_id, 10)}
+    "targetIdentifier": ${parseint(data.sentry_organization_member.member.id, 10)}
   }
 ]
 EOT

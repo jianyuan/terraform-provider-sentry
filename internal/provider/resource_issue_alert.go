@@ -102,7 +102,11 @@ func (r *IssueAlertResource) Metadata(ctx context.Context, req resource.Metadata
 
 func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Create an Issue Alert Rule for a Project. See the [Sentry Documentation](https://docs.sentry.io/api/alerts/create-an-issue-alert-rule-for-a-project/) for more information. Please note that the attributes `conditions`, `filters`, and `actions` are in JSON string format. The types must match the Sentry API, otherwise Terraform will incorrectly detect a diff. Use `parseint(\"string\", 10)` to convert a string to an integer.",
+		MarkdownDescription: `
+			Create an Issue Alert Rule for a Project. See the [Sentry Documentation](https://docs.sentry.io/api/alerts/create-an-issue-alert-rule-for-a-project/) for more information.
+			
+			Please note that since v0.12.0, the attributes ` + "`conditions`" + `, ` + "`filters`" + `, and ` + "`actions`" + ` are in JSON string format. The types must match the Sentry API, otherwise Terraform will incorrectly detect a drift. Use ` + "`parseint(\"string\", 10)`" + ` to convert a string to an integer. Avoid using ` + "`jsonencode()`" + ` as it is unable to disinguish between an integer and a float.
+		`,
 
 		Version: 2,
 

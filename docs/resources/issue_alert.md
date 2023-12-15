@@ -3,12 +3,16 @@
 page_title: "sentry_issue_alert Resource - terraform-provider-sentry"
 subcategory: ""
 description: |-
-  Create an Issue Alert Rule for a Project. See the Sentry Documentation https://docs.sentry.io/api/alerts/create-an-issue-alert-rule-for-a-project/ for more information. Please note that the attributes conditions, filters, and actions are in JSON string format. The types must match the Sentry API, otherwise Terraform will incorrectly detect a diff. Use parseint("string", 10) to convert a string to an integer.
+  Create an Issue Alert Rule for a Project. See the [Sentry Documentation](https://docs.sentry.io/api/alerts/create-an-issue-alert-rule-for-a-project/) for more information.
+  
+          Please note that since v0.12.0, the attributes `conditions`, `filters`, and `actions` are in JSON string format. The types must match the Sentry API, otherwise Terraform will incorrectly detect a drift. Use `parseint("string", 10)` to convert a string to an integer. Avoid using `jsonencode()` as it is unable to disinguish between an integer and a float.
 ---
 
 # sentry_issue_alert (Resource)
 
-Create an Issue Alert Rule for a Project. See the [Sentry Documentation](https://docs.sentry.io/api/alerts/create-an-issue-alert-rule-for-a-project/) for more information. Please note that the attributes `conditions`, `filters`, and `actions` are in JSON string format. The types must match the Sentry API, otherwise Terraform will incorrectly detect a diff. Use `parseint("string", 10)` to convert a string to an integer.
+Create an Issue Alert Rule for a Project. See the [Sentry Documentation](https://docs.sentry.io/api/alerts/create-an-issue-alert-rule-for-a-project/) for more information.
+			
+			Please note that since v0.12.0, the attributes `conditions`, `filters`, and `actions` are in JSON string format. The types must match the Sentry API, otherwise Terraform will incorrectly detect a drift. Use `parseint("string", 10)` to convert a string to an integer. Avoid using `jsonencode()` as it is unable to disinguish between an integer and a float.
 
 ## Example Usage
 
@@ -120,10 +124,9 @@ EOT
 # Send a notification to a Member
 #
 
-resource "sentry_organization_member" "member" {
+data "sentry_organization_member" "member" {
   organization = data.sentry_organization.test.id
   email        = "test@example.com"
-  role         = "member"
 }
 
 resource "sentry_issue_alert" "member_alert" {
@@ -133,7 +136,7 @@ resource "sentry_issue_alert" "member_alert" {
     "id": "sentry.mail.actions.NotifyEmailAction",
     "targetType": "Member"
     "fallthroughType": "AllMembers"
-    "targetIdentifier": ${parseint(sentry_organization_member.member.internal_id, 10)}
+    "targetIdentifier": ${parseint(data.sentry_organization_member.member.id, 10)}
   }
 ]
 EOT
