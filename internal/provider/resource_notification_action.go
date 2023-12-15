@@ -43,10 +43,21 @@ type NotificationActionResourceModel struct {
 }
 
 func (m *NotificationActionResourceModel) Fill(action sentry.NotificationAction, projectIdToSlugMap map[string]string) error {
-	m.Id = types.StringPointerValue((*string)(action.ID))
+	if action.ID == nil {
+		m.Id = types.StringNull()
+	} else {
+		m.Id = types.StringValue(action.ID.String())
+	}
+
 	m.TriggerType = types.StringPointerValue(action.TriggerType)
 	m.ServiceType = types.StringPointerValue(action.ServiceType)
-	m.IntegrationId = types.StringPointerValue((*string)(action.IntegrationId))
+
+	if action.IntegrationId == nil {
+		m.IntegrationId = types.StringNull()
+	} else {
+		m.IntegrationId = types.StringValue(action.IntegrationId.String())
+	}
+
 	switch targetIdentifier := action.TargetIdentifier.(type) {
 	case string:
 		m.TargetIdentifier = types.StringValue(targetIdentifier)
@@ -55,6 +66,7 @@ func (m *NotificationActionResourceModel) Fill(action sentry.NotificationAction,
 	case nil:
 		m.TargetIdentifier = types.StringNull()
 	}
+
 	m.TargetDisplay = types.StringPointerValue(action.TargetDisplay)
 
 	if len(action.Projects) > 0 {
@@ -152,6 +164,10 @@ func (r *NotificationActionResource) Create(ctx context.Context, req resource.Cr
 
 	projects := []string{}
 	resp.Diagnostics.Append(data.Projects.ElementsAs(ctx, &projects, false)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	action, _, err := r.client.NotificationActions.Create(
 		ctx,
 		data.Organization.ValueString(),
@@ -238,6 +254,10 @@ func (r *NotificationActionResource) Update(ctx context.Context, req resource.Up
 
 	projects := []string{}
 	resp.Diagnostics.Append(data.Projects.ElementsAs(ctx, &projects, false)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	action, apiResp, err := r.client.NotificationActions.Update(
 		ctx,
 		data.Organization.ValueString(),
