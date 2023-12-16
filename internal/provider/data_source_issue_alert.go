@@ -14,6 +14,7 @@ import (
 )
 
 var _ datasource.DataSource = &IssueAlertDataSource{}
+var _ datasource.DataSourceWithConfigure = &IssueAlertDataSource{}
 
 func NewIssueAlertDataSource() datasource.DataSource {
 	return &IssueAlertDataSource{}
