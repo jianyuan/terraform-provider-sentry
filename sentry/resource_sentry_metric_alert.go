@@ -353,7 +353,7 @@ func expandMetricAlertTriggerActions(actionList []interface{}) []*sentry.MetricA
 		}
 		if v, ok := actionMap["target_identifier"].(string); ok {
 			if v != "" {
-				action.TargetIdentifier = sentry.String(v)
+				action.TargetIdentifier = &sentry.Int64OrString{IsString: true, StringVal: v}
 			}
 		}
 		if v, ok := actionMap["input_channel_id"].(string); ok {
@@ -401,7 +401,13 @@ func flattenMetricAlertTriggerActions(actions []*sentry.MetricAlertTriggerAction
 		actionMap["id"] = action.ID
 		actionMap["type"] = action.Type
 		actionMap["target_type"] = action.TargetType
-		actionMap["target_identifier"] = action.TargetIdentifier
+		if action.TargetIdentifier != nil {
+			if action.TargetIdentifier.IsInt64 {
+				actionMap["target_identifier"] = action.TargetIdentifier.Int64Val
+			} else {
+				actionMap["target_identifier"] = action.TargetIdentifier.StringVal
+			}
+		}
 		actionMap["input_channel_id"] = action.InputChannelID
 		actionMap["integration_id"] = action.IntegrationID
 

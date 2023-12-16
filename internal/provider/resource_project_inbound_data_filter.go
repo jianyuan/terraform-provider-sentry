@@ -48,7 +48,7 @@ func (m *ProjectInboundDataFilterResourceModel) Fill(organization string, projec
 		m.Active = types.BoolValue(filter.Active.BoolVal)
 	} else {
 		subfilterElements := []attr.Value{}
-		for _, subfilter := range filter.Active.SliceVal {
+		for _, subfilter := range filter.Active.StringSliceVal {
 			subfilterElements = append(subfilterElements, types.StringValue(subfilter))
 		}
 
