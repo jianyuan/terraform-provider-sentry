@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -403,7 +404,7 @@ func flattenMetricAlertTriggerActions(actions []*sentry.MetricAlertTriggerAction
 		actionMap["target_type"] = action.TargetType
 		if action.TargetIdentifier != nil {
 			if action.TargetIdentifier.IsInt64 {
-				actionMap["target_identifier"] = action.TargetIdentifier.Int64Val
+				actionMap["target_identifier"] = strconv.FormatInt(action.TargetIdentifier.Int64Val, 10)
 			} else {
 				actionMap["target_identifier"] = action.TargetIdentifier.StringVal
 			}
