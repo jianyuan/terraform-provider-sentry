@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -17,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/pkg/must"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
 )
 
 var _ resource.Resource = &IssueAlertResource{}
@@ -32,18 +32,18 @@ type IssueAlertResource struct {
 }
 
 type IssueAlertResourceModel struct {
-	Id           types.String         `tfsdk:"id"`
-	Organization types.String         `tfsdk:"organization"`
-	Project      types.String         `tfsdk:"project"`
-	Name         types.String         `tfsdk:"name"`
-	Conditions   jsontypes.Normalized `tfsdk:"conditions"`
-	Filters      jsontypes.Normalized `tfsdk:"filters"`
-	Actions      jsontypes.Normalized `tfsdk:"actions"`
-	ActionMatch  types.String         `tfsdk:"action_match"`
-	FilterMatch  types.String         `tfsdk:"filter_match"`
-	Frequency    types.Int64          `tfsdk:"frequency"`
-	Environment  types.String         `tfsdk:"environment"`
-	Owner        types.String         `tfsdk:"owner"`
+	Id           types.String          `tfsdk:"id"`
+	Organization types.String          `tfsdk:"organization"`
+	Project      types.String          `tfsdk:"project"`
+	Name         types.String          `tfsdk:"name"`
+	Conditions   sentrytypes.LossyJson `tfsdk:"conditions"`
+	Filters      sentrytypes.LossyJson `tfsdk:"filters"`
+	Actions      sentrytypes.LossyJson `tfsdk:"actions"`
+	ActionMatch  types.String          `tfsdk:"action_match"`
+	FilterMatch  types.String          `tfsdk:"filter_match"`
+	Frequency    types.Int64           `tfsdk:"frequency"`
+	Environment  types.String          `tfsdk:"environment"`
+	Owner        types.String          `tfsdk:"owner"`
 }
 
 func (m *IssueAlertResourceModel) Fill(organization string, alert sentry.IssueAlert) error {
@@ -55,36 +55,30 @@ func (m *IssueAlertResourceModel) Fill(organization string, alert sentry.IssueAl
 	m.FilterMatch = types.StringPointerValue(alert.FilterMatch)
 	m.Owner = types.StringPointerValue(alert.Owner)
 
-	// Remove the name from the conditions, filters, and actions. They are added by the API.
-	// We do this to avoid a diff when the user updates the resource.
-	for _, m := range alert.Conditions {
-		delete(m, "name")
-	}
-	for _, m := range alert.Filters {
-		delete(m, "name")
-	}
-	for _, m := range alert.Actions {
-		delete(m, "name")
-	}
-
-	m.Conditions = jsontypes.NewNormalizedNull()
+	m.Conditions = sentrytypes.NewLossyJsonNull()
 	if len(alert.Conditions) > 0 {
 		if conditions, err := json.Marshal(alert.Conditions); err == nil {
-			m.Conditions = jsontypes.NewNormalizedValue(string(conditions))
+			m.Conditions = sentrytypes.NewLossyJsonValue(string(conditions))
+		} else {
+			return err
 		}
 	}
 
-	m.Filters = jsontypes.NewNormalizedNull()
+	m.Filters = sentrytypes.NewLossyJsonNull()
 	if len(alert.Filters) > 0 {
 		if filters, err := json.Marshal(alert.Filters); err == nil {
-			m.Filters = jsontypes.NewNormalizedValue(string(filters))
+			m.Filters = sentrytypes.NewLossyJsonValue(string(filters))
+		} else {
+			return err
 		}
 	}
 
-	m.Actions = jsontypes.NewNormalizedNull()
+	m.Actions = sentrytypes.NewLossyJsonNull()
 	if len(alert.Actions) > 0 {
 		if actions, err := json.Marshal(alert.Actions); err == nil && len(actions) > 0 {
-			m.Actions = jsontypes.NewNormalizedValue(string(actions))
+			m.Actions = sentrytypes.NewLossyJsonValue(string(actions))
+		} else {
+			return err
 		}
 	}
 
@@ -142,17 +136,17 @@ Please note the following changes since v0.12.0:
 			"conditions": schema.StringAttribute{
 				MarkdownDescription: "List of conditions. In JSON string format.",
 				Required:            true,
-				CustomType:          jsontypes.NormalizedType{},
+				CustomType:          sentrytypes.LossyJsonType{},
 			},
 			"filters": schema.StringAttribute{
 				MarkdownDescription: "A list of filters that determine if a rule fires after the necessary conditions have been met. In JSON string format.",
 				Optional:            true,
-				CustomType:          jsontypes.NormalizedType{},
+				CustomType:          sentrytypes.LossyJsonType{},
 			},
 			"actions": schema.StringAttribute{
 				MarkdownDescription: "List of actions. In JSON string format.",
 				Required:            true,
-				CustomType:          jsontypes.NormalizedType{},
+				CustomType:          sentrytypes.LossyJsonType{},
 			},
 			"action_match": schema.StringAttribute{
 				MarkdownDescription: "Trigger actions when an event is captured by Sentry and `any` or `all` of the specified conditions happen.",
@@ -485,7 +479,7 @@ func (r *IssueAlertResource) UpgradeState(ctx context.Context) map[int64]resourc
 					Environment:  priorStateData.Environment,
 				}
 
-				upgradedStateData.Conditions = jsontypes.NewNormalizedNull()
+				upgradedStateData.Conditions = sentrytypes.NewLossyJsonNull()
 				if !priorStateData.Conditions.IsNull() {
 					conditions := []map[string]string{}
 					resp.Diagnostics.Append(priorStateData.Conditions.ElementsAs(ctx, &conditions, false)...)
@@ -494,11 +488,11 @@ func (r *IssueAlertResource) UpgradeState(ctx context.Context) map[int64]resourc
 					}
 
 					if len(conditions) > 0 {
-						upgradedStateData.Conditions = jsontypes.NewNormalizedValue(string(must.Get(json.Marshal(conditions))))
+						upgradedStateData.Conditions = sentrytypes.NewLossyJsonValue(string(must.Get(json.Marshal(conditions))))
 					}
 				}
 
-				upgradedStateData.Filters = jsontypes.NewNormalizedNull()
+				upgradedStateData.Filters = sentrytypes.NewLossyJsonNull()
 				if !priorStateData.Filters.IsNull() {
 					filters := []map[string]string{}
 					resp.Diagnostics.Append(priorStateData.Filters.ElementsAs(ctx, &filters, false)...)
@@ -507,11 +501,11 @@ func (r *IssueAlertResource) UpgradeState(ctx context.Context) map[int64]resourc
 					}
 
 					if len(filters) > 0 {
-						upgradedStateData.Filters = jsontypes.NewNormalizedValue(string(must.Get(json.Marshal(filters))))
+						upgradedStateData.Filters = sentrytypes.NewLossyJsonValue(string(must.Get(json.Marshal(filters))))
 					}
 				}
 
-				upgradedStateData.Actions = jsontypes.NewNormalizedNull()
+				upgradedStateData.Actions = sentrytypes.NewLossyJsonNull()
 				if !priorStateData.Actions.IsNull() {
 					actions := []map[string]string{}
 					resp.Diagnostics.Append(priorStateData.Actions.ElementsAs(ctx, &actions, false)...)
@@ -520,7 +514,7 @@ func (r *IssueAlertResource) UpgradeState(ctx context.Context) map[int64]resourc
 					}
 
 					if len(actions) > 0 {
-						upgradedStateData.Actions = jsontypes.NewNormalizedValue(string(must.Get(json.Marshal(actions))))
+						upgradedStateData.Actions = sentrytypes.NewLossyJsonValue(string(must.Get(json.Marshal(actions))))
 					}
 				}
 
