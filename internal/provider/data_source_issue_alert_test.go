@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
 )
 
 func TestAccIssueAlertDataSource(t *testing.T) {
@@ -33,8 +33,8 @@ func TestAccIssueAlertDataSource(t *testing.T) {
 				return fmt.Errorf("resource %s not found", b)
 			}
 
-			given := jsontypes.NewNormalizedValue(resA.Primary.Attributes[attr])
-			expected := jsontypes.NewNormalizedValue(resB.Primary.Attributes[attr])
+			expected := sentrytypes.NewLossyJsonValue(resA.Primary.Attributes[attr])
+			given := sentrytypes.NewLossyJsonValue(resB.Primary.Attributes[attr])
 			match, diags := expected.StringSemanticEquals(context.Background(), given)
 			if !match {
 				return fmt.Errorf("expected %s, got %s: %s", expected, given, diags)

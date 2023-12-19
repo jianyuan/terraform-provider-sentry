@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
 )
 
 var _ datasource.DataSource = &IssueAlertDataSource{}
@@ -25,18 +25,18 @@ type IssueAlertDataSource struct {
 }
 
 type IssueAlertDataSourceModel struct {
-	Id           types.String         `tfsdk:"id"`
-	Organization types.String         `tfsdk:"organization"`
-	Project      types.String         `tfsdk:"project"`
-	Name         types.String         `tfsdk:"name"`
-	Conditions   jsontypes.Normalized `tfsdk:"conditions"`
-	Filters      jsontypes.Normalized `tfsdk:"filters"`
-	Actions      jsontypes.Normalized `tfsdk:"actions"`
-	ActionMatch  types.String         `tfsdk:"action_match"`
-	FilterMatch  types.String         `tfsdk:"filter_match"`
-	Frequency    types.Int64          `tfsdk:"frequency"`
-	Environment  types.String         `tfsdk:"environment"`
-	Owner        types.String         `tfsdk:"owner"`
+	Id           types.String          `tfsdk:"id"`
+	Organization types.String          `tfsdk:"organization"`
+	Project      types.String          `tfsdk:"project"`
+	Name         types.String          `tfsdk:"name"`
+	Conditions   sentrytypes.LossyJson `tfsdk:"conditions"`
+	Filters      sentrytypes.LossyJson `tfsdk:"filters"`
+	Actions      sentrytypes.LossyJson `tfsdk:"actions"`
+	ActionMatch  types.String          `tfsdk:"action_match"`
+	FilterMatch  types.String          `tfsdk:"filter_match"`
+	Frequency    types.Int64           `tfsdk:"frequency"`
+	Environment  types.String          `tfsdk:"environment"`
+	Owner        types.String          `tfsdk:"owner"`
 }
 
 func (m *IssueAlertDataSourceModel) Fill(organization string, alert sentry.IssueAlert) error {
@@ -48,34 +48,31 @@ func (m *IssueAlertDataSourceModel) Fill(organization string, alert sentry.Issue
 	m.FilterMatch = types.StringPointerValue(alert.FilterMatch)
 	m.Owner = types.StringPointerValue(alert.Owner)
 
-	// Remove the name from the conditions, filters, and actions. They are added by the API.
-	// We do this to avoid a diff when the user updates the resource.
-	for _, m := range alert.Conditions {
-		delete(m, "name")
-	}
-	for _, m := range alert.Filters {
-		delete(m, "name")
-	}
-	for _, m := range alert.Actions {
-		delete(m, "name")
+	m.Conditions = sentrytypes.NewLossyJsonNull()
+	if len(alert.Conditions) > 0 {
+		if conditions, err := json.Marshal(alert.Conditions); err == nil {
+			m.Conditions = sentrytypes.NewLossyJsonValue(string(conditions))
+		} else {
+			return err
+		}
 	}
 
-	if conditions, err := json.Marshal(alert.Conditions); err == nil {
-		m.Conditions = jsontypes.NewNormalizedValue(string(conditions))
-	} else {
-		m.Conditions = jsontypes.NewNormalizedNull()
+	m.Filters = sentrytypes.NewLossyJsonNull()
+	if len(alert.Filters) > 0 {
+		if filters, err := json.Marshal(alert.Filters); err == nil {
+			m.Filters = sentrytypes.NewLossyJsonValue(string(filters))
+		} else {
+			return err
+		}
 	}
 
-	if filters, err := json.Marshal(alert.Filters); err == nil {
-		m.Filters = jsontypes.NewNormalizedValue(string(filters))
-	} else {
-		m.Filters = jsontypes.NewNormalizedNull()
-	}
-
-	if actions, err := json.Marshal(alert.Actions); err == nil {
-		m.Actions = jsontypes.NewNormalizedValue(string(actions))
-	} else {
-		m.Actions = jsontypes.NewNormalizedNull()
+	m.Actions = sentrytypes.NewLossyJsonNull()
+	if len(alert.Actions) > 0 {
+		if actions, err := json.Marshal(alert.Actions); err == nil && len(actions) > 0 {
+			m.Actions = sentrytypes.NewLossyJsonValue(string(actions))
+		} else {
+			return err
+		}
 	}
 
 	frequency, err := alert.Frequency.Int64()
@@ -118,17 +115,17 @@ func (d *IssueAlertDataSource) Schema(ctx context.Context, req datasource.Schema
 			"conditions": schema.StringAttribute{
 				MarkdownDescription: "List of conditions. In JSON string format.",
 				Computed:            true,
-				CustomType:          jsontypes.NormalizedType{},
+				CustomType:          sentrytypes.LossyJsonType{},
 			},
 			"filters": schema.StringAttribute{
 				MarkdownDescription: "A list of filters that determine if a rule fires after the necessary conditions have been met. In JSON string format.",
 				Computed:            true,
-				CustomType:          jsontypes.NormalizedType{},
+				CustomType:          sentrytypes.LossyJsonType{},
 			},
 			"actions": schema.StringAttribute{
 				MarkdownDescription: "List of actions. In JSON string format.",
 				Computed:            true,
-				CustomType:          jsontypes.NormalizedType{},
+				CustomType:          sentrytypes.LossyJsonType{},
 			},
 			"action_match": schema.StringAttribute{
 				MarkdownDescription: "Trigger actions when an event is captured by Sentry and `any` or `all` of the specified conditions happen.",
