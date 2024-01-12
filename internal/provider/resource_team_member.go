@@ -1,15 +1,19 @@
 package provider
 
 import (
+	"cmp"
 	"context"
 	"fmt"
+	"slices"
 	"sync"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 )
@@ -28,19 +32,21 @@ type TeamMemberResource struct {
 }
 
 type TeamMemberResourceModel struct {
-	Id           types.String `tfsdk:"id"`
-	Organization types.String `tfsdk:"organization"`
-	MemberId     types.String `tfsdk:"member_id"`
-	Team         types.String `tfsdk:"team"`
-	Role         types.String `tfsdk:"role"`
+	Id            types.String `tfsdk:"id"`
+	Organization  types.String `tfsdk:"organization"`
+	MemberId      types.String `tfsdk:"member_id"`
+	Team          types.String `tfsdk:"team"`
+	Role          types.String `tfsdk:"role"`
+	EffectiveRole types.String `tfsdk:"effective_role"`
 }
 
-func (data *TeamMemberResourceModel) Fill(organization string, team string, memberId string, role string) error {
+func (data *TeamMemberResourceModel) Fill(organization string, team string, memberId string, role *string, effectiveRole string) error {
 	data.Id = types.StringValue(buildThreePartID(organization, team, memberId))
 	data.Organization = types.StringValue(organization)
 	data.MemberId = types.StringValue(memberId)
 	data.Team = types.StringValue(team)
-	data.Role = types.StringValue(role)
+	data.Role = types.StringPointerValue(role)
+	data.EffectiveRole = types.StringValue(effectiveRole)
 
 	return nil
 }
@@ -82,6 +88,13 @@ func (r *TeamMemberResource) Schema(ctx context.Context, req resource.SchemaRequ
 			"role": schema.StringAttribute{
 				Description: "The role of the member in the team. When not set, resolve to the minimum team role given by this member's organization role.",
 				Optional:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOf("contributor", "admin"),
+				},
+			},
+			"effective_role": schema.StringAttribute{
+				Description: "The effective role of the member in the team. This represents the highest role, determined by comparing the lower role assigned by the member's organizational role with the role assigned by the member's team role.",
+				Computed:    true,
 			},
 		},
 	}
@@ -107,70 +120,115 @@ func (r *TeamMemberResource) Configure(ctx context.Context, req resource.Configu
 	r.client = client
 }
 
-func (r *TeamMemberResource) readRole(ctx context.Context, organization string, memberId string, team string) (*string, error) {
-	r.roleMu.Lock()
-	defer r.roleMu.Unlock()
-
-	member, _, err := r.client.OrganizationMembers.Get(ctx, organization, memberId)
-	if err != nil {
-		return nil, fmt.Errorf("unable to read organization member, got error: %s", err)
+func getEffectiveOrgRole(memberOrgRoles []string, orgRoleList []sentry.OrganizationRoleListItem) *sentry.OrganizationRoleListItem {
+	orgRoleMap := make(map[string]struct {
+		index int
+		role  sentry.OrganizationRoleListItem
+	}, len(orgRoleList))
+	for i, role := range orgRoleList {
+		orgRoleMap[role.ID] = struct {
+			index int
+			role  sentry.OrganizationRoleListItem
+		}{
+			index: i,
+			role:  role,
+		}
 	}
+	memberOrgRolesCopy := make([]string, len(memberOrgRoles))
+	copy(memberOrgRolesCopy, memberOrgRoles)
 
-	teamRole := r.readTeamRole(member.TeamRoles, team)
-	if teamRole == nil {
-		return nil, fmt.Errorf("unable to find team member")
-	}
+	slices.SortFunc(memberOrgRolesCopy, func(i, j string) int {
+		return cmp.Compare(orgRoleMap[j].index, orgRoleMap[i].index)
+	})
 
-	return teamRole, nil
-}
-
-func (r *TeamMemberResource) readTeamRole(teamRoles []sentry.TeamRole, team string) *string {
-	for _, teamRole := range teamRoles {
-		if teamRole.TeamSlug == team {
-			return &teamRole.Role
+	if len(memberOrgRolesCopy) > 0 {
+		if orgRoleMap, ok := orgRoleMap[memberOrgRolesCopy[0]]; ok {
+			return &orgRoleMap.role
 		}
 	}
 
 	return nil
 }
 
-func (r *TeamMemberResource) updateRole(ctx context.Context, organization string, memberId string, team string, role string) (*string, error) {
+func hasOrgRoleOverwrite(orgRole *sentry.OrganizationRoleListItem, orgRoleList []sentry.OrganizationRoleListItem, teamRoleList []sentry.TeamRoleListItem) bool {
+	if orgRole == nil {
+		return false
+	}
+
+	teamRoleIndex := slices.IndexFunc(teamRoleList, func(teamRole sentry.TeamRoleListItem) bool {
+		return teamRole.ID == orgRole.MinimumTeamRole
+	})
+
+	return teamRoleIndex > 0
+}
+
+// Adapted from https://github.com/getsentry/sentry/blob/23.12.1/static/app/components/teamRoleSelect.tsx#L30-L69
+func (r *TeamMemberResource) getEffectiveTeamRole(ctx context.Context, organization string, memberId string, teamSlug string) (*string, error) {
 	r.roleMu.Lock()
 	defer r.roleMu.Unlock()
 
-	orgMember, _, err := r.client.OrganizationMembers.Get(ctx, organization, memberId)
+	org, _, err := r.client.Organizations.Get(ctx, organization)
+	if err != nil {
+		return nil, fmt.Errorf("unable to read organization, got error: %s", err)
+	}
+
+	team, _, err := r.client.Teams.Get(ctx, organization, teamSlug)
+	if err != nil {
+		return nil, fmt.Errorf("unable to read team, got error: %s", err)
+	}
+
+	member, _, err := r.client.OrganizationMembers.Get(ctx, organization, memberId)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read organization member, got error: %s", err)
 	}
 
-	teamRoles := make([]sentry.TeamRole, 0, len(orgMember.TeamRoles))
-	for _, teamRole := range orgMember.TeamRoles {
-		if teamRole.TeamSlug == team {
-			teamRole.Role = role
-		}
-		teamRoles = append(teamRoles, teamRole)
+	possibleOrgRoles := []string{member.OrgRole}
+	if team.OrgRole != nil {
+		possibleOrgRoles = append(possibleOrgRoles, sentry.StringValue(team.OrgRole))
 	}
 
-	orgMember, _, err = r.client.OrganizationMembers.Update(
-		ctx,
-		organization,
-		memberId,
-		&sentry.UpdateOrganizationMemberParams{
-			OrganizationRole: orgMember.OrganizationRole,
-			TeamRoles:        teamRoles,
-		},
-	)
+	effectiveOrgRole := getEffectiveOrgRole(possibleOrgRoles, org.OrgRoleList)
+
+	if hasOrgRoleOverwrite(effectiveOrgRole, org.OrgRoleList, org.TeamRoleList) {
+		teamRoleIndex := slices.IndexFunc(org.TeamRoleList, func(teamRole sentry.TeamRoleListItem) bool {
+			return teamRole.ID == effectiveOrgRole.MinimumTeamRole
+		})
+		if teamRoleIndex != -1 {
+			teamRole := org.TeamRoleList[teamRoleIndex]
+			return &teamRole.ID, nil
+		}
+	}
+
+	teamRoleIndex := slices.IndexFunc(member.TeamRoles, func(teamRole sentry.TeamRole) bool {
+		return teamRole.TeamSlug == teamSlug
+	})
+	if teamRoleIndex != -1 {
+		teamRole := member.TeamRoles[teamRoleIndex]
+		if teamRole.Role != nil {
+			return teamRole.Role, nil
+		}
+	}
+
+	teamRole := member.TeamRoleList[0]
+	return &teamRole.ID, nil
+}
+
+func (r *TeamMemberResource) updateRole(ctx context.Context, organization string, memberId string, team string, role string) (*string, error) {
+	r.roleMu.Lock()
+	defer r.roleMu.Unlock()
+
+	member, _, err := r.client.TeamMembers.Update(ctx, organization, memberId, team, &sentry.UpdateTeamMemberParams{
+		TeamRole: sentry.String(role),
+	})
 	if err != nil {
-		return nil, fmt.Errorf("unable to update organization member's team role, got error: %s", err)
+		return nil, fmt.Errorf("unable to read organization member, got error: %s", err)
 	}
 
-	for _, teamRole := range orgMember.TeamRoles {
-		if teamRole.TeamSlug == team {
-			return &teamRole.Role, nil
-		}
+	if !sentry.BoolValue(member.IsActive) {
+		return nil, fmt.Errorf("team member is not active")
 	}
 
-	return nil, fmt.Errorf("unable to find team member")
+	return member.TeamRole, nil
 }
 
 func (r *TeamMemberResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -183,7 +241,7 @@ func (r *TeamMemberResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	member, _, err := r.client.TeamMembers.Create(
+	_, _, err := r.client.TeamMembers.Create(
 		ctx,
 		data.Organization.ValueString(),
 		data.MemberId.ValueString(),
@@ -194,23 +252,28 @@ func (r *TeamMemberResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	var teamRole *string
-	if data.Role.IsNull() {
-		teamRole = member.TeamRole
-	} else {
-		teamRole, err = r.updateRole(ctx, data.Organization.ValueString(), data.MemberId.ValueString(), data.Team.ValueString(), data.Role.ValueString())
+	if !data.Role.IsNull() {
+		_, err = r.updateRole(ctx, data.Organization.ValueString(), data.MemberId.ValueString(), data.Team.ValueString(), data.Role.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read team member, got error: %s", err))
 			return
 		}
 	}
 
-	if teamRole == nil {
-		resp.Diagnostics.AddError("Client Error", "Unable to find team member")
+	effectiveRole, err := r.getEffectiveTeamRole(ctx, data.Organization.ValueString(), data.MemberId.ValueString(), data.Team.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read team member role, got error: %s", err))
+		resp.State.RemoveResource(ctx)
 		return
 	}
 
-	if err := data.Fill(data.Organization.ValueString(), data.Team.ValueString(), data.MemberId.ValueString(), *teamRole); err != nil {
+	if err := data.Fill(
+		data.Organization.ValueString(),
+		data.Team.ValueString(),
+		data.MemberId.ValueString(),
+		data.Role.ValueStringPointer(),
+		*effectiveRole,
+	); err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to fill team member, got error: %s", err))
 		return
 	}
@@ -229,14 +292,20 @@ func (r *TeamMemberResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	role, err := r.readRole(ctx, data.Organization.ValueString(), data.MemberId.ValueString(), data.Team.ValueString())
+	effectiveRole, err := r.getEffectiveTeamRole(ctx, data.Organization.ValueString(), data.MemberId.ValueString(), data.Team.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", err.Error())
 		resp.State.RemoveResource(ctx)
 		return
 	}
 
-	if err := data.Fill(data.Organization.ValueString(), data.Team.ValueString(), data.MemberId.ValueString(), *role); err != nil {
+	if err := data.Fill(
+		data.Organization.ValueString(),
+		data.Team.ValueString(),
+		data.MemberId.ValueString(),
+		data.Role.ValueStringPointer(),
+		*effectiveRole,
+	); err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to fill team member, got error: %s", err))
 		return
 	}
@@ -257,13 +326,26 @@ func (r *TeamMemberResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	// Update the role if it has changed
 	if !plan.Role.Equal(state.Role) {
-		role, err := r.updateRole(ctx, plan.Organization.ValueString(), plan.MemberId.ValueString(), plan.Team.ValueString(), plan.Role.ValueString())
+		_, err := r.updateRole(ctx, plan.Organization.ValueString(), plan.MemberId.ValueString(), plan.Team.ValueString(), plan.Role.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddError("Client Error", err.Error())
 			return
 		}
 
-		if err := state.Fill(plan.Organization.ValueString(), plan.Team.ValueString(), plan.MemberId.ValueString(), *role); err != nil {
+		effectiveRole, err := r.getEffectiveTeamRole(ctx, plan.Organization.ValueString(), plan.MemberId.ValueString(), plan.Team.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddError("Client Error", err.Error())
+			resp.State.RemoveResource(ctx)
+			return
+		}
+
+		if err := state.Fill(
+			plan.Organization.ValueString(),
+			plan.Team.ValueString(),
+			plan.MemberId.ValueString(),
+			plan.Role.ValueStringPointer(),
+			*effectiveRole,
+		); err != nil {
 			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to fill team member, got error: %s", err))
 			return
 		}

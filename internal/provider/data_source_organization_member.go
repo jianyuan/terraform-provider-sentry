@@ -31,7 +31,7 @@ func (m *OrganizationMemberDataSourceModel) Fill(organization string, d sentry.O
 	m.Id = types.StringValue(d.ID)
 	m.Organization = types.StringValue(organization)
 	m.Email = types.StringValue(d.Email)
-	m.Role = types.StringValue(d.OrganizationRole)
+	m.Role = types.StringValue(d.OrgRole)
 
 	return nil
 }
