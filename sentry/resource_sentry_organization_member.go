@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
@@ -38,6 +39,15 @@ func resourceSentryOrganizationMember() *schema.Resource {
 				Description: "This is the role of the organization member.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ValidateFunc: validation.StringInSlice(
+					[]string{
+						"billing",
+						"member",
+						"manager",
+						"owner",
+					},
+					false,
+				),
 			},
 			"internal_id": {
 				Description: "The internal ID for this organization membership.",
@@ -104,7 +114,7 @@ func resourceSentryOrganizationMemberRead(ctx context.Context, d *schema.Resourc
 		d.Set("organization", org),
 		d.Set("internal_id", member.ID),
 		d.Set("email", member.Email),
-		d.Set("role", member.OrganizationRole),
+		d.Set("role", member.OrgRole),
 		d.Set("expired", member.Expired),
 		d.Set("pending", member.Pending),
 	)

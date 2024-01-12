@@ -48,6 +48,7 @@ resource "sentry_team_member" "default" {
 
 ### Read-Only
 
+- `effective_role` (String) The effective role of the member in the team. This represents the highest role, determined by comparing the lower role assigned by the member's organizational role with the role assigned by the member's team role.
 - `id` (String) The ID of this resource.
 
 ## Import
