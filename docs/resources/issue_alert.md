@@ -423,7 +423,7 @@ resource "sentry_issue_alert" "notification_alert" {
     "id": "sentry.rules.actions.notify_event_sentry_app.NotifyEventSentryAppAction",
     "settings": [
         {"name": "title", "value": "Team Rocket"},
-        {"name": "summary", "value": "We're blasting off again."},
+        {"name": "summary", "value": "We're blasting off again."}
     ],
     "sentryAppInstallationUuid": 643522,
     "hasSchemaFormConfig": true
