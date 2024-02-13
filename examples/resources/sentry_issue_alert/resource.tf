@@ -73,12 +73,12 @@ EOT
   {
     "id": "sentry.rules.filters.tagged_event.TaggedEventFilter",
     "key": "level",
-    "match": "eq"
+    "match": "eq",
     "value": "error"
   },
   {
     "id": "sentry.rules.filters.level.LevelFilter",
-    "match": "gte"
+    "match": "gte",
     "level": "50"
   }
 ]
@@ -116,8 +116,8 @@ resource "sentry_issue_alert" "member_alert" {
 [
   {
     "id": "sentry.mail.actions.NotifyEmailAction",
-    "targetType": "Member"
-    "fallthroughType": "AllMembers"
+    "targetType": "Member",
+    "fallthroughType": "AllMembers",
     "targetIdentifier": ${parseint(data.sentry_organization_member.member.id, 10)}
   }
 ]
@@ -139,8 +139,8 @@ resource "sentry_issue_alert" "team_alert" {
 [
   {
     "id": "sentry.mail.actions.NotifyEmailAction",
-    "targetType": "Team"
-    "fallthroughType": "AllMembers"
+    "targetType": "Team",
+    "fallthroughType": "AllMembers",
     "targetIdentifier": ${parseint(data.sentry_team.team.internal_id, 10)}
   }
 ]
@@ -240,7 +240,7 @@ resource "sentry_issue_alert" "jira_alert" {
   {
     "id": "sentry.integrations.jira.notify_action.JiraCreateTicketAction",
     "integration": ${parseint(data.sentry_organization_integration.jira.id, 10)},
-    "project": "349719"
+    "project": "349719",
     "issueType": "1"
   }
 ]
@@ -265,7 +265,7 @@ resource "sentry_issue_alert" "jira_server_alert" {
   {
     "id": "sentry.integrations.jira_server.notify_action.JiraServerCreateTicketAction",
     "integration": ${parseint(data.sentry_organization_integration.jira_server.id, 10)},
-    "project": "349719"
+    "project": "349719",
     "issueType": "1"
   }
 ]
@@ -290,7 +290,7 @@ resource "sentry_issue_alert" "github_alert" {
   {
     "id": "sentry.integrations.github.notify_action.GitHubCreateTicketAction",
     "integration": ${parseint(data.sentry_organization_integration.github.id, 10)},
-    "repo": default,
+    "repo": "default",
     "title": "My Test Issue",
     "assignee": "Baxter the Hacker",
     "labels": ["bug", "p1"]
@@ -318,7 +318,7 @@ resource "sentry_issue_alert" "vsts_alert" {
     "id": "sentry.integrations.vsts.notify_action.AzureDevopsCreateTicketAction",
     "integration": ${parseint(data.sentry_organization_integration.vsts.id, 10)},
     "project": "0389485",
-    "work_item_type": "Microsoft.VSTS.WorkItemTypes.Task",
+    "work_item_type": "Microsoft.VSTS.WorkItemTypes.Task"
   }
 ]
 EOT
@@ -400,9 +400,9 @@ resource "sentry_issue_alert" "notification_alert" {
     "id": "sentry.rules.actions.notify_event_sentry_app.NotifyEventSentryAppAction",
     "settings": [
         {"name": "title", "value": "Team Rocket"},
-        {"name": "summary", "value": "We're blasting off again."},
+        {"name": "summary", "value": "We're blasting off again."}
     ],
-    "sentryAppInstallationUuid": 643522
+    "sentryAppInstallationUuid": 643522,
     "hasSchemaFormConfig": true
   }
 ]
