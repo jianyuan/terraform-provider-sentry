@@ -43,5 +43,3 @@ data "sentry_organization_integration" "slack" {
 
 - `id` (String) The ID of this resource.
 - `internal_id` (String, Deprecated) The internal ID for this organization integration. **Deprecated** Use `id` instead.
-
-

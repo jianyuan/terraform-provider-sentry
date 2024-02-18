@@ -42,5 +42,3 @@ resource "sentry_project_spike_protection" "default" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-
-

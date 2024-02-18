@@ -34,5 +34,3 @@ data "sentry_project" "default" {
 - `id` (String) The ID of this resource.
 - `internal_id` (String) The internal ID for this project.
 - `is_public` (Boolean)
-
-

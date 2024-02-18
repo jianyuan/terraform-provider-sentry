@@ -55,5 +55,3 @@ data "sentry_key" "first" {
 - `rate_limit_count` (Number) Number of events that can be reported within the rate limit window.
 - `rate_limit_window` (Number) Length of time that will be considered when checking the rate limit.
 - `secret` (String) Secret key portion of the client key.
-
-

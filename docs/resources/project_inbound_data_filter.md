@@ -57,5 +57,3 @@ resource "sentry_project_inbound_data_filter" "test" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-
-

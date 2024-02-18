@@ -60,5 +60,3 @@ resource "sentry_issue_alert" "copy" {
 - `frequency` (Number) Perform actions at most once every `X` minutes for this issue.
 - `name` (String) The issue alert name.
 - `owner` (String) The ID of the team or user that owns the rule.
-
-
