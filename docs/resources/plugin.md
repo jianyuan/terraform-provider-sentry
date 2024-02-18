@@ -42,5 +42,3 @@ resource "sentry_plugin" "default" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-
-

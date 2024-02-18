@@ -31,5 +31,3 @@ data "sentry_organization" "org" {
 - `id` (String) The ID of this resource.
 - `internal_id` (String) The internal ID for this organization.
 - `name` (String) The human readable name for this organization.
-
-
