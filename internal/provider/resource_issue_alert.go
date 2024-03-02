@@ -55,7 +55,7 @@ func (m *IssueAlertResourceModel) Fill(organization string, alert sentry.IssueAl
 	m.FilterMatch = types.StringPointerValue(alert.FilterMatch)
 	m.Owner = types.StringPointerValue(alert.Owner)
 
-	m.Conditions = sentrytypes.NewLossyJsonNull()
+	m.Conditions = sentrytypes.NewLossyJsonValue("[]")
 	if len(alert.Conditions) > 0 {
 		if conditions, err := json.Marshal(alert.Conditions); err == nil {
 			m.Conditions = sentrytypes.NewLossyJsonValue(string(conditions))

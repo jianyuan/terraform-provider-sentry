@@ -201,6 +201,63 @@ resource "sentry_issue_alert" "test" {
 	})
 }
 
+func TestAccIssueAlertResource_EmptyArray(t *testing.T) {
+	rn := "sentry_issue_alert.test"
+	team := acctest.RandomWithPrefix("tf-team")
+	project := acctest.RandomWithPrefix("tf-project")
+	alert := acctest.RandomWithPrefix("tf-issue-alert")
+	var alertId string
+
+	check := func(alert string) resource.TestCheckFunc {
+		return resource.ComposeTestCheckFunc(
+			testAccCheckIssueAlertExists(rn, &alertId),
+			resource.TestCheckResourceAttrWith(rn, "id", func(value string) error {
+				if alertId != value {
+					return fmt.Errorf("expected %s, got %s", alertId, value)
+				}
+				return nil
+			}),
+			resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
+			resource.TestCheckResourceAttr(rn, "project", project),
+			resource.TestCheckResourceAttr(rn, "name", alert),
+			resource.TestCheckResourceAttr(rn, "action_match", "any"),
+			resource.TestCheckResourceAttr(rn, "filter_match", "any"),
+			resource.TestCheckResourceAttr(rn, "frequency", "30"),
+			resource.TestCheckResourceAttrSet(rn, "conditions"),
+			resource.TestCheckResourceAttrSet(rn, "actions"),
+		)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckIssueAlertDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccIssueAlertConfigEmptyArray(team, project, alert),
+				Check:  check(alert),
+			},
+			{
+				Config: testAccIssueAlertConfigEmptyArray(team, project, alert+"-updated"),
+				Check:  check(alert + "-updated"),
+			},
+			{
+				ResourceName: rn,
+				ImportState:  true,
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources[rn]
+					if !ok {
+						return "", fmt.Errorf("not found: %s", rn)
+					}
+					return buildThreePartID(rs.Primary.Attributes["organization"], rs.Primary.Attributes["project"], rs.Primary.ID), nil
+				},
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"actions"},
+			},
+		},
+	})
+}
+
 func testAccCheckIssueAlertDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "sentry_issue_alert" {
@@ -250,6 +307,44 @@ func testAccCheckIssueAlertExists(n string, alertId *string) resource.TestCheckF
 		*alertId = sentry.StringValue(gotAlert.ID)
 		return nil
 	}
+}
+
+func testAccIssueAlertConfigEmptyArray(teamName string, projectName string, alertName string) string {
+	return testAccOrganizationDataSourceConfig + fmt.Sprintf(`
+resource "sentry_team" "test" {
+	organization = data.sentry_organization.test.id
+	name         = "%[1]s"
+	slug         = "%[1]s"
+}
+
+resource "sentry_project" "test" {
+	organization = sentry_team.test.organization
+	teams        = [sentry_team.test.id]
+	name         = "%[2]s"
+	platform     = "go"
+}
+
+resource "sentry_issue_alert" "test" {
+	organization = sentry_project.test.organization
+	project      = sentry_project.test.id
+	name         = "%[3]s"
+
+	action_match = "any"
+	filter_match = "any"
+	frequency    = 30
+
+	conditions = "[]"
+
+	actions = <<EOT
+[
+	{
+		"id": "sentry.mail.actions.NotifyEmailAction",
+		"targetType": "IssueOwners"
+	}
+]
+EOT
+}
+`, teamName, projectName, alertName)
 }
 
 func testAccIssueAlertConfig(teamName string, projectName string, alertName string) string {
