@@ -102,8 +102,11 @@ func (r *NotificationActionResource) Schema(ctx context.Context, req resource.Sc
 				Required:    true,
 			},
 			"trigger_type": schema.StringAttribute{
-				Description: "The type of trigger that will activate this action. Valid values are `spike_protection`.",
+				Description: "The type of trigger that will activate this action. Valid values are `spike-protection`.",
 				Required:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOf("spike-protection"),
+				},
 			},
 			"service_type": schema.StringAttribute{
 				Description: "The service that is used for sending the notification.",
