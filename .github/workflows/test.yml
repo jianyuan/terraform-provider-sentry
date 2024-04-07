@@ -66,6 +66,7 @@ jobs:
           - "1.4.*"
           - "1.5.*"
           - "1.6.*"
+          - "1.7.*"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
