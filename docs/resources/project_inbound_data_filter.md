@@ -52,7 +52,7 @@ resource "sentry_project_inbound_data_filter" "test" {
 ### Optional
 
 - `active` (Boolean) Toggle the browser-extensions, localhost, filtered-transaction, or web-crawlers filter on or off.
-- `subfilters` (List of String) Specifies which legacy browser filters should be active. Anything excluded from the list will be disabled. See the [Sentry documentation](https://docs.sentry.io/api/projects/update-an-inbound-data-filter/) for a list of available subfilters.
+- `subfilters` (Set of String) Specifies which legacy browser filters should be active. Anything excluded from the list will be disabled. See the [Sentry documentation](https://docs.sentry.io/api/projects/update-an-inbound-data-filter/) for a list of available subfilters.
 
 ### Read-Only
 
