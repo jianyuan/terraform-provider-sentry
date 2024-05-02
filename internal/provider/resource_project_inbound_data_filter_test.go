@@ -58,25 +58,28 @@ func TestAccProjectInboundDataFilterResource_LegacyBrowser(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccProjectInboundDataFilterConfig(team, project, filterId, "subfilters = [\"ie_pre_9\"]"),
+				Config: testAccProjectInboundDataFilterConfig(team, project, filterId, "subfilters = [\"android_pre_4\", \"ie_pre_9\"]"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
 					resource.TestCheckResourceAttr(rn, "project", project),
 					resource.TestCheckResourceAttr(rn, "filter_id", filterId),
 					resource.TestCheckNoResourceAttr(rn, "active"),
-					resource.TestCheckResourceAttr(rn, "subfilters.#", "1"),
-					resource.TestCheckResourceAttr(rn, "subfilters.0", "ie_pre_9"),
+					resource.TestCheckResourceAttr(rn, "subfilters.#", "2"),
+					resource.TestCheckResourceAttr(rn, "subfilters.0", "android_pre_4"),
+					resource.TestCheckResourceAttr(rn, "subfilters.1", "ie_pre_9"),
 				),
 			},
+			// NOTE: Intentionally not sorting subfilters to show that the order does not matter during import.
 			{
-				Config: testAccProjectInboundDataFilterConfig(team, project, filterId, "subfilters = [\"safari_pre_6\"]"),
+				Config: testAccProjectInboundDataFilterConfig(team, project, filterId, "subfilters = [\"safari_pre_6\", \"android_pre_4\"]"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
 					resource.TestCheckResourceAttr(rn, "project", project),
 					resource.TestCheckResourceAttr(rn, "filter_id", filterId),
 					resource.TestCheckNoResourceAttr(rn, "active"),
-					resource.TestCheckResourceAttr(rn, "subfilters.#", "1"),
+					resource.TestCheckResourceAttr(rn, "subfilters.#", "2"),
 					resource.TestCheckResourceAttr(rn, "subfilters.0", "safari_pre_6"),
+					resource.TestCheckResourceAttr(rn, "subfilters.1", "android_pre_4"),
 				),
 			},
 			{
