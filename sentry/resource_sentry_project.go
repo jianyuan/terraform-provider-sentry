@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/go-multierror"
@@ -13,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentryplatforms"
 )
 
 func resourceSentryProject() *schema.Resource {
@@ -62,7 +62,7 @@ func resourceSentryProject() *schema.Resource {
 				Computed:    true,
 			},
 			"platform": {
-				Description:      "The optional platform for this project.",
+				Description:      "The platform for this project. For a list of valid values, [see this page](https://github.com/jianyuan/terraform-provider-sentry/blob/main/internal/sentryplatforms/platforms.txt). Use `other` for platforms not listed.",
 				Type:             schema.TypeString,
 				Optional:         true,
 				Computed:         true,
@@ -377,32 +377,8 @@ func validatePlatform(i interface{}, path cty.Path) diag.Diagnostics {
 	var diagnostics diag.Diagnostics
 
 	v := i.(string)
-	if v == "other" {
+	if sentryplatforms.Validate(v) {
 		return nil
-	}
-
-	urls := []string{
-		fmt.Sprintf("https://docs.sentry.io/_platforms/%s.json", v),
-		fmt.Sprintf(
-			"https://docs.sentry.io/_platforms/%s.json",
-			strings.Replace(v, "-", "/", 1),
-		),
-	}
-
-	for _, url := range urls {
-		resp, err := http.Get(url)
-
-		if err != nil {
-			msg := "could not validate the platform at this time"
-			diagnostics = append(diagnostics, diag.Diagnostic{
-				Severity:      diag.Error,
-				Summary:       msg,
-				Detail:        msg,
-				AttributePath: path,
-			})
-		} else if resp.StatusCode == 200 {
-			return nil
-		}
 	}
 
 	msg := fmt.Sprintf("%s is not a valid platform", v)
