@@ -42,7 +42,7 @@ resource "sentry_project" "default" {
 - `default_rules` (Boolean) Whether to create a default issue alert. Defaults to true where the behavior is to alert the user on every new issue.
 - `digests_max_delay` (Number) The maximum amount of time (in seconds) to wait between scheduling digests for delivery.
 - `digests_min_delay` (Number) The minimum amount of time (in seconds) to wait between scheduling digests for delivery after the initial scheduling.
-- `platform` (String) The optional platform for this project.
+- `platform` (String) The platform for this project. For a list of valid values, [see this page](https://github.com/jianyuan/terraform-provider-sentry/blob/main/internal/sentryplatforms/platforms.txt). Use `other` for platforms not listed.
 - `resolve_age` (Number) Hours in which an issue is automatically resolve if not seen after this amount of time.
 - `slug` (String) The optional slug for this project.
 - `team` (String, Deprecated) The slug of the team to create the project for. **Deprecated** Use `teams` instead.
