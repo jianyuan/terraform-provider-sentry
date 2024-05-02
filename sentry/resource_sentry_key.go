@@ -50,7 +50,7 @@ func resourceSentryKey() *schema.Resource {
 			},
 			"project_id": {
 				Description: "The ID of the project that the key belongs to.",
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Computed:    true,
 			},
 			"is_active": {

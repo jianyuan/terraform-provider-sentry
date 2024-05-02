@@ -43,7 +43,7 @@ resource "sentry_key" "default" {
 - `dsn_secret` (String, Deprecated)
 - `id` (String) The ID of this resource.
 - `is_active` (Boolean) Flag indicating the key is active.
-- `project_id` (Number) The ID of the project that the key belongs to.
+- `project_id` (String) The ID of the project that the key belongs to.
 - `public` (String) Public key portion of the client key.
 - `secret` (String) Secret key portion of the client key.
 
