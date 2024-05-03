@@ -392,7 +392,7 @@ func validatePlatform(i interface{}, path cty.Path) diag.Diagnostics {
 }
 
 func removeDefaultKey(ctx context.Context, client *sentry.Client, organizationSlug string, projectSlug string) error {
-	listParams := &sentry.ListCursorParams{}
+	listParams := &sentry.ListProjectKeysParams{}
 
 	for {
 		keys, resp, err := client.ProjectKeys.List(ctx, organizationSlug, projectSlug, listParams)

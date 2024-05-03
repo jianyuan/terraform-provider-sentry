@@ -77,17 +77,18 @@ func dataSourceSentryKey() *schema.Resource {
 				Computed:    true,
 			},
 			"dsn_secret": {
-				Deprecated: "DSN (Deprecated) for the key.",
-				Type:       schema.TypeString,
-				Computed:   true,
+				Description: "Deprecated DSN includes a secret which is no longer required by newer SDK versions. If you are unsure which to use, follow installation instructions for your language.",
+				Deprecated:  "Deprecated DSN includes a secret which is no longer required by newer SDK versions. If you are unsure which to use, follow installation instructions for your language.",
+				Type:        schema.TypeString,
+				Computed:    true,
 			},
 			"dsn_public": {
-				Description: "DSN for the key.",
+				Description: "The DSN tells the SDK where to send the events to.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
 			"dsn_csp": {
-				Description: "DSN for the Content Security Policy (CSP) for the key.",
+				Description: "Security header endpoint for features like CSP and Expect-CT reports.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
@@ -106,7 +107,7 @@ func dataSourceSentryKeyRead(ctx context.Context, d *schema.ResourceData, meta i
 		"project": project,
 	})
 
-	listParams := &sentry.ListCursorParams{}
+	listParams := &sentry.ListProjectKeysParams{}
 	var allKeys []*sentry.ProjectKey
 	for {
 		keys, resp, err := client.ProjectKeys.List(ctx, org, project, listParams)

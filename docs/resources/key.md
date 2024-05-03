@@ -38,9 +38,9 @@ resource "sentry_key" "default" {
 
 ### Read-Only
 
-- `dsn_csp` (String) DSN for the Content Security Policy (CSP) for the key.
-- `dsn_public` (String) DSN for the key.
-- `dsn_secret` (String, Deprecated)
+- `dsn_csp` (String) Security header endpoint for features like CSP and Expect-CT reports.
+- `dsn_public` (String) The DSN tells the SDK where to send the events to.
+- `dsn_secret` (String, Deprecated) Deprecated DSN includes a secret which is no longer required by newer SDK versions. If you are unsure which to use, follow installation instructions for your language.
 - `id` (String) The ID of this resource.
 - `is_active` (Boolean) Flag indicating the key is active.
 - `project_id` (String) The ID of the project that the key belongs to.
