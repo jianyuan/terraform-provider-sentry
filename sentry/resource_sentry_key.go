@@ -2,6 +2,7 @@ package sentry
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -141,66 +142,38 @@ func resourceSentryKeyRead(ctx context.Context, d *schema.ResourceData, meta int
 		"project": project,
 	})
 
-	listParams := &sentry.ListCursorParams{}
-	var allKeys []*sentry.ProjectKey
-	for {
-		keys, resp, err := client.ProjectKeys.List(ctx, org, project, listParams)
-		if found, err := checkClientGet(resp, err, d); !found {
-			return diag.FromErr(err)
-		}
-		allKeys = append(allKeys, keys...)
-		if resp.Cursor == "" {
-			break
-		}
-		listParams.Cursor = resp.Cursor
-	}
-	tflog.Trace(ctx, "Read Sentry keys", map[string]interface{}{
-		"keyCount": len(allKeys),
-		"keys":     allKeys,
-	})
-
-	found := false
-
-	for _, key := range allKeys {
-		if key.ID == id {
-			tflog.Debug(ctx, "Found Sentry key", map[string]interface{}{
-				"keyID":   id,
-				"org":     org,
-				"project": project,
-			})
-			d.SetId(key.ID)
-			retErr := multierror.Append(
-				d.Set("name", key.Name),
-				d.Set("public", key.Public),
-				d.Set("secret", key.Secret),
-				d.Set("project_id", key.ProjectID),
-				d.Set("is_active", key.IsActive),
-				d.Set("dsn_secret", key.DSN.Secret),
-				d.Set("dsn_public", key.DSN.Public),
-				d.Set("dsn_csp", key.DSN.CSP),
-			)
-			if key.RateLimit != nil {
-				retErr = multierror.Append(
-					retErr,
-					d.Set("rate_limit_window", key.RateLimit.Window),
-					d.Set("rate_limit_count", key.RateLimit.Count),
-				)
+	key, _, err := client.ProjectKeys.Get(ctx, org, project, id)
+	if err != nil {
+		if sErr, ok := err.(*sentry.ErrorResponse); ok {
+			if sErr.Response.StatusCode == http.StatusNotFound {
+				tflog.Info(ctx, "Project client key not found", map[string]interface{}{"id": id})
+				d.SetId("")
+				return nil
 			}
-			if err := retErr.ErrorOrNil(); err != nil {
-				return diag.FromErr(err)
-			}
-
-			found = true
-
-			break
 		}
+		return diag.FromErr(err)
 	}
 
-	if !found {
-		tflog.Warn(ctx, "Sentry key could not be found...", map[string]interface{}{
-			"keyID": id,
-		})
-		d.SetId("")
+	d.SetId(key.ID)
+	retErr := multierror.Append(
+		d.Set("name", key.Name),
+		d.Set("public", key.Public),
+		d.Set("secret", key.Secret),
+		d.Set("project_id", key.ProjectID),
+		d.Set("is_active", key.IsActive),
+		d.Set("dsn_secret", key.DSN.Secret),
+		d.Set("dsn_public", key.DSN.Public),
+		d.Set("dsn_csp", key.DSN.CSP),
+	)
+	if key.RateLimit != nil {
+		retErr = multierror.Append(
+			retErr,
+			d.Set("rate_limit_window", key.RateLimit.Window),
+			d.Set("rate_limit_count", key.RateLimit.Count),
+		)
+	}
+	if err := retErr.ErrorOrNil(); err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil
