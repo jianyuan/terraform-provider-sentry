@@ -15,6 +15,7 @@ import (
 )
 
 var _ resource.Resource = &ProjectSpikeProtectionResource{}
+var _ resource.ResourceWithConfigure = &ProjectSpikeProtectionResource{}
 var _ resource.ResourceWithImportState = &ProjectSpikeProtectionResource{}
 
 func NewProjectSpikeProtectionResource() resource.Resource {
@@ -22,7 +23,7 @@ func NewProjectSpikeProtectionResource() resource.Resource {
 }
 
 type ProjectSpikeProtectionResource struct {
-	client *sentry.Client
+	baseResource
 }
 
 type ProjectSpikeProtectionResourceModel struct {
@@ -73,26 +74,6 @@ func (r *ProjectSpikeProtectionResource) Schema(ctx context.Context, req resourc
 			},
 		},
 	}
-}
-
-func (r *ProjectSpikeProtectionResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	// Prevent panic if the provider has not been configured.
-	if req.ProviderData == nil {
-		return
-	}
-
-	client, ok := req.ProviderData.(*sentry.Client)
-
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *sentry.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
-		)
-
-		return
-	}
-
-	r.client = client
 }
 
 func (r *ProjectSpikeProtectionResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

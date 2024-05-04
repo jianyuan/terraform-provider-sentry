@@ -21,6 +21,7 @@ import (
 )
 
 var _ resource.Resource = &NotificationActionResource{}
+var _ resource.ResourceWithConfigure = &NotificationActionResource{}
 var _ resource.ResourceWithImportState = &NotificationActionResource{}
 
 func NewNotificationActionResource() resource.Resource {
@@ -28,7 +29,7 @@ func NewNotificationActionResource() resource.Resource {
 }
 
 type NotificationActionResource struct {
-	client *sentry.Client
+	baseResource
 }
 
 type NotificationActionResourceModel struct {
@@ -134,26 +135,6 @@ func (r *NotificationActionResource) Schema(ctx context.Context, req resource.Sc
 			},
 		},
 	}
-}
-
-func (r *NotificationActionResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	// Prevent panic if the provider has not been configured.
-	if req.ProviderData == nil {
-		return
-	}
-
-	client, ok := req.ProviderData.(*sentry.Client)
-
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *sentry.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
-		)
-
-		return
-	}
-
-	r.client = client
 }
 
 func (r *NotificationActionResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

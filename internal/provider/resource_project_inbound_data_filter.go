@@ -19,6 +19,7 @@ import (
 )
 
 var _ resource.Resource = &ProjectInboundDataFilterResource{}
+var _ resource.ResourceWithConfigure = &ProjectInboundDataFilterResource{}
 var _ resource.ResourceWithImportState = &ProjectInboundDataFilterResource{}
 
 func NewProjectInboundDataFilterResource() resource.Resource {
@@ -26,7 +27,7 @@ func NewProjectInboundDataFilterResource() resource.Resource {
 }
 
 type ProjectInboundDataFilterResource struct {
-	client *sentry.Client
+	baseResource
 }
 
 type ProjectInboundDataFilterResourceModel struct {
@@ -107,26 +108,6 @@ func (r *ProjectInboundDataFilterResource) Schema(ctx context.Context, req resou
 			},
 		},
 	}
-}
-
-func (r *ProjectInboundDataFilterResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	// Prevent panic if the provider has not been configured.
-	if req.ProviderData == nil {
-		return
-	}
-
-	client, ok := req.ProviderData.(*sentry.Client)
-
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *sentry.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
-		)
-
-		return
-	}
-
-	r.client = client
 }
 
 func (r *ProjectInboundDataFilterResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

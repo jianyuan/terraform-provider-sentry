@@ -18,6 +18,7 @@ import (
 )
 
 var _ resource.Resource = &ProjectSymbolSourcesResource{}
+var _ resource.ResourceWithConfigure = &ProjectSymbolSourcesResource{}
 var _ resource.ResourceWithImportState = &ProjectSymbolSourcesResource{}
 
 func NewProjectSymbolSourcesResource() resource.Resource {
@@ -25,7 +26,7 @@ func NewProjectSymbolSourcesResource() resource.Resource {
 }
 
 type ProjectSymbolSourcesResource struct {
-	client *sentry.Client
+	baseResource
 }
 
 type ProjectSymbolSourcesResourceModel struct {
@@ -233,26 +234,6 @@ func (r *ProjectSymbolSourcesResource) Schema(ctx context.Context, req resource.
 			},
 		},
 	}
-}
-
-func (r *ProjectSymbolSourcesResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	// Prevent panic if the provider has not been configured.
-	if req.ProviderData == nil {
-		return
-	}
-
-	client, ok := req.ProviderData.(*sentry.Client)
-
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *sentry.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
-		)
-
-		return
-	}
-
-	r.client = client
 }
 
 func (r *ProjectSymbolSourcesResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
