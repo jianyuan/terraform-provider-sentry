@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -15,6 +16,7 @@ import (
 )
 
 var _ resource.Resource = &ClientKeyResource{}
+var _ resource.ResourceWithConfigValidators = &ClientKeyResource{}
 var _ resource.ResourceWithImportState = &ClientKeyResource{}
 
 func NewClientKeyResource() resource.Resource {
@@ -66,6 +68,15 @@ func (m *ClientKeyResourceModel) Fill(organization string, project string, key s
 
 func (r *ClientKeyResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_key"
+}
+
+func (d *ClientKeyResource) ConfigValidators(ctx context.Context) []resource.ConfigValidator {
+	return []resource.ConfigValidator{
+		resourcevalidator.RequiredTogether(
+			path.MatchRoot("rate_limit_window"),
+			path.MatchRoot("rate_limit_count"),
+		),
+	}
 }
 
 func (r *ClientKeyResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {

@@ -43,12 +43,12 @@ func TestAccClientKeyResource_MigrateFromPluginSDK(t *testing.T) {
 						VersionConstraint: "0.12.3",
 					},
 				},
-				Config:            testAccClientKeyConfig(teamName, projectName, keyName, ""),
+				Config:            testAccClientKeyResourceConfig(teamName, projectName, keyName, ""),
 				ConfigStateChecks: checks,
 			},
 			{
 				ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-				Config:                   testAccClientKeyConfig(teamName, projectName, keyName, ""),
+				Config:                   testAccClientKeyResourceConfig(teamName, projectName, keyName, ""),
 				ConfigStateChecks:        checks,
 			},
 		},
@@ -78,7 +78,7 @@ func TestAccClientKeyResource(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccClientKeyConfig(teamName, projectName, keyName, ""),
+				Config: testAccClientKeyResourceConfig(teamName, projectName, keyName, ""),
 				ConfigStateChecks: append(
 					checks,
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(keyName)),
@@ -87,7 +87,7 @@ func TestAccClientKeyResource(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccClientKeyConfig(teamName, projectName, keyName+"-renamed", ""),
+				Config: testAccClientKeyResourceConfig(teamName, projectName, keyName+"-renamed", ""),
 				ConfigStateChecks: append(
 					checks,
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(keyName+"-renamed")),
@@ -96,7 +96,7 @@ func TestAccClientKeyResource(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccClientKeyConfig(teamName, projectName, keyName+"-renamed", `
+				Config: testAccClientKeyResourceConfig(teamName, projectName, keyName+"-renamed", `
 					rate_limit_window = 1
 					rate_limit_count  = 2
 				`),
@@ -108,7 +108,7 @@ func TestAccClientKeyResource(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccClientKeyConfig(teamName, projectName, keyName+"-renamed", `
+				Config: testAccClientKeyResourceConfig(teamName, projectName, keyName+"-renamed", `
 					rate_limit_window = 3
 					rate_limit_count  = 4
 				`),
@@ -120,7 +120,7 @@ func TestAccClientKeyResource(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccClientKeyConfig(teamName, projectName, keyName+"-renamed", ""),
+				Config: testAccClientKeyResourceConfig(teamName, projectName, keyName+"-renamed", ""),
 				ConfigStateChecks: append(
 					checks,
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(keyName+"-renamed")),
@@ -147,8 +147,8 @@ func TestAccClientKeyResource(t *testing.T) {
 	})
 }
 
-func testAccClientKeyConfig(teamName, projectName, keyName, extras string) string {
-	return testAccProjectConfig(teamName, projectName) + fmt.Sprintf(`
+func testAccClientKeyResourceConfig(teamName, projectName, keyName, extras string) string {
+	return testAccProjectResourceConfig(teamName, projectName) + fmt.Sprintf(`
 resource "sentry_key" "test" {
 	organization = sentry_project.test.organization
 	project      = sentry_project.test.id

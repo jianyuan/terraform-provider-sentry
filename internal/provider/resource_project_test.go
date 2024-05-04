@@ -52,8 +52,8 @@ func init() {
 	})
 }
 
-func testAccProjectConfig(teamName, projectName string) string {
-	return testAccTeamConfig(teamName) + fmt.Sprintf(`
+func testAccProjectResourceConfig(teamName, projectName string) string {
+	return testAccTeamResourceConfig(teamName) + fmt.Sprintf(`
 resource "sentry_project" "test" {
 	organization = sentry_team.test.organization
 	teams        = [sentry_team.test.id]

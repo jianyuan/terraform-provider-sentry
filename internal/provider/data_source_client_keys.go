@@ -105,11 +105,11 @@ func (d *ClientKeysDataSource) Schema(ctx context.Context, req datasource.Schema
 							MarkdownDescription: "The secret key.",
 							Computed:            true,
 						},
-						"rate_limit_window": schema.NumberAttribute{
+						"rate_limit_window": schema.Int64Attribute{
 							MarkdownDescription: "Length of time that will be considered when checking the rate limit.",
 							Computed:            true,
 						},
-						"rate_limit_count": schema.NumberAttribute{
+						"rate_limit_count": schema.Int64Attribute{
 							MarkdownDescription: "Number of events that can be reported within the rate limit window.",
 							Computed:            true,
 						},
@@ -167,7 +167,7 @@ func (d *ClientKeysDataSource) Read(ctx context.Context, req datasource.ReadRequ
 	for {
 		keys, apiResp, err := d.client.ProjectKeys.List(ctx, data.Organization.ValueString(), data.Project.ValueString(), params)
 		if err != nil {
-			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read client keys, got error: %s", err))
+			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Read error: %s", err))
 			return
 		}
 
@@ -180,7 +180,7 @@ func (d *ClientKeysDataSource) Read(ctx context.Context, req datasource.ReadRequ
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), data.Project.ValueString(), allKeys); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error filling client keys: %s", err.Error()))
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Fill error: %s", err.Error()))
 		return
 	}
 
