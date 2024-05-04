@@ -19,6 +19,7 @@ import (
 )
 
 var _ resource.Resource = &TeamMemberResource{}
+var _ resource.ResourceWithConfigure = &TeamMemberResource{}
 var _ resource.ResourceWithImportState = &TeamMemberResource{}
 
 func NewTeamMemberResource() resource.Resource {
@@ -26,7 +27,7 @@ func NewTeamMemberResource() resource.Resource {
 }
 
 type TeamMemberResource struct {
-	client *sentry.Client
+	baseResource
 
 	roleMu sync.Mutex
 }
@@ -98,26 +99,6 @@ func (r *TeamMemberResource) Schema(ctx context.Context, req resource.SchemaRequ
 			},
 		},
 	}
-}
-
-func (r *TeamMemberResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	// Prevent panic if the provider has not been configured.
-	if req.ProviderData == nil {
-		return
-	}
-
-	client, ok := req.ProviderData.(*sentry.Client)
-
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *sentry.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
-		)
-
-		return
-	}
-
-	r.client = client
 }
 
 func getEffectiveOrgRole(memberOrgRoles []string, orgRoleList []sentry.OrganizationRoleListItem) *sentry.OrganizationRoleListItem {

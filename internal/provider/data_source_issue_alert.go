@@ -21,7 +21,7 @@ func NewIssueAlertDataSource() datasource.DataSource {
 }
 
 type IssueAlertDataSource struct {
-	client *sentry.Client
+	baseDataSource
 }
 
 type IssueAlertDataSourceModel struct {
@@ -149,26 +149,6 @@ func (d *IssueAlertDataSource) Schema(ctx context.Context, req datasource.Schema
 			},
 		},
 	}
-}
-
-func (d *IssueAlertDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	// Prevent panic if the provider has not been configured.
-	if req.ProviderData == nil {
-		return
-	}
-
-	client, ok := req.ProviderData.(*sentry.Client)
-
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Data Source Configure Type",
-			fmt.Sprintf("Expected *sentry.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
-		)
-
-		return
-	}
-
-	d.client = client
 }
 
 func (d *IssueAlertDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {

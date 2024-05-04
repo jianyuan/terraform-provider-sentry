@@ -16,6 +16,7 @@ import (
 )
 
 var _ resource.Resource = &ClientKeyResource{}
+var _ resource.ResourceWithConfigure = &ClientKeyResource{}
 var _ resource.ResourceWithConfigValidators = &ClientKeyResource{}
 var _ resource.ResourceWithImportState = &ClientKeyResource{}
 
@@ -24,7 +25,7 @@ func NewClientKeyResource() resource.Resource {
 }
 
 type ClientKeyResource struct {
-	client *sentry.Client
+	baseResource
 }
 
 type ClientKeyResourceModel struct {
@@ -137,26 +138,6 @@ func (r *ClientKeyResource) Schema(ctx context.Context, req resource.SchemaReque
 			},
 		},
 	}
-}
-
-func (r *ClientKeyResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	// Prevent panic if the provider has not been configured.
-	if req.ProviderData == nil {
-		return
-	}
-
-	client, ok := req.ProviderData.(*sentry.Client)
-
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Data Source Configure Type",
-			fmt.Sprintf("Expected *sentry.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
-		)
-
-		return
-	}
-
-	r.client = client
 }
 
 func (r *ClientKeyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

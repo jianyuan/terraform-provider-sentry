@@ -11,13 +11,14 @@ import (
 )
 
 var _ datasource.DataSource = &OrganizationIntegrationDataSource{}
+var _ datasource.DataSourceWithConfigure = &OrganizationIntegrationDataSource{}
 
 func NewOrganizationIntegrationDataSource() datasource.DataSource {
 	return &OrganizationIntegrationDataSource{}
 }
 
 type OrganizationIntegrationDataSource struct {
-	client *sentry.Client
+	baseDataSource
 }
 
 type OrganizationIntegrationDataSourceModel struct {
@@ -70,26 +71,6 @@ func (d *OrganizationIntegrationDataSource) Schema(ctx context.Context, req data
 			},
 		},
 	}
-}
-
-func (d *OrganizationIntegrationDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	// Prevent panic if the provider has not been configured.
-	if req.ProviderData == nil {
-		return
-	}
-
-	client, ok := req.ProviderData.(*sentry.Client)
-
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Data Source Configure Type",
-			fmt.Sprintf("Expected *sentry.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
-		)
-
-		return
-	}
-
-	d.client = client
 }
 
 func (d *OrganizationIntegrationDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {

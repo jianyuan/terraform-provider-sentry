@@ -18,7 +18,7 @@ func TestAccProjectSpikeProtectionResource(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccProjectSpikeProtectionConfig(team, project, true),
+				Config: testAccProjectSpikeProtectionResourceConfig(team, project, true),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
 					resource.TestCheckResourceAttr(rn, "project", project),
@@ -26,7 +26,7 @@ func TestAccProjectSpikeProtectionResource(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccProjectSpikeProtectionConfig(team, project, false),
+				Config: testAccProjectSpikeProtectionResourceConfig(team, project, false),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
 					resource.TestCheckResourceAttr(rn, "project", project),
@@ -42,7 +42,7 @@ func TestAccProjectSpikeProtectionResource(t *testing.T) {
 	})
 }
 
-func testAccProjectSpikeProtectionConfig(teamName string, projectName string, enabled bool) string {
+func testAccProjectSpikeProtectionResourceConfig(teamName string, projectName string, enabled bool) string {
 	return testAccOrganizationDataSourceConfig + fmt.Sprintf(`
 resource "sentry_team" "test" {
 	organization = data.sentry_organization.test.id
