@@ -3,12 +3,12 @@
 page_title: "sentry_key Resource - terraform-provider-sentry"
 subcategory: ""
 description: |-
-  Sentry Key resource.
+  Return a client key bound to a project.
 ---
 
 # sentry_key (Resource)
 
-Sentry Key resource.
+Return a client key bound to a project.
 
 ## Example Usage
 
@@ -27,9 +27,9 @@ resource "sentry_key" "default" {
 
 ### Required
 
-- `name` (String) The name of the key.
-- `organization` (String) The slug of the organization the key should be created for.
-- `project` (String) The slug of the project the key should be created for.
+- `name` (String) The name of the client key.
+- `organization` (String) The slug of the organization the resource belongs to.
+- `project` (String) The slug of the project the resource belongs to.
 
 ### Optional
 
@@ -40,12 +40,11 @@ resource "sentry_key" "default" {
 
 - `dsn_csp` (String) Security header endpoint for features like CSP and Expect-CT reports.
 - `dsn_public` (String) The DSN tells the SDK where to send the events to.
-- `dsn_secret` (String, Deprecated) Deprecated DSN includes a secret which is no longer required by newer SDK versions. If you are unsure which to use, follow installation instructions for your language.
+- `dsn_secret` (String) Deprecated DSN includes a secret which is no longer required by newer SDK versions. If you are unsure which to use, follow installation instructions for your language.
 - `id` (String) The ID of this resource.
-- `is_active` (Boolean) Flag indicating the key is active.
 - `project_id` (String) The ID of the project that the key belongs to.
-- `public` (String) Public key portion of the client key.
-- `secret` (String) Secret key portion of the client key.
+- `public` (String) The public key.
+- `secret` (String) The secret key.
 
 ## Import
 

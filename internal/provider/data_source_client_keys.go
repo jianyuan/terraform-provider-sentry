@@ -22,47 +22,11 @@ type ClientKeysDataSource struct {
 	client *sentry.Client
 }
 
-type ClientKeysDataSourceKeyModel struct {
-	Id              types.String `tfsdk:"id"`
-	Organization    types.String `tfsdk:"organization"`
-	Project         types.String `tfsdk:"project"`
-	ProjectId       types.String `tfsdk:"project_id"`
-	Name            types.String `tfsdk:"name"`
-	Public          types.String `tfsdk:"public"`
-	Secret          types.String `tfsdk:"secret"`
-	RateLimitWindow types.Int64  `tfsdk:"rate_limit_window"`
-	RateLimitCount  types.Int64  `tfsdk:"rate_limit_count"`
-	DsnPublic       types.String `tfsdk:"dsn_public"`
-	DsnSecret       types.String `tfsdk:"dsn_secret"`
-	DsnCsp          types.String `tfsdk:"dsn_csp"`
-}
-
-func (m *ClientKeysDataSourceKeyModel) Fill(organization string, project string, d sentry.ProjectKey) error {
-	m.Id = types.StringValue(d.ID)
-	m.Organization = types.StringValue(organization)
-	m.Project = types.StringValue(project)
-	m.ProjectId = types.StringValue(d.ProjectID.String())
-	m.Name = types.StringValue(d.Name)
-	m.Public = types.StringValue(d.Public)
-	m.Secret = types.StringValue(d.Secret)
-
-	if d.RateLimit != nil {
-		m.RateLimitWindow = types.Int64Value(int64(d.RateLimit.Window))
-		m.RateLimitCount = types.Int64Value(int64(d.RateLimit.Count))
-	}
-
-	m.DsnPublic = types.StringValue(d.DSN.Public)
-	m.DsnSecret = types.StringValue(d.DSN.Secret)
-	m.DsnCsp = types.StringValue(d.DSN.CSP)
-
-	return nil
-}
-
 type ClientKeysDataSourceModel struct {
-	Organization types.String                   `tfsdk:"organization"`
-	Project      types.String                   `tfsdk:"project"`
-	FilterStatus types.String                   `tfsdk:"filter_status"`
-	Keys         []ClientKeysDataSourceKeyModel `tfsdk:"keys"`
+	Organization types.String             `tfsdk:"organization"`
+	Project      types.String             `tfsdk:"project"`
+	FilterStatus types.String             `tfsdk:"filter_status"`
+	Keys         []ClientKeyResourceModel `tfsdk:"keys"`
 }
 
 func (m *ClientKeysDataSourceModel) Fill(organization string, project string, keys []*sentry.ProjectKey) error {
@@ -70,7 +34,7 @@ func (m *ClientKeysDataSourceModel) Fill(organization string, project string, ke
 	m.Project = types.StringValue(project)
 
 	for _, key := range keys {
-		var model ClientKeysDataSourceKeyModel
+		var model ClientKeyResourceModel
 		if err := model.Fill(organization, project, *key); err != nil {
 			return err
 		}

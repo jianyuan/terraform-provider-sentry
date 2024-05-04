@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"strings"
 
@@ -49,4 +50,15 @@ func init() {
 			return nil
 		},
 	})
+}
+
+func testAccProjectConfig(teamName, projectName string) string {
+	return testAccTeamConfig(teamName) + fmt.Sprintf(`
+resource "sentry_project" "test" {
+	organization = sentry_team.test.organization
+	teams        = [sentry_team.test.id]
+	name         = "%[1]s"
+	platform     = "go"
+}
+`, projectName)
 }
