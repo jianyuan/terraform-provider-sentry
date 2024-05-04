@@ -52,7 +52,7 @@ func init() {
 	})
 }
 
-func testAccTeamConfig(teamName string) string {
+func testAccTeamResourceConfig(teamName string) string {
 	return testAccOrganizationDataSourceConfig + fmt.Sprintf(`
 resource "sentry_team" "test" {
 	organization = data.sentry_organization.test.id

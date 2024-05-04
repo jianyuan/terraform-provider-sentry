@@ -11,9 +11,9 @@ import (
 )
 
 func TestAccClientKeysDataSource(t *testing.T) {
-	dn := "data.sentry_keys.test"
 	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")
+	rn := "data.sentry_keys.test"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
@@ -22,9 +22,9 @@ func TestAccClientKeysDataSource(t *testing.T) {
 			{
 				Config: testAccClientKeysDataSourceConfig(team, project),
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(dn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
-					statecheck.ExpectKnownValue(dn, tfjsonpath.New("project"), knownvalue.StringExact(project)),
-					statecheck.ExpectKnownValue(dn, tfjsonpath.New("keys"), knownvalue.ListExact([]knownvalue.Check{
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("project"), knownvalue.StringExact(project)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("keys"), knownvalue.ListExact([]knownvalue.Check{
 						knownvalue.MapExact(map[string]knownvalue.Check{
 							"id":                knownvalue.NotNull(),
 							"organization":      knownvalue.StringExact(acctest.TestOrganization),
@@ -47,7 +47,7 @@ func TestAccClientKeysDataSource(t *testing.T) {
 }
 
 func testAccClientKeysDataSourceConfig(teamName, projectName string) string {
-	return testAccProjectConfig(teamName, projectName) + `
+	return testAccProjectResourceConfig(teamName, projectName) + `
 data "sentry_keys" "test" {
 	organization = sentry_project.test.organization
 	project      = sentry_project.test.id

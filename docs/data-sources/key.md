@@ -3,16 +3,24 @@
 page_title: "sentry_key Data Source - terraform-provider-sentry"
 subcategory: ""
 description: |-
-  Sentry Key data source.
+  Retrieve a Project's Client Key.
 ---
 
 # sentry_key (Data Source)
 
-Sentry Key data source.
+Retrieve a Project's Client Key.
 
 ## Example Usage
 
 ```terraform
+# Retrieve a project key by id
+data "sentry_key" "default" {
+  organization = "my-organization"
+  project      = "web-app"
+
+  id = "73e6e1c04501397c0f87f36bf48f22ea"
+}
+
 # Retrieve a project key by name
 data "sentry_key" "default" {
   organization = "my-organization"
@@ -35,23 +43,22 @@ data "sentry_key" "first" {
 
 ### Required
 
-- `organization` (String) The slug of the organization the key should be created for.
-- `project` (String) The slug of the project the key should be created for.
+- `organization` (String) The slug of the organization the resource belongs to.
+- `project` (String) The slug of the project the resource belongs to.
 
 ### Optional
 
 - `first` (Boolean) Boolean flag indicating that we want the first key of the returned keys.
-- `name` (String) The name of the key to retrieve.
+- `id` (String) The ID of this resource.
+- `name` (String) The name of the client key.
 
 ### Read-Only
 
 - `dsn_csp` (String) Security header endpoint for features like CSP and Expect-CT reports.
 - `dsn_public` (String) The DSN tells the SDK where to send the events to.
-- `dsn_secret` (String, Deprecated) Deprecated DSN includes a secret which is no longer required by newer SDK versions. If you are unsure which to use, follow installation instructions for your language.
-- `id` (String) The ID of this resource.
-- `is_active` (Boolean) Flag indicating the key is active.
+- `dsn_secret` (String) Deprecated DSN includes a secret which is no longer required by newer SDK versions. If you are unsure which to use, follow installation instructions for your language.
 - `project_id` (String) The ID of the project that the key belongs to.
-- `public` (String) Public key portion of the client key.
+- `public` (String) The public key.
 - `rate_limit_count` (Number) Number of events that can be reported within the rate limit window.
 - `rate_limit_window` (Number) Length of time that will be considered when checking the rate limit.
-- `secret` (String) Secret key portion of the client key.
+- `secret` (String) The secret key.
