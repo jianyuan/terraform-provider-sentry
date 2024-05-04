@@ -1,7 +1,6 @@
 package provider
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -47,24 +46,11 @@ func TestAccClientKeysDataSource(t *testing.T) {
 	})
 }
 
-func testAccClientKeysDataSourceConfig(teamName string, projectName string) string {
-	return testAccOrganizationDataSourceConfig + fmt.Sprintf(`
-resource "sentry_team" "test" {
-	organization = data.sentry_organization.test.id
-	name         = "%[1]s"
-	slug         = "%[1]s"
-}
-
-resource "sentry_project" "test" {
-	organization = sentry_team.test.organization
-	teams        = [sentry_team.test.id]
-	name         = "%[2]s"
-	platform     = "go"
-}
-
+func testAccClientKeysDataSourceConfig(teamName, projectName string) string {
+	return testAccProjectConfig(teamName, projectName) + `
 data "sentry_keys" "test" {
 	organization = sentry_project.test.organization
 	project      = sentry_project.test.id
 }
-`, teamName, projectName)
+`
 }
