@@ -10,17 +10,17 @@ import (
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 )
 
-func TestAccClientKeysDataSource(t *testing.T) {
+func TestAccAllClientKeysDataSource(t *testing.T) {
 	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")
-	rn := "data.sentry_keys.test"
+	rn := "data.sentry_all_keys.test"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccClientKeysDataSourceConfig(team, project),
+				Config: testAccAllClientKeysDataSourceConfig(team, project),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("project"), knownvalue.StringExact(project)),
@@ -46,9 +46,9 @@ func TestAccClientKeysDataSource(t *testing.T) {
 	})
 }
 
-func testAccClientKeysDataSourceConfig(teamName, projectName string) string {
+func testAccAllClientKeysDataSourceConfig(teamName, projectName string) string {
 	return testAccProjectResourceConfig(teamName, projectName) + `
-data "sentry_keys" "test" {
+data "sentry_all_keys" "test" {
 	organization = sentry_project.test.organization
 	project      = sentry_project.test.id
 }

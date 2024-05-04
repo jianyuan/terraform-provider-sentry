@@ -12,25 +12,25 @@ import (
 	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
-var _ datasource.DataSource = &ClientKeysDataSource{}
-var _ datasource.DataSourceWithConfigure = &ClientKeysDataSource{}
+var _ datasource.DataSource = &AllClientKeysDataSource{}
+var _ datasource.DataSourceWithConfigure = &AllClientKeysDataSource{}
 
-func NewClientKeysDataSource() datasource.DataSource {
-	return &ClientKeysDataSource{}
+func NewAllClientKeysDataSource() datasource.DataSource {
+	return &AllClientKeysDataSource{}
 }
 
-type ClientKeysDataSource struct {
+type AllClientKeysDataSource struct {
 	baseDataSource
 }
 
-type ClientKeysDataSourceModel struct {
+type AllClientKeysDataSourceModel struct {
 	Organization types.String             `tfsdk:"organization"`
 	Project      types.String             `tfsdk:"project"`
 	FilterStatus types.String             `tfsdk:"filter_status"`
 	Keys         []ClientKeyResourceModel `tfsdk:"keys"`
 }
 
-func (m *ClientKeysDataSourceModel) Fill(organization string, project string, keys []*sentry.ProjectKey) error {
+func (m *AllClientKeysDataSourceModel) Fill(organization string, project string, keys []*sentry.ProjectKey) error {
 	m.Organization = types.StringValue(organization)
 	m.Project = types.StringValue(project)
 
@@ -46,11 +46,11 @@ func (m *ClientKeysDataSourceModel) Fill(organization string, project string, ke
 	return nil
 }
 
-func (d *ClientKeysDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_keys"
+func (d *AllClientKeysDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_all_keys"
 }
 
-func (d *ClientKeysDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *AllClientKeysDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "List a Project's Client Keys.",
 
@@ -133,8 +133,8 @@ func (d *ClientKeysDataSource) Schema(ctx context.Context, req datasource.Schema
 	}
 }
 
-func (d *ClientKeysDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data ClientKeysDataSourceModel
+func (d *AllClientKeysDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data AllClientKeysDataSourceModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
