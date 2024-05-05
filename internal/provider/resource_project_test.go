@@ -17,10 +17,10 @@ func init() {
 		F: func(r string) error {
 			ctx := context.Background()
 
-			listParams := &sentry.ListProjectsParams{}
+			listParams := &sentry.ListOrganizationProjectsParams{}
 
 			for {
-				projects, resp, err := acctest.SharedClient.Projects.List(ctx, listParams)
+				projects, resp, err := acctest.SharedClient.OrganizationProjects.List(ctx, acctest.TestOrganization, listParams)
 				if err != nil {
 					return err
 				}
