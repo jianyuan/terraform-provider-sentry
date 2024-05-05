@@ -28,6 +28,7 @@ data "sentry_projects" "default" {
 
 ### Read-Only
 
+- `project_slugs` (Set of String) The slugs of the projects.
 - `projects` (Attributes Set) The list of projects. (see [below for nested schema](#nestedatt--projects))
 
 <a id="nestedatt--projects"></a>
@@ -40,16 +41,5 @@ Read-Only:
 - `features` (Set of String) The features of this project.
 - `id` (String) The ID of this project.
 - `name` (String) The name of this project.
-- `organization` (Attributes) The organization associated with this project. (see [below for nested schema](#nestedatt--projects--organization))
 - `platform` (String) The platform of this project.
 - `slug` (String) The slug of this project.
-- `status` (String) The status of this project.
-
-<a id="nestedatt--projects--organization"></a>
-### Nested Schema for `projects.organization`
-
-Read-Only:
-
-- `id` (String) The ID of this organization.
-- `name` (String) The name of this organization.
-- `slug` (String) The slug of this organization.

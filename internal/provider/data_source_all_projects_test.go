@@ -12,32 +12,30 @@ import (
 )
 
 func TestAccAllProjectsDataSource(t *testing.T) {
-	dn := "data.sentry_all_projects.test"
-	team := acctest.RandomWithPrefix("tf-team")
-	project := acctest.RandomWithPrefix("tf-project")
+	teamName := acctest.RandomWithPrefix("tf-team")
+	projectName := acctest.RandomWithPrefix("tf-project")
+	rn := "data.sentry_all_projects.test"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccAllProjectsDataSourceConfig(team, project),
+				Config: testAccAllProjectsDataSourceConfig(teamName, projectName),
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(dn, tfjsonpath.New("projects"), knownvalue.ListPartial(map[int]knownvalue.Check{
-						0: knownvalue.ObjectExact(map[string]knownvalue.Check{
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("project_slugs"), knownvalue.SetPartial([]knownvalue.Check{
+						knownvalue.StringExact(projectName),
+					})),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("projects"), knownvalue.SetPartial([]knownvalue.Check{
+						knownvalue.ObjectExact(map[string]knownvalue.Check{
 							"id":           knownvalue.NotNull(),
-							"slug":         knownvalue.NotNull(),
-							"name":         knownvalue.NotNull(),
-							"platform":     knownvalue.NotNull(),
+							"slug":         knownvalue.StringExact(projectName),
+							"name":         knownvalue.StringExact(projectName),
+							"platform":     knownvalue.StringExact("go"),
 							"date_created": knownvalue.NotNull(),
 							"features":     knownvalue.NotNull(),
 							"color":        knownvalue.NotNull(),
-							"status":       knownvalue.NotNull(),
-							"organization": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"id":   knownvalue.NotNull(),
-								"slug": knownvalue.NotNull(),
-								"name": knownvalue.NotNull(),
-							}),
 						}),
 					})),
 				},
@@ -63,6 +61,8 @@ resource "sentry_project" "test" {
 
 data "sentry_all_projects" "test" {
 	organization = data.sentry_organization.test.slug
+
+	depends_on = [sentry_project.test]
 }
 `, teamName, projectName)
 }

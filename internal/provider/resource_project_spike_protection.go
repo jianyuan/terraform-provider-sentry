@@ -54,23 +54,23 @@ func (r *ProjectSpikeProtectionResource) Schema(ctx context.Context, req resourc
 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description: "The ID of this resource.",
-				Computed:    true,
+				MarkdownDescription: "The ID of this resource.",
+				Computed:            true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"organization": schema.StringAttribute{
-				Description: "The slug of the organization the project belongs to.",
-				Required:    true,
+				MarkdownDescription: "The slug of the organization the project belongs to.",
+				Required:            true,
 			},
 			"project": schema.StringAttribute{
-				Description: "The slug of the project to create the filter for.",
-				Required:    true,
+				MarkdownDescription: "The slug of the project to enable or disable spike protection for.",
+				Required:            true,
 			},
 			"enabled": schema.BoolAttribute{
-				Description: "Toggle the browser-extensions, localhost, filtered-transaction, or web-crawlers filter on or off.",
-				Required:    true,
+				MarkdownDescription: "Toggle the browser-extensions, localhost, filtered-transaction, or web-crawlers filter on or off.",
+				Required:            true,
 			},
 		},
 	}

@@ -23,15 +23,13 @@ type AllProjectsDataSource struct {
 }
 
 type AllProjectsDataSourceProjectModel struct {
-	Id           types.String      `tfsdk:"id"`
-	Slug         types.String      `tfsdk:"slug"`
-	Name         types.String      `tfsdk:"name"`
-	Platform     types.String      `tfsdk:"platform"`
-	DateCreated  types.String      `tfsdk:"date_created"`
-	Features     types.Set         `tfsdk:"features"`
-	Color        types.String      `tfsdk:"color"`
-	Status       types.String      `tfsdk:"status"`
-	Organization OrganizationModel `tfsdk:"organization"`
+	Id          types.String `tfsdk:"id"`
+	Slug        types.String `tfsdk:"slug"`
+	Name        types.String `tfsdk:"name"`
+	Platform    types.String `tfsdk:"platform"`
+	DateCreated types.String `tfsdk:"date_created"`
+	Features    types.Set    `tfsdk:"features"`
+	Color       types.String `tfsdk:"color"`
 }
 
 func (m *AllProjectsDataSourceProjectModel) Fill(project sentry.Project) error {
@@ -48,22 +46,24 @@ func (m *AllProjectsDataSourceProjectModel) Fill(project sentry.Project) error {
 	m.Features = types.SetValueMust(types.StringType, featureElements)
 
 	m.Color = types.StringValue(project.Color)
-	m.Status = types.StringValue(project.Status)
-	m.Organization = OrganizationModel{}
-	if err := m.Organization.Fill(project.Organization); err != nil {
-		return err
-	}
 
 	return nil
 }
 
 type AllProjectsDataSourceModel struct {
 	Organization types.String                        `tfsdk:"organization"`
+	ProjectSlugs types.Set                           `tfsdk:"project_slugs"`
 	Projects     []AllProjectsDataSourceProjectModel `tfsdk:"projects"`
 }
 
 func (m *AllProjectsDataSourceModel) Fill(organization string, projects []sentry.Project) error {
 	m.Organization = types.StringValue(organization)
+
+	projectSlugElements := []attr.Value{}
+	for _, project := range projects {
+		projectSlugElements = append(projectSlugElements, types.StringValue(project.Slug))
+	}
+	m.ProjectSlugs = types.SetValueMust(types.StringType, projectSlugElements)
 
 	for _, project := range projects {
 		p := AllProjectsDataSourceProjectModel{}
@@ -89,8 +89,14 @@ func (d *AllProjectsDataSource) Schema(ctx context.Context, req datasource.Schem
 				MarkdownDescription: "The slug of the organization the resource belongs to.",
 				Required:            true,
 			},
+			"project_slugs": schema.SetAttribute{
+				MarkdownDescription: "The slugs of the projects.",
+				Computed:            true,
+				ElementType:         types.StringType,
+			},
 			"projects": schema.SetNestedAttribute{
 				MarkdownDescription: "The list of projects.",
+				Computed:            true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"id": schema.StringAttribute{
@@ -122,31 +128,8 @@ func (d *AllProjectsDataSource) Schema(ctx context.Context, req datasource.Schem
 							MarkdownDescription: "The color of this project.",
 							Computed:            true,
 						},
-						"status": schema.StringAttribute{
-							MarkdownDescription: "The status of this project.",
-							Computed:            true,
-						},
-						"organization": schema.SingleNestedAttribute{
-							MarkdownDescription: "The organization associated with this project.",
-							Computed:            true,
-							Attributes: map[string]schema.Attribute{
-								"id": schema.StringAttribute{
-									MarkdownDescription: "The ID of this organization.",
-									Computed:            true,
-								},
-								"slug": schema.StringAttribute{
-									MarkdownDescription: "The slug of this organization.",
-									Computed:            true,
-								},
-								"name": schema.StringAttribute{
-									MarkdownDescription: "The name of this organization.",
-									Computed:            true,
-								},
-							},
-						},
 					},
 				},
-				Computed: true,
 			},
 		},
 	}
@@ -161,10 +144,10 @@ func (d *AllProjectsDataSource) Read(ctx context.Context, req datasource.ReadReq
 	}
 
 	var allProjects []sentry.Project
-	params := &sentry.ListProjectsParams{}
+	params := &sentry.ListOrganizationProjectsParams{}
 
 	for {
-		projects, apiResp, err := d.client.Projects.List(ctx, params)
+		projects, apiResp, err := d.client.OrganizationProjects.List(ctx, data.Organization.ValueString(), params)
 		if err != nil {
 			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Read error: %s", err))
 			return
