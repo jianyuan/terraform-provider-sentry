@@ -9,7 +9,7 @@ import (
 func GetProjectIdToSlugMap(ctx context.Context, client *sentry.Client) (map[string]string, error) {
 	projectMap := make(map[string]string)
 
-	listParams := &sentry.ListCursorParams{}
+	listParams := &sentry.ListProjectsParams{}
 
 	for {
 		projects, resp, err := client.Projects.List(ctx, listParams)

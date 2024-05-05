@@ -62,6 +62,7 @@ resource "sentry_project" "test" {
 }
 
 data "sentry_all_projects" "test" {
+	organization = data.sentry_organization.test.slug
 }
 `, teamName, projectName)
 }

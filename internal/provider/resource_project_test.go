@@ -17,7 +17,7 @@ func init() {
 		F: func(r string) error {
 			ctx := context.Background()
 
-			listParams := &sentry.ListCursorParams{}
+			listParams := &sentry.ListProjectsParams{}
 
 			for {
 				projects, resp, err := acctest.SharedClient.Projects.List(ctx, listParams)

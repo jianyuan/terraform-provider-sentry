@@ -58,10 +58,13 @@ func (m *AllProjectsDataSourceProjectModel) Fill(project sentry.Project) error {
 }
 
 type AllProjectsDataSourceModel struct {
-	Projects []AllProjectsDataSourceProjectModel `tfsdk:"projects"`
+	Organization types.String                        `tfsdk:"organization"`
+	Projects     []AllProjectsDataSourceProjectModel `tfsdk:"projects"`
 }
 
-func (m *AllProjectsDataSourceModel) Fill(projects []sentry.Project) error {
+func (m *AllProjectsDataSourceModel) Fill(organization string, projects []sentry.Project) error {
+	m.Organization = types.StringValue(organization)
+
 	for _, project := range projects {
 		p := AllProjectsDataSourceProjectModel{}
 		if err := p.Fill(project); err != nil {
@@ -82,6 +85,10 @@ func (d *AllProjectsDataSource) Schema(ctx context.Context, req datasource.Schem
 		MarkdownDescription: "Return a list of projects available to the authenticated session.",
 
 		Attributes: map[string]schema.Attribute{
+			"organization": schema.StringAttribute{
+				MarkdownDescription: "The slug of the organization the resource belongs to.",
+				Required:            true,
+			},
 			"projects": schema.SetNestedAttribute{
 				MarkdownDescription: "The list of projects.",
 				NestedObject: schema.NestedAttributeObject{
@@ -154,7 +161,7 @@ func (d *AllProjectsDataSource) Read(ctx context.Context, req datasource.ReadReq
 	}
 
 	var allProjects []sentry.Project
-	params := &sentry.ListCursorParams{}
+	params := &sentry.ListProjectsParams{}
 
 	for {
 		projects, apiResp, err := d.client.Projects.List(ctx, params)
@@ -173,7 +180,7 @@ func (d *AllProjectsDataSource) Read(ctx context.Context, req datasource.ReadReq
 		params.Cursor = apiResp.Cursor
 	}
 
-	if err := data.Fill(allProjects); err != nil {
+	if err := data.Fill(data.Organization.ValueString(), allProjects); err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Fill error: %s", err))
 		return
 	}
