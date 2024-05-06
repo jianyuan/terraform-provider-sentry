@@ -15,7 +15,7 @@ Manage a PagerDuty service integration.
 ```terraform
 # Retrieve the PagerDuty organization integration
 data "sentry_organization_integration" "pagerduty" {
-  organization = local.organization
+  organization = "my-organization"
 
   provider_key = "pagerduty"
   name         = "my-pagerduty-organization"
@@ -23,7 +23,7 @@ data "sentry_organization_integration" "pagerduty" {
 
 # Associate a PagerDuty service and integration key with a Sentry PagerDuty integration
 resource "sentry_integration_pagerduty" "test" {
-  organization   = local.organization
+  organization   = "my-organization"
   integration_id = data.sentry_organization_integration.pagerduty.id
 
   service         = "my-pagerduty-service"
