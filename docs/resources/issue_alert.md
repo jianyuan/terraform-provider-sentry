@@ -190,7 +190,8 @@ resource "sentry_issue_alert" "slack_alert" {
     "id": "sentry.integrations.slack.notify_action.SlackNotifyServiceAction",
     "workspace": ${parseint(data.sentry_organization_integration.slack.id, 10)},
     "channel": "#warning",
-    "tags": "environment,level"
+    "tags": "environment,level",
+    "notes": "Please <http://example.com|click here> for triage information"
   }
 ]
 EOT
