@@ -158,11 +158,6 @@ func (r *IntegrationPagerDuty) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	if len(configData.ServiceTable) != len(idsSeen)+1 {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Service table length mismatch: %d != %d", len(configData.ServiceTable), len(idsSeen)+1))
-		return
-	}
-
 	var found *IntegrationPagerDutyConfigDataServiceTableItem
 	for _, item := range configData.ServiceTable {
 		if _, ok := idsSeen[item.Id]; !ok {

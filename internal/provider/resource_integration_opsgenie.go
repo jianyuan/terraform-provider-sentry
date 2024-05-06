@@ -158,11 +158,6 @@ func (r *IntegrationOpsgenie) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	if len(configData.TeamTable) != len(idsSeen)+1 {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Service table length mismatch: %d != %d", len(configData.TeamTable), len(idsSeen)+1))
-		return
-	}
-
 	var found *IntegrationOpsgenieConfigDataTeamTableItem
 	for _, item := range configData.TeamTable {
 		if _, ok := idsSeen[item.Id]; !ok {
@@ -174,7 +169,7 @@ func (r *IntegrationOpsgenie) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	if found == nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Service table item not found: %s", data.Team.ValueString()))
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Team table item not found: %s", data.Team.ValueString()))
 		return
 	}
 
@@ -219,7 +214,7 @@ func (r *IntegrationOpsgenie) Read(ctx context.Context, req resource.ReadRequest
 		}
 	}
 	if found == nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Service table item not found: %s", data.IntegrationId.ValueString()))
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Team table item not found: %s", data.IntegrationId.ValueString()))
 		resp.State.RemoveResource(ctx)
 		return
 	}
@@ -264,7 +259,7 @@ func (r *IntegrationOpsgenie) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	if found == nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Service table item not found: %s", data.IntegrationId.ValueString()))
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Team table item not found: %s", data.IntegrationId.ValueString()))
 		resp.State.RemoveResource(ctx)
 		return
 	}
@@ -314,7 +309,7 @@ func (r *IntegrationOpsgenie) Update(ctx context.Context, req resource.UpdateReq
 		}
 	}
 	if found == nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Service table item not found: %s", data.IntegrationId.ValueString()))
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Team table item not found: %s", data.IntegrationId.ValueString()))
 		resp.State.RemoveResource(ctx)
 		return
 	}
