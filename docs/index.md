@@ -1,14 +1,12 @@
 ---
 page_title: "Official Sentry Terraform Provider"
 description: |-
-  The Terraform provider for Sentry allows teams to configure and update Sentry project parameters via their command line. This provider is built and maintained by a community developer and officially sponsored by Sentry.
+  Set up Sentry Team, Projects, Alerts, and more. This provider is maintained with [Sentry.io](https://sentry.io)'s sponsorship. Please add any bug reports/feature requests in the GitHub repo.
 ---
 
 # Official Sentry Terraform Provider
 
-The Sentry Terraform provider is an open-source project built and maintained by a community developer and officially sponsored by [Sentry](https://sentry.io).
-
-The Sentry Terraform provider allows your team to configure and update Sentry project parameters including Projects, Alerts (Issues & Transactions), Dashboards, Teams, and Organizations - programmatically. This helps you easily provision Sentry while also giving you the option to work from an interface you are already familiar with. If you have questions, feature requests, or issues you'd like to report, please [contact Sentry](https://help.sentry.io/) or click on 'report an issue' to the right.
+Set up Sentry Team, Projects, Alerts, and more. This provider is maintained with [Sentry.io](https://sentry.io)'s sponsorship. Please add any bug reports/feature requests in the [GitHub repo](https://github.com/jianyuan/terraform-provider-sentry/issues).
 
 This provider utilizes the [Web APIs](https://docs.sentry.io/api/) to interact with Sentry resources.
 
