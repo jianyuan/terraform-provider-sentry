@@ -43,7 +43,7 @@ func (p *SentryProvider) Schema(ctx context.Context, req provider.SchemaRequest,
 				Sensitive:           true,
 			},
 			"base_url": schema.StringAttribute{
-				MarkdownDescription: "The target Sentry Base API URL in the format `https://[hostname]/api/`. The default value is `https://sentry.io/api/`. The value must be provided when working with Sentry On-Premise. The value can be sourced from the `SENTRY_BASE_URL` environment variable.",
+				MarkdownDescription: "The target Sentry Base API URL follows the format `https://[hostname]/api/`. The default value is `https://sentry.io/api/`, which is an alias for `https://us.sentry.io/api/` (US data storage location). To change the data storage location to the EU, set the value to `https://de.sentry.io/api/`. This value is required for non-US storage locations or Sentry On-Premise deployments. The value can be sourced from the `SENTRY_BASE_URL` environment variable.",
 				Optional:            true,
 			},
 		},
