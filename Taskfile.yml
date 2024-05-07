@@ -1,0 +1,24 @@
+version: '3'
+
+tasks:
+  format:
+    cmds:
+      - go fmt ./...
+
+  test:
+    cmds:
+      - go test -v ./...
+
+  docs:
+    cmds:
+      - go generate
+
+  coverage-html:
+    cmds:
+      - go test -race -coverprofile=coverage.txt -covermode=atomic -coverpkg=./... ./...
+      - go tool cover -html=coverage.txt
+
+  coverage:
+    cmds:
+      - go test -race -coverprofile=coverage.txt -covermode=atomic -coverpkg=./... ./...
+      - go tool cover -func=coverage.txt
