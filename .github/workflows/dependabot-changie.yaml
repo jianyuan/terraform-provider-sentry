@@ -1,0 +1,36 @@
+name: Dependabot add changie file
+on:
+  pull_request:
+    types: [opened]
+
+permissions:
+  pull-requests: write
+  issues: write
+  repository-projects: write
+  contents: write
+
+jobs:
+  dependabot-changie:
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch Dependabot metadata
+        id: dependabot-metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Create change file
+        uses: miniscruff/changie-action@v2
+        with:
+          version: latest
+          args: new --body "${{ github.event.pull_request.title }}" --kind Dependency
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore(deps): add changelog for dependabot updates"
+          commit_user_name: "dependabot[bot]"
+          commit_user_email: "dependabot[bot]@users.noreply.github.com"
