@@ -2,6 +2,7 @@ package provider
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -29,7 +30,7 @@ func TestAccAllProjectsDataSource(t *testing.T) {
 					})),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("projects"), knownvalue.SetPartial([]knownvalue.Check{
 						knownvalue.ObjectExact(map[string]knownvalue.Check{
-							"id":           knownvalue.NotNull(),
+							"internal_id":  knownvalue.StringRegexp(regexp.MustCompile(`^\d+$`)),
 							"slug":         knownvalue.StringExact(projectName),
 							"name":         knownvalue.StringExact(projectName),
 							"platform":     knownvalue.StringExact("go"),

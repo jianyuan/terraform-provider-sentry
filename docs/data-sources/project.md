@@ -3,12 +3,12 @@
 page_title: "sentry_project Data Source - terraform-provider-sentry"
 subcategory: ""
 description: |-
-  Sentry Project data source.
+  Return a list of projects available to the authenticated session.
 ---
 
 # sentry_project (Data Source)
 
-Sentry Project data source.
+Return a list of projects available to the authenticated session.
 
 ## Example Usage
 
@@ -26,11 +26,16 @@ data "sentry_project" "default" {
 
 ### Required
 
-- `organization` (String) The slug of the organization the project belongs to.
-- `slug` (String) The unique URL slug for this project.
+- `organization` (String) The slug of the organization the resource belongs to.
+- `slug` (String) The slug of this project.
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
-- `internal_id` (String) The internal ID for this project.
-- `is_public` (Boolean)
+- `color` (String) The color of this project.
+- `date_created` (String) The date this project was created.
+- `features` (Set of String) The features of this project.
+- `id` (String) The slug of this project.
+- `internal_id` (String) The internal ID of this project.
+- `is_public` (Boolean) Whether this project is public.
+- `name` (String) The name of this project.
+- `platform` (String) The platform of this project.

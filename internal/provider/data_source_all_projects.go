@@ -23,7 +23,7 @@ type AllProjectsDataSource struct {
 }
 
 type AllProjectsDataSourceProjectModel struct {
-	Id          types.String `tfsdk:"id"`
+	InternalId  types.String `tfsdk:"internal_id"`
 	Slug        types.String `tfsdk:"slug"`
 	Name        types.String `tfsdk:"name"`
 	Platform    types.String `tfsdk:"platform"`
@@ -33,7 +33,7 @@ type AllProjectsDataSourceProjectModel struct {
 }
 
 func (m *AllProjectsDataSourceProjectModel) Fill(project sentry.Project) error {
-	m.Id = types.StringValue(project.ID)
+	m.InternalId = types.StringValue(project.ID)
 	m.Slug = types.StringValue(project.Slug)
 	m.Name = types.StringValue(project.Name)
 	m.Platform = types.StringValue(project.Platform)
@@ -99,8 +99,8 @@ func (d *AllProjectsDataSource) Schema(ctx context.Context, req datasource.Schem
 				Computed:            true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						"id": schema.StringAttribute{
-							MarkdownDescription: "The ID of this project.",
+						"internal_id": schema.StringAttribute{
+							MarkdownDescription: "The internal ID of this project.",
 							Computed:            true,
 						},
 						"slug": schema.StringAttribute{
