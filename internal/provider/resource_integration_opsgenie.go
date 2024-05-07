@@ -160,8 +160,8 @@ func (r *IntegrationOpsgenie) Create(ctx context.Context, req resource.CreateReq
 
 	var found *IntegrationOpsgenieConfigDataTeamTableItem
 	for _, item := range configData.TeamTable {
-		if _, ok := idsSeen[item.Id]; !ok {
-			if item.Team == data.Team.ValueString() && item.IntegrationKey == data.IntegrationKey.ValueString() {
+		if item.Team == data.Team.ValueString() && item.IntegrationKey == data.IntegrationKey.ValueString() {
+			if _, ok := idsSeen[item.Id]; !ok {
 				found = &item
 				break
 			}

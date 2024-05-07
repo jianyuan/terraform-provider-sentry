@@ -160,8 +160,8 @@ func (r *IntegrationPagerDuty) Create(ctx context.Context, req resource.CreateRe
 
 	var found *IntegrationPagerDutyConfigDataServiceTableItem
 	for _, item := range configData.ServiceTable {
-		if _, ok := idsSeen[item.Id]; !ok {
-			if item.Service == data.Service.ValueString() && item.IntegrationKey == data.IntegrationKey.ValueString() {
+		if item.Service == data.Service.ValueString() && item.IntegrationKey == data.IntegrationKey.ValueString() {
+			if _, ok := idsSeen[item.Id]; !ok {
 				found = &item
 				break
 			}
