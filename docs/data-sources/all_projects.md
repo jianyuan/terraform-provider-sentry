@@ -39,7 +39,7 @@ Read-Only:
 - `color` (String) The color of this project.
 - `date_created` (String) The date this project was created.
 - `features` (Set of String) The features of this project.
-- `id` (String) The ID of this project.
+- `internal_id` (String) The internal ID of this project.
 - `name` (String) The name of this project.
 - `platform` (String) The platform of this project.
 - `slug` (String) The slug of this project.
