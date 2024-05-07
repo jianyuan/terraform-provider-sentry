@@ -14,7 +14,7 @@ Return a list of projects available to the authenticated session.
 
 ```terraform
 # Retrieve a list of projects available to the authenticated user
-data "sentry_projects" "default" {
+data "sentry_all_projects" "default" {
   organization = "my-organization"
 }
 ```
