@@ -1,0 +1,70 @@
+# This GitHub action runs your tests for each commit push and/or PR. Optionally
+# you can turn it on using a cron schedule for regular testing.
+#
+name: Tests
+on:
+  pull_request:
+    paths-ignore:
+      - 'README.md'
+  push:
+    paths-ignore:
+      - 'README.md'
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+      - run: go generate ./...
+      - name: git diff
+        run: |
+          git diff --compact-summary --exit-code || \
+            (echo; echo "Unexpected difference in directories after code generation. Run 'go generate ./...' command and commit."; exit 1)
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+
+      - name: golangci-lint
+        continue-on-error: true
+        uses: golangci/golangci-lint-action@v3
+        with:
+          args: --issues-exit-code=0 --timeout=5m
+
+      - name: Run tests
+        run: go test -race -coverprofile=coverage.out -covermode=atomic -coverpkg=./... -v ./...
+
+      - name: Upload to codecov
+        uses: codecov/codecov-action@v3
+        with:
+          verbose: true
+
+  changie:
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Prepare release
+        uses: labd/changie-release-action@v0.2.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          release-workflow: 'release.yaml'
