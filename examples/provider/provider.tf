@@ -1,14 +1,17 @@
-# Configure the Sentry Provider for US data storage location (default)
+# Configure the Sentry Provider. Sentry will proxy most requests to the correct region based on the organization.
+# To avoid the overhead of the proxy, you can configure the provider to use a specific region.
+provider "sentry" {
+  token = var.sentry_auth_token
+}
+
+# Configure the Sentry Provider for the US region
 provider "sentry" {
   token = var.sentry_auth_token
 
-  # If you want to be explicit, you can specify the base URL for the US region.
-  # base_url = "https://us.sentry.io/api/"
-  # or
-  # base_url = "https://sentry.io/api/"
+  base_url = "https://us.sentry.io/api/"
 }
 
-# Configure the Sentry Provider for EU data storage location
+# Configure the Sentry Provider for the EU region
 provider "sentry" {
   token = var.sentry_auth_token
 

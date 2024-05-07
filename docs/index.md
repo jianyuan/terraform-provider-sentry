@@ -42,17 +42,20 @@ provider "sentry" {
 ## Example Usage
 
 ```terraform
-# Configure the Sentry Provider for US data storage location (default)
+# Configure the Sentry Provider. Sentry will proxy most requests to the correct region based on the organization.
+# To avoid the overhead of the proxy, you can configure the provider to use a specific region.
+provider "sentry" {
+  token = var.sentry_auth_token
+}
+
+# Configure the Sentry Provider for the US region
 provider "sentry" {
   token = var.sentry_auth_token
 
-  # If you want to be explicit, you can specify the base URL for the US region.
-  # base_url = "https://us.sentry.io/api/"
-  # or
-  # base_url = "https://sentry.io/api/"
+  base_url = "https://us.sentry.io/api/"
 }
 
-# Configure the Sentry Provider for EU data storage location
+# Configure the Sentry Provider for the EU region
 provider "sentry" {
   token = var.sentry_auth_token
 
@@ -73,7 +76,7 @@ provider "sentry" {
 
 ### Optional
 
-- `base_url` (String) The target Sentry Base API URL follows the format `https://[hostname]/api/`. The default value is `https://sentry.io/api/`, which is an alias for `https://us.sentry.io/api/` (US data storage location). To change the data storage location to the EU, set the value to `https://de.sentry.io/api/`. This value is required for non-US storage locations or Sentry On-Premise deployments. The value can be sourced from the `SENTRY_BASE_URL` environment variable.
+- `base_url` (String) The target Sentry Base API URL follows the format `https://[hostname]/api/`, and this URL must end with the `/api/` path, including the trailing slash. The default value is `https://sentry.io/api/`, which proxies most requests to the appropriate region based on your organization. To avoid additional round trips, it is preferable to set the region URL explicitly. Use `https://us.sentry.io/api/` for the US region and `https://de.sentry.io/api/` for the EU region. This value is required for Sentry On-Premise deployments and can be sourced from the `SENTRY_BASE_URL` environment variable.
 - `token` (String, Sensitive) The authentication token used to connect to Sentry. The value can be sourced from the `SENTRY_AUTH_TOKEN` environment variable.
 
 
