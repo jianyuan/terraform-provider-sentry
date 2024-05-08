@@ -30,10 +30,12 @@ type AllClientKeysDataSourceModel struct {
 	Keys         []ClientKeyResourceModel `tfsdk:"keys"`
 }
 
-func (m *AllClientKeysDataSourceModel) Fill(organization string, project string, keys []*sentry.ProjectKey) error {
+func (m *AllClientKeysDataSourceModel) Fill(organization string, project string, filterStatus *string, keys []*sentry.ProjectKey) error {
 	m.Organization = types.StringValue(organization)
 	m.Project = types.StringValue(project)
+	m.FilterStatus = types.StringPointerValue(filterStatus)
 
+	m.Keys = []ClientKeyResourceModel{}
 	for _, key := range keys {
 		var model ClientKeyResourceModel
 		if err := model.Fill(organization, project, *key); err != nil {
@@ -160,7 +162,7 @@ func (d *AllClientKeysDataSource) Read(ctx context.Context, req datasource.ReadR
 		params.Cursor = apiResp.Cursor
 	}
 
-	if err := data.Fill(data.Organization.ValueString(), data.Project.ValueString(), allKeys); err != nil {
+	if err := data.Fill(data.Organization.ValueString(), data.Project.ValueString(), data.FilterStatus.ValueStringPointer(), allKeys); err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Fill error: %s", err.Error()))
 		return
 	}
