@@ -138,6 +138,8 @@ github.com/jianyuan/go-sentry/v2 v2.7.1-0.20240505023158-b33f9fa02d13 h1:eZa5D/J
 github.com/jianyuan/go-sentry/v2 v2.7.1-0.20240505023158-b33f9fa02d13/go.mod h1:ZMSSWRuXbIwtoH4jg2ka9ZA8x3o3zC8nkTeeqq97G7g=
 github.com/jianyuan/go-sentry/v2 v2.7.1-0.20240505225549-2092363c6dad h1:EDHZoO16MSxoKUi2XDZPSyiMSuTdbGNUqCKJYAYsh5Y=
 github.com/jianyuan/go-sentry/v2 v2.7.1-0.20240505225549-2092363c6dad/go.mod h1:ZMSSWRuXbIwtoH4jg2ka9ZA8x3o3zC8nkTeeqq97G7g=
+github.com/jianyuan/go-sentry/v2 v2.8.0 h1:WwJ7m9jWgkBbU4n4Rm/XKeTSouz6+/0CqFib7KuKMgw=
+github.com/jianyuan/go-sentry/v2 v2.8.0/go.mod h1:ZMSSWRuXbIwtoH4jg2ka9ZA8x3o3zC8nkTeeqq97G7g=
 github.com/kevinburke/ssh_config v1.2.0 h1:x584FjTGwHzMwvHx18PXxbBVzfnxogHaAReU4gf13a4=
 github.com/kevinburke/ssh_config v1.2.0/go.mod h1:CT57kijsi8u/K/BOFA39wgDQJ9CxiF4nAY/ojJ6r6mM=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
