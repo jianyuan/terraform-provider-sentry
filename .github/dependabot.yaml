@@ -1,11 +1,10 @@
-
 version: 2
 updates:
   - package-ecosystem: "gomod"
     directory: "/"
     schedule:
       interval: "weekly"
-      day: friday
+      day: tuesday
     commit-message:
       prefix: "chore(deps)"
     groups:
@@ -17,7 +16,7 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-      day: friday
+      day: tuesday
     commit-message:
       prefix: "chore(deps)"
     groups:
