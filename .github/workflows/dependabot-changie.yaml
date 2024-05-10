@@ -1,7 +1,7 @@
 name: Dependabot add changie file
 on:
   pull_request:
-    types: [opened, edited]
+    types: [opened]
 
 permissions:
   pull-requests: write
