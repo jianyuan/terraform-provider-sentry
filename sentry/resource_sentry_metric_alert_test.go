@@ -35,6 +35,7 @@ func TestAccSentryMetricAlert_basic(t *testing.T) {
 			resource.TestCheckResourceAttr(rn, "time_window", "50"),
 			resource.TestCheckResourceAttr(rn, "threshold_type", "0"),
 			resource.TestCheckResourceAttr(rn, "resolve_threshold", "100"),
+			resource.TestCheckResourceAttr(rn, "comparison_delta", "100"),
 			resource.TestCheckResourceAttrPtr(rn, "internal_id", &alertID),
 		)
 	}
@@ -126,6 +127,7 @@ resource "sentry_metric_alert" "test" {
 	time_window       = 50.0
 	threshold_type    = 0
 	resolve_threshold = 100.0
+	comparison_delta  = 100.0
 
 	trigger {
 		action {
