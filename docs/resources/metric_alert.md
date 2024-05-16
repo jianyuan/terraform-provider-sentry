@@ -78,6 +78,7 @@ resource "sentry_metric_alert" "main" {
 
 ### Optional
 
+- `comparison_delta` (Number) An optional int representing the time delta to use as the comparison period, in minutes. Required when using a percentage change threshold
 - `dataset` (String) The Sentry Alert category
 - `environment` (String) Perform Alert rule in a specific environment
 - `event_types` (List of String) The events type of dataset.
