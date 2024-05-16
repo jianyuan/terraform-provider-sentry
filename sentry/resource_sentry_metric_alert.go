@@ -86,6 +86,11 @@ func resourceSentryMetricAlert() *schema.Resource {
 				Optional:    true,
 				Description: "The value at which the Alert rule resolves",
 			},
+			"comparison_delta": {
+				Type:        schema.TypeFloat,
+				Optional:    true,
+				Description: "An optional int representing the time delta to use as the comparison period, in minutes. Required when using a percentage change threshold",
+			},
 			"trigger": {
 				Type:     schema.TypeList,
 				Required: true,
@@ -189,6 +194,9 @@ func resourceSentryMetricAlertObject(d *schema.ResourceData) *sentry.MetricAlert
 	}
 	if v, ok := d.GetOk("resolve_threshold"); ok {
 		alert.ResolveThreshold = sentry.Float64(v.(float64))
+	}
+	if v, ok := d.GetOk("comparison_delta"); ok {
+		alert.ComparisonDelta = sentry.Float64(v.(float64))
 	}
 	if v, ok := d.GetOk("owner"); ok {
 		alert.Owner = sentry.String(v.(string))
