@@ -27,7 +27,7 @@ func NewProvider(version string) func() *schema.Provider {
 					Sensitive:   true,
 				},
 				"base_url": {
-					Description: "The target Sentry Base API URL follows the format `https://[hostname]/api/`, and this URL must end with the `/api/` path, including the trailing slash. The default value is `https://sentry.io/api/`, which proxies most requests to the appropriate region based on your organization. To avoid additional round trips, it is preferable to set the region URL explicitly. Use `https://us.sentry.io/api/` for the US region and `https://de.sentry.io/api/` for the EU region. This value is required for Sentry On-Premise deployments and can be sourced from the `SENTRY_BASE_URL` environment variable.",
+					Description: "The target Sentry Base API URL follows the format `https://[hostname]/api/`. The default value is `https://sentry.io/api/`, which is an alias for `https://us.sentry.io/api/` (US data storage location). To change the data storage location to the EU, set the value to `https://de.sentry.io/api/`. This value is required for non-US storage locations or Sentry On-Premise deployments. The value can be sourced from the `SENTRY_BASE_URL` environment variable.",
 					Type:        schema.TypeString,
 					Optional:    true,
 					DefaultFunc: schema.EnvDefaultFunc("SENTRY_BASE_URL", "https://sentry.io/api/"),
