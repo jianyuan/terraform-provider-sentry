@@ -20,14 +20,17 @@ func NewProvider(version string) func() *schema.Provider {
 		p := &schema.Provider{
 			Schema: map[string]*schema.Schema{
 				"token": {
-					Description: "The authentication token used to connect to Sentry. The value can be sourced from the `SENTRY_AUTH_TOKEN` environment variable.",
+					Description: "The authentication token used to connect to Sentry. The value can be sourced from " +
+						"the `SENTRY_AUTH_TOKEN` environment variable.",
 					Type:        schema.TypeString,
 					Optional:    true,
 					DefaultFunc: schema.MultiEnvDefaultFunc([]string{"SENTRY_AUTH_TOKEN", "SENTRY_TOKEN"}, nil),
 					Sensitive:   true,
 				},
 				"base_url": {
-					Description: "The target Sentry Base API URL follows the format `https://[hostname]/api/`. The default value is `https://sentry.io/api/`, which is an alias for `https://us.sentry.io/api/` (US data storage location). To change the data storage location to the EU, set the value to `https://de.sentry.io/api/`. This value is required for non-US storage locations or Sentry On-Premise deployments. The value can be sourced from the `SENTRY_BASE_URL` environment variable.",
+					Description: "The target Sentry Base API URL in the format `https://[hostname]/api/`. " +
+						"The default value is `https://sentry.io/api/`. The value must be provided when working with " +
+						"Sentry On-Premise. The value can be sourced from the `SENTRY_BASE_URL` environment variable.",
 					Type:        schema.TypeString,
 					Optional:    true,
 					DefaultFunc: schema.EnvDefaultFunc("SENTRY_BASE_URL", "https://sentry.io/api/"),
