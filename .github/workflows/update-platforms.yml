@@ -1,0 +1,30 @@
+name: update-platforms
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 * * * *"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
+          cache: true
+      - run: go generate ./internal/sentryplatforms
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: update-sentry-platforms
+          commit-message: Update list of valid Sentry platforms
+          title: Update Sentry platforms
+          body: |
+            This PR updates the list of valid Sentry platforms.
