@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"slices"
+	"strings"
 	"sync"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -275,8 +276,11 @@ func (r *TeamMemberResource) Read(ctx context.Context, req resource.ReadRequest,
 
 	effectiveRole, err := r.getEffectiveTeamRole(ctx, data.Organization.ValueString(), data.MemberId.ValueString(), data.Team.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", err.Error())
-		resp.State.RemoveResource(ctx)
+		if strings.Contains(err.Error(), "404 The requested resource does not exist") {
+			resp.State.RemoveResource(ctx)
+		} else {
+			resp.Diagnostics.AddError("Client Error", err.Error())
+		}
 		return
 	}
 
