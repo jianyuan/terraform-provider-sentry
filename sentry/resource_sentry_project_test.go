@@ -34,6 +34,8 @@ func TestAccSentryProject_basic(t *testing.T) {
 			resource.TestCheckResourceAttrSet(rn, "internal_id"),
 			resource.TestCheckResourceAttrPtr(rn, "internal_id", &projectID),
 			resource.TestCheckResourceAttrPair(rn, "project_id", rn, "internal_id"),
+			resource.TestCheckResourceAttr(rn, "allowed_domains.#", "1"),
+			resource.TestCheckResourceAttr(rn, "allowed_domains.0", "sentry.io"),
 		)
 		for _, teamName := range teamNames {
 			fs = resource.ComposeTestCheckFunc(fs, resource.TestCheckTypeSetElemAttr(rn, "teams.*", teamName))
@@ -90,6 +92,8 @@ func TestAccSentryProject_teamMigration(t *testing.T) {
 			resource.TestCheckResourceAttrSet(rn, "internal_id"),
 			resource.TestCheckResourceAttrPtr(rn, "internal_id", &projectID),
 			resource.TestCheckResourceAttrPair(rn, "project_id", rn, "internal_id"),
+			resource.TestCheckResourceAttr(rn, "allowed_domains.#", "1"),
+			resource.TestCheckResourceAttr(rn, "allowed_domains.0", "sentry.io"),
 		)
 		if team != "" {
 			fs = resource.ComposeTestCheckFunc(fs, resource.TestCheckResourceAttr(rn, "team", team))
@@ -444,10 +448,11 @@ resource "sentry_team" "test_%[1]d" {
 
 	config += fmt.Sprintf(`
 resource "sentry_project" "test" {
-	organization = sentry_team.test_0.organization
-	teams        = [%[2]s]
-	name         = "%[1]s"
-	platform     = "go"
+	organization    = sentry_team.test_0.organization
+	teams           = [%[2]s]
+	name            = "%[1]s"
+	platform        = "go"
+  allowed_domains = ["sentry.io"]
 }
 	`, projectName, strings.Join(teamSlugs, ", "))
 
