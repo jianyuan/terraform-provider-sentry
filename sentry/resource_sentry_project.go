@@ -133,13 +133,13 @@ func resourceSentryProject() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"allowed_domains": {
+      "allowed_domains": {
 				Description: "The set of domains allowed to report exceptions",
 				Type:        schema.TypeSet,
-				Elem: &schema.Schema{
+					Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Optional:      true,
+				Optional:   true,
 			},
 			// TODO: Project options
 		},
@@ -242,7 +242,7 @@ func resourceSentryProjectRead(ctx context.Context, d *schema.ResourceData, meta
 		d.Set("digests_max_delay", proj.DigestsMaxDelay),
 		d.Set("resolve_age", proj.ResolveAge),
 		d.Set("project_id", proj.ID), // Deprecated
-    d.Set("allowed_domains", proj.AllowedDomains),
+		d.Set("allowed_domains", proj.AllowedDomains),
 	)
 	if _, ok := d.GetOk("team"); ok {
 		retErr = multierror.Append(retErr, d.Set("team", proj.Team.Slug))
@@ -360,14 +360,14 @@ func resourceSentryProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 		}
 	}
 
-  if v, ok := d.GetOk("allowed_domains"); ok {
-    allowedDomainsSet := v.(*schema.Set)
-    allowedDomains := make([]string, allowedDomainsSet.Len())
-    for i, domain := range allowedDomainsSet.List() {
-      allowedDomains[i] = domain.(string)
-    }
-    params.AllowedDomains = allowedDomains
-  }
+	if v, ok := d.GetOk("allowed_domains"); ok {
+ 		allowedDomainsSet := v.(*schema.Set)
+		allowedDomains := make([]string, allowedDomainsSet.Len())
+		for i, domain := range allowedDomainsSet.List() {
+			allowedDomains[i] = domain.(string)
+		}
+		params.AllowedDomains = allowedDomains
+	}
 
 	return resourceSentryProjectRead(ctx, d, meta)
 }

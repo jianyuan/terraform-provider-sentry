@@ -452,7 +452,7 @@ resource "sentry_project" "test" {
 	teams           = [%[2]s]
 	name            = "%[1]s"
 	platform        = "go"
-  allowed_domains = ["sentry.io"]
+	allowed_domains = ["sentry.io"]
 }
 	`, projectName, strings.Join(teamSlugs, ", "))
 
