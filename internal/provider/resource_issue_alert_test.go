@@ -74,7 +74,7 @@ func TestAccIssueAlertResource_MigrateFromPluginSDK(t *testing.T) {
 	rn := "sentry_issue_alert.test"
 	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")
-	alert := acctest.RandomWithPrefix("tf-issue-alert")
+	alert := acctest.RandomWithPrefix("tf-issue-alert-with-a-very-looooong-name-greater-than-64-characters")
 	var alertId string
 
 	resource.Test(t, resource.TestCase{
