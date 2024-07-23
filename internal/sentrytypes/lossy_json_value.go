@@ -93,17 +93,22 @@ func decodeJson(s string) (interface{}, error) {
 func deepLossyEqual(v1, v2 interface{}) bool {
 	switch v1 := v1.(type) {
 	case bool:
-		v2, ok := v2.(bool)
-		if !ok {
+		switch v2 := v2.(type) {
+		case bool:
+			return v1 == v2
+		case nil:
+			return true
+		default:
 			return false
 		}
-		return v1 == v2
 	case json.Number:
 		switch v2 := v2.(type) {
 		case json.Number:
 			return v1.String() == v2.String()
 		case string:
 			return v1.String() == v2
+		case nil:
+			return true
 		default:
 			return false
 		}
@@ -113,51 +118,63 @@ func deepLossyEqual(v1, v2 interface{}) bool {
 			return v1 == v2.String()
 		case string:
 			return v1 == v2
+		case nil:
+			return true
 		default:
 			return false
 		}
 	case []interface{}:
-		v2, ok := v2.([]interface{})
-		if !ok {
-			return false
-		}
-
-		if len(v1) != len(v2) {
-			return false
-		}
-
-		for i := 0; i < len(v1); i++ {
-			if !deepLossyEqual(v1[i], v2[i]) {
+		switch v2 := v2.(type) {
+		case []interface{}:
+			if len(v1) != len(v2) {
 				return false
 			}
+			for i := 0; i < len(v1); i++ {
+				if !deepLossyEqual(v1[i], v2[i]) {
+					return false
+				}
+			}
+			return true
+		case nil:
+			return len(v1) == 0
+		default:
+			return false
 		}
-
-		return true
 	case map[string]interface{}:
-		v2, ok := v2.(map[string]interface{})
-		if !ok {
-			return false
-		}
-
-		if len(v1) > len(v2) {
-			return false
-		}
-
-		// Check that all keys in v1 are in v2 but not the other way around (lossy)
-		for k := range v1 {
-			v2Val, ok := v2[k]
-			if !ok {
-				return false
+		switch v2 := v2.(type) {
+		case map[string]interface{}:
+			// Check if all keys in v1 are in v2
+			for k := range v1 {
+				if !deepLossyEqual(v1[k], v2[k]) {
+					return false
+				}
 			}
 
-			if !deepLossyEqual(v1[k], v2Val) {
-				return false
+			// Check if all keys in v2 are in v1
+			for k := range v2 {
+				if !deepLossyEqual(v2[k], v1[k]) {
+					return false
+				}
 			}
+			return true
+		case nil:
+			return len(v1) == 0
+		default:
+			return false
 		}
-
-		return true
 	case nil:
-		return v2 == nil
+		switch v2 := v2.(type) {
+		case string:
+			return v2 == ""
+		case []interface{}:
+			return len(v2) == 0
+		case map[string]interface{}:
+			return len(v2) == 0
+		case nil:
+			return true
+		default:
+			return false
+		}
 	default:
 		panic(fmt.Sprintf("unexpected type %T", v1))
 	}

@@ -389,6 +389,7 @@ resource "sentry_issue_alert" "test" {
 		"id": "sentry.rules.conditions.event_frequency.EventUniqueUserFrequencyCondition",
 		"value": 100,
 		"comparisonType": "count",
+		"comparisonInterval": "",
 		"interval": "1h"
 	},
 	{

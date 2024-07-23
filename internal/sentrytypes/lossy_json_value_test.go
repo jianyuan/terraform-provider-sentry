@@ -145,15 +145,16 @@ func TestLossyJsonStringSemanticEquals(t *testing.T) {
 			givenJson:     NewLossyJsonValue(`[{"hello": "world"}, {"nums":[1, 2, 3]}, {"nested": {"test-bool": true}}]`),
 			expectedMatch: true,
 		},
-		"not equal (lossy) - object missing field": {
-			currentJson:   NewLossyJsonValue(`[{"hello": "world"}, {"nums":[1, 2, 3]}, {"nested": {"test-bool": true}}]`),
-			givenJson:     NewLossyJsonValue(`[{"hello": "world"}, {"nums":[1, 2, 3]}, {"nested": {"test-bool": true, "new-field": null}}]`),
-			expectedMatch: false,
+		"semantically equal (lossy) - empty string": {
+			currentJson:   NewLossyJsonValue(`[{"empty-string-field": ""}]`),
+			givenJson:     NewLossyJsonValue(`[{}]`),
+			expectedMatch: true,
 		},
 	}
 	for name, testCase := range testCases {
 		name, testCase := name, testCase
-		t.Run(name, func(t *testing.T) {
+
+		t.Run(name+" - A", func(t *testing.T) {
 			t.Parallel()
 
 			match, diags := testCase.currentJson.StringSemanticEquals(context.Background(), testCase.givenJson)
@@ -166,6 +167,22 @@ func TestLossyJsonStringSemanticEquals(t *testing.T) {
 				t.Errorf("Unexpected diagnostics (-got, +expected): %s", diff)
 			}
 		})
+
+		if givenJson, ok := testCase.givenJson.(basetypes.StringValuableWithSemanticEquals); ok {
+			t.Run(name+" - B", func(t *testing.T) {
+				t.Parallel()
+
+				match, diags := givenJson.StringSemanticEquals(context.Background(), testCase.currentJson)
+
+				if testCase.expectedMatch != match {
+					t.Errorf("Expected StringSemanticEquals to return: %t, but got: %t", testCase.expectedMatch, match)
+				}
+
+				if diff := cmp.Diff(diags, testCase.expectedDiags); diff != "" {
+					t.Errorf("Unexpected diagnostics (-got, +expected): %s", diff)
+				}
+			})
+		}
 	}
 }
 
