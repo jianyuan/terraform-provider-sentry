@@ -131,7 +131,7 @@ Please note the following changes since v0.12.0:
 				MarkdownDescription: "The issue alert name.",
 				Required:            true,
 				Validators: []validator.String{
-					stringvalidator.LengthBetween(1, 255),
+					stringvalidator.LengthBetween(1, 256),
 				},
 			},
 			"conditions": schema.StringAttribute{
