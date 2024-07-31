@@ -51,5 +51,5 @@ Read-Only:
 - `project_id` (String) The ID of the project that the key belongs to.
 - `public` (String) The public key.
 - `rate_limit_count` (Number) Number of events that can be reported within the rate limit window.
-- `rate_limit_window` (Number) Length of time that will be considered when checking the rate limit.
+- `rate_limit_window` (Number) Length of time in seconds that will be considered when checking the rate limit.
 - `secret` (String) The secret key.

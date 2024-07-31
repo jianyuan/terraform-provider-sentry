@@ -105,7 +105,7 @@ func (r *ClientKeyResource) Schema(ctx context.Context, req resource.SchemaReque
 				Required:            true,
 			},
 			"rate_limit_window": schema.Int64Attribute{
-				MarkdownDescription: "Length of time that will be considered when checking the rate limit.",
+				MarkdownDescription: "Length of time in seconds that will be considered when checking the rate limit.",
 				Optional:            true,
 			},
 			"rate_limit_count": schema.Int64Attribute{
