@@ -17,6 +17,7 @@ import (
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/pkg/must"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentryvalidators"
 )
 
 var _ resource.Resource = &IssueAlertResource{}
@@ -138,6 +139,9 @@ Please note the following changes since v0.12.0:
 				MarkdownDescription: "List of conditions. In JSON string format.",
 				Required:            true,
 				CustomType:          sentrytypes.LossyJsonType{},
+				Validators: []validator.String{
+					sentryvalidators.IssueAlertConditions(),
+				},
 			},
 			"filters": schema.StringAttribute{
 				MarkdownDescription: "A list of filters that determine if a rule fires after the necessary conditions have been met. In JSON string format.",
