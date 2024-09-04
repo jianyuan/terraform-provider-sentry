@@ -47,6 +47,7 @@ javascript-solid
 javascript-solidstart
 javascript-svelte
 javascript-sveltekit
+javascript-nuxt
 javascript-vue
 kotlin
 minidump
