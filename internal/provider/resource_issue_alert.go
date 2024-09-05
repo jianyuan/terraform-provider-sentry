@@ -137,7 +137,9 @@ Please note the following changes since v0.12.0:
 			"conditions": schema.StringAttribute{
 				MarkdownDescription: "List of conditions. In JSON string format.",
 				Required:            true,
-				CustomType:          sentrytypes.LossyJsonType{},
+				CustomType: sentrytypes.LossyJsonType{
+					IgnoreKeys: []string{"name"},
+				},
 			},
 			"filters": schema.StringAttribute{
 				MarkdownDescription: "A list of filters that determine if a rule fires after the necessary conditions have been met. In JSON string format.",

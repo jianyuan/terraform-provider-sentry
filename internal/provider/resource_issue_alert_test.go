@@ -374,7 +374,8 @@ resource "sentry_issue_alert" "test" {
 	conditions = <<EOT
 [
 	{
-		"id": "sentry.rules.conditions.first_seen_event.FirstSeenEventCondition"
+		"id": "sentry.rules.conditions.first_seen_event.FirstSeenEventCondition",
+		"name": "ignored"
 	},
 	{
 		"id": "sentry.rules.conditions.regression_event.RegressionEventCondition"
