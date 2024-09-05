@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -16,6 +17,8 @@ var _ basetypes.StringValuableWithSemanticEquals = (*LossyJson)(nil)
 
 type LossyJson struct {
 	basetypes.StringValue
+
+	IgnoreKeys []string
 }
 
 func (v LossyJson) Type(_ context.Context) attr.Type {
@@ -48,7 +51,7 @@ func (v LossyJson) StringSemanticEquals(_ context.Context, newValuable basetypes
 		return false, diags
 	}
 
-	result, err := lossyJsonEqual(newValue.ValueString(), v.ValueString())
+	result, err := lossyJsonEqual(newValue.ValueString(), v.ValueString(), v.IgnoreKeys)
 
 	if err != nil {
 		diags.AddError(
@@ -64,7 +67,7 @@ func (v LossyJson) StringSemanticEquals(_ context.Context, newValuable basetypes
 	return result, diags
 }
 
-func lossyJsonEqual(s1, s2 string) (bool, error) {
+func lossyJsonEqual(s1, s2 string, ignoreKeys []string) (bool, error) {
 	v1, err := decodeJson(s1)
 	if err != nil {
 		return false, err
@@ -75,7 +78,7 @@ func lossyJsonEqual(s1, s2 string) (bool, error) {
 		return false, err
 	}
 
-	return deepLossyEqual(v1, v2), nil
+	return deepLossyEqual(v1, v2, ignoreKeys), nil
 }
 
 func decodeJson(s string) (interface{}, error) {
@@ -90,7 +93,7 @@ func decodeJson(s string) (interface{}, error) {
 	return v, nil
 }
 
-func deepLossyEqual(v1, v2 interface{}) bool {
+func deepLossyEqual(v1, v2 interface{}, ignoreKeys []string) bool {
 	switch v1 := v1.(type) {
 	case bool:
 		v2, ok := v2.(bool)
@@ -127,7 +130,7 @@ func deepLossyEqual(v1, v2 interface{}) bool {
 		}
 
 		for i := 0; i < len(v1); i++ {
-			if !deepLossyEqual(v1[i], v2[i]) {
+			if !deepLossyEqual(v1[i], v2[i], ignoreKeys) {
 				return false
 			}
 		}
@@ -145,12 +148,16 @@ func deepLossyEqual(v1, v2 interface{}) bool {
 
 		// Check that all keys in v1 are in v2 but not the other way around (lossy)
 		for k := range v1 {
+			if slices.Contains(ignoreKeys, k) {
+				continue
+			}
+
 			v2Val, ok := v2[k]
 			if !ok {
 				return false
 			}
 
-			if !deepLossyEqual(v1[k], v2Val) {
+			if !deepLossyEqual(v1[k], v2Val, ignoreKeys) {
 				return false
 			}
 		}

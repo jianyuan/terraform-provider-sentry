@@ -16,6 +16,8 @@ var _ basetypes.StringTypable = (*LossyJsonType)(nil)
 
 type LossyJsonType struct {
 	basetypes.StringType
+
+	IgnoreKeys []string
 }
 
 func (t LossyJsonType) String() string {
@@ -23,7 +25,9 @@ func (t LossyJsonType) String() string {
 }
 
 func (t LossyJsonType) ValueType(_ context.Context) attr.Value {
-	return LossyJson{}
+	return LossyJson{
+		IgnoreKeys: t.IgnoreKeys,
+	}
 }
 
 func (t LossyJsonType) Equal(o attr.Type) bool {
@@ -88,6 +92,7 @@ func (t LossyJsonType) Validate(ctx context.Context, in tftypes.Value, path path
 func (t LossyJsonType) ValueFromString(ctx context.Context, in basetypes.StringValue) (basetypes.StringValuable, diag.Diagnostics) {
 	return LossyJson{
 		StringValue: in,
+		IgnoreKeys:  t.IgnoreKeys,
 	}, nil
 }
 
