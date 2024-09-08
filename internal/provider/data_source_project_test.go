@@ -11,7 +11,7 @@ import (
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 )
 
-func TestAccProjectDataSource_MigrateFromPluginSDK(t *testing.T) {
+func TestAccProjectDataSource_UpgradeFromVersion(t *testing.T) {
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	rn := "data.sentry_project.test"

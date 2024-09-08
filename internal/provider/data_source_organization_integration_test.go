@@ -28,7 +28,7 @@ func TestAccOrganizationIntegrationDataSource(t *testing.T) {
 	})
 }
 
-func TestAccOrganizationIntegrationDataSource_MigrateFromPluginSDK(t *testing.T) {
+func TestAccOrganizationIntegrationDataSource_UpgradeFromVersion(t *testing.T) {
 	dn := "data.sentry_organization_integration.test"
 
 	resource.Test(t, resource.TestCase{

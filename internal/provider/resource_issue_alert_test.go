@@ -70,7 +70,7 @@ func TestAccIssueAlertResource(t *testing.T) {
 	})
 }
 
-func TestAccIssueAlertResource_MigrateFromPluginSDK(t *testing.T) {
+func TestAccIssueAlertResource_UpgradeFromVersion(t *testing.T) {
 	rn := "sentry_issue_alert.test"
 	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")

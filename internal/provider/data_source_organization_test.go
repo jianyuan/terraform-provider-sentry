@@ -31,7 +31,7 @@ func TestAccOrganizationDataSource(t *testing.T) {
 	})
 }
 
-func TestAccOrganizationDataSource_MigrateFromPluginSDK(t *testing.T) {
+func TestAccOrganizationDataSource_UpgradeFromVersion(t *testing.T) {
 	rn := "data.sentry_organization.test"
 
 	checks := []statecheck.StateCheck{

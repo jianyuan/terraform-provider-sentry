@@ -12,7 +12,7 @@ import (
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 )
 
-func TestAccClientKeyResource_MigrateFromPluginSDK(t *testing.T) {
+func TestAccClientKeyResource_UpgradeFromVersion(t *testing.T) {
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	keyName := acctest.RandomWithPrefix("tf-key")
