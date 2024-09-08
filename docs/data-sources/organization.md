@@ -28,6 +28,6 @@ data "sentry_organization" "org" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) The unique URL slug for this organization.
 - `internal_id` (String) The internal ID for this organization.
 - `name` (String) The human readable name for this organization.
