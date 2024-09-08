@@ -26,6 +26,11 @@ func resourceSentryDashboard() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
+			"id": {
+				Description: "The ID of the dashboard.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 			"organization": {
 				Description: "The slug of the organization the dashboard belongs to.",
 				Type:        schema.TypeString,
@@ -43,8 +48,9 @@ func resourceSentryDashboard() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Description: "The ID of the widget.",
+							Type:        schema.TypeString,
+							Computed:    true,
 						},
 						"title": {
 							Type:     schema.TypeString,
@@ -124,8 +130,9 @@ func resourceSentryDashboard() *schema.Resource {
 										Computed: true,
 									},
 									"id": {
-										Type:     schema.TypeString,
-										Computed: true,
+										Description: "The ID of the query.",
+										Type:        schema.TypeString,
+										Computed:    true,
 									},
 								},
 							},

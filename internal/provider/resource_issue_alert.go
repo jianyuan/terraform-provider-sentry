@@ -113,7 +113,7 @@ Please note the following changes since v0.12.0:
 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				MarkdownDescription: "The ID of this resource.",
+				MarkdownDescription: "The ID of this issue alert.",
 				Computed:            true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),

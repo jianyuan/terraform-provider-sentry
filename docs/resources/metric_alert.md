@@ -87,7 +87,7 @@ resource "sentry_metric_alert" "main" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) The ID of the metric alert.
 - `internal_id` (String) The internal ID for this metric alert.
 
 <a id="nestedblock--trigger"></a>
@@ -106,7 +106,7 @@ Optional:
 
 Read-Only:
 
-- `id` (String) The ID of this resource.
+- `id` (String) The ID of the trigger.
 
 <a id="nestedblock--trigger--action"></a>
 ### Nested Schema for `trigger.action`
@@ -124,7 +124,7 @@ Optional:
 
 Read-Only:
 
-- `id` (String) The ID of this resource.
+- `id` (String) The ID of the action.
 
 ## Import
 
