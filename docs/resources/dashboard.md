@@ -360,7 +360,7 @@ resource "sentry_dashboard" "main" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) The ID of the dashboard.
 - `internal_id` (String) The internal ID for this dashboard.
 
 <a id="nestedblock--widget"></a>
@@ -381,7 +381,7 @@ Optional:
 
 Read-Only:
 
-- `id` (String) The ID of this resource.
+- `id` (String) The ID of the widget.
 
 <a id="nestedblock--widget--layout"></a>
 ### Nested Schema for `widget.layout`
@@ -410,7 +410,7 @@ Optional:
 
 Read-Only:
 
-- `id` (String) The ID of this resource.
+- `id` (String) The ID of the query.
 
 ## Import
 

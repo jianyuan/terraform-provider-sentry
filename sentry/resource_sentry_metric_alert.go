@@ -27,6 +27,11 @@ func resourceSentryMetricAlert() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
+			"id": {
+				Description: "The ID of the metric alert.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 			"organization": {
 				Description: "The slug of the organization the metric alert belongs to.",
 				Type:        schema.TypeString,
@@ -97,8 +102,9 @@ func resourceSentryMetricAlert() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Description: "The ID of the trigger.",
+							Type:        schema.TypeString,
+							Computed:    true,
 						},
 						"action": {
 							Type:     schema.TypeList,
@@ -106,8 +112,9 @@ func resourceSentryMetricAlert() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"id": {
-										Type:     schema.TypeString,
-										Computed: true,
+										Description: "The ID of the action.",
+										Type:        schema.TypeString,
+										Computed:    true,
 									},
 									"type": {
 										Type:     schema.TypeString,
