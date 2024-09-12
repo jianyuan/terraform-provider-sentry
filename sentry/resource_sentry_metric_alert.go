@@ -50,7 +50,6 @@ func resourceSentryMetricAlert() *schema.Resource {
 			"environment": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Computed:    true,
 				Description: "Perform Alert rule in a specific environment",
 			},
 			"dataset": {
@@ -163,7 +162,6 @@ func resourceSentryMetricAlert() *schema.Resource {
 			"owner": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Computed:    true,
 				Description: "Specifies the owner id of this Alert rule",
 			},
 			"internal_id": {
