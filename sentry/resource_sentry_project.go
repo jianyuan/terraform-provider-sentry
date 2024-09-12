@@ -134,6 +134,16 @@ func resourceSentryProject() *schema.Resource {
 				Computed:    true,
 			},
 			// TODO: Project options
+			"fingerprinting_rules": {
+				Description: "fingerprinting rules",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"grouping_enhancements": {
+				Description: "grouping enhancements",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -233,6 +243,8 @@ func resourceSentryProjectRead(ctx context.Context, d *schema.ResourceData, meta
 		d.Set("digests_min_delay", proj.DigestsMinDelay),
 		d.Set("digests_max_delay", proj.DigestsMaxDelay),
 		d.Set("resolve_age", proj.ResolveAge),
+		d.Set("fingerprinting_rules", proj.FingerprintingRules),
+		d.Set("grouping_enhancements", proj.GroupingEnhancements),
 		d.Set("project_id", proj.ID), // Deprecated
 	)
 	if _, ok := d.GetOk("team"); ok {
@@ -275,6 +287,14 @@ func resourceSentryProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 
 	if v, ok := d.GetOk("resolve_age"); ok {
 		params.ResolveAge = sentry.Int(v.(int))
+	}
+
+	if v, ok := d.GetOk("fingerprinting_rules"); ok {
+		params.FingerprintingRules = v.(string)
+	}
+
+	if v, ok := d.GetOk("grouping_enhancements"); ok {
+		params.GroupingEnhancements = v.(string)
 	}
 
 	tflog.Debug(ctx, "Updating project", map[string]interface{}{
