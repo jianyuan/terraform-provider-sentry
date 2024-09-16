@@ -148,7 +148,10 @@ func TestAccClientKeyResource(t *testing.T) {
 }
 
 func testAccClientKeyResourceConfig(teamName, projectName, keyName, extras string) string {
-	return testAccProjectResourceConfig(teamName, projectName) + fmt.Sprintf(`
+	return testAccProjectResourceConfig(testAccProjectResourceConfigData{
+		TeamName:    teamName,
+		ProjectName: projectName,
+	}) + fmt.Sprintf(`
 resource "sentry_key" "test" {
 	organization = sentry_project.test.organization
 	project      = sentry_project.test.id

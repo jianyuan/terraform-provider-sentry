@@ -23,9 +23,9 @@ data "sentry_organization_integration" "github" {
 resource "sentry_project" "this" {
   organization = "my-organization"
 
-  team = "my-team"
-  name = "Web App"
-  slug = "web-app"
+  teams = ["my-team"]
+  name  = "Web App"
+  slug  = "web-app"
 
   platform    = "javascript"
   resolve_age = 720

@@ -163,7 +163,10 @@ func TestAccClientKeyDataSource_first(t *testing.T) {
 }
 
 func testAccClientKeyDataSourceConfig_bare(teamName, projectName string) string {
-	return testAccProjectResourceConfig(teamName, projectName) + `
+	return testAccProjectResourceConfig(testAccProjectResourceConfigData{
+		TeamName:    teamName,
+		ProjectName: projectName,
+	}) + `
 data "sentry_key" "test" {
 	organization = sentry_project.test.organization
 	project      = sentry_project.test.id

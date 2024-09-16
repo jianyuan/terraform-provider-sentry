@@ -4,11 +4,19 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"regexp"
 	"strings"
+	"testing"
+	"text/template"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
+	"github.com/jianyuan/terraform-provider-sentry/internal/pkg/must"
 )
 
 func init() {
@@ -52,13 +60,393 @@ func init() {
 	})
 }
 
-func testAccProjectResourceConfig(teamName, projectName string) string {
-	return testAccTeamResourceConfig(teamName) + fmt.Sprintf(`
+func TestAccProjectResource_basic(t *testing.T) {
+	teamName1 := acctest.RandomWithPrefix("tf-team")
+	teamName2 := acctest.RandomWithPrefix("tf-team")
+	teamName3 := acctest.RandomWithPrefix("tf-team")
+	projectName := acctest.RandomWithPrefix("tf-project")
+	rn := "sentry_project.test"
+
+	checks := []statecheck.StateCheck{
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("slug"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_rules"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_key"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("internal_id"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("features"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_min_delay"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_max_delay"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("resolve_age"), knownvalue.Null()),
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccProjectResourceConfig_teams(testAccProjectResourceConfig_teamsData{
+					AllTeamNames: []string{teamName1, teamName2, teamName3},
+					TeamIds:      []int{0, 1},
+					ProjectName:  projectName,
+					Platform:     "go",
+				}),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(projectName)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("teams"), knownvalue.SetExact([]knownvalue.Check{
+						knownvalue.StringExact(teamName1),
+						knownvalue.StringExact(teamName2),
+					})),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("platform"), knownvalue.StringExact("go")),
+				),
+			},
+			{
+				Config: testAccProjectResourceConfig_teams(testAccProjectResourceConfig_teamsData{
+					AllTeamNames: []string{teamName1, teamName2, teamName3},
+					TeamIds:      []int{0},
+					ProjectName:  projectName + "-renamed",
+					Platform:     "python",
+				}),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(projectName+"-renamed")),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("teams"), knownvalue.SetExact([]knownvalue.Check{
+						knownvalue.StringExact(teamName1),
+					})),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("platform"), knownvalue.StringExact("python")),
+				),
+			},
+			{
+				Config: testAccProjectResourceConfig_teams(testAccProjectResourceConfig_teamsData{
+					AllTeamNames: []string{teamName1, teamName2, teamName3},
+					TeamIds:      []int{2},
+					ProjectName:  projectName + "-renamed-again",
+					Platform:     "python",
+				}),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(projectName+"-renamed-again")),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("teams"), knownvalue.SetExact([]knownvalue.Check{
+						knownvalue.StringExact(teamName3),
+					})),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("platform"), knownvalue.StringExact("python")),
+				),
+			},
+			{
+				ResourceName: rn,
+				ImportState:  true,
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources[rn]
+					if !ok {
+						return "", fmt.Errorf("not found: %s", rn)
+					}
+					organization := rs.Primary.Attributes["organization"]
+					project := rs.Primary.ID
+					return buildTwoPartID(organization, project), nil
+				},
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccProjectResource_noDefaultKeyOnCreate(t *testing.T) {
+	teamName := acctest.RandomWithPrefix("tf-team")
+	projectName := acctest.RandomWithPrefix("tf-project")
+	rn := "sentry_project.test"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
+					TeamName:     teamName,
+					ProjectName:  projectName,
+					NoDefaultKey: true,
+				}) + `
+					data "sentry_all_keys" "test" {
+						organization = sentry_project.test.organization
+						project      = sentry_project.test.slug
+					}
+				`,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("teams"), knownvalue.SetExact([]knownvalue.Check{knownvalue.StringExact(teamName)})),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(projectName)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("slug"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("platform"), knownvalue.StringExact("go")),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_rules"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_key"), knownvalue.Bool(false)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("internal_id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("features"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_min_delay"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_max_delay"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("resolve_age"), knownvalue.Null()),
+					statecheck.ExpectKnownValue("data.sentry_all_keys.test", tfjsonpath.New("keys"), knownvalue.ListSizeExact(0)),
+				},
+			},
+		},
+	})
+}
+
+func TestAccProjectResource_noDefaultKeyOnUpdate(t *testing.T) {
+	teamName := acctest.RandomWithPrefix("tf-team")
+	projectName := acctest.RandomWithPrefix("tf-project")
+	rn := "sentry_project.test"
+
+	checks := []statecheck.StateCheck{
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("teams"), knownvalue.SetExact([]knownvalue.Check{knownvalue.StringExact(teamName)})),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(projectName)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("slug"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("platform"), knownvalue.StringExact("go")),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_rules"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("internal_id"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("features"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_min_delay"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_max_delay"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("resolve_age"), knownvalue.Null()),
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
+					TeamName:    teamName,
+					ProjectName: projectName,
+				}) + `
+					data "sentry_all_keys" "test" {
+						organization = sentry_project.test.organization
+						project      = sentry_project.test.slug
+					}
+				`,
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_key"), knownvalue.Null()),
+					statecheck.ExpectKnownValue("data.sentry_all_keys.test", tfjsonpath.New("keys"), knownvalue.ListSizeExact(1)),
+				),
+			},
+			{
+				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
+					TeamName:     teamName,
+					ProjectName:  projectName,
+					NoDefaultKey: true,
+				}) + `
+					data "sentry_all_keys" "test" {
+						organization = sentry_project.test.organization
+						project      = sentry_project.test.slug
+					}
+				`,
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_key"), knownvalue.Bool(false)),
+					statecheck.ExpectKnownValue("data.sentry_all_keys.test", tfjsonpath.New("keys"), knownvalue.ListSizeExact(0)),
+				),
+			},
+		},
+	})
+}
+
+func TestAccProjectResource_invalidPlatform(t *testing.T) {
+	teamName := acctest.RandomWithPrefix("tf-team")
+	projectName := acctest.RandomWithPrefix("tf-project")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
+					TeamName:    teamName,
+					ProjectName: projectName,
+					Platform:    "invalid",
+				}),
+				ExpectError: regexp.MustCompile(`Attribute platform value must be one of`),
+			},
+		},
+	})
+}
+
+func TestAccProjectResource_noTeam(t *testing.T) {
+	projectName := acctest.RandomWithPrefix("tf-project")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccProjectResourceConfig_teams(testAccProjectResourceConfig_teamsData{
+					ProjectName: projectName,
+				}),
+				ExpectError: regexp.MustCompile(`Attribute teams set must contain at least 1 elements, got: 0`),
+			},
+		},
+	})
+}
+
+func TestAccProjectResource_UpgradeFromVersion(t *testing.T) {
+	teamName := acctest.RandomWithPrefix("tf-team")
+	projectName := acctest.RandomWithPrefix("tf-project")
+	rn := "sentry_project.test"
+
+	checks := []statecheck.StateCheck{
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("teams"), knownvalue.SetExact([]knownvalue.Check{knownvalue.StringExact(teamName)})),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(projectName)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("slug"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("platform"), knownvalue.StringExact("go")),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("internal_id"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("features"), knownvalue.NotNull()),
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acctest.PreCheck(t) },
+		CheckDestroy: testAccCheckProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					acctest.ProviderName: {
+						Source:            "jianyuan/sentry",
+						VersionConstraint: "0.12.3",
+					},
+				},
+				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
+					TeamName:    teamName,
+					ProjectName: projectName,
+				}),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_rules"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_key"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_min_delay"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_max_delay"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("resolve_age"), knownvalue.NotNull()),
+				),
+			},
+			{
+				ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
+					TeamName:    teamName,
+					ProjectName: projectName,
+				}),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_rules"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_key"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_min_delay"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_max_delay"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("resolve_age"), knownvalue.Null()),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckProjectDestroy(s *terraform.State) error {
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "sentry_project" {
+			continue
+		}
+
+		ctx := context.Background()
+		project, resp, err := acctest.SharedClient.Projects.Get(
+			ctx,
+			rs.Primary.Attributes["organization"],
+			rs.Primary.ID,
+		)
+		if err == nil {
+			if project != nil {
+				return fmt.Errorf("project %q still exists", rs.Primary.ID)
+			}
+		}
+		if resp.StatusCode != 404 {
+			return err
+		}
+		return nil
+	}
+
+	return nil
+}
+
+var testAccProjectResourceConfigTemplate = template.Must(template.New("config").Parse(`
 resource "sentry_project" "test" {
 	organization = sentry_team.test.organization
 	teams        = [sentry_team.test.id]
-	name         = "%[1]s"
-	platform     = "go"
+	name         = "{{ .ProjectName }}"
+	platform     = "{{ or .Platform "go" }}"
+
+	{{ if .NoDefaultRules }}
+	default_rules = false
+	{{ end }}
+
+	{{ if .NoDefaultKey }}
+	default_key = false
+	{{ end }}
 }
-`, projectName)
+`))
+
+type testAccProjectResourceConfigData struct {
+	TeamName       string
+	ProjectName    string
+	Platform       string
+	NoDefaultRules bool
+	NoDefaultKey   bool
+}
+
+func testAccProjectResourceConfig(data testAccProjectResourceConfigData) string {
+	var builder strings.Builder
+
+	must.Get(builder.WriteString(testAccTeamResourceConfig(data.TeamName)))
+	must.Do(testAccProjectResourceConfigTemplate.Execute(&builder, data))
+
+	return builder.String()
+}
+
+var testAccProjectResourceConfig_teamsTemplate = template.Must(template.New("config").Parse(`
+{{ range $i, $teamName := .AllTeamNames }}
+resource "sentry_team" "team_{{ $i }}" {
+	organization = data.sentry_organization.test.id
+	name         = "{{ $teamName }}"
+	slug         = "{{ $teamName }}"
+}
+{{ end }}
+
+resource "sentry_project" "test" {
+	organization = data.sentry_organization.test.id
+	teams        = [
+		{{ range $i, $TeamId := .TeamIds }}
+		sentry_team.team_{{ $TeamId }}.slug,
+		{{ end }}
+	]
+	name         = "{{ .ProjectName }}"
+	platform     = "{{ or .Platform "go" }}"
+}
+`))
+
+type testAccProjectResourceConfig_teamsData struct {
+	AllTeamNames []string
+	TeamIds      []int
+	ProjectName  string
+	Platform     string
+}
+
+func testAccProjectResourceConfig_teams(data testAccProjectResourceConfig_teamsData) string {
+	var builder strings.Builder
+
+	must.Get(builder.WriteString(testAccOrganizationDataSourceConfig))
+	must.Do(testAccProjectResourceConfig_teamsTemplate.Execute(&builder, data))
+
+	return builder.String()
 }

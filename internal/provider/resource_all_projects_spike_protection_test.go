@@ -26,7 +26,10 @@ func TestAccAllProjectsSpikeProtectionResource(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccProjectResourceConfig(teamName, project1Name) + `
+				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
+					TeamName:    teamName,
+					ProjectName: project1Name,
+				}) + `
 					resource "sentry_all_projects_spike_protection" "test" {
 						organization = sentry_team.test.organization
 						projects     = [sentry_project.test.id]
@@ -42,7 +45,10 @@ func TestAccAllProjectsSpikeProtectionResource(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccProjectResourceConfig(teamName, project1Name) + `
+				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
+					TeamName:    teamName,
+					ProjectName: project1Name,
+				}) + `
 					resource "sentry_all_projects_spike_protection" "test" {
 						organization = sentry_team.test.organization
 						projects     = [sentry_project.test.id]
@@ -58,7 +64,10 @@ func TestAccAllProjectsSpikeProtectionResource(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccProjectResourceConfig(teamName, project1Name) + fmt.Sprintf(`
+				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
+					TeamName:    teamName,
+					ProjectName: project1Name,
+				}) + fmt.Sprintf(`
 					resource "sentry_project" "test2" {
 						organization = sentry_team.test.organization
 						teams        = [sentry_team.test.id]
