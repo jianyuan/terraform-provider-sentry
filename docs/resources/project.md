@@ -25,6 +25,12 @@ resource "sentry_project" "default" {
   resolve_age = 720
 
   default_rules = false
+
+  filters = {
+    blacklisted_ips = ["127.0.0.1", "0.0.0.0/8"]
+    releases        = ["1.*", "[!3].[0-9].*"]
+    error_messages  = ["TypeError*", "*: integer division or modulo by zero"]
+  }
 }
 ```
 
@@ -59,9 +65,9 @@ resource "sentry_project" "default" {
 
 Optional:
 
-- `blacklisted_ips` (Set of String) Filter events from these IP addresses.
-- `error_messages` (Set of String) Filter events by error messages. Allows [glob pattern matching](https://en.wikipedia.org/wiki/Glob_(programming)).
-- `releases` (Set of String) Filter events from these releases. Allows [glob pattern matching](https://en.wikipedia.org/wiki/Glob_(programming)).
+- `blacklisted_ips` (Set of String) Filter events from these IP addresses. (e.g. 127.0.0.1 or 10.0.0.0/8)
+- `error_messages` (Set of String) Filter events by error messages. Allows [glob pattern matching](https://en.wikipedia.org/wiki/Glob_(programming)). (e.g. TypeError* or *: integer division or modulo by zero)
+- `releases` (Set of String) Filter events from these releases. Allows [glob pattern matching](https://en.wikipedia.org/wiki/Glob_(programming)). (e.g. 1.* or [!3].[0-9].*)
 
 ## Import
 
