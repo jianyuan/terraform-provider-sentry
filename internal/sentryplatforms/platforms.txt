@@ -38,6 +38,7 @@ java-spring-boot
 javascript
 javascript-angular
 javascript-astro
+javascript-cloudflare
 javascript-ember
 javascript-gatsby
 javascript-nextjs
