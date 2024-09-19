@@ -78,6 +78,7 @@ func TestAccProjectResource_basic(t *testing.T) {
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_min_delay"), knownvalue.Null()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_max_delay"), knownvalue.Null()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("resolve_age"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.Null()),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -152,6 +153,107 @@ func TestAccProjectResource_basic(t *testing.T) {
 	})
 }
 
+func TestAccProjectResource_filters(t *testing.T) {
+	teamName := acctest.RandomWithPrefix("tf-team")
+	projectName := acctest.RandomWithPrefix("tf-project")
+	rn := "sentry_project.test"
+
+	checks := []statecheck.StateCheck{
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("teams"), knownvalue.SetExact([]knownvalue.Check{knownvalue.StringExact(teamName)})),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(projectName)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("slug"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("platform"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_rules"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_key"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("internal_id"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("features"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_min_delay"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_max_delay"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("resolve_age"), knownvalue.Null()),
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
+					TeamName:    teamName,
+					ProjectName: projectName,
+					Extras: `
+						filters = {
+							blacklisted_ips = ["127.0.0.1", "0.0.0.0/8"]
+							error_messages  = ["TypeError*", "*: integer division or modulo by zero"]
+						}
+					`,
+				}),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.MapExact(map[string]knownvalue.Check{
+						"blacklisted_ips": knownvalue.SetExact([]knownvalue.Check{
+							knownvalue.StringExact("127.0.0.1"),
+							knownvalue.StringExact("0.0.0.0/8"),
+						}),
+						"releases": knownvalue.Null(),
+						"error_messages": knownvalue.SetExact([]knownvalue.Check{
+							knownvalue.StringExact("TypeError*"),
+							knownvalue.StringExact("*: integer division or modulo by zero"),
+						}),
+					})),
+				),
+			},
+			{
+				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
+					TeamName:    teamName,
+					ProjectName: projectName,
+					Extras: `
+						filters = {
+							blacklisted_ips = ["0.0.0.0/8"]
+							releases        = ["1.*", "[!3].[0-9].*"]
+							error_messages  = ["TypeError*"]
+						}
+					`,
+				}),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.MapExact(map[string]knownvalue.Check{
+						"blacklisted_ips": knownvalue.SetExact([]knownvalue.Check{
+							knownvalue.StringExact("0.0.0.0/8"),
+						}),
+						"releases": knownvalue.SetExact([]knownvalue.Check{
+							knownvalue.StringExact("1.*"),
+							knownvalue.StringExact("[!3].[0-9].*"),
+						}),
+						"error_messages": knownvalue.SetExact([]knownvalue.Check{
+							knownvalue.StringExact("TypeError*"),
+						}),
+					})),
+				),
+			},
+			{
+				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
+					TeamName:    teamName,
+					ProjectName: projectName,
+					Extras: `
+						filters = {}
+					`,
+				}),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.MapExact(map[string]knownvalue.Check{
+						"blacklisted_ips": knownvalue.Null(),
+						"releases":        knownvalue.Null(),
+						"error_messages":  knownvalue.Null(),
+					})),
+				),
+			},
+		},
+	})
+}
+
 func TestAccProjectResource_noDefaultKeyOnCreate(t *testing.T) {
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
@@ -164,9 +266,11 @@ func TestAccProjectResource_noDefaultKeyOnCreate(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
-					TeamName:     teamName,
-					ProjectName:  projectName,
-					NoDefaultKey: true,
+					TeamName:    teamName,
+					ProjectName: projectName,
+					Extras: `
+						default_key = false
+					`,
 				}) + `
 					data "sentry_all_keys" "test" {
 						organization = sentry_project.test.organization
@@ -179,7 +283,7 @@ func TestAccProjectResource_noDefaultKeyOnCreate(t *testing.T) {
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("teams"), knownvalue.SetExact([]knownvalue.Check{knownvalue.StringExact(teamName)})),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(projectName)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("slug"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("platform"), knownvalue.StringExact("go")),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("platform"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_rules"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_key"), knownvalue.Bool(false)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("internal_id"), knownvalue.NotNull()),
@@ -187,6 +291,7 @@ func TestAccProjectResource_noDefaultKeyOnCreate(t *testing.T) {
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_min_delay"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_max_delay"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("resolve_age"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.Null()),
 					statecheck.ExpectKnownValue("data.sentry_all_keys.test", tfjsonpath.New("keys"), knownvalue.ListSizeExact(0)),
 				},
 			},
@@ -205,13 +310,14 @@ func TestAccProjectResource_noDefaultKeyOnUpdate(t *testing.T) {
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("teams"), knownvalue.SetExact([]knownvalue.Check{knownvalue.StringExact(teamName)})),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(projectName)),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("slug"), knownvalue.NotNull()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("platform"), knownvalue.StringExact("go")),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("platform"), knownvalue.Null()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_rules"), knownvalue.Null()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("internal_id"), knownvalue.NotNull()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("features"), knownvalue.NotNull()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_min_delay"), knownvalue.Null()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_max_delay"), knownvalue.Null()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("resolve_age"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.Null()),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -237,9 +343,11 @@ func TestAccProjectResource_noDefaultKeyOnUpdate(t *testing.T) {
 			},
 			{
 				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
-					TeamName:     teamName,
-					ProjectName:  projectName,
-					NoDefaultKey: true,
+					TeamName:    teamName,
+					ProjectName: projectName,
+					Extras: `
+						default_key = false
+					`,
 				}) + `
 					data "sentry_all_keys" "test" {
 						organization = sentry_project.test.organization
@@ -325,6 +433,7 @@ func TestAccProjectResource_UpgradeFromVersion(t *testing.T) {
 				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
 					TeamName:    teamName,
 					ProjectName: projectName,
+					Platform:    "go",
 				}),
 				ConfigStateChecks: append(
 					checks,
@@ -340,6 +449,7 @@ func TestAccProjectResource_UpgradeFromVersion(t *testing.T) {
 				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
 					TeamName:    teamName,
 					ProjectName: projectName,
+					Platform:    "go",
 				}),
 				ConfigStateChecks: append(
 					checks,
@@ -348,6 +458,7 @@ func TestAccProjectResource_UpgradeFromVersion(t *testing.T) {
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_min_delay"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_max_delay"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("resolve_age"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.Null()),
 				),
 			},
 		},
@@ -385,24 +496,18 @@ resource "sentry_project" "test" {
 	organization = sentry_team.test.organization
 	teams        = [sentry_team.test.id]
 	name         = "{{ .ProjectName }}"
-	platform     = "{{ or .Platform "go" }}"
-
-	{{ if .NoDefaultRules }}
-	default_rules = false
+	{{ if .Platform }}
+	platform = "{{ .Platform }}"
 	{{ end }}
-
-	{{ if .NoDefaultKey }}
-	default_key = false
-	{{ end }}
+	{{ .Extras }}
 }
 `))
 
 type testAccProjectResourceConfigData struct {
-	TeamName       string
-	ProjectName    string
-	Platform       string
-	NoDefaultRules bool
-	NoDefaultKey   bool
+	TeamName    string
+	ProjectName string
+	Platform    string
+	Extras      string
 }
 
 func testAccProjectResourceConfig(data testAccProjectResourceConfigData) string {
@@ -431,7 +536,9 @@ resource "sentry_project" "test" {
 		{{ end }}
 	]
 	name         = "{{ .ProjectName }}"
-	platform     = "{{ or .Platform "go" }}"
+	{{ if .Platform }}
+	platform     = "{{ .Platform }}"
+	{{ end }}
 }
 `))
 
