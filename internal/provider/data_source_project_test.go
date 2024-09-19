@@ -54,7 +54,10 @@ func TestAccProjectDataSource_UpgradeFromVersion(t *testing.T) {
 }
 
 func testAccProjectDataSourceConfig(teamName, projectName string) string {
-	return testAccProjectResourceConfig(teamName, projectName) + `
+	return testAccProjectResourceConfig(testAccProjectResourceConfigData{
+		TeamName:    teamName,
+		ProjectName: projectName,
+	}) + `
 data "sentry_project" "test" {
 	organization = sentry_project.test.organization
 	slug         = sentry_project.test.id

@@ -35,6 +35,7 @@ resource "sentry_project" "default" {
 
 - `name` (String) The name for the project.
 - `organization` (String) The slug of the organization the project belongs to.
+- `teams` (Set of String) The slugs of the teams to create the project for.
 
 ### Optional
 
@@ -45,19 +46,12 @@ resource "sentry_project" "default" {
 - `platform` (String) The platform for this project. For a list of valid values, [see this page](https://github.com/jianyuan/terraform-provider-sentry/blob/main/internal/sentryplatforms/platforms.txt). Use `other` for platforms not listed.
 - `resolve_age` (Number) Hours in which an issue is automatically resolve if not seen after this amount of time.
 - `slug` (String) The optional slug for this project.
-- `team` (String, Deprecated) The slug of the team to create the project for. **Deprecated** Use `teams` instead.
-- `teams` (Set of String) The slugs of the teams to create the project for.
 
 ### Read-Only
 
-- `color` (String)
-- `features` (List of String)
+- `features` (Set of String)
 - `id` (String) The ID of this resource.
 - `internal_id` (String) The internal ID for this project.
-- `is_bookmarked` (Boolean, Deprecated)
-- `is_public` (Boolean)
-- `project_id` (String, Deprecated) Use `internal_id` instead.
-- `status` (String)
 
 ## Import
 

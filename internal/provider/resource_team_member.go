@@ -324,7 +324,7 @@ func (r *TeamMemberResource) Update(ctx context.Context, req resource.UpdateRequ
 			return
 		}
 
-		if err := state.Fill(
+		if err := plan.Fill(
 			plan.Organization.ValueString(),
 			plan.Team.ValueString(),
 			plan.MemberId.ValueString(),
@@ -336,7 +336,7 @@ func (r *TeamMemberResource) Update(ctx context.Context, req resource.UpdateRequ
 		}
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *TeamMemberResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {

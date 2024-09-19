@@ -38,7 +38,7 @@ output "team" {
 
 resource "sentry_project" "main" {
   organization = sentry_team.main.organization
-  team         = sentry_team.main.id
+  teams        = [sentry_team.main.id]
   name         = "My project"
   platform     = "python"
 }
