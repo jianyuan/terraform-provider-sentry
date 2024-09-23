@@ -4,6 +4,8 @@ apple-ios
 apple-macos
 bun
 capacitor
+cloudflare-pages
+cloudflare-workers
 cordova
 dart
 deno
@@ -38,7 +40,6 @@ java-spring-boot
 javascript
 javascript-angular
 javascript-astro
-javascript-cloudflare
 javascript-ember
 javascript-gatsby
 javascript-nextjs
