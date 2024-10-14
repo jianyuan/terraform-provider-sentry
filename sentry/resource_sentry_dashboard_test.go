@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 )
 
 func TestAccSentryDashboard_basic(t *testing.T) {
@@ -21,20 +21,22 @@ func TestAccSentryDashboard_basic(t *testing.T) {
 	check := func(dashboardTitle string) resource.TestCheckFunc {
 		return resource.ComposeTestCheckFunc(
 			testAccCheckSentryDashboardExists(rn, &dashboardID),
-			resource.TestCheckResourceAttr(rn, "organization", testOrganization),
+			resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
 			resource.TestCheckResourceAttr(rn, "title", dashboardTitle),
 			resource.TestCheckResourceAttr(rn, "widget.#", "1"),
 			resource.TestCheckResourceAttr(rn, "widget.0.title", "Custom Widget"),
-			resource.TestCheckResourceAttr(rn, "widget.0.display_type", "world_map"),
+			resource.TestCheckResourceAttr(rn, "widget.0.display_type", "table"),
 			resource.TestCheckResourceAttr(rn, "widget.0.query.#", "1"),
 			resource.TestCheckResourceAttr(rn, "widget.0.query.0.name", "Metric"),
-			resource.TestCheckResourceAttr(rn, "widget.0.query.0.fields.#", "1"),
-			resource.TestCheckResourceAttr(rn, "widget.0.query.0.fields.0", "count()"),
+			resource.TestCheckResourceAttr(rn, "widget.0.query.0.fields.#", "3"),
+			resource.TestCheckResourceAttr(rn, "widget.0.query.0.fields.0", "geo.country_code"),
+			resource.TestCheckResourceAttr(rn, "widget.0.query.0.fields.1", "geo.region"),
+			resource.TestCheckResourceAttr(rn, "widget.0.query.0.fields.2", "count()"),
 			resource.TestCheckResourceAttr(rn, "widget.0.query.0.aggregates.#", "1"),
 			resource.TestCheckResourceAttr(rn, "widget.0.query.0.aggregates.0", "count()"),
 			resource.TestCheckResourceAttr(rn, "widget.0.query.0.columns.#", "0"),
 			resource.TestCheckResourceAttr(rn, "widget.0.query.0.field_aliases.#", "0"),
-			resource.TestCheckResourceAttr(rn, "widget.0.query.0.conditions", "!event.type:transaction"),
+			resource.TestCheckResourceAttr(rn, "widget.0.query.0.conditions", "!event.type:transaction has:geo.country_code"),
 			resource.TestCheckResourceAttr(rn, "widget.0.query.0.order_by", ""),
 			resource.TestCheckResourceAttrSet(rn, "widget.0.query.0.id"),
 			resource.TestCheckResourceAttrPtr(rn, "internal_id", &dashboardID),
@@ -42,9 +44,8 @@ func TestAccSentryDashboard_basic(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: testAccProviderFactories,
-		CheckDestroy:      testAccCheckSentryIssueAlertDestroy,
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccSentryDashboardConfig(dashboardTitle),
@@ -78,9 +79,8 @@ func testAccCheckSentryDashboardExists(n string, dashboardID *string) resource.T
 		if err != nil {
 			return err
 		}
-		client := testAccProvider.Meta().(*sentry.Client)
 		ctx := context.Background()
-		gotDashboard, _, err := client.Dashboards.Get(ctx, org, id)
+		gotDashboard, _, err := acctest.SharedClient.Dashboards.Get(ctx, org, id)
 		if err != nil {
 			return err
 		}
@@ -97,14 +97,14 @@ resource "sentry_dashboard" "test" {
 
 	widget {
 		title        = "Custom Widget"
-		display_type = "world_map"
+		display_type = "table"
 
 		query {
 			name       = "Metric"
 
-			fields     = ["count()"]
+			fields     = ["geo.country_code", "geo.region", "count()"]
 			aggregates = ["count()"]
-			conditions = "!event.type:transaction"
+			conditions = "!event.type:transaction has:geo.country_code"
 		}
 
 		layout {

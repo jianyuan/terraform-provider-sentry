@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 )
 
 func TestAccSentryTeam_basic(t *testing.T) {
@@ -34,9 +34,9 @@ func TestAccSentryTeam_basic(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: testAccProviderFactories,
-		CheckDestroy:      testAccCheckSentryTeamDestroy,
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckSentryTeamDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccSentryTeamConfig(teamName),
@@ -57,15 +57,13 @@ func TestAccSentryTeam_basic(t *testing.T) {
 }
 
 func testAccCheckSentryTeamDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*sentry.Client)
-
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "sentry_team" {
 			continue
 		}
 
 		ctx := context.Background()
-		team, resp, err := client.Teams.Get(
+		team, resp, err := acctest.SharedClient.Teams.Get(
 			ctx,
 			rs.Primary.Attributes["organization"],
 			rs.Primary.ID,
@@ -96,9 +94,8 @@ func testAccCheckSentryTeamExists(n string, teamID *string) resource.TestCheckFu
 
 		org := rs.Primary.Attributes["organization"]
 		teamSlug := rs.Primary.ID
-		client := testAccProvider.Meta().(*sentry.Client)
 		ctx := context.Background()
-		gotTeam, _, err := client.Teams.Get(ctx, org, teamSlug)
+		gotTeam, _, err := acctest.SharedClient.Teams.Get(ctx, org, teamSlug)
 		if err != nil {
 			return err
 		}
@@ -127,23 +124,4 @@ resource "sentry_team" "test" {
 	slug         = "%[1]s"
 }
 	`, teamName)
-}
-
-func TestValidatePlatform(t *testing.T) {
-	for _, tc := range []string{
-		"javascript-react",
-		"other",
-		"python-aiohttp",
-		"python",
-		"react-native",
-	} {
-		tc := tc
-		t.Run(tc, func(t *testing.T) {
-			t.Parallel()
-			diag := validatePlatform(tc, nil)
-			if diag.HasError() {
-				t.Errorf("platform should be valid: %v", tc)
-			}
-		})
-	}
 }

@@ -23,6 +23,14 @@ resource "sentry_project" "default" {
 
   platform    = "javascript"
   resolve_age = 720
+
+  default_rules = false
+
+  filters = {
+    blacklisted_ips = ["127.0.0.1", "0.0.0.0/8"]
+    releases        = ["1.*", "[!3].[0-9].*"]
+    error_messages  = ["TypeError*", "*: integer division or modulo by zero"]
+  }
 }
 ```
 
@@ -33,27 +41,33 @@ resource "sentry_project" "default" {
 
 - `name` (String) The name for the project.
 - `organization` (String) The slug of the organization the project belongs to.
+- `teams` (Set of String) The slugs of the teams to create the project for.
 
 ### Optional
 
+- `default_key` (Boolean) Whether to create a default key. By default, Sentry will create a key for you. If you wish to manage keys manually, set this to false and create keys using the `sentry_key` resource.
+- `default_rules` (Boolean) Whether to create a default issue alert. Defaults to true where the behavior is to alert the user on every new issue.
 - `digests_max_delay` (Number) The maximum amount of time (in seconds) to wait between scheduling digests for delivery.
 - `digests_min_delay` (Number) The minimum amount of time (in seconds) to wait between scheduling digests for delivery after the initial scheduling.
-- `platform` (String) The optional platform for this project.
+- `filters` (Attributes) Custom filters for this project. (see [below for nested schema](#nestedatt--filters))
+- `platform` (String) The platform for this project. For a list of valid values, [see this page](https://github.com/jianyuan/terraform-provider-sentry/blob/main/internal/sentryplatforms/platforms.txt). Use `other` for platforms not listed.
 - `resolve_age` (Number) Hours in which an issue is automatically resolve if not seen after this amount of time.
 - `slug` (String) The optional slug for this project.
-- `team` (String, Deprecated) The slug of the team to create the project for. **Deprecated** Use `teams` instead.
-- `teams` (Set of String) The slugs of the teams to create the project for.
 
 ### Read-Only
 
-- `color` (String)
-- `features` (List of String)
+- `features` (Set of String)
 - `id` (String) The ID of this resource.
 - `internal_id` (String) The internal ID for this project.
-- `is_bookmarked` (Boolean, Deprecated)
-- `is_public` (Boolean)
-- `project_id` (String, Deprecated) Use `internal_id` instead.
-- `status` (String)
+
+<a id="nestedatt--filters"></a>
+### Nested Schema for `filters`
+
+Optional:
+
+- `blacklisted_ips` (Set of String) Filter events from these IP addresses. (e.g. 127.0.0.1 or 10.0.0.0/8)
+- `error_messages` (Set of String) Filter events by error messages. Allows [glob pattern matching](https://en.wikipedia.org/wiki/Glob_(programming)). (e.g. TypeError* or *: integer division or modulo by zero)
+- `releases` (Set of String) Filter events from these releases. Allows [glob pattern matching](https://en.wikipedia.org/wiki/Glob_(programming)). (e.g. 1.* or [!3].[0-9].*)
 
 ## Import
 

@@ -46,6 +46,7 @@ resource "sentry_metric_alert" "main" {
       type              = "slack"
       target_type       = "specific"
       target_identifier = "#slack-channel"
+      input_channel_id  = "C0XXXXXXXXX"
       integration_id    = data.sentry_organization_integration.slack.id
     }
     alert_threshold = 300
@@ -77,6 +78,7 @@ resource "sentry_metric_alert" "main" {
 
 ### Optional
 
+- `comparison_delta` (Number) An optional int representing the time delta to use as the comparison period, in minutes. Required when using a percentage change threshold
 - `dataset` (String) The Sentry Alert category
 - `environment` (String) Perform Alert rule in a specific environment
 - `event_types` (List of String) The events type of dataset.
@@ -85,7 +87,7 @@ resource "sentry_metric_alert" "main" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) The ID of the metric alert.
 - `internal_id` (String) The internal ID for this metric alert.
 
 <a id="nestedblock--trigger"></a>
@@ -104,7 +106,7 @@ Optional:
 
 Read-Only:
 
-- `id` (String) The ID of this resource.
+- `id` (String) The ID of the trigger.
 
 <a id="nestedblock--trigger--action"></a>
 ### Nested Schema for `trigger.action`
@@ -116,12 +118,13 @@ Required:
 
 Optional:
 
+- `input_channel_id` (String) Slack channel ID to avoid rate-limiting, see [here](https://docs.sentry.io/product/integrations/notification-incidents/slack/#rate-limiting-error)
 - `integration_id` (Number)
 - `target_identifier` (String)
 
 Read-Only:
 
-- `id` (String) The ID of this resource.
+- `id` (String) The ID of the action.
 
 ## Import
 

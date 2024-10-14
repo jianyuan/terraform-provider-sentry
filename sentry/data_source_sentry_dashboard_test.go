@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 )
 
 func TestAccSentryDashboardDataSource_basic(t *testing.T) {
@@ -19,20 +19,22 @@ func TestAccSentryDashboardDataSource_basic(t *testing.T) {
 
 		return resource.ComposeTestCheckFunc(
 			testAccCheckSentryDashboardExists(name, &dashboardID),
-			resource.TestCheckResourceAttr(name, "organization", testOrganization),
+			resource.TestCheckResourceAttr(name, "organization", acctest.TestOrganization),
 			resource.TestCheckResourceAttr(name, "title", dashboardTitle),
 			resource.TestCheckResourceAttr(name, "widget.#", "1"),
 			resource.TestCheckTypeSetElemNestedAttrs(name, "widget.*", map[string]string{
 				"title":        "Custom Widget",
-				"display_type": "world_map",
+				"display_type": "table",
 			}),
 			resource.TestCheckResourceAttr(name, "widget.0.query.#", "1"),
 			resource.TestCheckTypeSetElemNestedAttrs(name, "widget.0.query.*", map[string]string{
 				"name":       "Metric",
-				"conditions": "!event.type:transaction",
+				"conditions": "!event.type:transaction has:geo.country_code",
 			}),
-			resource.TestCheckResourceAttr(name, "widget.0.query.0.fields.#", "1"),
-			resource.TestCheckResourceAttr(name, "widget.0.query.0.fields.0", "count()"),
+			resource.TestCheckResourceAttr(name, "widget.0.query.0.fields.#", "3"),
+			resource.TestCheckResourceAttr(name, "widget.0.query.0.fields.0", "geo.country_code"),
+			resource.TestCheckResourceAttr(name, "widget.0.query.0.fields.1", "geo.region"),
+			resource.TestCheckResourceAttr(name, "widget.0.query.0.fields.2", "count()"),
 			resource.TestCheckResourceAttr(name, "widget.0.query.0.aggregates.#", "1"),
 			resource.TestCheckResourceAttr(name, "widget.0.query.0.aggregates.0", "count()"),
 			resource.TestCheckResourceAttr(name, "widget.0.layout.#", "1"),
@@ -48,8 +50,8 @@ func TestAccSentryDashboardDataSource_basic(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: testAccProviderFactories,
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccSentryDashboardDataSourceConfig(dashboardTitle),
@@ -71,14 +73,14 @@ resource "sentry_dashboard" "test" {
 
 	widget {
 		title        = "Custom Widget"
-		display_type = "world_map"
+		display_type = "table"
 
 		query {
 			name       = "Metric"
 
-			fields     = ["count()"]
+			fields     = ["geo.country_code", "geo.region", "count()"]
 			aggregates = ["count()"]
-			conditions = "!event.type:transaction"
+			conditions = "!event.type:transaction has:geo.country_code"
 		}
 
 		layout {

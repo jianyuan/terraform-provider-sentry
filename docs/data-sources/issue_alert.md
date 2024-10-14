@@ -3,12 +3,12 @@
 page_title: "sentry_issue_alert Data Source - terraform-provider-sentry"
 subcategory: ""
 description: |-
-  Sentry Issue Alert data source. As the object structure of conditions, filters, and actions are undocumented, a tip is to set up an Issue Alert via the Web UI, and use this data source to copy its object structure to your resources.
+  Sentry Issue Alert data source. See the Sentry documentation https://docs.sentry.io/api/alerts/retrieve-an-issue-alert-rule-for-a-project/ for more information.
 ---
 
 # sentry_issue_alert (Data Source)
 
-Sentry Issue Alert data source. As the object structure of `conditions`, `filters`, and `actions` are undocumented, a tip is to set up an Issue Alert via the Web UI, and use this data source to copy its object structure to your resources.
+Sentry Issue Alert data source. See the [Sentry documentation](https://docs.sentry.io/api/alerts/retrieve-an-issue-alert-rule-for-a-project/) for more information.
 
 ## Example Usage
 
@@ -45,20 +45,18 @@ resource "sentry_issue_alert" "copy" {
 
 ### Required
 
-- `internal_id` (String) The internal ID for this issue alert.
-- `organization` (String) The slug of the organization the issue alert belongs to.
-- `project` (String) The slug of the project the issue alert belongs to.
+- `id` (String) The ID of this resource.
+- `organization` (String) The slug of the organization the resource belongs to.
+- `project` (String) The slug of the project the resource belongs to.
 
 ### Read-Only
 
 - `action_match` (String) Trigger actions when an event is captured by Sentry and `any` or `all` of the specified conditions happen.
-- `actions` (List of Map of String) List of actions.
-- `conditions` (List of Map of String) List of conditions.
+- `actions` (String) List of actions. In JSON string format.
+- `conditions` (String) List of conditions. In JSON string format.
 - `environment` (String) Perform issue alert in a specific environment.
-- `filter_match` (String) Trigger actions if `all`, `any`, or `none` of the specified filters match.
-- `filters` (List of Map of String) List of filters.
-- `frequency` (Number) Perform actions at most once every `X` minutes for this issue. Defaults to `30`.
-- `id` (String) The ID of this resource.
+- `filter_match` (String) A string determining which filters need to be true before any actions take place. Required when a value is provided for `filters`.
+- `filters` (String) A list of filters that determine if a rule fires after the necessary conditions have been met. In JSON string format.
+- `frequency` (Number) Perform actions at most once every `X` minutes for this issue.
 - `name` (String) The issue alert name.
-
-
+- `owner` (String) The ID of the team or user that owns the rule.

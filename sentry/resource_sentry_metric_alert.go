@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -26,6 +27,11 @@ func resourceSentryMetricAlert() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
+			"id": {
+				Description: "The ID of the metric alert.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 			"organization": {
 				Description: "The slug of the organization the metric alert belongs to.",
 				Type:        schema.TypeString,
@@ -44,7 +50,6 @@ func resourceSentryMetricAlert() *schema.Resource {
 			"environment": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Computed:    true,
 				Description: "Perform Alert rule in a specific environment",
 			},
 			"dataset": {
@@ -85,14 +90,20 @@ func resourceSentryMetricAlert() *schema.Resource {
 				Optional:    true,
 				Description: "The value at which the Alert rule resolves",
 			},
+			"comparison_delta": {
+				Type:        schema.TypeFloat,
+				Optional:    true,
+				Description: "An optional int representing the time delta to use as the comparison period, in minutes. Required when using a percentage change threshold",
+			},
 			"trigger": {
 				Type:     schema.TypeList,
 				Required: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Description: "The ID of the trigger.",
+							Type:        schema.TypeString,
+							Computed:    true,
 						},
 						"action": {
 							Type:     schema.TypeList,
@@ -100,8 +111,9 @@ func resourceSentryMetricAlert() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"id": {
-										Type:     schema.TypeString,
-										Computed: true,
+										Description: "The ID of the action.",
+										Type:        schema.TypeString,
+										Computed:    true,
 									},
 									"type": {
 										Type:     schema.TypeString,
@@ -114,6 +126,11 @@ func resourceSentryMetricAlert() *schema.Resource {
 									"target_identifier": {
 										Type:     schema.TypeString,
 										Optional: true,
+									},
+									"input_channel_id": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Slack channel ID to avoid rate-limiting, see [here](https://docs.sentry.io/product/integrations/notification-incidents/slack/#rate-limiting-error)",
 									},
 									"integration_id": {
 										Type:     schema.TypeInt,
@@ -145,7 +162,6 @@ func resourceSentryMetricAlert() *schema.Resource {
 			"owner": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Computed:    true,
 				Description: "Specifies the owner id of this Alert rule",
 			},
 			"internal_id": {
@@ -183,6 +199,9 @@ func resourceSentryMetricAlertObject(d *schema.ResourceData) *sentry.MetricAlert
 	}
 	if v, ok := d.GetOk("resolve_threshold"); ok {
 		alert.ResolveThreshold = sentry.Float64(v.(float64))
+	}
+	if v, ok := d.GetOk("comparison_delta"); ok {
+		alert.ComparisonDelta = sentry.Float64(v.(float64))
 	}
 	if v, ok := d.GetOk("owner"); ok {
 		alert.Owner = sentry.String(v.(string))
@@ -259,6 +278,7 @@ func resourceSentryMetricAlertRead(ctx context.Context, d *schema.ResourceData, 
 		d.Set("time_window", alert.TimeWindow),
 		d.Set("threshold_type", alert.ThresholdType),
 		d.Set("resolve_threshold", alert.ResolveThreshold),
+		d.Set("comparison_delta", alert.ComparisonDelta),
 		d.Set("trigger", flattenMetricAlertTriggers(alert.Triggers)),
 		d.Set("owner", alert.Owner),
 		d.Set("internal_id", alert.ID),
@@ -348,7 +368,12 @@ func expandMetricAlertTriggerActions(actionList []interface{}) []*sentry.MetricA
 		}
 		if v, ok := actionMap["target_identifier"].(string); ok {
 			if v != "" {
-				action.TargetIdentifier = sentry.String(v)
+				action.TargetIdentifier = &sentry.Int64OrString{IsString: true, StringVal: v}
+			}
+		}
+		if v, ok := actionMap["input_channel_id"].(string); ok {
+			if v != "" {
+				action.InputChannelID = sentry.String(v)
 			}
 		}
 		if v, ok := actionMap["integration_id"].(int); ok {
@@ -391,7 +416,14 @@ func flattenMetricAlertTriggerActions(actions []*sentry.MetricAlertTriggerAction
 		actionMap["id"] = action.ID
 		actionMap["type"] = action.Type
 		actionMap["target_type"] = action.TargetType
-		actionMap["target_identifier"] = action.TargetIdentifier
+		if action.TargetIdentifier != nil {
+			if action.TargetIdentifier.IsInt64 {
+				actionMap["target_identifier"] = strconv.FormatInt(action.TargetIdentifier.Int64Val, 10)
+			} else {
+				actionMap["target_identifier"] = action.TargetIdentifier.StringVal
+			}
+		}
+		actionMap["input_channel_id"] = action.InputChannelID
 		actionMap["integration_id"] = action.IntegrationID
 
 		actionList = append(actionList, actionMap)

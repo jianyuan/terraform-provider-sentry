@@ -116,5 +116,3 @@ Read-Only:
 - `id` (String)
 - `name` (String)
 - `order_by` (String)
-
-

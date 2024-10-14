@@ -148,12 +148,12 @@ resource "sentry_dashboard" "main" {
 
   widget {
     title        = "Errors by Country"
-    display_type = "world_map"
+    display_type = "table"
     interval     = "5m"
     widget_type  = "discover"
 
     query {
-      fields     = ["count()"]
+      fields     = ["geo.country_code", "geo.region", "count()"]
       aggregates = ["count()"]
       conditions = "!event.type:transaction has:geo.country_code"
       order_by   = "count()"
@@ -360,7 +360,7 @@ resource "sentry_dashboard" "main" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) The ID of the dashboard.
 - `internal_id` (String) The internal ID for this dashboard.
 
 <a id="nestedblock--widget"></a>
@@ -381,7 +381,7 @@ Optional:
 
 Read-Only:
 
-- `id` (String) The ID of this resource.
+- `id` (String) The ID of the widget.
 
 <a id="nestedblock--widget--layout"></a>
 ### Nested Schema for `widget.layout`
@@ -410,6 +410,14 @@ Optional:
 
 Read-Only:
 
-- `id` (String) The ID of this resource.
+- `id` (String) The ID of the query.
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+# import using the dashboard id from the URL:
+# https://sentry.io/dashboard/[dashboard-id]
+terraform import sentry_dashboard.default org-slug/dashboard-id
+```

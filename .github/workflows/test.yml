@@ -27,8 +27,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
           go-version-file: "go.mod"
           cache: true
@@ -42,8 +42,8 @@ jobs:
   generate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
           go-version-file: "go.mod"
           cache: true
@@ -58,26 +58,25 @@ jobs:
     name: Matrix Test
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     strategy:
       fail-fast: false
+      max-parallel: 1
       matrix:
         terraform:
-          - "0.12.*"
-          - "0.13.*"
-          - "0.14.*"
-          - "0.15.*"
-          - "1.0.*"
-          - "1.1.*"
-          - "1.2.*"
+          - "1.4.*"
+          - "1.5.*"
+          - "1.6.*"
+          - "1.7.*"
+          - "1.8.*"
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
           go-version-file: "go.mod"
           cache: true
 
-      - uses: hashicorp/setup-terraform@v2
+      - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
@@ -87,10 +86,13 @@ jobs:
           go mod download
 
       - name: TF acceptance tests
-        timeout-minutes: 10
+        timeout-minutes: 30
         env:
           TF_ACC: "1"
           SENTRY_TEST_ORGANIZATION: ${{ secrets.SENTRY_TEST_ORGANIZATION }}
+          SENTRY_TEST_PAGERDUTY_ORGANIZATION: ${{ secrets.SENTRY_TEST_PAGERDUTY_ORGANIZATION }}
+          SENTRY_TEST_OPSGENIE_ORGANIZATION: ${{ secrets.SENTRY_TEST_OPSGENIE_ORGANIZATION }}
+          SENTRY_TEST_OPSGENIE_INTEGRATION_KEY: ${{ secrets.SENTRY_TEST_OPSGENIE_INTEGRATION_KEY }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: |
-          go test -v -cover ./sentry
+          go test -v -cover -timeout 30m ./...

@@ -1,9 +1,17 @@
 package main
 
 import (
+	"context"
 	"flag"
+	"log"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
+	"github.com/hashicorp/terraform-plugin-framework/providerserver"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6/tf6server"
+	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
+	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
+	"github.com/jianyuan/terraform-provider-sentry/internal/pkg/must"
+	"github.com/jianyuan/terraform-provider-sentry/internal/provider"
 	"github.com/jianyuan/terraform-provider-sentry/sentry"
 )
 
@@ -21,16 +29,43 @@ var (
 )
 
 func main() {
-	var debugMode bool
+	ctx := context.Background()
 
-	flag.BoolVar(&debugMode, "debug", false, "set to true to run the provider with support for debuggers like delve")
+	var debug bool
+
+	flag.BoolVar(&debug, "debug", false, "set to true to run the provider with support for debuggers like delve")
 	flag.Parse()
 
-	opts := &plugin.ServeOpts{
-		Debug: debugMode,
-
-		ProviderFunc: sentry.NewProvider(version),
+	upgradedSdkProvider := must.Get(tf5to6server.UpgradeServer(
+		context.Background(),
+		sentry.NewProvider(version)().GRPCProvider,
+	))
+	providers := []func() tfprotov6.ProviderServer{
+		providerserver.NewProtocol6(provider.New(version)()),
+		func() tfprotov6.ProviderServer {
+			return upgradedSdkProvider
+		},
 	}
 
-	plugin.Serve(opts)
+	muxServer, err := tf6muxserver.NewMuxServer(ctx, providers...)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var serveOpts []tf6server.ServeOpt
+
+	if debug {
+		serveOpts = append(serveOpts, tf6server.WithManagedDebug())
+	}
+
+	err = tf6server.Serve(
+		"registry.terraform.io/jianyuan/sentry",
+		muxServer.ProviderServer,
+		serveOpts...,
+	)
+
+	if err != nil {
+		log.Fatal(err)
+	}
 }

@@ -37,5 +37,3 @@ data "sentry_team" "default" {
 - `is_member` (Boolean)
 - `is_pending` (Boolean)
 - `name` (String) The human readable name for this organization.
-
-

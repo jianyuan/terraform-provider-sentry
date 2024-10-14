@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
 )
 
 func init() {
@@ -38,8 +39,6 @@ func NewProvider(version string) func() *schema.Provider {
 
 			ResourcesMap: map[string]*schema.Resource{
 				"sentry_dashboard":                           resourceSentryDashboard(),
-				"sentry_issue_alert":                         resourceSentryIssueAlert(),
-				"sentry_key":                                 resourceSentryKey(),
 				"sentry_metric_alert":                        resourceSentryMetricAlert(),
 				"sentry_organization_code_mapping":           resourceSentryOrganizationCodeMapping(),
 				"sentry_organization_member":                 resourceSentryOrganizationMember(),
@@ -47,19 +46,13 @@ func NewProvider(version string) func() *schema.Provider {
 				"sentry_organization_repository_azuredevops": resourceSentryOrganizationRepositoryAzureDevOps(),
 				"sentry_organization":                        resourceSentryOrganization(),
 				"sentry_plugin":                              resourceSentryPlugin(),
-				"sentry_project":                             resourceSentryProject(),
-				"sentry_rule":                                resourceSentryRule(),
 				"sentry_team":                                resourceSentryTeam(),
 			},
 
 			DataSourcesMap: map[string]*schema.Resource{
-				"sentry_dashboard":                dataSourceSentryDashboard(),
-				"sentry_issue_alert":              dataSourceSentryIssueAlertSentryIssueAlert(),
-				"sentry_key":                      dataSourceSentryKey(),
-				"sentry_metric_alert":             dataSourceSentryMetricAlert(),
-				"sentry_organization":             dataSourceSentryOrganization(),
-				"sentry_organization_integration": dataSourceSentryOrganizationIntegration(),
-				"sentry_team":                     dataSourceSentryTeam(),
+				"sentry_dashboard":    dataSourceSentryDashboard(),
+				"sentry_metric_alert": dataSourceSentryMetricAlert(),
+				"sentry_team":         dataSourceSentryTeam(),
 			},
 		}
 
@@ -71,11 +64,17 @@ func NewProvider(version string) func() *schema.Provider {
 
 func configure(version string, p *schema.Provider) func(context.Context, *schema.ResourceData) (interface{}, diag.Diagnostics) {
 	return func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-		config := Config{
+		config := sentryclient.Config{
 			UserAgent: p.UserAgent("terraform-provider-sentry", version),
 			Token:     d.Get("token").(string),
 			BaseURL:   d.Get("base_url").(string),
 		}
-		return config.Client(ctx)
+		client, err := config.Client(ctx)
+
+		if err != nil {
+			return nil, diag.FromErr(err)
+		}
+
+		return client, nil
 	}
 }
