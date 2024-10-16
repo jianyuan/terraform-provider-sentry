@@ -112,6 +112,7 @@ func (p *SentryProvider) DataSources(ctx context.Context) []func() datasource.Da
 	return []func() datasource.DataSource{
 		NewAllClientKeysDataSource,
 		NewAllProjectsDataSource,
+		NewAllOrganizationMembersDataSource,
 		NewClientKeyDataSource,
 		NewIssueAlertDataSource,
 		NewOrganizationDataSource,
