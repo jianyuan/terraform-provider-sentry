@@ -26,11 +26,8 @@ Retrieve all organization members.
 <a id="nestedatt--members"></a>
 ### Nested Schema for `members`
 
-Required:
-
-- `email` (String) The email of the organization member.
-
 Read-Only:
 
+- `email` (String) The email of the organization member.
 - `id` (String) The ID of of the organization member.
 - `role` (String) This is the role of the organization member.

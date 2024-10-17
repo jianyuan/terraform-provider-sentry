@@ -78,7 +78,7 @@ func (d *AllOrganizationMembersDataSource) Schema(ctx context.Context, req datas
 						},
 						"email": schema.StringAttribute{
 							MarkdownDescription: "The email of the organization member.",
-							Required:            true,
+							Computed:            true,
 						},
 						"role": schema.StringAttribute{
 							MarkdownDescription: "This is the role of the organization member.",
