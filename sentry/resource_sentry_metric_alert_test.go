@@ -134,7 +134,6 @@ resource "sentry_metric_alert" "test" {
 			type              = "email"
 			target_type       = "team"
 			target_identifier = sentry_team.test.internal_id
-			integration_id    = 32
 		}
 
 		alert_threshold   = 1000
@@ -144,6 +143,12 @@ resource "sentry_metric_alert" "test" {
 	}
 
 	trigger {
+		action {
+			type              = "email"
+			target_type       = "team"
+			target_identifier = sentry_team.test.internal_id
+		}
+	
 		alert_threshold   = 500
 		label             = "warning"
 		resolve_threshold = 100.0

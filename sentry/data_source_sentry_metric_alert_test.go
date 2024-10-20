@@ -45,7 +45,7 @@ func TestAccSentryMetricAlertDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair(dn, "owners", rn, "owners"),
 					resource.TestCheckResourceAttr(dn, "trigger.#", "2"),
 					resource.TestCheckResourceAttrPair(dn, "triggers.0", rn, "triggers.0"),
-					resource.TestCheckResourceAttr(dn, "trigger.0.action.#", "0"),
+					resource.TestCheckResourceAttr(dn, "trigger.0.action.#", "1"),
 					resource.TestCheckResourceAttrPair(dn, "triggers.1", rn, "triggers.1"),
 					resource.TestCheckResourceAttr(dn, "trigger.1.action.#", "1"),
 					testAccCheckSentryMetricAlertExists(rnCopy, &alertCopyID),
@@ -85,6 +85,12 @@ resource "sentry_metric_alert" "test" {
 	resolve_threshold = 100.0
 
 	trigger {
+		action {
+			type              = "email"
+			target_type       = "team"
+			target_identifier = sentry_team.test.internal_id
+		}
+
 		alert_threshold   = 1000
 		label             = "critical"
 		resolve_threshold = 100.0

@@ -107,7 +107,7 @@ func resourceSentryMetricAlert() *schema.Resource {
 						},
 						"action": {
 							Type:     schema.TypeList,
-							Optional: true,
+							Required: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"id": {

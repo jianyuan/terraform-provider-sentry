@@ -95,13 +95,13 @@ resource "sentry_metric_alert" "main" {
 
 Required:
 
+- `action` (Block List, Min: 1) (see [below for nested schema](#nestedblock--trigger--action))
 - `alert_threshold` (Number)
 - `label` (String)
 - `threshold_type` (Number)
 
 Optional:
 
-- `action` (Block List) (see [below for nested schema](#nestedblock--trigger--action))
 - `resolve_threshold` (Number)
 
 Read-Only:
