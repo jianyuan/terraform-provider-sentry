@@ -38,14 +38,15 @@ func NewProvider(version string) func() *schema.Provider {
 			},
 
 			ResourcesMap: map[string]*schema.Resource{
-				"sentry_dashboard":                      resourceSentryDashboard(),
-				"sentry_metric_alert":                   resourceSentryMetricAlert(),
-				"sentry_organization_code_mapping":      resourceSentryOrganizationCodeMapping(),
-				"sentry_organization_member":            resourceSentryOrganizationMember(),
-				"sentry_organization_repository_github": resourceSentryOrganizationRepositoryGithub(),
-				"sentry_organization":                   resourceSentryOrganization(),
-				"sentry_plugin":                         resourceSentryPlugin(),
-				"sentry_team":                           resourceSentryTeam(),
+				"sentry_dashboard":                           resourceSentryDashboard(),
+				"sentry_metric_alert":                        resourceSentryMetricAlert(),
+				"sentry_organization_code_mapping":           resourceSentryOrganizationCodeMapping(),
+				"sentry_organization_member":                 resourceSentryOrganizationMember(),
+				"sentry_organization_repository_github":      resourceSentryOrganizationRepositoryGithub(),
+				"sentry_organization_repository_azuredevops": resourceSentryOrganizationRepositoryAzureDevOps(),
+				"sentry_organization":                        resourceSentryOrganization(),
+				"sentry_plugin":                              resourceSentryPlugin(),
+				"sentry_team":                                resourceSentryTeam(),
 			},
 
 			DataSourcesMap: map[string]*schema.Resource{
