@@ -70,7 +70,7 @@ func (r *OrganizationRepositoryResource) Schema(ctx context.Context, req resourc
 				},
 			},
 			"identifier": schema.StringAttribute{
-				MarkdownDescription: "The identifier of the repository. For Github, it is `{github_org}/{github_repo}`.",
+				MarkdownDescription: "The identifier of the repository. For GitHub, GitLab and BitBucket, it is `{organization}/{repository}`. For VSTS, it is the [repository ID](https://learn.microsoft.com/en-us/rest/api/azure/devops/git/repositories/get#get-a-repository-by-repositoryid).",
 				Required:            true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
@@ -141,7 +141,6 @@ out:
 		if apiResp.Cursor == "" {
 			break
 		}
-
 		params.Cursor = apiResp.Cursor
 	}
 

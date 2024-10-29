@@ -35,7 +35,7 @@ func buildFourPartID(a, b, c, d string) string {
 
 func splitFourPartID(id, a, b, c, d string) (string, string, string, string, error) {
 	parts := strings.Split(id, "/")
-	if len(parts) != 3 || parts[0] == "" || parts[1] == "" || parts[2] == "" || parts[3] == "" {
+	if len(parts) != 4 || parts[0] == "" || parts[1] == "" || parts[2] == "" || parts[3] == "" {
 		return "", "", "", "", fmt.Errorf("unexpected format of ID (%s), expected %s/%s/%s/%s", id, a, b, c, d)
 	}
 	return parts[0], parts[1], parts[2], parts[3], nil

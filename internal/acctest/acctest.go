@@ -29,6 +29,18 @@ var (
 	// TestOpsgenieIntegrationKey is the Opsgenie integration key used for acceptance tests.
 	TestOpsgenieIntegrationKey = os.Getenv("SENTRY_TEST_OPSGENIE_INTEGRATION_KEY")
 
+	// TestGitHubInstallationId is the GitHub installation ID used for acceptance tests.
+	TestGitHubInstallationId = os.Getenv("SENTRY_TEST_GITHUB_INSTALLATION_ID")
+
+	// TestGitHubRepositoryIdentifier is the GitHub repository identifier used for acceptance tests.
+	TestGitHubRepositoryIdentifier = os.Getenv("SENTRY_TEST_GITHUB_REPOSITORY_IDENTIFIER")
+
+	// TestVSTSInstallationId is the VSTS installation ID used for acceptance tests.
+	TestVSTSInstallationId = os.Getenv("SENTRY_TEST_VSTS_INSTALLATION_ID")
+
+	// TestVSTSRepositoryIdentifier is the VSTS repository identifier used for acceptance tests.
+	TestVSTSRepositoryIdentifier = os.Getenv("SENTRY_TEST_VSTS_REPOSITORY_IDENTIFIER")
+
 	// SharedClient is a shared Sentry client for acceptance tests.
 	SharedClient *sentry.Client
 )
