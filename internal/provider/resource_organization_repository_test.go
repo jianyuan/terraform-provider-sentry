@@ -22,64 +22,72 @@ func init() {
 	resource.AddTestSweepers("sentry_organization_repository", &resource.Sweeper{
 		Name: "sentry_organization_repository",
 		F: func(r string) error {
-			ctx := context.Background()
-
-			listParams := &sentry.ListOrganizationRepositoriesParams{
-				Status: "active",
-			}
-
-			for {
-				repos, resp, err := acctest.SharedClient.OrganizationRepositories.List(ctx, acctest.TestOrganization, listParams)
-				if err != nil {
-					return err
-				}
-
-				for _, repo := range repos {
-					found := false
-					if acctest.TestGitHubInstallationId != "" && repo.Provider.ID == "integrations:github" && repo.IntegrationId == acctest.TestGitHubInstallationId && repo.ExternalSlug == acctest.TestGitHubRepositoryIdentifier {
-						found = true
-					} else if acctest.TestVSTSInstallationId != "" && repo.Provider.ID == "integrations:vsts" && repo.IntegrationId == acctest.TestVSTSInstallationId && repo.ExternalSlug == acctest.TestVSTSRepositoryIdentifier {
-						found = true
-					}
-
-					if !found {
-						continue
-					}
-
-					log.Printf("[INFO] Destroying OrganizationRepository: %s", repo.ID)
-
-					_, _, err := acctest.SharedClient.OrganizationRepositories.Delete(ctx, acctest.TestOrganization, repo.ID)
-					if err != nil {
-						log.Printf("[ERROR] Failed to destroy OrganizationRepository %q: %s", repo.ID, err)
-						continue
-					}
-
-					log.Printf("[INFO] OrganizationRepository %q has been destroyed.", repo.ID)
-				}
-
-				if resp.Cursor == "" {
-					break
-				}
-				listParams.Cursor = resp.Cursor
-			}
-
-			return nil
+			return testAccOrganizationRepositoryResourcePreCheck()
 		},
 	})
 }
 
-func TestAccOrganizationRepositoryResource_GitHub(t *testing.T) {
-	if acctest.TestGitHubInstallationId == "" {
-		t.Skip("Skipping test due to missing SENTRY_TEST_GITHUB_INSTALLATION_ID environment variable")
-	}
-	if acctest.TestGitHubRepositoryIdentifier == "" {
-		t.Skip("Skipping test due to missing SENTRY_TEST_GITHUB_REPOSITORY_IDENTIFIER environment variable")
+func testAccOrganizationRepositoryResourcePreCheck() error {
+	ctx := context.Background()
+
+	listParams := &sentry.ListOrganizationRepositoriesParams{
+		Status: "active",
 	}
 
+	for {
+		repos, resp, err := acctest.SharedClient.OrganizationRepositories.List(ctx, acctest.TestOrganization, listParams)
+		if err != nil {
+			return err
+		}
+
+		for _, repo := range repos {
+			found := false
+			if acctest.TestGitHubInstallationId != "" && repo.Provider.ID == "integrations:github" && repo.IntegrationId == acctest.TestGitHubInstallationId && repo.ExternalSlug == acctest.TestGitHubRepositoryIdentifier {
+				found = true
+			} else if acctest.TestVSTSInstallationId != "" && repo.Provider.ID == "integrations:vsts" && repo.IntegrationId == acctest.TestVSTSInstallationId && repo.ExternalSlug == acctest.TestVSTSRepositoryIdentifier {
+				found = true
+			}
+
+			if !found {
+				continue
+			}
+
+			log.Printf("[INFO] Destroying OrganizationRepository: %s", repo.ID)
+
+			_, _, err := acctest.SharedClient.OrganizationRepositories.Delete(ctx, acctest.TestOrganization, repo.ID)
+			if err != nil {
+				log.Printf("[ERROR] Failed to destroy OrganizationRepository %q: %s", repo.ID, err)
+				continue
+			}
+
+			log.Printf("[INFO] OrganizationRepository %q has been destroyed.", repo.ID)
+		}
+
+		if resp.Cursor == "" {
+			break
+		}
+		listParams.Cursor = resp.Cursor
+	}
+
+	return nil
+}
+
+func TestAccOrganizationRepositoryResource_GitHub(t *testing.T) {
 	rn := "sentry_organization_repository.test"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
+		PreCheck: func() {
+			acctest.PreCheck(t)
+
+			if acctest.TestGitHubInstallationId == "" {
+				t.Skip("Skipping test due to missing SENTRY_TEST_GITHUB_INSTALLATION_ID environment variable")
+			}
+			if acctest.TestGitHubRepositoryIdentifier == "" {
+				t.Skip("Skipping test due to missing SENTRY_TEST_GITHUB_REPOSITORY_IDENTIFIER environment variable")
+			}
+
+			testAccOrganizationRepositoryResourcePreCheck()
+		},
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -117,17 +125,21 @@ func TestAccOrganizationRepositoryResource_GitHub(t *testing.T) {
 }
 
 func TestAccOrganizationRepositoryResource_VSTS(t *testing.T) {
-	if acctest.TestVSTSInstallationId == "" {
-		t.Skip("Skipping test due to missing SENTRY_TEST_VSTS_INSTALLATION_ID environment variable")
-	}
-	if acctest.TestVSTSRepositoryIdentifier == "" {
-		t.Skip("Skipping test due to missing SENTRY_TEST_VSTS_REPOSITORY_IDENTIFIER environment variable")
-	}
-
 	rn := "sentry_organization_repository.test"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
+		PreCheck: func() {
+			acctest.PreCheck(t)
+
+			if acctest.TestVSTSInstallationId == "" {
+				t.Skip("Skipping test due to missing SENTRY_TEST_VSTS_INSTALLATION_ID environment variable")
+			}
+			if acctest.TestVSTSRepositoryIdentifier == "" {
+				t.Skip("Skipping test due to missing SENTRY_TEST_VSTS_REPOSITORY_IDENTIFIER environment variable")
+			}
+
+			testAccOrganizationRepositoryResourcePreCheck()
+		},
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{

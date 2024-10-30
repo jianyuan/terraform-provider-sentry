@@ -15,18 +15,20 @@ import (
 )
 
 func TestAccIntegrationOpsgenieResource(t *testing.T) {
-	if acctest.TestOpsgenieOrganization == "" {
-		t.Skip("Skipping test due to missing SENTRY_TEST_OPSGENIE_ORGANIZATION environment variable")
-	}
-	if acctest.TestOpsgenieIntegrationKey == "" {
-		t.Skip("Skipping test due to missing SENTRY_TEST_OPSGENIE_INTEGRATION_KEY environment variable")
-	}
-
 	teamName := acctest.RandomWithPrefix("tf-opsgenie-service")
 	rn := "sentry_integration_opsgenie.test"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
+		PreCheck: func() {
+			acctest.PreCheck(t)
+
+			if acctest.TestOpsgenieOrganization == "" {
+				t.Skip("Skipping test due to missing SENTRY_TEST_OPSGENIE_ORGANIZATION environment variable")
+			}
+			if acctest.TestOpsgenieIntegrationKey == "" {
+				t.Skip("Skipping test due to missing SENTRY_TEST_OPSGENIE_INTEGRATION_KEY environment variable")
+			}
+		},
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy: func(s *terraform.State) error {
 			for _, rs := range s.RootModule().Resources {

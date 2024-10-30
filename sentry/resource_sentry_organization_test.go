@@ -14,11 +14,6 @@ import (
 )
 
 func TestAccSentryOrganization_basic(t *testing.T) {
-	if os.Getenv("SENTRY_RUN_ORGANIZATION_TEST") == "" {
-		// Organization creation is rate limited. Only run the test once in a while.
-		t.Skip("Skipping Organization tests. Set SENTRY_RUN_ORGANIZATION_TEST=true to enable.")
-	}
-
 	orgName := acctest.RandomWithPrefix("tf-org")
 	rn := "sentry_organization.test_organization"
 
@@ -40,7 +35,14 @@ func TestAccSentryOrganization_basic(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
+		PreCheck: func() {
+			acctest.PreCheck(t)
+
+			if os.Getenv("SENTRY_RUN_ORGANIZATION_TEST") == "" {
+				// Organization creation is rate limited. Only run the test once in a while.
+				t.Skip("Skipping Organization tests. Set SENTRY_RUN_ORGANIZATION_TEST=true to enable.")
+			}
+		},
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccCheckSentryOrganizationDestroy,
 		Steps: []resource.TestStep{

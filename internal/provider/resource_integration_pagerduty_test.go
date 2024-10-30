@@ -15,16 +15,18 @@ import (
 )
 
 func TestAccIntegrationPagerDutyResource(t *testing.T) {
-	if acctest.TestPagerDutyOrganization == "" {
-		t.Skip("Skipping test due to missing SENTRY_TEST_PAGERDUTY_ORGANIZATION environment variable")
-	}
-
 	serviceName := acctest.RandomWithPrefix("tf-pagerduty-service")
 	integrationKey := acctest.RandomWithPrefix("tf-integration-key")
 	rn := "sentry_integration_pagerduty.test"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
+		PreCheck: func() {
+			acctest.PreCheck(t)
+
+			if acctest.TestPagerDutyOrganization == "" {
+				t.Skip("Skipping test due to missing SENTRY_TEST_PAGERDUTY_ORGANIZATION environment variable")
+			}
+		},
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy: func(s *terraform.State) error {
 			for _, rs := range s.RootModule().Resources {
