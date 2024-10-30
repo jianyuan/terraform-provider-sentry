@@ -13,7 +13,8 @@ import (
 // no UpdateContext, unsupported by this integration. will have to ForceNew
 func resourceSentryOrganizationRepositoryGithub() *schema.Resource {
 	return &schema.Resource{
-		Description: "Sentry Github Organization Repository resource.",
+		Description:        "Sentry Github Organization Repository resource. This resource is deprecated and will be removed in the next major version of the provider. Use `sentry_organization_repository` instead.",
+		DeprecationMessage: "This resource is deprecated and will be removed in the next major version of the provider. Use `sentry_organization_repository` instead.",
 
 		CreateContext: resourceSentryOrganizationRepositoryGithubCreate,
 		ReadContext:   resourceSentryOrganizationRepositoryGithubRead,
