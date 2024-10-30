@@ -3,12 +3,12 @@
 page_title: "sentry_organization_repository_github Resource - terraform-provider-sentry"
 subcategory: ""
 description: |-
-  Sentry Github Organization Repository resource.
+  Sentry Github Organization Repository resource. This resource is deprecated and will be removed in the next major version of the provider. Use sentry_organization_repository instead.
 ---
 
 # sentry_organization_repository_github (Resource)
 
-Sentry Github Organization Repository resource.
+Sentry Github Organization Repository resource. This resource is deprecated and will be removed in the next major version of the provider. Use `sentry_organization_repository` instead.
 
 ## Example Usage
 
