@@ -200,7 +200,7 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 				MarkdownDescription: "The platform for this project. For a list of valid values, [see this page](https://github.com/jianyuan/terraform-provider-sentry/blob/main/internal/sentryplatforms/platforms.txt). Use `other` for platforms not listed.",
 				Optional:            true,
 				Validators: []validator.String{
-					stringvalidator.OneOf(sentryplatforms.Platforms...),
+					stringvalidator.OneOf(append([]string{"other"}, sentryplatforms.Platforms...)...),
 				},
 			},
 			"default_rules": schema.BoolAttribute{
