@@ -11,7 +11,7 @@ require (
 	github.com/hashicorp/terraform-plugin-framework-validators v0.14.0
 	github.com/hashicorp/terraform-plugin-go v0.25.0
 	github.com/hashicorp/terraform-plugin-log v0.9.0
-	github.com/hashicorp/terraform-plugin-mux v0.16.0
+	github.com/hashicorp/terraform-plugin-mux v0.17.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.34.0
 	github.com/jianyuan/go-sentry/v2 v2.8.2
 	golang.org/x/oauth2 v0.23.0
