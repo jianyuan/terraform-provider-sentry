@@ -126,19 +126,13 @@ func (data *ProjectResourceModel) Fill(organization string, project sentry.Proje
 
 	data.InternalId = types.StringValue(project.ID)
 
-	if data.DigestsMinDelay.IsNull() {
-		data.DigestsMinDelay = types.Int64Null()
-	} else {
+	if !data.DigestsMinDelay.IsNull() {
 		data.DigestsMinDelay = types.Int64Value(int64(project.DigestsMinDelay))
 	}
-	if data.DigestsMaxDelay.IsNull() {
-		data.DigestsMaxDelay = types.Int64Null()
-	} else {
+	if !data.DigestsMaxDelay.IsNull() {
 		data.DigestsMaxDelay = types.Int64Value(int64(project.DigestsMaxDelay))
 	}
-	if data.ResolveAge.IsNull() {
-		data.ResolveAge = types.Int64Null()
-	} else {
+	if !data.ResolveAge.IsNull() {
 		data.ResolveAge = types.Int64Value(int64(project.ResolveAge))
 	}
 
