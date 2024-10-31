@@ -94,20 +94,22 @@ func (data *ProjectResourceFilterModel) Fill(project sentry.Project) error {
 }
 
 type ProjectResourceModel struct {
-	Id              types.String                `tfsdk:"id"`
-	Organization    types.String                `tfsdk:"organization"`
-	Teams           types.Set                   `tfsdk:"teams"`
-	Name            types.String                `tfsdk:"name"`
-	Slug            types.String                `tfsdk:"slug"`
-	Platform        types.String                `tfsdk:"platform"`
-	DefaultRules    types.Bool                  `tfsdk:"default_rules"`
-	DefaultKey      types.Bool                  `tfsdk:"default_key"`
-	InternalId      types.String                `tfsdk:"internal_id"`
-	Features        types.Set                   `tfsdk:"features"`
-	DigestsMinDelay types.Int64                 `tfsdk:"digests_min_delay"`
-	DigestsMaxDelay types.Int64                 `tfsdk:"digests_max_delay"`
-	ResolveAge      types.Int64                 `tfsdk:"resolve_age"`
-	Filters         *ProjectResourceFilterModel `tfsdk:"filters"`
+	Id                   types.String                `tfsdk:"id"`
+	Organization         types.String                `tfsdk:"organization"`
+	Teams                types.Set                   `tfsdk:"teams"`
+	Name                 types.String                `tfsdk:"name"`
+	Slug                 types.String                `tfsdk:"slug"`
+	Platform             types.String                `tfsdk:"platform"`
+	DefaultRules         types.Bool                  `tfsdk:"default_rules"`
+	DefaultKey           types.Bool                  `tfsdk:"default_key"`
+	InternalId           types.String                `tfsdk:"internal_id"`
+	Features             types.Set                   `tfsdk:"features"`
+	DigestsMinDelay      types.Int64                 `tfsdk:"digests_min_delay"`
+	DigestsMaxDelay      types.Int64                 `tfsdk:"digests_max_delay"`
+	ResolveAge           types.Int64                 `tfsdk:"resolve_age"`
+	Filters              *ProjectResourceFilterModel `tfsdk:"filters"`
+	FingerprintingRules  types.String                `tfsdk:"fingerprinting_rules"`
+	GroupingEnhancements types.String                `tfsdk:"grouping_enhancements"`
 }
 
 func (data *ProjectResourceModel) Fill(organization string, project sentry.Project) error {
@@ -154,6 +156,26 @@ func (data *ProjectResourceModel) Fill(organization string, project sentry.Proje
 
 	if data.Filters != nil {
 		data.Filters.Fill(project)
+	}
+
+	if project.FingerprintingRules == "" {
+		if !data.FingerprintingRules.IsNull() {
+			data.FingerprintingRules = types.StringNull()
+		}
+	} else {
+		if data.FingerprintingRules.IsNull() || strings.TrimRight(data.FingerprintingRules.ValueString(), "\n") != project.FingerprintingRules {
+			data.FingerprintingRules = types.StringValue(project.FingerprintingRules)
+		}
+	}
+
+	if project.GroupingEnhancements == "" {
+		if !data.GroupingEnhancements.IsNull() {
+			data.GroupingEnhancements = types.StringNull()
+		}
+	} else {
+		if data.GroupingEnhancements.IsNull() || strings.TrimRight(data.GroupingEnhancements.ValueString(), "\n") != project.GroupingEnhancements {
+			data.GroupingEnhancements = types.StringValue(project.GroupingEnhancements)
+		}
 	}
 
 	return nil
@@ -267,6 +289,14 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 					},
 				},
 			},
+			"fingerprinting_rules": schema.StringAttribute{
+				MarkdownDescription: "This can be used to modify the fingerprint rules on the server with custom rules. Rules follow the pattern `matcher:glob -> fingerprint, values`. To learn more about fingerprint rules, [read the docs](https://docs.sentry.io/concepts/data-management/event-grouping/fingerprint-rules/).",
+				Optional:            true,
+			},
+			"grouping_enhancements": schema.StringAttribute{
+				MarkdownDescription: "This can be used to enhance the grouping algorithm with custom rules. Rules follow the pattern `matcher:glob [v^]?[+-]flag`. To learn more about stack trace rules, [read the docs](https://docs.sentry.io/concepts/data-management/event-grouping/stack-trace-rules/).",
+				Optional:            true,
+			},
 		},
 	}
 }
@@ -356,6 +386,16 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 			}
 			updateParams.Options["filters:error_messages"] = strings.Join(values, "\n")
 		}
+	}
+	if data.FingerprintingRules.IsNull() {
+		updateParams.FingerprintingRules = sentry.String("")
+	} else {
+		updateParams.FingerprintingRules = sentry.String(data.FingerprintingRules.ValueString())
+	}
+	if data.GroupingEnhancements.IsNull() {
+		updateParams.GroupingEnhancements = sentry.String("")
+	} else {
+		updateParams.GroupingEnhancements = sentry.String(data.GroupingEnhancements.ValueString())
 	}
 
 	project, apiResp, err := r.client.Projects.Update(
@@ -500,6 +540,16 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 			}
 			params.Options["filters:error_messages"] = strings.Join(values, "\n")
 		}
+	}
+	if plan.FingerprintingRules.IsNull() {
+		params.FingerprintingRules = sentry.String("")
+	} else {
+		params.FingerprintingRules = sentry.String(plan.FingerprintingRules.ValueString())
+	}
+	if plan.GroupingEnhancements.IsNull() {
+		params.GroupingEnhancements = sentry.String("")
+	} else {
+		params.GroupingEnhancements = sentry.String(plan.GroupingEnhancements.ValueString())
 	}
 
 	project, apiResp, err := r.client.Projects.Update(

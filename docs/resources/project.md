@@ -50,6 +50,8 @@ resource "sentry_project" "default" {
 - `digests_max_delay` (Number) The maximum amount of time (in seconds) to wait between scheduling digests for delivery.
 - `digests_min_delay` (Number) The minimum amount of time (in seconds) to wait between scheduling digests for delivery after the initial scheduling.
 - `filters` (Attributes) Custom filters for this project. (see [below for nested schema](#nestedatt--filters))
+- `fingerprinting_rules` (String) This can be used to modify the fingerprint rules on the server with custom rules. Rules follow the pattern `matcher:glob -> fingerprint, values`. To learn more about fingerprint rules, [read the docs](https://docs.sentry.io/concepts/data-management/event-grouping/fingerprint-rules/).
+- `grouping_enhancements` (String) This can be used to enhance the grouping algorithm with custom rules. Rules follow the pattern `matcher:glob [v^]?[+-]flag`. To learn more about stack trace rules, [read the docs](https://docs.sentry.io/concepts/data-management/event-grouping/stack-trace-rules/).
 - `platform` (String) The platform for this project. For a list of valid values, [see this page](https://github.com/jianyuan/terraform-provider-sentry/blob/main/internal/sentryplatforms/platforms.txt). Use `other` for platforms not listed.
 - `resolve_age` (Number) Hours in which an issue is automatically resolve if not seen after this amount of time.
 - `slug` (String) The optional slug for this project.
