@@ -79,6 +79,8 @@ func TestAccProjectResource_basic(t *testing.T) {
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_max_delay"), knownvalue.Null()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("resolve_age"), knownvalue.Null()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("fingerprinting_rules"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("grouping_enhancements"), knownvalue.Null()),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -172,6 +174,8 @@ func TestAccProjectResource_filters(t *testing.T) {
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_min_delay"), knownvalue.Null()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_max_delay"), knownvalue.Null()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("resolve_age"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("fingerprinting_rules"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("grouping_enhancements"), knownvalue.Null()),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -248,6 +252,94 @@ func TestAccProjectResource_filters(t *testing.T) {
 						"releases":        knownvalue.Null(),
 						"error_messages":  knownvalue.Null(),
 					})),
+				),
+			},
+		},
+	})
+}
+
+func TestAccProjectResource_issueGrouping(t *testing.T) {
+	teamName := acctest.RandomWithPrefix("tf-team")
+	projectName := acctest.RandomWithPrefix("tf-project")
+	rn := "sentry_project.test"
+
+	checks := []statecheck.StateCheck{
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("teams"), knownvalue.SetExact([]knownvalue.Check{knownvalue.StringExact(teamName)})),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(projectName)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("slug"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("platform"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_rules"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_key"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("internal_id"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("features"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_min_delay"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_max_delay"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("resolve_age"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.Null()),
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
+					TeamName:    teamName,
+					ProjectName: projectName,
+					Extras: `
+						fingerprinting_rules = <<-EOT
+							# force all errors of the same type to have the same fingerprint
+							error.type:DatabaseUnavailable -> system-down
+						EOT
+						grouping_enhancements = <<-EOT
+							# remove all frames above a certain function from grouping
+							stack.function:panic_handler ^-group
+						EOT
+					`,
+				}),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("fingerprinting_rules"), knownvalue.StringExact("# force all errors of the same type to have the same fingerprint\nerror.type:DatabaseUnavailable -> system-down\n")),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("grouping_enhancements"), knownvalue.StringExact("# remove all frames above a certain function from grouping\nstack.function:panic_handler ^-group\n")),
+				),
+			},
+			{
+				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
+					TeamName:    teamName,
+					ProjectName: projectName,
+					Extras: `
+						fingerprinting_rules = <<-EOT
+							# force all errors of the same type to have the same fingerprint
+							error.type:DatabaseUnavailable -> system-down
+							# force all memory allocation errors to be grouped together
+							stack.function:malloc -> memory-allocation-error
+						EOT
+						grouping_enhancements = <<-EOT
+							# remove all frames above a certain function from grouping
+							stack.function:panic_handler ^-group
+							# mark all functions following a prefix in-app
+							stack.function:mylibrary_* +app
+						EOT
+					`,
+				}),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("fingerprinting_rules"), knownvalue.StringExact("# force all errors of the same type to have the same fingerprint\nerror.type:DatabaseUnavailable -> system-down\n# force all memory allocation errors to be grouped together\nstack.function:malloc -> memory-allocation-error\n")),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("grouping_enhancements"), knownvalue.StringExact("# remove all frames above a certain function from grouping\nstack.function:panic_handler ^-group\n# mark all functions following a prefix in-app\nstack.function:mylibrary_* +app\n")),
+				),
+			},
+			{
+				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
+					TeamName:    teamName,
+					ProjectName: projectName,
+				}),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("fingerprinting_rules"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("grouping_enhancements"), knownvalue.Null()),
 				),
 			},
 		},
