@@ -2,7 +2,7 @@ module github.com/jianyuan/terraform-provider-sentry
 
 go 1.22.0
 
-toolchain go1.23.2
+toolchain go1.23.3
 
 require (
 	github.com/hashicorp/go-multierror v1.1.1
