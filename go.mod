@@ -1,13 +1,13 @@
 module github.com/jianyuan/terraform-provider-sentry
 
-go 1.22.0
+go 1.22.7
 
 toolchain go1.23.3
 
 require (
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/go-retryablehttp v0.7.7
-	github.com/hashicorp/terraform-plugin-docs v0.19.4
+	github.com/hashicorp/terraform-plugin-docs v0.20.0
 	github.com/hashicorp/terraform-plugin-framework-validators v0.15.0
 	github.com/hashicorp/terraform-plugin-go v0.25.0
 	github.com/hashicorp/terraform-plugin-log v0.9.0
@@ -21,12 +21,12 @@ require (
 require (
 	github.com/BurntSushi/toml v1.2.1 // indirect
 	github.com/Kunde21/markdownfmt/v3 v3.1.0 // indirect
-	github.com/bmatcuk/doublestar/v4 v4.6.1 // indirect
+	github.com/bmatcuk/doublestar/v4 v4.7.1 // indirect
 	github.com/hashicorp/cli v1.1.6 // indirect
 	github.com/hashicorp/go-cty v1.4.1-0.20200723130312-85980079f637 // indirect
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
-	github.com/yuin/goldmark v1.7.1 // indirect
+	github.com/yuin/goldmark v1.7.7 // indirect
 	github.com/yuin/goldmark-meta v1.1.0 // indirect
 	go.abhg.dev/goldmark/frontmatter v0.2.0 // indirect
 	golang.org/x/exp v0.0.0-20240904232852-e7e105dedf7e // indirect
