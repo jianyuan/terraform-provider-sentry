@@ -2,29 +2,15 @@ package provider
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 )
-
-var _ resource.Resource = &ProjectSpikeProtectionResource{}
-var _ resource.ResourceWithConfigure = &ProjectSpikeProtectionResource{}
-var _ resource.ResourceWithImportState = &ProjectSpikeProtectionResource{}
-
-func NewProjectSpikeProtectionResource() resource.Resource {
-	return &ProjectSpikeProtectionResource{}
-}
-
-type ProjectSpikeProtectionResource struct {
-	baseResource
-}
 
 type ProjectSpikeProtectionResourceModel struct {
 	Id           types.String `tfsdk:"id"`
@@ -44,6 +30,18 @@ func (data *ProjectSpikeProtectionResourceModel) Fill(organization string, proje
 	return nil
 }
 
+var _ resource.Resource = &ProjectSpikeProtectionResource{}
+var _ resource.ResourceWithConfigure = &ProjectSpikeProtectionResource{}
+var _ resource.ResourceWithImportState = &ProjectSpikeProtectionResource{}
+
+func NewProjectSpikeProtectionResource() resource.Resource {
+	return &ProjectSpikeProtectionResource{}
+}
+
+type ProjectSpikeProtectionResource struct {
+	baseResource
+}
+
 func (r *ProjectSpikeProtectionResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_project_spike_protection"
 }
@@ -53,21 +51,9 @@ func (r *ProjectSpikeProtectionResource) Schema(ctx context.Context, req resourc
 		MarkdownDescription: "Sentry Project Spike Protection resource. This resource is used to create and manage spike protection for a project.",
 
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				MarkdownDescription: "The ID of this resource.",
-				Computed:            true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-			},
-			"organization": schema.StringAttribute{
-				MarkdownDescription: "The slug of the organization the project belongs to.",
-				Required:            true,
-			},
-			"project": schema.StringAttribute{
-				MarkdownDescription: "The slug of the project to enable or disable spike protection for.",
-				Required:            true,
-			},
+			"id":           ResourceIdAttribute(),
+			"organization": ResourceOrganizationAttribute(),
+			"project":      ResourceProjectAttribute(),
 			"enabled": schema.BoolAttribute{
 				MarkdownDescription: "Toggle the browser-extensions, localhost, filtered-transaction, or web-crawlers filter on or off.",
 				Required:            true,
@@ -80,7 +66,6 @@ func (r *ProjectSpikeProtectionResource) Create(ctx context.Context, req resourc
 	var data ProjectSpikeProtectionResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -94,7 +79,7 @@ func (r *ProjectSpikeProtectionResource) Create(ctx context.Context, req resourc
 			},
 		)
 		if err != nil {
-			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error enabling spike protection: %s", err.Error()))
+			diagutils.AddClientError(resp.Diagnostics, "enable", err)
 			return
 		}
 	} else {
@@ -106,7 +91,7 @@ func (r *ProjectSpikeProtectionResource) Create(ctx context.Context, req resourc
 			},
 		)
 		if err != nil {
-			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error disabling spike protection: %s", err.Error()))
+			diagutils.AddClientError(resp.Diagnostics, "disable", err)
 			return
 		}
 	}
@@ -131,17 +116,17 @@ func (r *ProjectSpikeProtectionResource) Read(ctx context.Context, req resource.
 		data.Project.ValueString(),
 	)
 	if apiResp.StatusCode == http.StatusNotFound {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Project not found: %s", err.Error()))
+		diagutils.AddNotFoundError(resp.Diagnostics, "project")
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error reading project: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "read", err)
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), *project); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error filling project spike protection: %s", err.Error()))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 
@@ -152,7 +137,6 @@ func (r *ProjectSpikeProtectionResource) Update(ctx context.Context, req resourc
 	var data ProjectSpikeProtectionResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -166,7 +150,7 @@ func (r *ProjectSpikeProtectionResource) Update(ctx context.Context, req resourc
 			},
 		)
 		if err != nil {
-			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error enabling spike protection: %s", err.Error()))
+			diagutils.AddClientError(resp.Diagnostics, "enable", err)
 			return
 		}
 	} else {
@@ -178,7 +162,7 @@ func (r *ProjectSpikeProtectionResource) Update(ctx context.Context, req resourc
 			},
 		)
 		if err != nil {
-			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error disabling spike protection: %s", err.Error()))
+			diagutils.AddClientError(resp.Diagnostics, "disable", err)
 			return
 		}
 	}
@@ -205,9 +189,8 @@ func (r *ProjectSpikeProtectionResource) Delete(ctx context.Context, req resourc
 	if apiResp.StatusCode == http.StatusNotFound {
 		return
 	}
-
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error disabling spike protection: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "delete", err)
 		return
 	}
 }
@@ -215,7 +198,7 @@ func (r *ProjectSpikeProtectionResource) Delete(ctx context.Context, req resourc
 func (r *ProjectSpikeProtectionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	organization, project, err := splitTwoPartID(req.ID, "organization", "project-slug")
 	if err != nil {
-		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Error parsing ID: %s", err.Error()))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(

@@ -61,5 +61,5 @@ resource "sentry_all_projects_spike_protection" "main" {
 ### Required
 
 - `enabled` (Boolean) Toggle the browser-extensions, localhost, filtered-transaction, or web-crawlers filter on or off for all projects.
-- `organization` (String) The slug of the organization the resource belongs to.
+- `organization` (String) The organization of this resource.
 - `projects` (Set of String) The slugs of the projects to enable or disable spike protection for.

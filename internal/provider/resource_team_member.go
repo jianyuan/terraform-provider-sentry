@@ -17,21 +17,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 )
-
-var _ resource.Resource = &TeamMemberResource{}
-var _ resource.ResourceWithConfigure = &TeamMemberResource{}
-var _ resource.ResourceWithImportState = &TeamMemberResource{}
-
-func NewTeamMemberResource() resource.Resource {
-	return &TeamMemberResource{}
-}
-
-type TeamMemberResource struct {
-	baseResource
-
-	roleMu sync.Mutex
-}
 
 type TeamMemberResourceModel struct {
 	Id            types.String `tfsdk:"id"`
@@ -53,6 +40,20 @@ func (data *TeamMemberResourceModel) Fill(organization string, team string, memb
 	return nil
 }
 
+var _ resource.Resource = &TeamMemberResource{}
+var _ resource.ResourceWithConfigure = &TeamMemberResource{}
+var _ resource.ResourceWithImportState = &TeamMemberResource{}
+
+func NewTeamMemberResource() resource.Resource {
+	return &TeamMemberResource{}
+}
+
+type TeamMemberResource struct {
+	baseResource
+
+	roleMu sync.Mutex
+}
+
 func (r *TeamMemberResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_team_member"
 }
@@ -62,17 +63,8 @@ func (r *TeamMemberResource) Schema(ctx context.Context, req resource.SchemaRequ
 		MarkdownDescription: "Sentry Team Member resource.",
 
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				Description: "The ID of this resource.",
-				Computed:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-			},
-			"organization": schema.StringAttribute{
-				Description: "The slug of the organization the team should be created for.",
-				Required:    true,
-			},
+			"id":           ResourceIdAttribute(),
+			"organization": ResourceOrganizationAttribute(),
 			"member_id": schema.StringAttribute{
 				Description: "The ID of the member to add to the team.",
 				Required:    true,
@@ -230,21 +222,21 @@ func (r *TeamMemberResource) Create(ctx context.Context, req resource.CreateRequ
 		data.Team.ValueString(),
 	)
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to add member to team, got error: %s", err))
+		diagutils.AddClientError(resp.Diagnostics, "create", err)
 		return
 	}
 
 	if !data.Role.IsNull() {
 		_, err = r.updateRole(ctx, data.Organization.ValueString(), data.MemberId.ValueString(), data.Team.ValueString(), data.Role.ValueString())
 		if err != nil {
-			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read team member, got error: %s", err))
+			diagutils.AddClientError(resp.Diagnostics, "create", err)
 			return
 		}
 	}
 
 	effectiveRole, err := r.getEffectiveTeamRole(ctx, data.Organization.ValueString(), data.MemberId.ValueString(), data.Team.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read team member role, got error: %s", err))
+		diagutils.AddClientError(resp.Diagnostics, "create", err)
 		resp.State.RemoveResource(ctx)
 		return
 	}
@@ -256,7 +248,7 @@ func (r *TeamMemberResource) Create(ctx context.Context, req resource.CreateRequ
 		data.Role.ValueStringPointer(),
 		*effectiveRole,
 	); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to fill team member, got error: %s", err))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 
@@ -279,7 +271,7 @@ func (r *TeamMemberResource) Read(ctx context.Context, req resource.ReadRequest,
 		if strings.Contains(err.Error(), "404 The requested resource does not exist") {
 			resp.State.RemoveResource(ctx)
 		} else {
-			resp.Diagnostics.AddError("Client Error", err.Error())
+			diagutils.AddClientError(resp.Diagnostics, "read", err)
 		}
 		return
 	}
@@ -291,7 +283,7 @@ func (r *TeamMemberResource) Read(ctx context.Context, req resource.ReadRequest,
 		data.Role.ValueStringPointer(),
 		*effectiveRole,
 	); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to fill team member, got error: %s", err))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 
@@ -313,13 +305,13 @@ func (r *TeamMemberResource) Update(ctx context.Context, req resource.UpdateRequ
 	if !plan.Role.Equal(state.Role) {
 		_, err := r.updateRole(ctx, plan.Organization.ValueString(), plan.MemberId.ValueString(), plan.Team.ValueString(), plan.Role.ValueString())
 		if err != nil {
-			resp.Diagnostics.AddError("Client Error", err.Error())
+			diagutils.AddClientError(resp.Diagnostics, "update", err)
 			return
 		}
 
 		effectiveRole, err := r.getEffectiveTeamRole(ctx, plan.Organization.ValueString(), plan.MemberId.ValueString(), plan.Team.ValueString())
 		if err != nil {
-			resp.Diagnostics.AddError("Client Error", err.Error())
+			diagutils.AddClientError(resp.Diagnostics, "update", err)
 			resp.State.RemoveResource(ctx)
 			return
 		}
@@ -331,7 +323,7 @@ func (r *TeamMemberResource) Update(ctx context.Context, req resource.UpdateRequ
 			plan.Role.ValueStringPointer(),
 			*effectiveRole,
 		); err != nil {
-			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to fill team member, got error: %s", err))
+			diagutils.AddFillError(resp.Diagnostics, err)
 			return
 		}
 	}
@@ -356,7 +348,7 @@ func (r *TeamMemberResource) Delete(ctx context.Context, req resource.DeleteRequ
 		data.Team.ValueString(),
 	)
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete team member, got error: %s", err))
+		diagutils.AddClientError(resp.Diagnostics, "delete", err)
 		return
 	}
 }
@@ -364,7 +356,7 @@ func (r *TeamMemberResource) Delete(ctx context.Context, req resource.DeleteRequ
 func (r *TeamMemberResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	organization, team, memberId, err := splitThreePartID(req.ID, "organization", "team-slug", "member-id")
 	if err != nil {
-		resp.Diagnostics.AddError("Import Error", fmt.Sprintf("Unable to import team, got error: %s", err))
+		diagutils.AddImportError(resp.Diagnostics, err)
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(

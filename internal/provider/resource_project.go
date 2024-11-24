@@ -15,24 +15,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryplatforms"
 )
-
-var _ resource.Resource = &ProjectResource{}
-var _ resource.ResourceWithConfigure = &ProjectResource{}
-var _ resource.ResourceWithImportState = &ProjectResource{}
-
-func NewProjectResource() resource.Resource {
-	return &ProjectResource{}
-}
-
-type ProjectResource struct {
-	baseResource
-}
 
 type ProjectResourceFilterModel struct {
 	BlacklistedIps types.Set `tfsdk:"blacklisted_ips"`
@@ -175,6 +163,18 @@ func (data *ProjectResourceModel) Fill(organization string, project sentry.Proje
 	return nil
 }
 
+var _ resource.Resource = &ProjectResource{}
+var _ resource.ResourceWithConfigure = &ProjectResource{}
+var _ resource.ResourceWithImportState = &ProjectResource{}
+
+func NewProjectResource() resource.Resource {
+	return &ProjectResource{}
+}
+
+type ProjectResource struct {
+	baseResource
+}
+
 func (r *ProjectResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_project"
 }
@@ -184,17 +184,8 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 		MarkdownDescription: "Sentry Project resource.",
 
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				Description: "The ID of this resource.",
-				Computed:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-			},
-			"organization": schema.StringAttribute{
-				Description: "The slug of the organization the project belongs to.",
-				Required:    true,
-			},
+			"id":           ResourceIdAttribute(),
+			"organization": ResourceOrganizationAttribute(),
 			"teams": schema.SetAttribute{
 				Description: "The slugs of the teams to create the project for.",
 				Required:    true,
@@ -327,7 +318,7 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 		},
 	)
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error creating project: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "create", err)
 		return
 	}
 
@@ -399,19 +390,19 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 		updateParams,
 	)
 	if apiResp.StatusCode == http.StatusNotFound {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Project not found: %s", err.Error()))
+		diagutils.AddNotFoundError(resp.Diagnostics, "project")
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error updating project: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "update", err)
 		return
 	}
 
 	// If the default key is set to false, remove the default key
 	if !data.DefaultKey.IsNull() && !data.DefaultKey.ValueBool() {
 		if err := r.removeDefaultKey(ctx, data.Organization.ValueString(), project); err != nil {
-			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error removing default key: %s", err.Error()))
+			diagutils.AddClientError(resp.Diagnostics, "remove default key", err)
 			return
 		}
 	}
@@ -421,7 +412,7 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 		for _, team := range teams[1:] {
 			_, _, err := r.client.Projects.AddTeam(ctx, data.Organization.ValueString(), project.Slug, team)
 			if err != nil {
-				resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error adding team to project: %s", err.Error()))
+				diagutils.AddClientError(resp.Diagnostics, "add team to project", err)
 				return
 			}
 		}
@@ -429,17 +420,17 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 
 	project, apiResp, err = r.client.Projects.Get(ctx, data.Organization.ValueString(), project.Slug)
 	if apiResp.StatusCode == http.StatusNotFound {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Project not found: %s", err.Error()))
+		diagutils.AddNotFoundError(resp.Diagnostics, "project")
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error reading project: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "read", err)
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), *project); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error filling project: %s", err.Error()))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 
@@ -460,17 +451,17 @@ func (r *ProjectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		data.Id.ValueString(),
 	)
 	if apiResp.StatusCode == http.StatusNotFound {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Project not found: %s", err.Error()))
+		diagutils.AddNotFoundError(resp.Diagnostics, "project")
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error reading project: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "read", err)
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), *project); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error filling project: %s", err.Error()))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 
@@ -553,19 +544,19 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 		params,
 	)
 	if apiResp.StatusCode == http.StatusNotFound {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Project not found: %s", err.Error()))
+		diagutils.AddNotFoundError(resp.Diagnostics, "project")
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error updating project: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "update", err)
 		return
 	}
 
 	// If the default key is set to false, remove the default key
 	if !plan.DefaultKey.IsNull() && !plan.DefaultKey.ValueBool() {
 		if err := r.removeDefaultKey(ctx, plan.Organization.ValueString(), project); err != nil {
-			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error removing default key: %s", err.Error()))
+			diagutils.AddClientError(resp.Diagnostics, "remove default key", err)
 			return
 		}
 	}
@@ -590,7 +581,7 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 					team,
 				)
 				if err != nil {
-					resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error adding team to project: %s", err.Error()))
+					diagutils.AddClientError(resp.Diagnostics, "add team to project", err)
 					return
 				}
 			}
@@ -606,7 +597,7 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 					team,
 				)
 				if err != nil {
-					resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error removing team from project: %s", err.Error()))
+					diagutils.AddClientError(resp.Diagnostics, "remove team from project", err)
 					return
 				}
 			}
@@ -619,17 +610,17 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 		plan.Id.ValueString(),
 	)
 	if apiResp.StatusCode == http.StatusNotFound {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Project not found: %s", err.Error()))
+		diagutils.AddNotFoundError(resp.Diagnostics, "project")
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error reading project: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "read", err)
 		return
 	}
 
 	if err := plan.Fill(plan.Organization.ValueString(), *project); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error filling project: %s", err.Error()))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 
@@ -681,9 +672,8 @@ func (r *ProjectResource) Delete(ctx context.Context, req resource.DeleteRequest
 	if apiResp.StatusCode == http.StatusNotFound {
 		return
 	}
-
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error deleting project: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "delete", err)
 		return
 	}
 }
@@ -691,7 +681,7 @@ func (r *ProjectResource) Delete(ctx context.Context, req resource.DeleteRequest
 func (r *ProjectResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	organization, project, err := splitTwoPartID(req.ID, "organization", "project-slug")
 	if err != nil {
-		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Error parsing ID: %s", err.Error()))
+		diagutils.AddImportError(resp.Diagnostics, err)
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(

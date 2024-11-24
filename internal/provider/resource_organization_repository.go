@@ -36,14 +36,8 @@ func (r *OrganizationRepositoryResource) Schema(ctx context.Context, req resourc
 		MarkdownDescription: "Organization Repository resource. This resource manages Sentry's source code management integrations.",
 
 		Attributes: map[string]schema.Attribute{
-			"id": ResourceIdAttribute(),
-			"organization": schema.StringAttribute{
-				MarkdownDescription: "The slug of the organization the resource belongs to.",
-				Required:            true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
-			},
+			"id":           ResourceIdAttribute(),
+			"organization": ResourceOrganizationAttribute(),
 			"integration_type": schema.StringAttribute{
 				MarkdownDescription: "The type of the organization integration. Supported values are `github`, `github_enterprise`, `gitlab`, `vsts` (Azure DevOps), `bitbucket`, and `bitbucket_server`.",
 				Required:            true,

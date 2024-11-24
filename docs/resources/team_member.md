@@ -39,7 +39,7 @@ resource "sentry_team_member" "default" {
 ### Required
 
 - `member_id` (String) The ID of the member to add to the team.
-- `organization` (String) The slug of the organization the team should be created for.
+- `organization` (String) The organization of this resource.
 - `team` (String) The slug of the team to add the member to.
 
 ### Optional

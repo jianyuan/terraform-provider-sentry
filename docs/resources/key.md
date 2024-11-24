@@ -28,8 +28,8 @@ resource "sentry_key" "default" {
 ### Required
 
 - `name` (String) The name of the client key.
-- `organization` (String) The slug of the organization the resource belongs to.
-- `project` (String) The slug of the project the resource belongs to.
+- `organization` (String) The organization of this resource.
+- `project` (String) The project of this resource.
 
 ### Optional
 

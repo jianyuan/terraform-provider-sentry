@@ -38,7 +38,7 @@ resource "sentry_notification_action" "default" {
 
 ### Required
 
-- `organization` (String) The slug of the organization the project belongs to.
+- `organization` (String) The organization of this resource.
 - `projects` (List of String) The list of project slugs that the Notification Action is created for.
 - `service_type` (String) The service that is used for sending the notification.
 - `trigger_type` (String) The type of trigger that will activate this action. Valid values are `spike-protection`.

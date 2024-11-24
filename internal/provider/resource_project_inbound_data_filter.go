@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/boolvalidator"
@@ -16,19 +15,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 )
-
-var _ resource.Resource = &ProjectInboundDataFilterResource{}
-var _ resource.ResourceWithConfigure = &ProjectInboundDataFilterResource{}
-var _ resource.ResourceWithImportState = &ProjectInboundDataFilterResource{}
-
-func NewProjectInboundDataFilterResource() resource.Resource {
-	return &ProjectInboundDataFilterResource{}
-}
-
-type ProjectInboundDataFilterResource struct {
-	baseResource
-}
 
 type ProjectInboundDataFilterResourceModel struct {
 	Id           types.String `tfsdk:"id"`
@@ -59,6 +47,18 @@ func (m *ProjectInboundDataFilterResourceModel) Fill(organization string, projec
 	return nil
 }
 
+var _ resource.Resource = &ProjectInboundDataFilterResource{}
+var _ resource.ResourceWithConfigure = &ProjectInboundDataFilterResource{}
+var _ resource.ResourceWithImportState = &ProjectInboundDataFilterResource{}
+
+func NewProjectInboundDataFilterResource() resource.Resource {
+	return &ProjectInboundDataFilterResource{}
+}
+
+type ProjectInboundDataFilterResource struct {
+	baseResource
+}
+
 func (r *ProjectInboundDataFilterResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_project_inbound_data_filter"
 }
@@ -68,24 +68,15 @@ func (r *ProjectInboundDataFilterResource) Schema(ctx context.Context, req resou
 		MarkdownDescription: "Sentry Project Inbound Data Filter resource. This resource is used to create and manage inbound data filters for a project. For more information on what filters are available, see the [Sentry documentation](https://docs.sentry.io/api/projects/update-an-inbound-data-filter/).",
 
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				Description: "The ID of this resource.",
-				Computed:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-			},
-			"organization": schema.StringAttribute{
-				Description: "The slug of the organization the project belongs to.",
-				Required:    true,
-			},
-			"project": schema.StringAttribute{
-				Description: "The slug of the project to create the filter for.",
-				Required:    true,
-			},
+			"id":           ResourceIdAttribute(),
+			"organization": ResourceOrganizationAttribute(),
+			"project":      ResourceProjectAttribute(),
 			"filter_id": schema.StringAttribute{
 				Description: "The type of filter toggle to update. See the [Sentry documentation](https://docs.sentry.io/api/projects/update-an-inbound-data-filter/) for a list of available filters.",
 				Required:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"active": schema.BoolAttribute{
 				Description: "Toggle the browser-extensions, localhost, filtered-transaction, or web-crawlers filter on or off.",
@@ -114,7 +105,6 @@ func (r *ProjectInboundDataFilterResource) Create(ctx context.Context, req resou
 	var data ProjectInboundDataFilterResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -135,7 +125,7 @@ func (r *ProjectInboundDataFilterResource) Create(ctx context.Context, req resou
 		},
 	)
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error creating project inbound data filter: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "create", err)
 		return
 	}
 
@@ -148,19 +138,22 @@ func (r *ProjectInboundDataFilterResource) Read(ctx context.Context, req resourc
 	var data ProjectInboundDataFilterResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	filters, _, err := r.client.ProjectInboundDataFilters.List(
+	filters, apiResp, err := r.client.ProjectInboundDataFilters.List(
 		ctx,
 		data.Organization.ValueString(),
 		data.Project.ValueString(),
 	)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error reading project inbound data filters: %s", err.Error()))
+	if apiResp.StatusCode == http.StatusNotFound {
+		diagutils.AddNotFoundError(resp.Diagnostics, "project inbound data filter")
 		resp.State.RemoveResource(ctx)
+		return
+	}
+	if err != nil {
+		diagutils.AddClientError(resp.Diagnostics, "read", err)
 		return
 	}
 
@@ -174,13 +167,13 @@ func (r *ProjectInboundDataFilterResource) Read(ctx context.Context, req resourc
 	}
 
 	if foundFilter == nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error reading project inbound data filters: %s", "Filter not found"))
+		diagutils.AddNotFoundError(resp.Diagnostics, "project inbound data filter")
 		resp.State.RemoveResource(ctx)
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), data.Project.ValueString(), data.FilterId.ValueString(), *foundFilter); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error filling project inbound data filter: %s", err.Error()))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 
@@ -191,7 +184,6 @@ func (r *ProjectInboundDataFilterResource) Update(ctx context.Context, req resou
 	var plan ProjectInboundDataFilterResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -212,7 +204,7 @@ func (r *ProjectInboundDataFilterResource) Update(ctx context.Context, req resou
 		},
 	)
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error updating project inbound data filter: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "update", err)
 		return
 	}
 
@@ -225,7 +217,6 @@ func (r *ProjectInboundDataFilterResource) Delete(ctx context.Context, req resou
 	var data ProjectInboundDataFilterResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -242,9 +233,8 @@ func (r *ProjectInboundDataFilterResource) Delete(ctx context.Context, req resou
 	if apiResp.StatusCode == http.StatusNotFound {
 		return
 	}
-
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error deleting project inbound data filter: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "delete", err)
 		return
 	}
 }
@@ -252,7 +242,7 @@ func (r *ProjectInboundDataFilterResource) Delete(ctx context.Context, req resou
 func (r *ProjectInboundDataFilterResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	organization, project, filterID, err := splitThreePartID(req.ID, "organization", "project-slug", "filter-id")
 	if err != nil {
-		resp.Diagnostics.AddError("Import Error", fmt.Sprintf("Unable to import team, got error: %s", err))
+		diagutils.AddImportError(resp.Diagnostics, err)
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(

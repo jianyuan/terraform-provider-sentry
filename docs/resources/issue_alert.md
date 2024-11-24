@@ -458,8 +458,8 @@ EOT
 - `conditions` (String) List of conditions. In JSON string format.
 - `frequency` (Number) Perform actions at most once every `X` minutes for this issue.
 - `name` (String) The issue alert name.
-- `organization` (String) The slug of the organization the resource belongs to.
-- `project` (String) The slug of the project the resource belongs to.
+- `organization` (String) The organization of this resource.
+- `project` (String) The project of this resource.
 
 ### Optional
 
@@ -470,7 +470,7 @@ EOT
 
 ### Read-Only
 
-- `id` (String) The ID of this issue alert.
+- `id` (String) The ID of this resource.
 
 ## Import
 

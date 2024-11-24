@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -15,19 +14,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 )
-
-var _ resource.Resource = &ProjectSymbolSourcesResource{}
-var _ resource.ResourceWithConfigure = &ProjectSymbolSourcesResource{}
-var _ resource.ResourceWithImportState = &ProjectSymbolSourcesResource{}
-
-func NewProjectSymbolSourcesResource() resource.Resource {
-	return &ProjectSymbolSourcesResource{}
-}
-
-type ProjectSymbolSourcesResource struct {
-	baseResource
-}
 
 type ProjectSymbolSourcesResourceModel struct {
 	Id                   types.String                             `tfsdk:"id"`
@@ -74,6 +62,18 @@ func (data *ProjectSymbolSourcesResourceModel) Fill(source sentry.ProjectSymbolS
 	return nil
 }
 
+var _ resource.Resource = &ProjectSymbolSourcesResource{}
+var _ resource.ResourceWithConfigure = &ProjectSymbolSourcesResource{}
+var _ resource.ResourceWithImportState = &ProjectSymbolSourcesResource{}
+
+func NewProjectSymbolSourcesResource() resource.Resource {
+	return &ProjectSymbolSourcesResource{}
+}
+
+type ProjectSymbolSourcesResource struct {
+	baseResource
+}
+
 type ProjectSymbolSourcesResourceLayoutModel struct {
 	Type   types.String `tfsdk:"type"`
 	Casing types.String `tfsdk:"casing"`
@@ -102,21 +102,9 @@ func (r *ProjectSymbolSourcesResource) Schema(ctx context.Context, req resource.
 		MarkdownDescription: "Sentry Project Symbol Source. See the [Sentry documentation](https://docs.sentry.io/api/projects/add-a-symbol-source-to-a-project/) for more information.",
 
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				Description: "The ID of this resource.",
-				Computed:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-			},
-			"organization": schema.StringAttribute{
-				Description: "The slug of the organization the project belongs to.",
-				Required:    true,
-			},
-			"project": schema.StringAttribute{
-				Description: "The slug of the project to create the filter for.",
-				Required:    true,
-			},
+			"id":           ResourceIdAttribute(),
+			"organization": ResourceOrganizationAttribute(),
+			"project":      ResourceProjectAttribute(),
 			"type": schema.StringAttribute{
 				Description: "The type of symbol source. One of `appStoreConnect` (App Store Connect), `http` (SymbolServer (HTTP)), `gcs` (Google Cloud Storage), `s3` (Amazon S3).",
 				Required:    true,
@@ -240,7 +228,6 @@ func (r *ProjectSymbolSourcesResource) Create(ctx context.Context, req resource.
 	var data ProjectSymbolSourcesResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -276,12 +263,12 @@ func (r *ProjectSymbolSourcesResource) Create(ctx context.Context, req resource.
 		params,
 	)
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error creating project symbol source: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "create", err)
 		return
 	}
 
 	if err := data.Fill(*source); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error filling project symbol source: %s", err.Error()))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 
@@ -292,7 +279,6 @@ func (r *ProjectSymbolSourcesResource) Read(ctx context.Context, req resource.Re
 	var data ProjectSymbolSourcesResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -306,17 +292,17 @@ func (r *ProjectSymbolSourcesResource) Read(ctx context.Context, req resource.Re
 		},
 	)
 	if apiResp.StatusCode == http.StatusNotFound {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Project not found: %s", err.Error()))
+		diagutils.AddNotFoundError(resp.Diagnostics, "project symbol source")
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error reading project: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "read", err)
 		return
 	}
 
 	if len(sources) != 1 {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Symbol source not found: %s", data.Id.ValueString()))
+		diagutils.AddNotFoundError(resp.Diagnostics, "project symbol source")
 		resp.State.RemoveResource(ctx)
 		return
 	}
@@ -324,7 +310,7 @@ func (r *ProjectSymbolSourcesResource) Read(ctx context.Context, req resource.Re
 	source := sources[0]
 
 	if err := data.Fill(*source); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error filling project symbol source: %s", err.Error()))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 
@@ -335,7 +321,6 @@ func (r *ProjectSymbolSourcesResource) Update(ctx context.Context, req resource.
 	var data ProjectSymbolSourcesResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -373,12 +358,12 @@ func (r *ProjectSymbolSourcesResource) Update(ctx context.Context, req resource.
 		params,
 	)
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error updating project symbol source: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "update", err)
 		return
 	}
 
 	if err := data.Fill(*source); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error filling project symbol source: %s", err.Error()))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 
@@ -389,7 +374,6 @@ func (r *ProjectSymbolSourcesResource) Delete(ctx context.Context, req resource.
 	var data ProjectSymbolSourcesResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -403,9 +387,8 @@ func (r *ProjectSymbolSourcesResource) Delete(ctx context.Context, req resource.
 	if apiResp.StatusCode == http.StatusNotFound {
 		return
 	}
-
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error deleting project symbol source: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "delete", err)
 		return
 	}
 }
@@ -413,7 +396,7 @@ func (r *ProjectSymbolSourcesResource) Delete(ctx context.Context, req resource.
 func (r *ProjectSymbolSourcesResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	organization, project, symbolSourceId, err := splitThreePartID(req.ID, "organization", "project-slug", "symbol-source-id")
 	if err != nil {
-		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Error parsing ID: %s", err.Error()))
+		diagutils.AddImportError(resp.Diagnostics, err)
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(

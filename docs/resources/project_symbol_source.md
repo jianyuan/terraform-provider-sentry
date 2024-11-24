@@ -97,8 +97,8 @@ resource "sentry_project_symbol_source" "s3" {
 ### Required
 
 - `name` (String) The human-readable name of the source.
-- `organization` (String) The slug of the organization the project belongs to.
-- `project` (String) The slug of the project to create the filter for.
+- `organization` (String) The organization of this resource.
+- `project` (String) The project of this resource.
 - `type` (String) The type of symbol source. One of `appStoreConnect` (App Store Connect), `http` (SymbolServer (HTTP)), `gcs` (Google Cloud Storage), `s3` (Amazon S3).
 
 ### Optional

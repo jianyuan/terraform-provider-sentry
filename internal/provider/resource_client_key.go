@@ -2,31 +2,16 @@ package provider
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 )
-
-var _ resource.Resource = &ClientKeyResource{}
-var _ resource.ResourceWithConfigure = &ClientKeyResource{}
-var _ resource.ResourceWithConfigValidators = &ClientKeyResource{}
-var _ resource.ResourceWithImportState = &ClientKeyResource{}
-
-func NewClientKeyResource() resource.Resource {
-	return &ClientKeyResource{}
-}
-
-type ClientKeyResource struct {
-	baseResource
-}
 
 type ClientKeyResourceModel struct {
 	Id              types.String `tfsdk:"id"`
@@ -67,6 +52,19 @@ func (m *ClientKeyResourceModel) Fill(organization string, project string, key s
 	return nil
 }
 
+var _ resource.Resource = &ClientKeyResource{}
+var _ resource.ResourceWithConfigure = &ClientKeyResource{}
+var _ resource.ResourceWithConfigValidators = &ClientKeyResource{}
+var _ resource.ResourceWithImportState = &ClientKeyResource{}
+
+func NewClientKeyResource() resource.Resource {
+	return &ClientKeyResource{}
+}
+
+type ClientKeyResource struct {
+	baseResource
+}
+
 func (r *ClientKeyResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_key"
 }
@@ -85,21 +83,9 @@ func (r *ClientKeyResource) Schema(ctx context.Context, req resource.SchemaReque
 		MarkdownDescription: "Return a client key bound to a project.",
 
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				MarkdownDescription: "The ID of this resource.",
-				Computed:            true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-			},
-			"organization": schema.StringAttribute{
-				MarkdownDescription: "The slug of the organization the resource belongs to.",
-				Required:            true,
-			},
-			"project": schema.StringAttribute{
-				MarkdownDescription: "The slug of the project the resource belongs to.",
-				Required:            true,
-			},
+			"id":           ResourceIdAttribute(),
+			"organization": ResourceOrganizationAttribute(),
+			"project":      ResourceProjectAttribute(),
 			"name": schema.StringAttribute{
 				MarkdownDescription: "The name of the client key.",
 				Required:            true,
@@ -163,11 +149,12 @@ func (r *ClientKeyResource) Create(ctx context.Context, req resource.CreateReque
 		params,
 	)
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Create error: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "create", err)
 		return
 	}
+
 	if err := data.Fill(data.Organization.ValueString(), data.Project.ValueString(), *key); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Fill error: %s", err.Error()))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 
@@ -193,17 +180,17 @@ func (r *ClientKeyResource) Read(ctx context.Context, req resource.ReadRequest, 
 		data.Id.ValueString(),
 	)
 	if apiResp.StatusCode == http.StatusNotFound {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Not found: %s", err.Error()))
+		diagutils.AddNotFoundError(resp.Diagnostics, "client key")
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Read error: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "read", err)
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), data.Project.ValueString(), *key); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Fill error: %s", err.Error()))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 
@@ -234,17 +221,17 @@ func (r *ClientKeyResource) Update(ctx context.Context, req resource.UpdateReque
 		params,
 	)
 	if apiResp.StatusCode == http.StatusNotFound {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Not found: %s", err.Error()))
+		diagutils.AddNotFoundError(resp.Diagnostics, "client key")
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Update error: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "update", err)
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), data.Project.ValueString(), *key); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Fill error: %s", err.Error()))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 
@@ -268,9 +255,8 @@ func (r *ClientKeyResource) Delete(ctx context.Context, req resource.DeleteReque
 	if apiResp.StatusCode == http.StatusNotFound {
 		return
 	}
-
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Delete error: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "delete", err)
 		return
 	}
 }
@@ -278,10 +264,9 @@ func (r *ClientKeyResource) Delete(ctx context.Context, req resource.DeleteReque
 func (r *ClientKeyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	organization, project, id, err := splitThreePartID(req.ID, "organization", "project-slug", "key-id")
 	if err != nil {
-		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Error parsing ID: %s", err.Error()))
+		diagutils.AddImportError(resp.Diagnostics, err)
 		return
 	}
-
 	resp.Diagnostics.Append(resp.State.SetAttribute(
 		ctx, path.Root("organization"), organization,
 	)...)

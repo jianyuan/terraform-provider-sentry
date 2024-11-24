@@ -15,3 +15,23 @@ func ResourceIdAttribute() schema.Attribute {
 		},
 	}
 }
+
+func ResourceOrganizationAttribute() schema.Attribute {
+	return schema.StringAttribute{
+		MarkdownDescription: "The organization of this resource.",
+		Required:            true,
+		PlanModifiers: []planmodifier.String{
+			stringplanmodifier.UseStateForUnknown(),
+		},
+	}
+}
+
+func ResourceProjectAttribute() schema.Attribute {
+	return schema.StringAttribute{
+		MarkdownDescription: "The project of this resource.",
+		Required:            true,
+		PlanModifiers: []planmodifier.String{
+			stringplanmodifier.UseStateForUnknown(),
+		},
+	}
+}

@@ -46,8 +46,8 @@ resource "sentry_project_inbound_data_filter" "test" {
 ### Required
 
 - `filter_id` (String) The type of filter toggle to update. See the [Sentry documentation](https://docs.sentry.io/api/projects/update-an-inbound-data-filter/) for a list of available filters.
-- `organization` (String) The slug of the organization the project belongs to.
-- `project` (String) The slug of the project to create the filter for.
+- `organization` (String) The organization of this resource.
+- `project` (String) The project of this resource.
 
 ### Optional
 
