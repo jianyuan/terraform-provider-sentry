@@ -35,6 +35,12 @@ var (
 	// TestGitHubRepositoryIdentifier is the GitHub repository identifier used for acceptance tests.
 	TestGitHubRepositoryIdentifier = os.Getenv("SENTRY_TEST_GITHUB_REPOSITORY_IDENTIFIER")
 
+	// TestGitLabInstallationId is the GitLab installation ID used for acceptance tests.
+	TestGitLabInstallationId = os.Getenv("SENTRY_TEST_GITLAB_INSTALLATION_ID")
+
+	// TestGitLabRepositoryIdentifier is the GitLab repository identifier used for acceptance tests.
+	TestGitLabRepositoryIdentifier = os.Getenv("SENTRY_TEST_GITLAB_REPOSITORY_IDENTIFIER")
+
 	// TestVSTSInstallationId is the VSTS installation ID used for acceptance tests.
 	TestVSTSInstallationId = os.Getenv("SENTRY_TEST_VSTS_INSTALLATION_ID")
 
