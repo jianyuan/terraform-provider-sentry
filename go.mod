@@ -1,8 +1,6 @@
 module github.com/jianyuan/terraform-provider-sentry
 
-go 1.22.7
-
-toolchain go1.23.3
+go 1.23.3
 
 require (
 	github.com/hashicorp/go-multierror v1.1.1
@@ -14,6 +12,7 @@ require (
 	github.com/hashicorp/terraform-plugin-mux v0.17.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.35.0
 	github.com/jianyuan/go-sentry/v2 v2.8.3
+	github.com/jianyuan/go-utils v0.0.0-20241124123843-bffc107339ec
 	golang.org/x/oauth2 v0.24.0
 	golang.org/x/sync v0.9.0
 )
