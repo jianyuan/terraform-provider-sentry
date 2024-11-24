@@ -1,8 +1,6 @@
 module github.com/jianyuan/terraform-provider-sentry
 
-go 1.22.7
-
-toolchain go1.23.3
+go 1.23.3
 
 require (
 	github.com/hashicorp/go-multierror v1.1.1
@@ -24,6 +22,7 @@ require (
 	github.com/bmatcuk/doublestar/v4 v4.7.1 // indirect
 	github.com/hashicorp/cli v1.1.6 // indirect
 	github.com/hashicorp/go-cty v1.4.1-0.20200723130312-85980079f637 // indirect
+	github.com/jianyuan/go-utils v0.0.0-20241124123843-bffc107339ec // indirect
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/yuin/goldmark v1.7.7 // indirect
