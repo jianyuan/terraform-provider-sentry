@@ -12,7 +12,7 @@ require (
 	github.com/hashicorp/terraform-plugin-mux v0.17.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.35.0
 	github.com/jianyuan/go-sentry/v2 v2.8.3
-	github.com/jianyuan/go-utils v0.0.0-20241124123843-bffc107339ec
+	github.com/jianyuan/go-utils v0.0.0-20241124212807-9e88ec4ee96c
 	golang.org/x/oauth2 v0.24.0
 	golang.org/x/sync v0.9.0
 )
