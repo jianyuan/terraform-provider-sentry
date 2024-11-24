@@ -133,10 +133,8 @@ github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 h1:BQSFePA1RWJOl
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99/go.mod h1:1lJo3i6rXxKeerYnT8Nvf0QmHCRC1n8sfWVwXF2Frvo=
 github.com/jhump/protoreflect v1.15.1 h1:HUMERORf3I3ZdX05WaQ6MIpd/NJ434hTp5YiKgfCL6c=
 github.com/jhump/protoreflect v1.15.1/go.mod h1:jD/2GMKKE6OqX8qTjhADU1e6DShO+gavG9e0Q693nKo=
-github.com/jianyuan/go-sentry/v2 v2.8.3 h1:1eNm7vWYXqyRvj218bhcqPeryGr/riRIbnOIWGUE3Z8=
-github.com/jianyuan/go-sentry/v2 v2.8.3/go.mod h1:ZMSSWRuXbIwtoH4jg2ka9ZA8x3o3zC8nkTeeqq97G7g=
-github.com/jianyuan/go-utils v0.0.0-20241124123843-bffc107339ec h1:S/beNIYmeADvT4J59f37yLs0zFk8T/TV/6asxbBmP18=
-github.com/jianyuan/go-utils v0.0.0-20241124123843-bffc107339ec/go.mod h1:D1O+WiG+p0g3LExvWtPEn6+UDTKJoUxTfJxyM6Ya6+k=
+github.com/jianyuan/go-sentry/v2 v2.8.4 h1:aXOJSatfg6ygdI/2dxt0Ur2tWZJtuf5W/QxlkUl2cVI=
+github.com/jianyuan/go-sentry/v2 v2.8.4/go.mod h1:ZMSSWRuXbIwtoH4jg2ka9ZA8x3o3zC8nkTeeqq97G7g=
 github.com/jianyuan/go-utils v0.0.0-20241124212807-9e88ec4ee96c h1:y96j6Fs9sx5jAXbtxOcgzCArF2k/xQkO7lNbzzHMA98=
 github.com/jianyuan/go-utils v0.0.0-20241124212807-9e88ec4ee96c/go.mod h1:D1O+WiG+p0g3LExvWtPEn6+UDTKJoUxTfJxyM6Ya6+k=
 github.com/kevinburke/ssh_config v1.2.0 h1:x584FjTGwHzMwvHx18PXxbBVzfnxogHaAReU4gf13a4=
