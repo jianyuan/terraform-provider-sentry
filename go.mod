@@ -12,6 +12,7 @@ require (
 	github.com/hashicorp/terraform-plugin-mux v0.17.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.35.0
 	github.com/jianyuan/go-sentry/v2 v2.8.3
+	github.com/jianyuan/go-utils v0.0.0-20241124123843-bffc107339ec
 	golang.org/x/oauth2 v0.24.0
 	golang.org/x/sync v0.9.0
 )
@@ -22,7 +23,6 @@ require (
 	github.com/bmatcuk/doublestar/v4 v4.7.1 // indirect
 	github.com/hashicorp/cli v1.1.6 // indirect
 	github.com/hashicorp/go-cty v1.4.1-0.20200723130312-85980079f637 // indirect
-	github.com/jianyuan/go-utils v0.0.0-20241124123843-bffc107339ec // indirect
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/yuin/goldmark v1.7.7 // indirect
