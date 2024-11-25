@@ -50,7 +50,7 @@ resource "sentry_organization_repository" "vsts" {
 - `identifier` (String) The identifier of the repository. For GitHub, GitLab and BitBucket, it is `{organization}/{repository}`. For VSTS, it is the [repository ID](https://learn.microsoft.com/en-us/rest/api/azure/devops/git/repositories/get#get-a-repository-by-repositoryid).
 - `integration_id` (String) The ID of the organization integration. Source from the URL `https://<organization>.sentry.io/settings/integrations/<integration-type>/<integration-id>/` or use the `sentry_organization_integration` data source.
 - `integration_type` (String) The type of the organization integration. Supported values are `github`, `github_enterprise`, `gitlab`, `vsts` (Azure DevOps), `bitbucket`, and `bitbucket_server`.
-- `organization` (String) The slug of the organization the resource belongs to.
+- `organization` (String) The organization of this resource.
 
 ### Read-Only
 

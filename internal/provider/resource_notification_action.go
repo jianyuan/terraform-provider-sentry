@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -12,25 +11,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
 )
-
-var _ resource.Resource = &NotificationActionResource{}
-var _ resource.ResourceWithConfigure = &NotificationActionResource{}
-var _ resource.ResourceWithImportState = &NotificationActionResource{}
-
-func NewNotificationActionResource() resource.Resource {
-	return &NotificationActionResource{}
-}
-
-type NotificationActionResource struct {
-	baseResource
-}
 
 type NotificationActionResourceModel struct {
 	Id               types.String `tfsdk:"id"`
@@ -82,6 +68,18 @@ func (m *NotificationActionResourceModel) Fill(action sentry.NotificationAction,
 	return nil
 }
 
+var _ resource.Resource = &NotificationActionResource{}
+var _ resource.ResourceWithConfigure = &NotificationActionResource{}
+var _ resource.ResourceWithImportState = &NotificationActionResource{}
+
+func NewNotificationActionResource() resource.Resource {
+	return &NotificationActionResource{}
+}
+
+type NotificationActionResource struct {
+	baseResource
+}
+
 func (r *NotificationActionResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_notification_action"
 }
@@ -91,17 +89,8 @@ func (r *NotificationActionResource) Schema(ctx context.Context, req resource.Sc
 		MarkdownDescription: "Create a Spike Protection Notification Action. See the [Sentry Documentation](https://docs.sentry.io/api/alerts/create-a-spike-protection-notification-action/) for more information.",
 
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				Description: "The ID of this resource.",
-				Computed:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-			},
-			"organization": schema.StringAttribute{
-				Description: "The slug of the organization the project belongs to.",
-				Required:    true,
-			},
+			"id":           ResourceIdAttribute(),
+			"organization": ResourceOrganizationAttribute(),
 			"trigger_type": schema.StringAttribute{
 				Description: "The type of trigger that will activate this action. Valid values are `spike-protection`.",
 				Required:    true,
@@ -141,7 +130,6 @@ func (r *NotificationActionResource) Create(ctx context.Context, req resource.Cr
 	var data NotificationActionResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -165,7 +153,7 @@ func (r *NotificationActionResource) Create(ctx context.Context, req resource.Cr
 		},
 	)
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error creating notification action: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "create", err)
 		return
 	}
 
@@ -173,13 +161,13 @@ func (r *NotificationActionResource) Create(ctx context.Context, req resource.Cr
 	if len(action.Projects) > 0 {
 		projectIdToSlugMap, err = sentryclient.GetProjectIdToSlugMap(ctx, r.client)
 		if err != nil {
-			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error reading projects: %s", err.Error()))
+			diagutils.AddClientError(resp.Diagnostics, "read projects", err)
 			return
 		}
 	}
 
 	if err := data.Fill(*action, projectIdToSlugMap); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error filling notification action: %s", err.Error()))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 
@@ -190,7 +178,6 @@ func (r *NotificationActionResource) Read(ctx context.Context, req resource.Read
 	var data NotificationActionResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -201,12 +188,12 @@ func (r *NotificationActionResource) Read(ctx context.Context, req resource.Read
 		data.Id.ValueString(),
 	)
 	if apiResp.StatusCode == http.StatusNotFound {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Notification Action not found: %s", err.Error()))
+		diagutils.AddNotFoundError(resp.Diagnostics, "notification action")
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error reading notification action: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "read", err)
 		return
 	}
 
@@ -214,13 +201,13 @@ func (r *NotificationActionResource) Read(ctx context.Context, req resource.Read
 	if len(action.Projects) > 0 {
 		projectIdToSlugMap, err = sentryclient.GetProjectIdToSlugMap(ctx, r.client)
 		if err != nil {
-			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error reading projects: %s", err.Error()))
+			diagutils.AddClientError(resp.Diagnostics, "read projects", err)
 			return
 		}
 	}
 
 	if err := data.Fill(*action, projectIdToSlugMap); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error filling notification action: %s", err.Error()))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 
@@ -231,7 +218,6 @@ func (r *NotificationActionResource) Update(ctx context.Context, req resource.Up
 	var data NotificationActionResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -256,12 +242,12 @@ func (r *NotificationActionResource) Update(ctx context.Context, req resource.Up
 		},
 	)
 	if apiResp.StatusCode == http.StatusNotFound {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Notification Action not found: %s", err.Error()))
+		diagutils.AddNotFoundError(resp.Diagnostics, "notification action")
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error updating notification action: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "update", err)
 		return
 	}
 
@@ -269,13 +255,13 @@ func (r *NotificationActionResource) Update(ctx context.Context, req resource.Up
 	if len(action.Projects) > 0 {
 		projectIdToSlugMap, err = sentryclient.GetProjectIdToSlugMap(ctx, r.client)
 		if err != nil {
-			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error reading projects: %s", err.Error()))
+			diagutils.AddClientError(resp.Diagnostics, "read projects", err)
 			return
 		}
 	}
 
 	if err := data.Fill(*action, projectIdToSlugMap); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error filling notification action: %s", err.Error()))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 
@@ -286,7 +272,6 @@ func (r *NotificationActionResource) Delete(ctx context.Context, req resource.De
 	var data NotificationActionResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -299,9 +284,8 @@ func (r *NotificationActionResource) Delete(ctx context.Context, req resource.De
 	if apiResp.StatusCode == http.StatusNotFound {
 		return
 	}
-
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error disabling spike protection: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "delete", err)
 		return
 	}
 }
@@ -309,7 +293,7 @@ func (r *NotificationActionResource) Delete(ctx context.Context, req resource.De
 func (r *NotificationActionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	org, actionId, err := splitTwoPartID(req.ID, "organization", "action-id")
 	if err != nil {
-		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Error parsing ID: %s", err.Error()))
+		diagutils.AddImportError(resp.Diagnostics, err)
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(

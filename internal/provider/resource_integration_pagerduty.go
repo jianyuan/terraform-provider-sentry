@@ -9,22 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 )
-
-var _ resource.Resource = &IntegrationPagerDuty{}
-var _ resource.ResourceWithConfigure = &IntegrationPagerDuty{}
-var _ resource.ResourceWithImportState = &IntegrationPagerDuty{}
-
-func NewIntegrationPagerDuty() resource.Resource {
-	return &IntegrationPagerDuty{}
-}
-
-type IntegrationPagerDuty struct {
-	baseResource
-}
 
 type IntegrationPagerDutyModel struct {
 	Id             types.String `tfsdk:"id"`
@@ -54,6 +41,18 @@ type IntegrationPagerDutyConfigData struct {
 	ServiceTable []IntegrationPagerDutyConfigDataServiceTableItem `json:"service_table"`
 }
 
+var _ resource.Resource = &IntegrationPagerDuty{}
+var _ resource.ResourceWithConfigure = &IntegrationPagerDuty{}
+var _ resource.ResourceWithImportState = &IntegrationPagerDuty{}
+
+func NewIntegrationPagerDuty() resource.Resource {
+	return &IntegrationPagerDuty{}
+}
+
+type IntegrationPagerDuty struct {
+	baseResource
+}
+
 func (r *IntegrationPagerDuty) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_integration_pagerduty"
 }
@@ -63,17 +62,8 @@ func (r *IntegrationPagerDuty) Schema(ctx context.Context, req resource.SchemaRe
 		MarkdownDescription: "Manage a PagerDuty service integration.",
 
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				MarkdownDescription: "The ID of this resource.",
-				Computed:            true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-			},
-			"organization": schema.StringAttribute{
-				MarkdownDescription: "The slug of the organization the resource belongs to.",
-				Required:            true,
-			},
+			"id":           ResourceIdAttribute(),
+			"organization": ResourceOrganizationAttribute(),
 			"integration_id": schema.StringAttribute{
 				MarkdownDescription: "The ID of the PagerDuty integration. Source from the URL `https://<organization>.sentry.io/settings/integrations/pagerduty/<integration-id>/` or use the `sentry_organization_integration` data source.",
 				Required:            true,
@@ -100,17 +90,17 @@ func (r *IntegrationPagerDuty) Create(ctx context.Context, req resource.CreateRe
 
 	integration, apiResp, err := r.client.OrganizationIntegrations.Get(ctx, data.Organization.ValueString(), data.IntegrationId.ValueString())
 	if apiResp.StatusCode == http.StatusNotFound {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Not found: %s", err.Error()))
+		diagutils.AddNotFoundError(resp.Diagnostics, "integration")
 		return
 	}
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Read error: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "read", err)
 		return
 	}
 
 	var configData IntegrationPagerDutyConfigData
 	if err := json.Unmarshal(integration.ConfigData, &configData); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unmarshal error: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "unmarshal", err)
 		return
 	}
 
@@ -127,7 +117,7 @@ func (r *IntegrationPagerDuty) Create(ctx context.Context, req resource.CreateRe
 
 	configDataJSON, err := json.Marshal(configData)
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Marshal error: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "marshal", err)
 		return
 	}
 
@@ -139,22 +129,22 @@ func (r *IntegrationPagerDuty) Create(ctx context.Context, req resource.CreateRe
 		&params,
 	)
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Create error: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "create", err)
 		return
 	}
 
 	integration, apiResp, err = r.client.OrganizationIntegrations.Get(ctx, data.Organization.ValueString(), data.IntegrationId.ValueString())
 	if apiResp.StatusCode == http.StatusNotFound {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Not found: %s", err.Error()))
+		diagutils.AddNotFoundError(resp.Diagnostics, "integration")
 		return
 	}
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Read error: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "read", err)
 		return
 	}
 
 	if err := json.Unmarshal(integration.ConfigData, &configData); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unmarshal error: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "unmarshal", err)
 		return
 	}
 
@@ -169,12 +159,12 @@ func (r *IntegrationPagerDuty) Create(ctx context.Context, req resource.CreateRe
 	}
 
 	if found == nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Service table item not found: %s", data.Service.ValueString()))
+		diagutils.AddClientError(resp.Diagnostics, "create", fmt.Errorf("service table item not found: %s", data.IntegrationId.ValueString()))
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), data.IntegrationId.ValueString(), configData.ServiceTable[len(configData.ServiceTable)-1]); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Fill error: %s", err.Error()))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 
@@ -191,18 +181,18 @@ func (r *IntegrationPagerDuty) Read(ctx context.Context, req resource.ReadReques
 
 	integration, apiResp, err := r.client.OrganizationIntegrations.Get(ctx, data.Organization.ValueString(), data.IntegrationId.ValueString())
 	if apiResp.StatusCode == http.StatusNotFound {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Not found: %s", err.Error()))
+		diagutils.AddNotFoundError(resp.Diagnostics, "integration")
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Read error: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "read", err)
 		return
 	}
 
 	var configData IntegrationPagerDutyConfigData
 	if err := json.Unmarshal(integration.ConfigData, &configData); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unmarshal error: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "unmarshal", err)
 		return
 	}
 
@@ -214,13 +204,13 @@ func (r *IntegrationPagerDuty) Read(ctx context.Context, req resource.ReadReques
 		}
 	}
 	if found == nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Service table item not found: %s", data.IntegrationId.ValueString()))
+		diagutils.AddClientError(resp.Diagnostics, "read", fmt.Errorf("service table item not found: %s", data.IntegrationId.ValueString()))
 		resp.State.RemoveResource(ctx)
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), data.IntegrationId.ValueString(), *found); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Fill error: %s", err.Error()))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 
@@ -240,13 +230,13 @@ func (r *IntegrationPagerDuty) Update(ctx context.Context, req resource.UpdateRe
 		return
 	}
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Read error: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "update", err)
 		return
 	}
 
 	var configData IntegrationPagerDutyConfigData
 	if err := json.Unmarshal(integration.ConfigData, &configData); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unmarshal error: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "unmarshal", err)
 		return
 	}
 
@@ -259,7 +249,7 @@ func (r *IntegrationPagerDuty) Update(ctx context.Context, req resource.UpdateRe
 	}
 
 	if found == nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Service table item not found: %s", data.IntegrationId.ValueString()))
+		diagutils.AddClientError(resp.Diagnostics, "update", fmt.Errorf("service table item not found: %s", data.IntegrationId.ValueString()))
 		resp.State.RemoveResource(ctx)
 		return
 	}
@@ -269,7 +259,7 @@ func (r *IntegrationPagerDuty) Update(ctx context.Context, req resource.UpdateRe
 
 	configDataJSON, err := json.Marshal(configData)
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Marshal error: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "marshal", err)
 		return
 	}
 
@@ -281,23 +271,23 @@ func (r *IntegrationPagerDuty) Update(ctx context.Context, req resource.UpdateRe
 		&params,
 	)
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Update error: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "update", err)
 		return
 	}
 
 	integration, apiResp, err = r.client.OrganizationIntegrations.Get(ctx, data.Organization.ValueString(), data.IntegrationId.ValueString())
 	if apiResp.StatusCode == http.StatusNotFound {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Not found: %s", err.Error()))
+		diagutils.AddNotFoundError(resp.Diagnostics, "integration")
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Read error: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "update", err)
 		return
 	}
 
 	if err := json.Unmarshal(integration.ConfigData, &configData); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unmarshal error: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "unmarshal", err)
 		return
 	}
 
@@ -309,13 +299,13 @@ func (r *IntegrationPagerDuty) Update(ctx context.Context, req resource.UpdateRe
 		}
 	}
 	if found == nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Service table item not found: %s", data.IntegrationId.ValueString()))
+		diagutils.AddClientError(resp.Diagnostics, "update", fmt.Errorf("service table item not found: %s", data.IntegrationId.ValueString()))
 		resp.State.RemoveResource(ctx)
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), data.IntegrationId.ValueString(), *found); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Fill error: %s", err.Error()))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 
@@ -335,13 +325,13 @@ func (r *IntegrationPagerDuty) Delete(ctx context.Context, req resource.DeleteRe
 		return
 	}
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Read error: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "delete", err)
 		return
 	}
 
 	var configData IntegrationPagerDutyConfigData
 	if err := json.Unmarshal(integration.ConfigData, &configData); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unmarshal error: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "unmarshal", err)
 		return
 	}
 
@@ -360,7 +350,7 @@ func (r *IntegrationPagerDuty) Delete(ctx context.Context, req resource.DeleteRe
 
 	configDataJSON, err := json.Marshal(configData)
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Marshal error: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "marshal", err)
 		return
 	}
 
@@ -372,7 +362,7 @@ func (r *IntegrationPagerDuty) Delete(ctx context.Context, req resource.DeleteRe
 		&params,
 	)
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Delete error: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "delete", err)
 		return
 	}
 }
@@ -380,7 +370,7 @@ func (r *IntegrationPagerDuty) Delete(ctx context.Context, req resource.DeleteRe
 func (r *IntegrationPagerDuty) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	organization, integrationId, id, err := splitThreePartID(req.ID, "organization", "integration-id", "id")
 	if err != nil {
-		resp.Diagnostics.AddError("Import Error", fmt.Sprintf("Unable to import integration, got error: %s", err))
+		diagutils.AddImportError(resp.Diagnostics, err)
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(

@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -11,18 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 )
-
-var _ resource.Resource = &AllProjectsSpikeProtectionResource{}
-var _ resource.ResourceWithConfigure = &AllProjectsSpikeProtectionResource{}
-
-func NewAllProjectsSpikeProtectionResource() resource.Resource {
-	return &AllProjectsSpikeProtectionResource{}
-}
-
-type AllProjectsSpikeProtectionResource struct {
-	baseResource
-}
 
 type AllProjectsSpikeProtectionResourceModel struct {
 	Organization types.String `tfsdk:"organization"`
@@ -43,6 +32,17 @@ func (m *AllProjectsSpikeProtectionResourceModel) Fill(organization string, enab
 	return nil
 }
 
+var _ resource.Resource = &AllProjectsSpikeProtectionResource{}
+var _ resource.ResourceWithConfigure = &AllProjectsSpikeProtectionResource{}
+
+func NewAllProjectsSpikeProtectionResource() resource.Resource {
+	return &AllProjectsSpikeProtectionResource{}
+}
+
+type AllProjectsSpikeProtectionResource struct {
+	baseResource
+}
+
 func (r *AllProjectsSpikeProtectionResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_all_projects_spike_protection"
 }
@@ -52,10 +52,7 @@ func (r *AllProjectsSpikeProtectionResource) Schema(ctx context.Context, req res
 		MarkdownDescription: "Enable spike protection for all projects in an organization.",
 
 		Attributes: map[string]schema.Attribute{
-			"organization": schema.StringAttribute{
-				MarkdownDescription: "The slug of the organization the resource belongs to.",
-				Required:            true,
-			},
+			"organization": ResourceOrganizationAttribute(),
 			"projects": schema.SetAttribute{
 				MarkdownDescription: "The slugs of the projects to enable or disable spike protection for.",
 				Required:            true,
@@ -127,7 +124,7 @@ func (r *AllProjectsSpikeProtectionResource) Create(ctx context.Context, req res
 			},
 		)
 		if err != nil {
-			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error enabling spike protection: %s", err.Error()))
+			diagutils.AddClientError(resp.Diagnostics, "enable", err)
 			return
 		}
 	} else {
@@ -139,19 +136,19 @@ func (r *AllProjectsSpikeProtectionResource) Create(ctx context.Context, req res
 			},
 		)
 		if err != nil {
-			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error disabling spike protection: %s", err.Error()))
+			diagutils.AddClientError(resp.Diagnostics, "disable", err)
 			return
 		}
 	}
 
 	allProjects, err := r.readProjects(ctx, data.Organization.ValueString(), data.Enabled.ValueBool(), projects)
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Read error: %s", err))
+		diagutils.AddClientError(resp.Diagnostics, "create", err)
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), data.Enabled.ValueBool(), allProjects); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Fill error: %s", err.Error()))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 
@@ -173,12 +170,12 @@ func (r *AllProjectsSpikeProtectionResource) Read(ctx context.Context, req resou
 
 	allProjects, err := r.readProjects(ctx, data.Organization.ValueString(), data.Enabled.ValueBool(), projects)
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Read error: %s", err))
+		diagutils.AddClientError(resp.Diagnostics, "read", err)
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), data.Enabled.ValueBool(), allProjects); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Fill error: %s", err.Error()))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 
@@ -207,7 +204,7 @@ func (r *AllProjectsSpikeProtectionResource) Update(ctx context.Context, req res
 			},
 		)
 		if err != nil {
-			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error enabling spike protection: %s", err.Error()))
+			diagutils.AddClientError(resp.Diagnostics, "enable", err)
 			return
 		}
 	} else {
@@ -219,19 +216,19 @@ func (r *AllProjectsSpikeProtectionResource) Update(ctx context.Context, req res
 			},
 		)
 		if err != nil {
-			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error disabling spike protection: %s", err.Error()))
+			diagutils.AddClientError(resp.Diagnostics, "disable", err)
 			return
 		}
 	}
 
 	allProjects, err := r.readProjects(ctx, data.Organization.ValueString(), data.Enabled.ValueBool(), projects)
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Read error: %s", err))
+		diagutils.AddClientError(resp.Diagnostics, "update", err)
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), data.Enabled.ValueBool(), allProjects); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Fill error: %s", err.Error()))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 
@@ -261,7 +258,7 @@ func (r *AllProjectsSpikeProtectionResource) Delete(ctx context.Context, req res
 			},
 		)
 		if err != nil {
-			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error disabling spike protection: %s", err.Error()))
+			diagutils.AddClientError(resp.Diagnostics, "disable", err)
 			return
 		}
 	} else {
@@ -274,7 +271,7 @@ func (r *AllProjectsSpikeProtectionResource) Delete(ctx context.Context, req res
 			},
 		)
 		if err != nil {
-			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error enabling spike protection: %s", err.Error()))
+			diagutils.AddClientError(resp.Diagnostics, "enable", err)
 			return
 		}
 	}

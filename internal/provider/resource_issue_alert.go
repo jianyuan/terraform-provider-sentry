@@ -10,27 +10,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/go-utils/must"
+	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
 )
-
-var _ resource.Resource = &IssueAlertResource{}
-var _ resource.ResourceWithConfigure = &IssueAlertResource{}
-var _ resource.ResourceWithImportState = &IssueAlertResource{}
-var _ resource.ResourceWithUpgradeState = &IssueAlertResource{}
-
-func NewIssueAlertResource() resource.Resource {
-	return &IssueAlertResource{}
-}
-
-type IssueAlertResource struct {
-	baseResource
-}
 
 type IssueAlertResourceModel struct {
 	Id           types.String          `tfsdk:"id"`
@@ -95,6 +81,19 @@ func (m *IssueAlertResourceModel) Fill(organization string, alert sentry.IssueAl
 	return nil
 }
 
+var _ resource.Resource = &IssueAlertResource{}
+var _ resource.ResourceWithConfigure = &IssueAlertResource{}
+var _ resource.ResourceWithImportState = &IssueAlertResource{}
+var _ resource.ResourceWithUpgradeState = &IssueAlertResource{}
+
+func NewIssueAlertResource() resource.Resource {
+	return &IssueAlertResource{}
+}
+
+type IssueAlertResource struct {
+	baseResource
+}
+
 func (r *IssueAlertResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_issue_alert"
 }
@@ -112,21 +111,9 @@ Please note the following changes since v0.12.0:
 		Version: 2,
 
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				MarkdownDescription: "The ID of this issue alert.",
-				Computed:            true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-			},
-			"organization": schema.StringAttribute{
-				MarkdownDescription: "The slug of the organization the resource belongs to.",
-				Required:            true,
-			},
-			"project": schema.StringAttribute{
-				MarkdownDescription: "The slug of the project the resource belongs to.",
-				Required:            true,
-			},
+			"id":           ResourceIdAttribute(),
+			"organization": ResourceOrganizationAttribute(),
+			"project":      ResourceProjectAttribute(),
 			"name": schema.StringAttribute{
 				MarkdownDescription: "The issue alert name.",
 				Required:            true,
@@ -185,7 +172,6 @@ func (r *IssueAlertResource) Create(ctx context.Context, req resource.CreateRequ
 	var data IssueAlertResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -220,12 +206,12 @@ func (r *IssueAlertResource) Create(ctx context.Context, req resource.CreateRequ
 		params,
 	)
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error creating issue alert: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "create", err)
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), *action); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error filling issue alert: %s", err.Error()))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 
@@ -240,7 +226,6 @@ func (r *IssueAlertResource) Read(ctx context.Context, req resource.ReadRequest,
 	var data IssueAlertResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -252,17 +237,17 @@ func (r *IssueAlertResource) Read(ctx context.Context, req resource.ReadRequest,
 		data.Id.ValueString(),
 	)
 	if apiResp.StatusCode == http.StatusNotFound {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Issue alert not found: %s", err.Error()))
+		diagutils.AddNotFoundError(resp.Diagnostics, "issue alert")
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error reading issue alert: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "read", err)
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), *action); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error filling issue alert: %s", err.Error()))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 
@@ -273,7 +258,6 @@ func (r *IssueAlertResource) Update(ctx context.Context, req resource.UpdateRequ
 	var data IssueAlertResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -309,17 +293,17 @@ func (r *IssueAlertResource) Update(ctx context.Context, req resource.UpdateRequ
 		params,
 	)
 	if apiResp.StatusCode == http.StatusNotFound {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Notification Action not found: %s", err.Error()))
+		diagutils.AddNotFoundError(resp.Diagnostics, "issue alert")
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error updating notification action: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "update", err)
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), *action); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error filling issue alert: %s", err.Error()))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 
@@ -330,7 +314,6 @@ func (r *IssueAlertResource) Delete(ctx context.Context, req resource.DeleteRequ
 	var data IssueAlertResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -344,9 +327,8 @@ func (r *IssueAlertResource) Delete(ctx context.Context, req resource.DeleteRequ
 	if apiResp.StatusCode == http.StatusNotFound {
 		return
 	}
-
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error deleting issue alert: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "delete", err)
 		return
 	}
 }
@@ -354,7 +336,7 @@ func (r *IssueAlertResource) Delete(ctx context.Context, req resource.DeleteRequ
 func (r *IssueAlertResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	organization, project, actionId, err := splitThreePartID(req.ID, "organization", "project-slug", "alert-id")
 	if err != nil {
-		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Error parsing ID: %s", err.Error()))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(
@@ -440,7 +422,6 @@ func (r *IssueAlertResource) UpgradeState(ctx context.Context) map[int64]resourc
 				var priorStateData modelV0
 
 				resp.Diagnostics.Append(req.State.Get(ctx, &priorStateData)...)
-
 				if resp.Diagnostics.HasError() {
 					return
 				}

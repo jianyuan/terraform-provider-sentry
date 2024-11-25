@@ -53,7 +53,7 @@ resource "sentry_project" "default" {
 ### Required
 
 - `name` (String) The name for the project.
-- `organization` (String) The slug of the organization the project belongs to.
+- `organization` (String) The organization of this resource.
 - `teams` (Set of String) The slugs of the teams to create the project for.
 
 ### Optional
