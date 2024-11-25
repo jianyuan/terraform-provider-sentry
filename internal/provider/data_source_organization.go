@@ -2,13 +2,13 @@ package provider
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 )
 
 var _ datasource.DataSource = &OrganizationDataSource{}
@@ -51,10 +51,7 @@ func (d *OrganizationDataSource) Schema(ctx context.Context, req datasource.Sche
 				MarkdownDescription: "The unique URL slug for this organization.",
 				Computed:            true,
 			},
-			"slug": schema.StringAttribute{
-				MarkdownDescription: "The unique URL slug for this organization.",
-				Required:            true,
-			},
+			"slug": DataSourceOrganizationAttribute(),
 			"internal_id": schema.StringAttribute{
 				MarkdownDescription: "The internal ID for this organization.",
 				Computed:            true,
@@ -77,16 +74,16 @@ func (d *OrganizationDataSource) Read(ctx context.Context, req datasource.ReadRe
 
 	org, apiResp, err := d.client.Organizations.Get(ctx, data.Slug.ValueString())
 	if apiResp.StatusCode == http.StatusNotFound {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Not found: %s", err.Error()))
+		diagutils.AddNotFoundError(resp.Diagnostics, "organization")
 		return
 	}
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Read error: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "read", err)
 		return
 	}
 
 	if err := data.Fill(*org); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Fill error: %s", err))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 

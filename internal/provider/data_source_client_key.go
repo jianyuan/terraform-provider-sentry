@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"sort"
 
@@ -12,19 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 )
-
-var _ datasource.DataSource = &ClientKeyDataSource{}
-var _ datasource.DataSourceWithConfigure = &ClientKeyDataSource{}
-var _ datasource.DataSourceWithConfigValidators = &ClientKeyDataSource{}
-
-func NewClientKeyDataSource() datasource.DataSource {
-	return &ClientKeyDataSource{}
-}
-
-type ClientKeyDataSource struct {
-	baseDataSource
-}
 
 type ClientKeyDataSourceModel struct {
 	Organization    types.String `tfsdk:"organization"`
@@ -67,6 +55,18 @@ func (m *ClientKeyDataSourceModel) Fill(organization string, project string, fir
 	return nil
 }
 
+var _ datasource.DataSource = &ClientKeyDataSource{}
+var _ datasource.DataSourceWithConfigure = &ClientKeyDataSource{}
+var _ datasource.DataSourceWithConfigValidators = &ClientKeyDataSource{}
+
+func NewClientKeyDataSource() datasource.DataSource {
+	return &ClientKeyDataSource{}
+}
+
+type ClientKeyDataSource struct {
+	baseDataSource
+}
+
 func (d *ClientKeyDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_key"
 }
@@ -76,14 +76,8 @@ func (d *ClientKeyDataSource) Schema(ctx context.Context, req datasource.SchemaR
 		MarkdownDescription: "Retrieve a Project's Client Key.",
 
 		Attributes: map[string]schema.Attribute{
-			"organization": schema.StringAttribute{
-				MarkdownDescription: "The slug of the organization the resource belongs to.",
-				Required:            true,
-			},
-			"project": schema.StringAttribute{
-				MarkdownDescription: "The slug of the project the resource belongs to.",
-				Required:            true,
-			},
+			"organization": DataSourceOrganizationAttribute(),
+			"project":      DataSourceProjectAttribute(),
 			"id": schema.StringAttribute{
 				MarkdownDescription: "The ID of this resource.",
 				Optional:            true,
@@ -158,7 +152,7 @@ func (d *ClientKeyDataSource) Read(ctx context.Context, req datasource.ReadReque
 		for {
 			keys, apiResp, err := d.client.ProjectKeys.List(ctx, data.Organization.ValueString(), data.Project.ValueString(), params)
 			if err != nil {
-				resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Read error: %s", err))
+				diagutils.AddClientError(resp.Diagnostics, "read", err)
 				return
 			}
 
@@ -183,8 +177,7 @@ func (d *ClientKeyDataSource) Read(ctx context.Context, req datasource.ReadReque
 
 				foundKey = allKeys[0]
 			} else {
-
-				resp.Diagnostics.AddError("Client Error", "Multiple keys found, please specify the key by `name`, `id`, or set the `first` flag to `true`.")
+				resp.Diagnostics.AddError("Client error", "Multiple keys found, please specify the key by `name`, `id`, or set the `first` flag to `true`.")
 				return
 			}
 		} else {
@@ -206,11 +199,11 @@ func (d *ClientKeyDataSource) Read(ctx context.Context, req datasource.ReadReque
 			data.Id.ValueString(),
 		)
 		if apiResp.StatusCode == http.StatusNotFound {
-			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Not found: %s", err.Error()))
+			diagutils.AddNotFoundError(resp.Diagnostics, "client key")
 			return
 		}
 		if err != nil {
-			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Read error: %s", err.Error()))
+			diagutils.AddClientError(resp.Diagnostics, "read", err)
 			return
 		}
 
@@ -218,7 +211,7 @@ func (d *ClientKeyDataSource) Read(ctx context.Context, req datasource.ReadReque
 	}
 
 	if foundKey == nil {
-		resp.Diagnostics.AddError("Client Error", "No key found")
+		diagutils.AddNotFoundError(resp.Diagnostics, "client key")
 		return
 	}
 
@@ -228,7 +221,7 @@ func (d *ClientKeyDataSource) Read(ctx context.Context, req datasource.ReadReque
 		data.First.ValueBool(),
 		*foundKey,
 	); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Fill error: %s", err.Error()))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 

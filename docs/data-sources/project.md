@@ -26,8 +26,8 @@ data "sentry_project" "default" {
 
 ### Required
 
-- `organization` (String) The slug of the organization the resource belongs to.
-- `slug` (String) The slug of this project.
+- `organization` (String) The organization the resource belongs to.
+- `slug` (String) The project the resource belongs to.
 
 ### Read-Only
 

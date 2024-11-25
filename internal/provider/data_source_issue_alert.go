@@ -3,26 +3,15 @@ package provider
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
 )
-
-var _ datasource.DataSource = &IssueAlertDataSource{}
-var _ datasource.DataSourceWithConfigure = &IssueAlertDataSource{}
-
-func NewIssueAlertDataSource() datasource.DataSource {
-	return &IssueAlertDataSource{}
-}
-
-type IssueAlertDataSource struct {
-	baseDataSource
-}
 
 type IssueAlertDataSourceModel struct {
 	Id           types.String          `tfsdk:"id"`
@@ -87,6 +76,17 @@ func (m *IssueAlertDataSourceModel) Fill(organization string, alert sentry.Issue
 	return nil
 }
 
+var _ datasource.DataSource = &IssueAlertDataSource{}
+var _ datasource.DataSourceWithConfigure = &IssueAlertDataSource{}
+
+func NewIssueAlertDataSource() datasource.DataSource {
+	return &IssueAlertDataSource{}
+}
+
+type IssueAlertDataSource struct {
+	baseDataSource
+}
+
 func (d *IssueAlertDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_issue_alert"
 }
@@ -100,14 +100,8 @@ func (d *IssueAlertDataSource) Schema(ctx context.Context, req datasource.Schema
 				Description: "The ID of this resource.",
 				Required:    true,
 			},
-			"organization": schema.StringAttribute{
-				MarkdownDescription: "The slug of the organization the resource belongs to.",
-				Required:            true,
-			},
-			"project": schema.StringAttribute{
-				MarkdownDescription: "The slug of the project the resource belongs to.",
-				Required:            true,
-			},
+			"organization": DataSourceOrganizationAttribute(),
+			"project":      DataSourceProjectAttribute(),
 			"name": schema.StringAttribute{
 				MarkdownDescription: "The issue alert name.",
 				Computed:            true,
@@ -155,7 +149,6 @@ func (d *IssueAlertDataSource) Read(ctx context.Context, req datasource.ReadRequ
 	var data IssueAlertResourceModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -167,17 +160,17 @@ func (d *IssueAlertDataSource) Read(ctx context.Context, req datasource.ReadRequ
 		data.Id.ValueString(),
 	)
 	if apiResp.StatusCode == http.StatusNotFound {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Issue alert not found: %s", err.Error()))
+		diagutils.AddNotFoundError(resp.Diagnostics, "issue alert")
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error reading issue alert: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "read", err)
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), *action); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error filling issue alert: %s", err.Error()))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 

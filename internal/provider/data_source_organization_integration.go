@@ -2,24 +2,13 @@ package provider
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 )
-
-var _ datasource.DataSource = &OrganizationIntegrationDataSource{}
-var _ datasource.DataSourceWithConfigure = &OrganizationIntegrationDataSource{}
-
-func NewOrganizationIntegrationDataSource() datasource.DataSource {
-	return &OrganizationIntegrationDataSource{}
-}
-
-type OrganizationIntegrationDataSource struct {
-	baseDataSource
-}
 
 type OrganizationIntegrationDataSourceModel struct {
 	Id           types.String `tfsdk:"id"`
@@ -37,6 +26,17 @@ func (m *OrganizationIntegrationDataSourceModel) Fill(organizationSlug string, d
 	m.Name = types.StringValue(d.Name)
 
 	return nil
+}
+
+var _ datasource.DataSource = &OrganizationIntegrationDataSource{}
+var _ datasource.DataSourceWithConfigure = &OrganizationIntegrationDataSource{}
+
+func NewOrganizationIntegrationDataSource() datasource.DataSource {
+	return &OrganizationIntegrationDataSource{}
+}
+
+type OrganizationIntegrationDataSource struct {
+	baseDataSource
 }
 
 func (d *OrganizationIntegrationDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -57,10 +57,7 @@ func (d *OrganizationIntegrationDataSource) Schema(ctx context.Context, req data
 				Computed:            true,
 				DeprecationMessage:  "This field is deprecated and will be removed in a future version. Use `id` instead.",
 			},
-			"organization": schema.StringAttribute{
-				Description: "The slug of the organization.",
-				Required:    true,
-			},
+			"organization": DataSourceOrganizationAttribute(),
 			"provider_key": schema.StringAttribute{
 				Description: "Specific integration provider to filter by such as `slack`. See [the list of supported providers](https://docs.sentry.io/product/integrations/).",
 				Required:    true,
@@ -89,7 +86,7 @@ func (d *OrganizationIntegrationDataSource) Read(ctx context.Context, req dataso
 	for {
 		integrations, apiResp, err := d.client.OrganizationIntegrations.List(ctx, data.Organization.ValueString(), params)
 		if err != nil {
-			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read organization integrations, got error: %s", err))
+			diagutils.AddClientError(resp.Diagnostics, "read", err)
 			return
 		}
 
@@ -106,15 +103,15 @@ func (d *OrganizationIntegrationDataSource) Read(ctx context.Context, req dataso
 	}
 
 	if len(matchedIntegrations) == 0 {
-		resp.Diagnostics.AddError("Not Found", "No matching organization integrations found")
+		diagutils.AddNotFoundError(resp.Diagnostics, "organization integration")
 		return
 	} else if len(matchedIntegrations) > 1 {
-		resp.Diagnostics.AddError("Not Unique", "More than one matching organization integration found")
+		resp.Diagnostics.AddError("Not unique", "More than one matching organization integration found")
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), *matchedIntegrations[0]); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Error filling organization integration: %s", err.Error()))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 

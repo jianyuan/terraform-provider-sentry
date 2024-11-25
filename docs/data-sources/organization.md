@@ -24,7 +24,7 @@ data "sentry_organization" "org" {
 
 ### Required
 
-- `slug` (String) The unique URL slug for this organization.
+- `slug` (String) The organization the resource belongs to.
 
 ### Read-Only
 

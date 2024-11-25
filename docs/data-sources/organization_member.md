@@ -25,7 +25,7 @@ data "sentry_organization_member" "default" {
 ### Required
 
 - `email` (String) The email of the organization member.
-- `organization` (String) The slug of the organization.
+- `organization` (String) The organization the resource belongs to.
 
 ### Read-Only
 

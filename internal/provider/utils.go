@@ -35,3 +35,17 @@ func ResourceProjectAttribute() schema.Attribute {
 		},
 	}
 }
+
+func DataSourceOrganizationAttribute() schema.Attribute {
+	return schema.StringAttribute{
+		MarkdownDescription: "The organization the resource belongs to.",
+		Required:            true,
+	}
+}
+
+func DataSourceProjectAttribute() schema.Attribute {
+	return schema.StringAttribute{
+		MarkdownDescription: "The project the resource belongs to.",
+		Required:            true,
+	}
+}

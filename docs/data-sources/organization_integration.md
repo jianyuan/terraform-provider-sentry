@@ -36,7 +36,7 @@ data "sentry_organization_integration" "slack" {
 ### Required
 
 - `name` (String) The name of the integration.
-- `organization` (String) The slug of the organization.
+- `organization` (String) The organization the resource belongs to.
 - `provider_key` (String) Specific integration provider to filter by such as `slack`. See [the list of supported providers](https://docs.sentry.io/product/integrations/).
 
 ### Read-Only

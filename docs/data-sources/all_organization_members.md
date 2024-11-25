@@ -17,7 +17,7 @@ Retrieve all organization members.
 
 ### Required
 
-- `organization` (String) The slug of the organization.
+- `organization` (String) The organization the resource belongs to.
 
 ### Read-Only
 
