@@ -2,25 +2,14 @@ package provider
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 )
-
-var _ datasource.DataSource = &AllProjectsDataSource{}
-var _ datasource.DataSourceWithConfigure = &AllProjectsDataSource{}
-
-func NewAllProjectsDataSource() datasource.DataSource {
-	return &AllProjectsDataSource{}
-}
-
-type AllProjectsDataSource struct {
-	baseDataSource
-}
 
 type AllProjectsDataSourceProjectModel struct {
 	InternalId  types.String `tfsdk:"internal_id"`
@@ -76,6 +65,17 @@ func (m *AllProjectsDataSourceModel) Fill(organization string, projects []sentry
 	return nil
 }
 
+var _ datasource.DataSource = &AllProjectsDataSource{}
+var _ datasource.DataSourceWithConfigure = &AllProjectsDataSource{}
+
+func NewAllProjectsDataSource() datasource.DataSource {
+	return &AllProjectsDataSource{}
+}
+
+type AllProjectsDataSource struct {
+	baseDataSource
+}
+
 func (d *AllProjectsDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_all_projects"
 }
@@ -85,10 +85,7 @@ func (d *AllProjectsDataSource) Schema(ctx context.Context, req datasource.Schem
 		MarkdownDescription: "Return a list of projects available to the authenticated session.",
 
 		Attributes: map[string]schema.Attribute{
-			"organization": schema.StringAttribute{
-				MarkdownDescription: "The slug of the organization the resource belongs to.",
-				Required:            true,
-			},
+			"organization": DataSourceOrganizationAttribute(),
 			"project_slugs": schema.SetAttribute{
 				MarkdownDescription: "The slugs of the projects.",
 				Computed:            true,
@@ -149,7 +146,7 @@ func (d *AllProjectsDataSource) Read(ctx context.Context, req datasource.ReadReq
 	for {
 		projects, apiResp, err := d.client.OrganizationProjects.List(ctx, data.Organization.ValueString(), params)
 		if err != nil {
-			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Read error: %s", err))
+			diagutils.AddClientError(resp.Diagnostics, "read", err)
 			return
 		}
 
@@ -164,7 +161,7 @@ func (d *AllProjectsDataSource) Read(ctx context.Context, req datasource.ReadReq
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), allProjects); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Fill error: %s", err))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 

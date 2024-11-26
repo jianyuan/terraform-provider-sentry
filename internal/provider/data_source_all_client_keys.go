@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -10,18 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 )
-
-var _ datasource.DataSource = &AllClientKeysDataSource{}
-var _ datasource.DataSourceWithConfigure = &AllClientKeysDataSource{}
-
-func NewAllClientKeysDataSource() datasource.DataSource {
-	return &AllClientKeysDataSource{}
-}
-
-type AllClientKeysDataSource struct {
-	baseDataSource
-}
 
 type AllClientKeysDataSourceModel struct {
 	Organization types.String             `tfsdk:"organization"`
@@ -48,6 +37,17 @@ func (m *AllClientKeysDataSourceModel) Fill(organization string, project string,
 	return nil
 }
 
+var _ datasource.DataSource = &AllClientKeysDataSource{}
+var _ datasource.DataSourceWithConfigure = &AllClientKeysDataSource{}
+
+func NewAllClientKeysDataSource() datasource.DataSource {
+	return &AllClientKeysDataSource{}
+}
+
+type AllClientKeysDataSource struct {
+	baseDataSource
+}
+
 func (d *AllClientKeysDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_all_keys"
 }
@@ -57,14 +57,8 @@ func (d *AllClientKeysDataSource) Schema(ctx context.Context, req datasource.Sch
 		MarkdownDescription: "List a Project's Client Keys.",
 
 		Attributes: map[string]schema.Attribute{
-			"organization": schema.StringAttribute{
-				MarkdownDescription: "The slug of the organization the resource belongs to.",
-				Required:            true,
-			},
-			"project": schema.StringAttribute{
-				MarkdownDescription: "The slug of the project the resource belongs to.",
-				Required:            true,
-			},
+			"organization": DataSourceOrganizationAttribute(),
+			"project":      DataSourceProjectAttribute(),
 			"filter_status": schema.StringAttribute{
 				MarkdownDescription: "Filter client keys by `active` or `inactive`. Defaults to returning all keys if not specified.",
 				Optional:            true,
@@ -150,7 +144,7 @@ func (d *AllClientKeysDataSource) Read(ctx context.Context, req datasource.ReadR
 	for {
 		keys, apiResp, err := d.client.ProjectKeys.List(ctx, data.Organization.ValueString(), data.Project.ValueString(), params)
 		if err != nil {
-			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Read error: %s", err))
+			diagutils.AddClientError(resp.Diagnostics, "read", err)
 			return
 		}
 
@@ -163,7 +157,7 @@ func (d *AllClientKeysDataSource) Read(ctx context.Context, req datasource.ReadR
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), data.Project.ValueString(), data.FilterStatus.ValueStringPointer(), allKeys); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Fill error: %s", err.Error()))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 

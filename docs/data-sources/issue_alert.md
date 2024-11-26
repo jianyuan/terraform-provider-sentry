@@ -46,8 +46,8 @@ resource "sentry_issue_alert" "copy" {
 ### Required
 
 - `id` (String) The ID of this resource.
-- `organization` (String) The slug of the organization the resource belongs to.
-- `project` (String) The slug of the project the resource belongs to.
+- `organization` (String) The organization the resource belongs to.
+- `project` (String) The project the resource belongs to.
 
 ### Read-Only
 

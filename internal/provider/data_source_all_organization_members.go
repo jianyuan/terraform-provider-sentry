@@ -2,24 +2,13 @@ package provider
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 )
-
-var _ datasource.DataSource = &AllOrganizationMembersDataSource{}
-var _ datasource.DataSourceWithConfigure = &OrganizationMemberDataSource{}
-
-func NewAllOrganizationMembersDataSource() datasource.DataSource {
-	return &AllOrganizationMembersDataSource{}
-}
-
-type AllOrganizationMembersDataSource struct {
-	baseDataSource
-}
 
 type AllOrganizationMembersDataSourceMemberModel struct {
 	Id    types.String `tfsdk:"id"`
@@ -54,6 +43,17 @@ func (m *AllOrganizationMembersDataSourceModel) Fill(organization string, member
 	return nil
 }
 
+var _ datasource.DataSource = &AllOrganizationMembersDataSource{}
+var _ datasource.DataSourceWithConfigure = &OrganizationMemberDataSource{}
+
+func NewAllOrganizationMembersDataSource() datasource.DataSource {
+	return &AllOrganizationMembersDataSource{}
+}
+
+type AllOrganizationMembersDataSource struct {
+	baseDataSource
+}
+
 func (d *AllOrganizationMembersDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_all_organization_members"
 }
@@ -63,10 +63,7 @@ func (d *AllOrganizationMembersDataSource) Schema(ctx context.Context, req datas
 		MarkdownDescription: "Retrieve all organization members.",
 
 		Attributes: map[string]schema.Attribute{
-			"organization": schema.StringAttribute{
-				MarkdownDescription: "The slug of the organization.",
-				Required:            true,
-			},
+			"organization": DataSourceOrganizationAttribute(),
 			"members": schema.SetNestedAttribute{
 				MarkdownDescription: "The list of members.",
 				Computed:            true,
@@ -105,7 +102,7 @@ func (d *AllOrganizationMembersDataSource) Read(ctx context.Context, req datasou
 	for {
 		members, apiResp, err := d.client.OrganizationMembers.List(ctx, data.Organization.ValueString(), params)
 		if err != nil {
-			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to list organization members, got error: %s", err))
+			diagutils.AddClientError(resp.Diagnostics, "read", err)
 			return
 		}
 
@@ -120,7 +117,7 @@ func (d *AllOrganizationMembersDataSource) Read(ctx context.Context, req datasou
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), allMembers); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Fill error: %s", err))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 

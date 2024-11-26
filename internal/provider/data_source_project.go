@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -10,18 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 )
-
-var _ datasource.DataSource = &ProjectDataSource{}
-var _ datasource.DataSourceWithConfigure = &ProjectDataSource{}
-
-func NewProjectDataSource() datasource.DataSource {
-	return &ProjectDataSource{}
-}
-
-type ProjectDataSource struct {
-	baseDataSource
-}
 
 type ProjectDataSourceModel struct {
 	Organization types.String `tfsdk:"organization"`
@@ -57,6 +46,17 @@ func (m *ProjectDataSourceModel) Fill(organization string, project sentry.Projec
 	return nil
 }
 
+var _ datasource.DataSource = &ProjectDataSource{}
+var _ datasource.DataSourceWithConfigure = &ProjectDataSource{}
+
+func NewProjectDataSource() datasource.DataSource {
+	return &ProjectDataSource{}
+}
+
+type ProjectDataSource struct {
+	baseDataSource
+}
+
 func (d *ProjectDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_project"
 }
@@ -66,14 +66,8 @@ func (d *ProjectDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 		MarkdownDescription: "Return a list of projects available to the authenticated session.",
 
 		Attributes: map[string]schema.Attribute{
-			"organization": schema.StringAttribute{
-				MarkdownDescription: "The slug of the organization the resource belongs to.",
-				Required:            true,
-			},
-			"slug": schema.StringAttribute{
-				MarkdownDescription: "The slug of this project.",
-				Required:            true,
-			},
+			"organization": DataSourceOrganizationAttribute(),
+			"slug":         DataSourceProjectAttribute(),
 			"id": schema.StringAttribute{
 				MarkdownDescription: "The slug of this project.",
 				Computed:            true,
@@ -121,16 +115,16 @@ func (d *ProjectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 
 	project, apiResp, err := d.client.Projects.Get(ctx, data.Organization.ValueString(), data.Slug.ValueString())
 	if apiResp.StatusCode == http.StatusNotFound {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Not found: %s", err.Error()))
+		diagutils.AddNotFoundError(resp.Diagnostics, "project")
 		return
 	}
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Read error: %s", err.Error()))
+		diagutils.AddClientError(resp.Diagnostics, "read", err)
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), *project); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Fill error: %s", err))
+		diagutils.AddFillError(resp.Diagnostics, err)
 		return
 	}
 

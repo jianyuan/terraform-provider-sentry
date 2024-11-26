@@ -24,7 +24,7 @@ data "sentry_all_projects" "default" {
 
 ### Required
 
-- `organization` (String) The slug of the organization the resource belongs to.
+- `organization` (String) The organization the resource belongs to.
 
 ### Read-Only
 
