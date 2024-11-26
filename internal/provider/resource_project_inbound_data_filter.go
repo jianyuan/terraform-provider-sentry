@@ -82,9 +82,7 @@ func (r *ProjectInboundDataFilterResource) Schema(ctx context.Context, req resou
 				Description: "Toggle the browser-extensions, localhost, filtered-transaction, or web-crawlers filter on or off.",
 				Optional:    true,
 				Validators: []validator.Bool{
-					boolvalidator.ConflictsWith(
-						path.MatchRelative().AtParent().AtName("subfilters"),
-					),
+					boolvalidator.ConflictsWith(path.MatchRoot("subfilters")),
 				},
 			},
 			"subfilters": schema.SetAttribute{
@@ -92,9 +90,7 @@ func (r *ProjectInboundDataFilterResource) Schema(ctx context.Context, req resou
 				Optional:    true,
 				ElementType: types.StringType,
 				Validators: []validator.Set{
-					setvalidator.ConflictsWith(
-						path.MatchRelative().AtParent().AtName("active"),
-					),
+					setvalidator.ConflictsWith(path.MatchRoot("active")),
 				},
 			},
 		},

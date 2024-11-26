@@ -2,6 +2,7 @@ package provider
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -42,6 +43,26 @@ func TestAccProjectInboundDataFilterResource(t *testing.T) {
 				ResourceName:      rn,
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccProjectInboundDataFilterResource_Conflict(t *testing.T) {
+	team := acctest.RandomWithPrefix("tf-team")
+	project := acctest.RandomWithPrefix("tf-project")
+	filterId := "browser-extensions"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccProjectInboundDataFilterConfig(team, project, filterId, `
+					active = true
+					subfilters = ["android_pre_4", "ie_pre_9"]
+				`),
+				ExpectError: regexp.MustCompile(`Attribute "active" cannot be specified when "subfilters" is specified`),
 			},
 		},
 	})
