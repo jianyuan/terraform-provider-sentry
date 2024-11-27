@@ -152,7 +152,7 @@ func (d *ClientKeyDataSource) Read(ctx context.Context, req datasource.ReadReque
 		for {
 			keys, apiResp, err := d.client.ProjectKeys.List(ctx, data.Organization.ValueString(), data.Project.ValueString(), params)
 			if err != nil {
-				diagutils.AddClientError(resp.Diagnostics, "read", err)
+				resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 				return
 			}
 
@@ -199,11 +199,11 @@ func (d *ClientKeyDataSource) Read(ctx context.Context, req datasource.ReadReque
 			data.Id.ValueString(),
 		)
 		if apiResp.StatusCode == http.StatusNotFound {
-			diagutils.AddNotFoundError(resp.Diagnostics, "client key")
+			resp.Diagnostics.Append(diagutils.NewNotFoundError("client key"))
 			return
 		}
 		if err != nil {
-			diagutils.AddClientError(resp.Diagnostics, "read", err)
+			resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 			return
 		}
 
@@ -211,7 +211,7 @@ func (d *ClientKeyDataSource) Read(ctx context.Context, req datasource.ReadReque
 	}
 
 	if foundKey == nil {
-		diagutils.AddNotFoundError(resp.Diagnostics, "client key")
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("client key"))
 		return
 	}
 
@@ -221,7 +221,7 @@ func (d *ClientKeyDataSource) Read(ctx context.Context, req datasource.ReadReque
 		data.First.ValueBool(),
 		*foundKey,
 	); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 

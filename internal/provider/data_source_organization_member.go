@@ -78,7 +78,7 @@ out:
 	for {
 		members, apiResp, err := d.client.OrganizationMembers.List(ctx, data.Organization.ValueString(), params)
 		if err != nil {
-			diagutils.AddClientError(resp.Diagnostics, "read", err)
+			resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 			return
 		}
 
@@ -101,7 +101,7 @@ out:
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), *foundMember); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 

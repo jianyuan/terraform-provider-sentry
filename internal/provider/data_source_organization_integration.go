@@ -86,7 +86,7 @@ func (d *OrganizationIntegrationDataSource) Read(ctx context.Context, req dataso
 	for {
 		integrations, apiResp, err := d.client.OrganizationIntegrations.List(ctx, data.Organization.ValueString(), params)
 		if err != nil {
-			diagutils.AddClientError(resp.Diagnostics, "read", err)
+			resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 			return
 		}
 
@@ -103,7 +103,7 @@ func (d *OrganizationIntegrationDataSource) Read(ctx context.Context, req dataso
 	}
 
 	if len(matchedIntegrations) == 0 {
-		diagutils.AddNotFoundError(resp.Diagnostics, "organization integration")
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("organization integration"))
 		return
 	} else if len(matchedIntegrations) > 1 {
 		resp.Diagnostics.AddError("Not unique", "More than one matching organization integration found")
@@ -111,7 +111,7 @@ func (d *OrganizationIntegrationDataSource) Read(ctx context.Context, req dataso
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), *matchedIntegrations[0]); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 

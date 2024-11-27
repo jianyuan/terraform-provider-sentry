@@ -153,7 +153,7 @@ func (r *NotificationActionResource) Create(ctx context.Context, req resource.Cr
 		},
 	)
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "create", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("create", err))
 		return
 	}
 
@@ -161,13 +161,13 @@ func (r *NotificationActionResource) Create(ctx context.Context, req resource.Cr
 	if len(action.Projects) > 0 {
 		projectIdToSlugMap, err = sentryclient.GetProjectIdToSlugMap(ctx, r.client)
 		if err != nil {
-			diagutils.AddClientError(resp.Diagnostics, "read projects", err)
+			resp.Diagnostics.Append(diagutils.NewClientError("read projects", err))
 			return
 		}
 	}
 
 	if err := data.Fill(*action, projectIdToSlugMap); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 
@@ -188,12 +188,12 @@ func (r *NotificationActionResource) Read(ctx context.Context, req resource.Read
 		data.Id.ValueString(),
 	)
 	if apiResp.StatusCode == http.StatusNotFound {
-		diagutils.AddNotFoundError(resp.Diagnostics, "notification action")
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("notification action"))
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "read", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 		return
 	}
 
@@ -201,13 +201,13 @@ func (r *NotificationActionResource) Read(ctx context.Context, req resource.Read
 	if len(action.Projects) > 0 {
 		projectIdToSlugMap, err = sentryclient.GetProjectIdToSlugMap(ctx, r.client)
 		if err != nil {
-			diagutils.AddClientError(resp.Diagnostics, "read projects", err)
+			resp.Diagnostics.Append(diagutils.NewClientError("read projects", err))
 			return
 		}
 	}
 
 	if err := data.Fill(*action, projectIdToSlugMap); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 
@@ -242,12 +242,12 @@ func (r *NotificationActionResource) Update(ctx context.Context, req resource.Up
 		},
 	)
 	if apiResp.StatusCode == http.StatusNotFound {
-		diagutils.AddNotFoundError(resp.Diagnostics, "notification action")
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("notification action"))
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "update", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("update", err))
 		return
 	}
 
@@ -255,13 +255,13 @@ func (r *NotificationActionResource) Update(ctx context.Context, req resource.Up
 	if len(action.Projects) > 0 {
 		projectIdToSlugMap, err = sentryclient.GetProjectIdToSlugMap(ctx, r.client)
 		if err != nil {
-			diagutils.AddClientError(resp.Diagnostics, "read projects", err)
+			resp.Diagnostics.Append(diagutils.NewClientError("read projects", err))
 			return
 		}
 	}
 
 	if err := data.Fill(*action, projectIdToSlugMap); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 
@@ -285,7 +285,7 @@ func (r *NotificationActionResource) Delete(ctx context.Context, req resource.De
 		return
 	}
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "delete", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("delete", err))
 		return
 	}
 }
@@ -293,7 +293,7 @@ func (r *NotificationActionResource) Delete(ctx context.Context, req resource.De
 func (r *NotificationActionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	org, actionId, err := splitTwoPartID(req.ID, "organization", "action-id")
 	if err != nil {
-		diagutils.AddImportError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewImportError(err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(

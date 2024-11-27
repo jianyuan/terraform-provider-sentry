@@ -79,7 +79,7 @@ func (r *ProjectSpikeProtectionResource) Create(ctx context.Context, req resourc
 			},
 		)
 		if err != nil {
-			diagutils.AddClientError(resp.Diagnostics, "enable", err)
+			resp.Diagnostics.Append(diagutils.NewClientError("enable", err))
 			return
 		}
 	} else {
@@ -91,7 +91,7 @@ func (r *ProjectSpikeProtectionResource) Create(ctx context.Context, req resourc
 			},
 		)
 		if err != nil {
-			diagutils.AddClientError(resp.Diagnostics, "disable", err)
+			resp.Diagnostics.Append(diagutils.NewClientError("disable", err))
 			return
 		}
 	}
@@ -116,17 +116,17 @@ func (r *ProjectSpikeProtectionResource) Read(ctx context.Context, req resource.
 		data.Project.ValueString(),
 	)
 	if apiResp.StatusCode == http.StatusNotFound {
-		diagutils.AddNotFoundError(resp.Diagnostics, "project")
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("project"))
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "read", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), *project); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 
@@ -150,7 +150,7 @@ func (r *ProjectSpikeProtectionResource) Update(ctx context.Context, req resourc
 			},
 		)
 		if err != nil {
-			diagutils.AddClientError(resp.Diagnostics, "enable", err)
+			resp.Diagnostics.Append(diagutils.NewClientError("enable", err))
 			return
 		}
 	} else {
@@ -162,7 +162,7 @@ func (r *ProjectSpikeProtectionResource) Update(ctx context.Context, req resourc
 			},
 		)
 		if err != nil {
-			diagutils.AddClientError(resp.Diagnostics, "disable", err)
+			resp.Diagnostics.Append(diagutils.NewClientError("disable", err))
 			return
 		}
 	}
@@ -190,7 +190,7 @@ func (r *ProjectSpikeProtectionResource) Delete(ctx context.Context, req resourc
 		return
 	}
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "delete", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("delete", err))
 		return
 	}
 }
@@ -198,7 +198,7 @@ func (r *ProjectSpikeProtectionResource) Delete(ctx context.Context, req resourc
 func (r *ProjectSpikeProtectionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	organization, project, err := splitTwoPartID(req.ID, "organization", "project-slug")
 	if err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(

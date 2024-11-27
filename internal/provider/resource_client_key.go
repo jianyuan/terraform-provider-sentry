@@ -149,12 +149,12 @@ func (r *ClientKeyResource) Create(ctx context.Context, req resource.CreateReque
 		params,
 	)
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "create", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("create", err))
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), data.Project.ValueString(), *key); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 
@@ -180,17 +180,17 @@ func (r *ClientKeyResource) Read(ctx context.Context, req resource.ReadRequest, 
 		data.Id.ValueString(),
 	)
 	if apiResp.StatusCode == http.StatusNotFound {
-		diagutils.AddNotFoundError(resp.Diagnostics, "client key")
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("client key"))
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "read", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), data.Project.ValueString(), *key); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 
@@ -221,17 +221,17 @@ func (r *ClientKeyResource) Update(ctx context.Context, req resource.UpdateReque
 		params,
 	)
 	if apiResp.StatusCode == http.StatusNotFound {
-		diagutils.AddNotFoundError(resp.Diagnostics, "client key")
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("client key"))
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "update", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("update", err))
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), data.Project.ValueString(), *key); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 
@@ -256,7 +256,7 @@ func (r *ClientKeyResource) Delete(ctx context.Context, req resource.DeleteReque
 		return
 	}
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "delete", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("delete", err))
 		return
 	}
 }
@@ -264,7 +264,7 @@ func (r *ClientKeyResource) Delete(ctx context.Context, req resource.DeleteReque
 func (r *ClientKeyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	organization, project, id, err := splitThreePartID(req.ID, "organization", "project-slug", "key-id")
 	if err != nil {
-		diagutils.AddImportError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewImportError(err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(

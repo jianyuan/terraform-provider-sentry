@@ -146,7 +146,7 @@ func (d *AllProjectsDataSource) Read(ctx context.Context, req datasource.ReadReq
 	for {
 		projects, apiResp, err := d.client.OrganizationProjects.List(ctx, data.Organization.ValueString(), params)
 		if err != nil {
-			diagutils.AddClientError(resp.Diagnostics, "read", err)
+			resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 			return
 		}
 
@@ -161,7 +161,7 @@ func (d *AllProjectsDataSource) Read(ctx context.Context, req datasource.ReadReq
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), allProjects); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 

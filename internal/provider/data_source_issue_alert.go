@@ -160,17 +160,17 @@ func (d *IssueAlertDataSource) Read(ctx context.Context, req datasource.ReadRequ
 		data.Id.ValueString(),
 	)
 	if apiResp.StatusCode == http.StatusNotFound {
-		diagutils.AddNotFoundError(resp.Diagnostics, "issue alert")
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("issue alert"))
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "read", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), *action); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 

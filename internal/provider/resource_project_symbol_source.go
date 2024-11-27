@@ -263,12 +263,12 @@ func (r *ProjectSymbolSourcesResource) Create(ctx context.Context, req resource.
 		params,
 	)
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "create", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("create", err))
 		return
 	}
 
 	if err := data.Fill(*source); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 
@@ -292,17 +292,17 @@ func (r *ProjectSymbolSourcesResource) Read(ctx context.Context, req resource.Re
 		},
 	)
 	if apiResp.StatusCode == http.StatusNotFound {
-		diagutils.AddNotFoundError(resp.Diagnostics, "project symbol source")
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("project symbol source"))
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "read", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 		return
 	}
 
 	if len(sources) != 1 {
-		diagutils.AddNotFoundError(resp.Diagnostics, "project symbol source")
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("project symbol source"))
 		resp.State.RemoveResource(ctx)
 		return
 	}
@@ -310,7 +310,7 @@ func (r *ProjectSymbolSourcesResource) Read(ctx context.Context, req resource.Re
 	source := sources[0]
 
 	if err := data.Fill(*source); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 
@@ -358,12 +358,12 @@ func (r *ProjectSymbolSourcesResource) Update(ctx context.Context, req resource.
 		params,
 	)
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "update", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("update", err))
 		return
 	}
 
 	if err := data.Fill(*source); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 
@@ -388,7 +388,7 @@ func (r *ProjectSymbolSourcesResource) Delete(ctx context.Context, req resource.
 		return
 	}
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "delete", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("delete", err))
 		return
 	}
 }
@@ -396,7 +396,7 @@ func (r *ProjectSymbolSourcesResource) Delete(ctx context.Context, req resource.
 func (r *ProjectSymbolSourcesResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	organization, project, symbolSourceId, err := splitThreePartID(req.ID, "organization", "project-slug", "symbol-source-id")
 	if err != nil {
-		diagutils.AddImportError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewImportError(err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(

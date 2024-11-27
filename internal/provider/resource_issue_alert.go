@@ -206,12 +206,12 @@ func (r *IssueAlertResource) Create(ctx context.Context, req resource.CreateRequ
 		params,
 	)
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "create", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("create", err))
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), *action); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 
@@ -237,17 +237,17 @@ func (r *IssueAlertResource) Read(ctx context.Context, req resource.ReadRequest,
 		data.Id.ValueString(),
 	)
 	if apiResp.StatusCode == http.StatusNotFound {
-		diagutils.AddNotFoundError(resp.Diagnostics, "issue alert")
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("issue alert"))
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "read", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), *action); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 
@@ -293,17 +293,17 @@ func (r *IssueAlertResource) Update(ctx context.Context, req resource.UpdateRequ
 		params,
 	)
 	if apiResp.StatusCode == http.StatusNotFound {
-		diagutils.AddNotFoundError(resp.Diagnostics, "issue alert")
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("issue alert"))
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "update", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("update", err))
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), *action); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 
@@ -328,7 +328,7 @@ func (r *IssueAlertResource) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "delete", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("delete", err))
 		return
 	}
 }
@@ -336,7 +336,7 @@ func (r *IssueAlertResource) Delete(ctx context.Context, req resource.DeleteRequ
 func (r *IssueAlertResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	organization, project, actionId, err := splitThreePartID(req.ID, "organization", "project-slug", "alert-id")
 	if err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(

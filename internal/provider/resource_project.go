@@ -318,7 +318,7 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 		},
 	)
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "create", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("create", err))
 		return
 	}
 
@@ -390,19 +390,19 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 		updateParams,
 	)
 	if apiResp.StatusCode == http.StatusNotFound {
-		diagutils.AddNotFoundError(resp.Diagnostics, "project")
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("project"))
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "update", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("update", err))
 		return
 	}
 
 	// If the default key is set to false, remove the default key
 	if !data.DefaultKey.IsNull() && !data.DefaultKey.ValueBool() {
 		if err := r.removeDefaultKey(ctx, data.Organization.ValueString(), project); err != nil {
-			diagutils.AddClientError(resp.Diagnostics, "remove default key", err)
+			resp.Diagnostics.Append(diagutils.NewClientError("remove default key", err))
 			return
 		}
 	}
@@ -412,7 +412,7 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 		for _, team := range teams[1:] {
 			_, _, err := r.client.Projects.AddTeam(ctx, data.Organization.ValueString(), project.Slug, team)
 			if err != nil {
-				diagutils.AddClientError(resp.Diagnostics, "add team to project", err)
+				resp.Diagnostics.Append(diagutils.NewClientError("add team to project", err))
 				return
 			}
 		}
@@ -420,17 +420,17 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 
 	project, apiResp, err = r.client.Projects.Get(ctx, data.Organization.ValueString(), project.Slug)
 	if apiResp.StatusCode == http.StatusNotFound {
-		diagutils.AddNotFoundError(resp.Diagnostics, "project")
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("project"))
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "read", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), *project); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 
@@ -451,17 +451,17 @@ func (r *ProjectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		data.Id.ValueString(),
 	)
 	if apiResp.StatusCode == http.StatusNotFound {
-		diagutils.AddNotFoundError(resp.Diagnostics, "project")
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("project"))
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "read", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), *project); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 
@@ -544,19 +544,19 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 		params,
 	)
 	if apiResp.StatusCode == http.StatusNotFound {
-		diagutils.AddNotFoundError(resp.Diagnostics, "project")
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("project"))
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "update", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("update", err))
 		return
 	}
 
 	// If the default key is set to false, remove the default key
 	if !plan.DefaultKey.IsNull() && !plan.DefaultKey.ValueBool() {
 		if err := r.removeDefaultKey(ctx, plan.Organization.ValueString(), project); err != nil {
-			diagutils.AddClientError(resp.Diagnostics, "remove default key", err)
+			resp.Diagnostics.Append(diagutils.NewClientError("remove default key", err))
 			return
 		}
 	}
@@ -581,7 +581,7 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 					team,
 				)
 				if err != nil {
-					diagutils.AddClientError(resp.Diagnostics, "add team to project", err)
+					resp.Diagnostics.Append(diagutils.NewClientError("add team to project", err))
 					return
 				}
 			}
@@ -597,7 +597,7 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 					team,
 				)
 				if err != nil {
-					diagutils.AddClientError(resp.Diagnostics, "remove team from project", err)
+					resp.Diagnostics.Append(diagutils.NewClientError("remove team from project", err))
 					return
 				}
 			}
@@ -610,17 +610,17 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 		plan.Id.ValueString(),
 	)
 	if apiResp.StatusCode == http.StatusNotFound {
-		diagutils.AddNotFoundError(resp.Diagnostics, "project")
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("project"))
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "read", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 		return
 	}
 
 	if err := plan.Fill(plan.Organization.ValueString(), *project); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 
@@ -673,7 +673,7 @@ func (r *ProjectResource) Delete(ctx context.Context, req resource.DeleteRequest
 		return
 	}
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "delete", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("delete", err))
 		return
 	}
 }
@@ -681,7 +681,7 @@ func (r *ProjectResource) Delete(ctx context.Context, req resource.DeleteRequest
 func (r *ProjectResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	organization, project, err := splitTwoPartID(req.ID, "organization", "project-slug")
 	if err != nil {
-		diagutils.AddImportError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewImportError(err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(

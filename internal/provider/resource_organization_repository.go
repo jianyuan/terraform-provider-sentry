@@ -84,12 +84,12 @@ func (r *OrganizationRepositoryResource) Create(ctx context.Context, req resourc
 		},
 	)
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "create", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("create", err))
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), *repo); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 
@@ -113,7 +113,7 @@ out:
 	for {
 		repos, apiResp, err := r.client.OrganizationRepositories.List(ctx, data.Organization.ValueString(), params)
 		if err != nil {
-			diagutils.AddClientError(resp.Diagnostics, "read", err)
+			resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 			return
 		}
 
@@ -131,12 +131,12 @@ out:
 	}
 
 	if foundRepo == nil {
-		diagutils.AddNotFoundError(resp.Diagnostics, "organization repository")
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("organization repository"))
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), *foundRepo); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 
@@ -144,7 +144,7 @@ out:
 }
 
 func (r *OrganizationRepositoryResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	diagutils.AddNotSupportedError(resp.Diagnostics, "update")
+	resp.Diagnostics.Append(diagutils.NewNotSupportedError("update"))
 }
 
 func (r *OrganizationRepositoryResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -164,7 +164,7 @@ func (r *OrganizationRepositoryResource) Delete(ctx context.Context, req resourc
 		return
 	}
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "delete", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("delete", err))
 		return
 	}
 }
@@ -172,7 +172,7 @@ func (r *OrganizationRepositoryResource) Delete(ctx context.Context, req resourc
 func (r *OrganizationRepositoryResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	organization, integrationType, integrationId, id, err := splitFourPartID(req.ID, "organization", "integration_type", "integration_id", "id")
 	if err != nil {
-		diagutils.AddImportError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewImportError(err))
 		return
 	}
 

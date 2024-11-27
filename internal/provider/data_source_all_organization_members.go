@@ -102,7 +102,7 @@ func (d *AllOrganizationMembersDataSource) Read(ctx context.Context, req datasou
 	for {
 		members, apiResp, err := d.client.OrganizationMembers.List(ctx, data.Organization.ValueString(), params)
 		if err != nil {
-			diagutils.AddClientError(resp.Diagnostics, "read", err)
+			resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 			return
 		}
 
@@ -117,7 +117,7 @@ func (d *AllOrganizationMembersDataSource) Read(ctx context.Context, req datasou
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), allMembers); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 

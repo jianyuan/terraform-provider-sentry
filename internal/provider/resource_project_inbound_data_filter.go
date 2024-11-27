@@ -121,7 +121,7 @@ func (r *ProjectInboundDataFilterResource) Create(ctx context.Context, req resou
 		},
 	)
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "create", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("create", err))
 		return
 	}
 
@@ -144,12 +144,12 @@ func (r *ProjectInboundDataFilterResource) Read(ctx context.Context, req resourc
 		data.Project.ValueString(),
 	)
 	if apiResp.StatusCode == http.StatusNotFound {
-		diagutils.AddNotFoundError(resp.Diagnostics, "project inbound data filter")
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("project inbound data filter"))
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "read", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 		return
 	}
 
@@ -163,13 +163,13 @@ func (r *ProjectInboundDataFilterResource) Read(ctx context.Context, req resourc
 	}
 
 	if foundFilter == nil {
-		diagutils.AddNotFoundError(resp.Diagnostics, "project inbound data filter")
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("project inbound data filter"))
 		resp.State.RemoveResource(ctx)
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), data.Project.ValueString(), data.FilterId.ValueString(), *foundFilter); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 
@@ -200,7 +200,7 @@ func (r *ProjectInboundDataFilterResource) Update(ctx context.Context, req resou
 		},
 	)
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "update", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("update", err))
 		return
 	}
 
@@ -230,7 +230,7 @@ func (r *ProjectInboundDataFilterResource) Delete(ctx context.Context, req resou
 		return
 	}
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "delete", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("delete", err))
 		return
 	}
 }
@@ -238,7 +238,7 @@ func (r *ProjectInboundDataFilterResource) Delete(ctx context.Context, req resou
 func (r *ProjectInboundDataFilterResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	organization, project, filterID, err := splitThreePartID(req.ID, "organization", "project-slug", "filter-id")
 	if err != nil {
-		diagutils.AddImportError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewImportError(err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(

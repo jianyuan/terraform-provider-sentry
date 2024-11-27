@@ -90,17 +90,17 @@ func (r *IntegrationOpsgenie) Create(ctx context.Context, req resource.CreateReq
 
 	integration, apiResp, err := r.client.OrganizationIntegrations.Get(ctx, data.Organization.ValueString(), data.IntegrationId.ValueString())
 	if apiResp.StatusCode == http.StatusNotFound {
-		diagutils.AddNotFoundError(resp.Diagnostics, "integration")
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("integration"))
 		return
 	}
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "read", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 		return
 	}
 
 	var configData IntegrationOpsgenieConfigData
 	if err := json.Unmarshal(integration.ConfigData, &configData); err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "unmarshal", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("unmarshal", err))
 		return
 	}
 
@@ -117,7 +117,7 @@ func (r *IntegrationOpsgenie) Create(ctx context.Context, req resource.CreateReq
 
 	configDataJSON, err := json.Marshal(configData)
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "marshal", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("marshal", err))
 		return
 	}
 
@@ -129,22 +129,22 @@ func (r *IntegrationOpsgenie) Create(ctx context.Context, req resource.CreateReq
 		&params,
 	)
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "create", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("create", err))
 		return
 	}
 
 	integration, apiResp, err = r.client.OrganizationIntegrations.Get(ctx, data.Organization.ValueString(), data.IntegrationId.ValueString())
 	if apiResp.StatusCode == http.StatusNotFound {
-		diagutils.AddNotFoundError(resp.Diagnostics, "integration")
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("integration"))
 		return
 	}
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "read", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 		return
 	}
 
 	if err := json.Unmarshal(integration.ConfigData, &configData); err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "unmarshal", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("unmarshal", err))
 		return
 	}
 
@@ -159,12 +159,12 @@ func (r *IntegrationOpsgenie) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	if found == nil {
-		diagutils.AddClientError(resp.Diagnostics, "create", fmt.Errorf("service table item not found: %s", data.IntegrationId.ValueString()))
+		resp.Diagnostics.Append(diagutils.NewClientError("create", fmt.Errorf("service table item not found: %s", data.IntegrationId.ValueString())))
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), data.IntegrationId.ValueString(), configData.TeamTable[len(configData.TeamTable)-1]); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 
@@ -181,18 +181,18 @@ func (r *IntegrationOpsgenie) Read(ctx context.Context, req resource.ReadRequest
 
 	integration, apiResp, err := r.client.OrganizationIntegrations.Get(ctx, data.Organization.ValueString(), data.IntegrationId.ValueString())
 	if apiResp.StatusCode == http.StatusNotFound {
-		diagutils.AddNotFoundError(resp.Diagnostics, "integration")
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("integration"))
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "read", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 		return
 	}
 
 	var configData IntegrationOpsgenieConfigData
 	if err := json.Unmarshal(integration.ConfigData, &configData); err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "unmarshal", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("unmarshal", err))
 		return
 	}
 
@@ -204,13 +204,13 @@ func (r *IntegrationOpsgenie) Read(ctx context.Context, req resource.ReadRequest
 		}
 	}
 	if found == nil {
-		diagutils.AddClientError(resp.Diagnostics, "read", fmt.Errorf("service table item not found: %s", data.IntegrationId.ValueString()))
+		resp.Diagnostics.Append(diagutils.NewClientError("read", fmt.Errorf("service table item not found: %s", data.IntegrationId.ValueString())))
 		resp.State.RemoveResource(ctx)
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), data.IntegrationId.ValueString(), *found); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 
@@ -230,13 +230,13 @@ func (r *IntegrationOpsgenie) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "update", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("update", err))
 		return
 	}
 
 	var configData IntegrationOpsgenieConfigData
 	if err := json.Unmarshal(integration.ConfigData, &configData); err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "unmarshal", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("unmarshal", err))
 		return
 	}
 
@@ -249,7 +249,7 @@ func (r *IntegrationOpsgenie) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	if found == nil {
-		diagutils.AddClientError(resp.Diagnostics, "update", fmt.Errorf("service table item not found: %s", data.IntegrationId.ValueString()))
+		resp.Diagnostics.Append(diagutils.NewClientError("update", fmt.Errorf("service table item not found: %s", data.IntegrationId.ValueString())))
 		resp.State.RemoveResource(ctx)
 		return
 	}
@@ -259,7 +259,7 @@ func (r *IntegrationOpsgenie) Update(ctx context.Context, req resource.UpdateReq
 
 	configDataJSON, err := json.Marshal(configData)
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "marshal", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("marshal", err))
 		return
 	}
 
@@ -271,23 +271,23 @@ func (r *IntegrationOpsgenie) Update(ctx context.Context, req resource.UpdateReq
 		&params,
 	)
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "update", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("update", err))
 		return
 	}
 
 	integration, apiResp, err = r.client.OrganizationIntegrations.Get(ctx, data.Organization.ValueString(), data.IntegrationId.ValueString())
 	if apiResp.StatusCode == http.StatusNotFound {
-		diagutils.AddNotFoundError(resp.Diagnostics, "integration")
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("integration"))
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "update", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("update", err))
 		return
 	}
 
 	if err := json.Unmarshal(integration.ConfigData, &configData); err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "unmarshal", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("unmarshal", err))
 		return
 	}
 
@@ -299,13 +299,13 @@ func (r *IntegrationOpsgenie) Update(ctx context.Context, req resource.UpdateReq
 		}
 	}
 	if found == nil {
-		diagutils.AddClientError(resp.Diagnostics, "update", fmt.Errorf("service table item not found: %s", data.IntegrationId.ValueString()))
+		resp.Diagnostics.Append(diagutils.NewClientError("update", fmt.Errorf("service table item not found: %s", data.IntegrationId.ValueString())))
 		resp.State.RemoveResource(ctx)
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), data.IntegrationId.ValueString(), *found); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 
@@ -325,13 +325,13 @@ func (r *IntegrationOpsgenie) Delete(ctx context.Context, req resource.DeleteReq
 		return
 	}
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "delete", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("delete", err))
 		return
 	}
 
 	var configData IntegrationOpsgenieConfigData
 	if err := json.Unmarshal(integration.ConfigData, &configData); err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "unmarshal", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("unmarshal", err))
 		return
 	}
 
@@ -350,7 +350,7 @@ func (r *IntegrationOpsgenie) Delete(ctx context.Context, req resource.DeleteReq
 
 	configDataJSON, err := json.Marshal(configData)
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "marshal", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("marshal", err))
 		return
 	}
 
@@ -362,7 +362,7 @@ func (r *IntegrationOpsgenie) Delete(ctx context.Context, req resource.DeleteReq
 		&params,
 	)
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "delete", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("delete", err))
 		return
 	}
 }
@@ -370,7 +370,7 @@ func (r *IntegrationOpsgenie) Delete(ctx context.Context, req resource.DeleteReq
 func (r *IntegrationOpsgenie) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	organization, integrationId, id, err := splitThreePartID(req.ID, "organization", "integration-id", "id")
 	if err != nil {
-		diagutils.AddImportError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewImportError(err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(

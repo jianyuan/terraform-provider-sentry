@@ -222,21 +222,21 @@ func (r *TeamMemberResource) Create(ctx context.Context, req resource.CreateRequ
 		data.Team.ValueString(),
 	)
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "create", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("create", err))
 		return
 	}
 
 	if !data.Role.IsNull() {
 		_, err = r.updateRole(ctx, data.Organization.ValueString(), data.MemberId.ValueString(), data.Team.ValueString(), data.Role.ValueString())
 		if err != nil {
-			diagutils.AddClientError(resp.Diagnostics, "create", err)
+			resp.Diagnostics.Append(diagutils.NewClientError("create", err))
 			return
 		}
 	}
 
 	effectiveRole, err := r.getEffectiveTeamRole(ctx, data.Organization.ValueString(), data.MemberId.ValueString(), data.Team.ValueString())
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "create", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("create", err))
 		resp.State.RemoveResource(ctx)
 		return
 	}
@@ -248,7 +248,7 @@ func (r *TeamMemberResource) Create(ctx context.Context, req resource.CreateRequ
 		data.Role.ValueStringPointer(),
 		*effectiveRole,
 	); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 
@@ -271,7 +271,7 @@ func (r *TeamMemberResource) Read(ctx context.Context, req resource.ReadRequest,
 		if strings.Contains(err.Error(), "404 The requested resource does not exist") {
 			resp.State.RemoveResource(ctx)
 		} else {
-			diagutils.AddClientError(resp.Diagnostics, "read", err)
+			resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 		}
 		return
 	}
@@ -283,7 +283,7 @@ func (r *TeamMemberResource) Read(ctx context.Context, req resource.ReadRequest,
 		data.Role.ValueStringPointer(),
 		*effectiveRole,
 	); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 
@@ -305,13 +305,13 @@ func (r *TeamMemberResource) Update(ctx context.Context, req resource.UpdateRequ
 	if !plan.Role.Equal(state.Role) {
 		_, err := r.updateRole(ctx, plan.Organization.ValueString(), plan.MemberId.ValueString(), plan.Team.ValueString(), plan.Role.ValueString())
 		if err != nil {
-			diagutils.AddClientError(resp.Diagnostics, "update", err)
+			resp.Diagnostics.Append(diagutils.NewClientError("update", err))
 			return
 		}
 
 		effectiveRole, err := r.getEffectiveTeamRole(ctx, plan.Organization.ValueString(), plan.MemberId.ValueString(), plan.Team.ValueString())
 		if err != nil {
-			diagutils.AddClientError(resp.Diagnostics, "update", err)
+			resp.Diagnostics.Append(diagutils.NewClientError("update", err))
 			resp.State.RemoveResource(ctx)
 			return
 		}
@@ -323,7 +323,7 @@ func (r *TeamMemberResource) Update(ctx context.Context, req resource.UpdateRequ
 			plan.Role.ValueStringPointer(),
 			*effectiveRole,
 		); err != nil {
-			diagutils.AddFillError(resp.Diagnostics, err)
+			resp.Diagnostics.Append(diagutils.NewFillError(err))
 			return
 		}
 	}
@@ -348,7 +348,7 @@ func (r *TeamMemberResource) Delete(ctx context.Context, req resource.DeleteRequ
 		data.Team.ValueString(),
 	)
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "delete", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("delete", err))
 		return
 	}
 }
@@ -356,7 +356,7 @@ func (r *TeamMemberResource) Delete(ctx context.Context, req resource.DeleteRequ
 func (r *TeamMemberResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	organization, team, memberId, err := splitThreePartID(req.ID, "organization", "team-slug", "member-id")
 	if err != nil {
-		diagutils.AddImportError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewImportError(err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(

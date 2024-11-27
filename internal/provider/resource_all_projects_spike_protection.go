@@ -124,7 +124,7 @@ func (r *AllProjectsSpikeProtectionResource) Create(ctx context.Context, req res
 			},
 		)
 		if err != nil {
-			diagutils.AddClientError(resp.Diagnostics, "enable", err)
+			resp.Diagnostics.Append(diagutils.NewClientError("enable", err))
 			return
 		}
 	} else {
@@ -136,19 +136,19 @@ func (r *AllProjectsSpikeProtectionResource) Create(ctx context.Context, req res
 			},
 		)
 		if err != nil {
-			diagutils.AddClientError(resp.Diagnostics, "disable", err)
+			resp.Diagnostics.Append(diagutils.NewClientError("disable", err))
 			return
 		}
 	}
 
 	allProjects, err := r.readProjects(ctx, data.Organization.ValueString(), data.Enabled.ValueBool(), projects)
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "create", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("create", err))
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), data.Enabled.ValueBool(), allProjects); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 
@@ -170,12 +170,12 @@ func (r *AllProjectsSpikeProtectionResource) Read(ctx context.Context, req resou
 
 	allProjects, err := r.readProjects(ctx, data.Organization.ValueString(), data.Enabled.ValueBool(), projects)
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "read", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), data.Enabled.ValueBool(), allProjects); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 
@@ -204,7 +204,7 @@ func (r *AllProjectsSpikeProtectionResource) Update(ctx context.Context, req res
 			},
 		)
 		if err != nil {
-			diagutils.AddClientError(resp.Diagnostics, "enable", err)
+			resp.Diagnostics.Append(diagutils.NewClientError("enable", err))
 			return
 		}
 	} else {
@@ -216,19 +216,19 @@ func (r *AllProjectsSpikeProtectionResource) Update(ctx context.Context, req res
 			},
 		)
 		if err != nil {
-			diagutils.AddClientError(resp.Diagnostics, "disable", err)
+			resp.Diagnostics.Append(diagutils.NewClientError("disable", err))
 			return
 		}
 	}
 
 	allProjects, err := r.readProjects(ctx, data.Organization.ValueString(), data.Enabled.ValueBool(), projects)
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "update", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("update", err))
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), data.Enabled.ValueBool(), allProjects); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 
@@ -258,7 +258,7 @@ func (r *AllProjectsSpikeProtectionResource) Delete(ctx context.Context, req res
 			},
 		)
 		if err != nil {
-			diagutils.AddClientError(resp.Diagnostics, "disable", err)
+			resp.Diagnostics.Append(diagutils.NewClientError("disable", err))
 			return
 		}
 	} else {
@@ -271,7 +271,7 @@ func (r *AllProjectsSpikeProtectionResource) Delete(ctx context.Context, req res
 			},
 		)
 		if err != nil {
-			diagutils.AddClientError(resp.Diagnostics, "enable", err)
+			resp.Diagnostics.Append(diagutils.NewClientError("enable", err))
 			return
 		}
 	}

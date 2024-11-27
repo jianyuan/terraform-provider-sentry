@@ -144,7 +144,7 @@ func (d *AllClientKeysDataSource) Read(ctx context.Context, req datasource.ReadR
 	for {
 		keys, apiResp, err := d.client.ProjectKeys.List(ctx, data.Organization.ValueString(), data.Project.ValueString(), params)
 		if err != nil {
-			diagutils.AddClientError(resp.Diagnostics, "read", err)
+			resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 			return
 		}
 
@@ -157,7 +157,7 @@ func (d *AllClientKeysDataSource) Read(ctx context.Context, req datasource.ReadR
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), data.Project.ValueString(), data.FilterStatus.ValueStringPointer(), allKeys); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 

@@ -115,16 +115,16 @@ func (d *ProjectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 
 	project, apiResp, err := d.client.Projects.Get(ctx, data.Organization.ValueString(), data.Slug.ValueString())
 	if apiResp.StatusCode == http.StatusNotFound {
-		diagutils.AddNotFoundError(resp.Diagnostics, "project")
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("project"))
 		return
 	}
 	if err != nil {
-		diagutils.AddClientError(resp.Diagnostics, "read", err)
+		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 		return
 	}
 
 	if err := data.Fill(data.Organization.ValueString(), *project); err != nil {
-		diagutils.AddFillError(resp.Diagnostics, err)
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 
