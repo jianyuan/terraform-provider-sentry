@@ -28,7 +28,7 @@ It's best practice not to store the authentication token in plain text. As an al
 provider "sentry" {}
 ```
 
-~> **NOTE:** Integration tokens are tied to the organization, not a specific user. Meaning, they cannot be used to invite/delete users, because the scopes do not include permissions at this high of a level. A personal auth token tied to your user role will be able to perform these specific actions if your user is a Manager or Owner is needed for Organization members.
+~> **NOTE:** Integration tokens are tied to the organization, not a specific user. Meaning, they cannot be used to invite/delete users, because the scopes do not include permissions at this high of a level. A personal auth token tied to your user role will be able to perform Organization's members' actions if your user is a Manager or Owner.
 
 ### Self-hosted Sentry
 
