@@ -23,7 +23,7 @@ type ProjectSymbolSourcesResourceModel struct {
 	Project              types.String                             `tfsdk:"project"`
 	Type                 types.String                             `tfsdk:"type"`
 	Name                 types.String                             `tfsdk:"name"`
-	Layout               *ProjectSymbolSourcesResourceLayoutModel `tfsdk:"layout"`
+	Layout               *ProjectSymbolSourcesLayoutResourceModel `tfsdk:"layout"`
 	AppConnectIssuer     types.String                             `tfsdk:"app_connect_issuer"`
 	AppConnectPrivateKey types.String                             `tfsdk:"app_connect_private_key"`
 	AppId                types.String                             `tfsdk:"app_id"`
@@ -44,7 +44,7 @@ func (data *ProjectSymbolSourcesResourceModel) Fill(source sentry.ProjectSymbolS
 	data.Type = types.StringPointerValue(source.Type)
 	data.Name = types.StringPointerValue(source.Name)
 	if source.Layout != nil {
-		data.Layout = &ProjectSymbolSourcesResourceLayoutModel{}
+		data.Layout = &ProjectSymbolSourcesLayoutResourceModel{}
 		if err := data.Layout.Fill(*source.Layout); err != nil {
 			return err
 		}
@@ -74,19 +74,19 @@ type ProjectSymbolSourcesResource struct {
 	baseResource
 }
 
-type ProjectSymbolSourcesResourceLayoutModel struct {
+type ProjectSymbolSourcesLayoutResourceModel struct {
 	Type   types.String `tfsdk:"type"`
 	Casing types.String `tfsdk:"casing"`
 }
 
-func (m *ProjectSymbolSourcesResourceLayoutModel) Fill(layout sentry.ProjectSymbolSourceLayout) error {
+func (m *ProjectSymbolSourcesLayoutResourceModel) Fill(layout sentry.ProjectSymbolSourceLayout) error {
 	m.Type = types.StringPointerValue(layout.Type)
 	m.Casing = types.StringPointerValue(layout.Casing)
 
 	return nil
 }
 
-func (m ProjectSymbolSourcesResourceLayoutModel) AttributeTypes() map[string]attr.Type {
+func (m ProjectSymbolSourcesLayoutResourceModel) AttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"type":   types.StringType,
 		"casing": types.StringType,
