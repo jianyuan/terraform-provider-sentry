@@ -1,4 +1,7 @@
 ---
+# Generated from templates/index.md.tmpl
+# DO NOT EDIT DIRECTLY
+
 page_title: "Official Sentry Terraform Provider"
 description: |-
   Set up Sentry Team, Projects, Alerts, and more. This provider is maintained with [Sentry.io](https://sentry.io)'s sponsorship. Please add any bug reports/feature requests in the GitHub repo.
@@ -28,7 +31,7 @@ It's best practice not to store the authentication token in plain text. As an al
 provider "sentry" {}
 ```
 
-~> **NOTE:** Integration tokens are tied to the organization, not a specific user. Meaning, they cannot be used to invite/delete users, because the scopes do not include permissions at this high of a level. A personal auth token tied to your user role will be able to perform Organization's members' actions if your user is a Manager or Owner.
+**NOTE:** Integration tokens are tied to the organization, not to a specific user. This means they cannot be used to invite or delete users, as their scopes do not include permissions at such a high level. A personal authentication token tied to your user role can perform organization member-related actions if your user role is set to Manager or Owner.
 
 ### Self-hosted Sentry
 
