@@ -21,7 +21,7 @@ type Config struct {
 }
 
 // Client to connect to Sentry.
-func (c *Config) Client(ctx context.Context) (*sentry.Client, error) {
+func (c *Config) HttpClient(ctx context.Context) *http.Client {
 	// Authentication
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.Token})
 	oauth2HTTPClient := oauth2.NewClient(ctx, ts)
@@ -40,28 +40,11 @@ func (c *Config) Client(ctx context.Context) (*sentry.Client, error) {
 	retryHTTPClient := retryClient.StandardClient()
 
 	// Handle concurrency limit
-	semaphoreHTTPClient := &http.Client{
+	return &http.Client{
 		Transport: &semaphoreTransport{
 			Delegate: retryHTTPClient.Transport,
 		},
 	}
-
-	// Initialize client
-	var cl *sentry.Client
-	var err error
-	if c.BaseURL == "" {
-		cl = sentry.NewClient(semaphoreHTTPClient)
-	} else {
-		cl, err = sentry.NewOnPremiseClient(c.BaseURL, semaphoreHTTPClient)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	// Set user agent
-	cl.UserAgent = c.UserAgent
-
-	return cl, nil
 }
 
 type semaphoreTransport struct {

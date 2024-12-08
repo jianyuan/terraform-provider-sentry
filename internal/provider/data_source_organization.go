@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 )
 
@@ -21,11 +21,11 @@ type OrganizationDataSourceModel struct {
 	InternalId types.String `tfsdk:"internal_id"`
 }
 
-func (m *OrganizationDataSourceModel) Fill(org sentry.Organization) error {
-	m.Id = types.StringPointerValue(org.Slug)
-	m.Slug = types.StringPointerValue(org.Slug)
-	m.Name = types.StringPointerValue(org.Name)
-	m.InternalId = types.StringPointerValue(org.ID)
+func (m *OrganizationDataSourceModel) Fill(org apiclient.Organization) error {
+	m.Id = types.StringValue(org.Slug)
+	m.Slug = types.StringValue(org.Slug)
+	m.Name = types.StringValue(org.Name)
+	m.InternalId = types.StringValue(org.Id)
 
 	return nil
 }
@@ -72,8 +72,11 @@ func (d *OrganizationDataSource) Read(ctx context.Context, req datasource.ReadRe
 		return
 	}
 
-	org, apiResp, err := d.client.Organizations.Get(ctx, data.Slug.ValueString())
-	if apiResp.StatusCode == http.StatusNotFound {
+	httpResp, err := d.apiClient.GetOrganizationWithResponse(
+		ctx,
+		data.Slug.ValueString(),
+	)
+	if httpResp.StatusCode() == http.StatusNotFound {
 		resp.Diagnostics.Append(diagutils.NewNotFoundError("organization"))
 		return
 	}
@@ -82,7 +85,7 @@ func (d *OrganizationDataSource) Read(ctx context.Context, req datasource.ReadRe
 		return
 	}
 
-	if err := data.Fill(*org); err != nil {
+	if err := data.Fill(*httpResp.JSON200); err != nil {
 		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}

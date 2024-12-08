@@ -2,14 +2,16 @@ package provider
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
 )
 
 type baseResource struct {
-	client *sentry.Client
+	client    *sentry.Client
+	apiClient *apiclient.ClientWithResponses
 }
 
 func (r *baseResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
@@ -18,16 +20,8 @@ func (r *baseResource) Configure(ctx context.Context, req resource.ConfigureRequ
 		return
 	}
 
-	client, ok := req.ProviderData.(*sentry.Client)
+	providerData := req.ProviderData.(*providerdata.ProviderData)
 
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *sentry.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
-		)
-
-		return
-	}
-
-	r.client = client
+	r.client = providerData.Client
+	r.apiClient = providerData.ApiClient
 }

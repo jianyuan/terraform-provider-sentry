@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
 )
 
 func resourceSentryDashboard() *schema.Resource {
@@ -260,7 +261,7 @@ func resourceSentryDashboardObject(d *schema.ResourceData) *sentry.Dashboard {
 }
 
 func resourceSentryDashboardCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client := meta.(*providerdata.ProviderData).Client
 
 	org := d.Get("organization").(string)
 	dashboardReq := resourceSentryDashboardObject(d)
@@ -279,7 +280,7 @@ func resourceSentryDashboardCreate(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceSentryDashboardRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client := meta.(*providerdata.ProviderData).Client
 
 	org, dashboardID, err := splitSentryDashboardID(d.Id())
 	if err != nil {
@@ -316,7 +317,7 @@ func resourceSentryDashboardRead(ctx context.Context, d *schema.ResourceData, me
 }
 
 func resourceSentryDashboardUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client := meta.(*providerdata.ProviderData).Client
 
 	org, dashboardID, err := splitSentryDashboardID(d.Id())
 	if err != nil {
@@ -336,7 +337,7 @@ func resourceSentryDashboardUpdate(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceSentryDashboardDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client := meta.(*providerdata.ProviderData).Client
 
 	org, dashboardID, err := splitSentryDashboardID(d.Id())
 	if err != nil {

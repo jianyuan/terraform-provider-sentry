@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
 )
 
 // no UpdateContext, unsupported by this integration. will have to ForceNew
@@ -52,7 +53,7 @@ func resourceSentryOrganizationRepositoryGithub() *schema.Resource {
 }
 
 func resourceSentryOrganizationRepositoryGithubCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client := meta.(*providerdata.ProviderData).Client
 
 	org := d.Get("organization").(string)
 	integrationId := d.Get("integration_id").(string)
@@ -91,7 +92,7 @@ func resourceSentryOrganizationRepositoryGithubCreate(ctx context.Context, d *sc
 }
 
 func resourceSentryOrganizationRepositoryGithubRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client := meta.(*providerdata.ProviderData).Client
 
 	id := d.Id()
 	org := d.Get("organization").(string)
@@ -143,7 +144,7 @@ func resourceSentryOrganizationRepositoryGithubRead(ctx context.Context, d *sche
 }
 
 func resourceSentryOrganizationRepositoryGithubDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client := meta.(*providerdata.ProviderData).Client
 
 	id := d.Id()
 	org := d.Get("organization").(string)

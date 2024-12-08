@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
 )
 
 func dataSourceSentryDashboard() *schema.Resource {
@@ -148,7 +149,7 @@ func dataSourceSentryDashboard() *schema.Resource {
 }
 
 func dataSourceSentryDashboardRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client := meta.(*providerdata.ProviderData).Client
 
 	org := d.Get("organization").(string)
 	dashboardID := d.Get("internal_id").(string)

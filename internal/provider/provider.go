@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -10,6 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
 )
 
@@ -77,19 +81,51 @@ func (p *SentryProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		baseUrl = "https://sentry.io/api/"
 	}
 
+	userAgent := fmt.Sprintf("Terraform/%s (+https://www.terraform.io) terraform-provider-sentry/%s", req.TerraformVersion, p.version)
+
 	config := sentryclient.Config{
-		UserAgent: fmt.Sprintf("Terraform/%s (+https://www.terraform.io) terraform-provider-sentry/%s", req.TerraformVersion, p.version),
+		UserAgent: userAgent,
 		Token:     token,
 		BaseURL:   baseUrl,
 	}
-	client, err := config.Client(ctx)
+
+	httpClient := config.HttpClient(ctx)
+
+	// Old Sentry client
+	var client *sentry.Client
+	var err error
+	if baseUrl == "" {
+		client = sentry.NewClient(httpClient)
+	} else {
+		client, err = sentry.NewOnPremiseClient(baseUrl, httpClient)
+		if err != nil {
+			resp.Diagnostics.AddError("failed to create Sentry client", err.Error())
+			return
+		}
+	}
+	client.UserAgent = userAgent
+
+	// New Sentry client
+	apiClient, err := apiclient.NewClientWithResponses(
+		client.BaseURL.String(),
+		apiclient.WithHTTPClient(httpClient),
+		apiclient.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
+			req.Header.Set("User-Agent", userAgent)
+			return nil
+		}),
+	)
 	if err != nil {
-		resp.Diagnostics.AddError("failed to create Sentry client", err.Error())
+		resp.Diagnostics.AddError("failed to create Sentry API client", err.Error())
 		return
 	}
 
-	resp.DataSourceData = client
-	resp.ResourceData = client
+	providerData := &providerdata.ProviderData{
+		Client:    client,
+		ApiClient: apiClient,
+	}
+
+	resp.DataSourceData = providerData
+	resp.ResourceData = providerData
 }
 
 func (p *SentryProvider) Resources(ctx context.Context) []func() resource.Resource {

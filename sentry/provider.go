@@ -2,9 +2,13 @@ package sentry
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
 )
 
@@ -68,12 +72,44 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 			Token:     d.Get("token").(string),
 			BaseURL:   d.Get("base_url").(string),
 		}
-		client, err := config.Client(ctx)
+
+		httpClient := config.HttpClient(ctx)
+
+		// Old Sentry client
+		var client *sentry.Client
+		var err error
+		if config.BaseURL == "" {
+			client = sentry.NewClient(httpClient)
+		} else {
+			client, err = sentry.NewOnPremiseClient(config.BaseURL, httpClient)
+			if err != nil {
+				return nil, diag.FromErr(err)
+			}
+		}
+		client.UserAgent = config.UserAgent
+
+		// New Sentry client
+		apiClient, err := apiclient.NewClientWithResponses(
+			client.BaseURL.String(),
+			apiclient.WithHTTPClient(httpClient),
+			apiclient.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
+				req.Header.Set("User-Agent", config.UserAgent)
+				return nil
+			}),
+		)
+		if err != nil {
+			return nil, diag.FromErr(err)
+		}
+
+		providerData := &providerdata.ProviderData{
+			Client:    client,
+			ApiClient: apiClient,
+		}
 
 		if err != nil {
 			return nil, diag.FromErr(err)
 		}
 
-		return client, nil
+		return providerData, nil
 	}
 }
