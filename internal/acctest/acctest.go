@@ -70,7 +70,6 @@ func init() {
 	config := sentryclient.Config{
 		UserAgent: "Terraform/" + ProviderVersion + " (+https://www.terraform.io) terraform-provider-sentry/" + ProviderVersion,
 		Token:     token,
-		BaseURL:   baseUrl,
 	}
 	httpClient := config.HttpClient(context.Background())
 
@@ -79,8 +78,6 @@ func init() {
 	} else {
 		SharedClient = must.Get(sentry.NewOnPremiseClient(baseUrl, httpClient))
 	}
-	SharedClient.UserAgent = config.UserAgent
-
 }
 
 func PreCheck(t *testing.T) {

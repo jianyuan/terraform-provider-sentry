@@ -3,13 +3,6 @@ package sentryclient
 import (
 	"context"
 	"net/http"
-	"sync"
-	"time"
-
-	"github.com/hashicorp/go-retryablehttp"
-	"github.com/jianyuan/go-sentry/v2/sentry"
-	"golang.org/x/oauth2"
-	"golang.org/x/sync/semaphore"
 )
 
 // Config is the configuration structure used to instantiate the Sentry
@@ -17,65 +10,25 @@ import (
 type Config struct {
 	UserAgent string
 	Token     string
-	BaseURL   string
 }
 
 // Client to connect to Sentry.
 func (c *Config) HttpClient(ctx context.Context) *http.Client {
-	// Authentication
-	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.Token})
-	oauth2HTTPClient := oauth2.NewClient(ctx, ts)
+	transport := http.DefaultTransport
 
-	// Handle rate limit
-	retryClient := retryablehttp.NewClient()
-	retryClient.HTTPClient = oauth2HTTPClient
-	retryClient.ErrorHandler = retryablehttp.PassthroughErrorHandler
-	retryClient.Logger = nil // Disable DEBUG logs
-	retryClient.Backoff = func(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration {
-		if rateLimitErr, ok := sentry.CheckResponse(resp).(*sentry.RateLimitError); ok {
-			return time.Until(rateLimitErr.Rate.Reset)
-		}
-		return retryablehttp.DefaultBackoff(min, max, attemptNum, resp)
-	}
-	retryHTTPClient := retryClient.StandardClient()
+	// Handle authentication
+	transport = NewBearerTokenRoundTripper(transport, c.Token)
+
+	// Handle user agent
+	transport = NewUserAgentRoundTripper(transport, c.UserAgent)
 
 	// Handle concurrency limit
+	transport = NewSemaphoreRoundTripper(transport)
+
+	// Handle rate limit
+	transport = NewRateLimiterRoundTripper(transport)
+
 	return &http.Client{
-		Transport: &semaphoreTransport{
-			Delegate: retryHTTPClient.Transport,
-		},
+		Transport: transport,
 	}
-}
-
-type semaphoreTransport struct {
-	Delegate http.RoundTripper
-
-	mu sync.RWMutex
-	w  *semaphore.Weighted
-}
-
-func (t *semaphoreTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	t.mu.RLock()
-	if t.w == nil {
-		t.mu.RUnlock()
-		t.mu.Lock()
-		resp, err := t.Delegate.RoundTrip(req)
-		if resp != nil {
-			rate := sentry.ParseRate(resp)
-			if rate.ConcurrentLimit > 0 {
-				t.w = semaphore.NewWeighted(int64(rate.ConcurrentLimit))
-			}
-		}
-		t.mu.Unlock()
-		return resp, err
-	}
-	t.mu.RUnlock()
-
-	ctx := req.Context()
-	if err := t.w.Acquire(ctx, 1); err != nil {
-		return nil, err
-	}
-	defer t.w.Release(1)
-
-	return t.Delegate.RoundTrip(req)
 }

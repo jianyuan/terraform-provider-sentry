@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"os"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -81,12 +80,9 @@ func (p *SentryProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		baseUrl = "https://sentry.io/api/"
 	}
 
-	userAgent := fmt.Sprintf("Terraform/%s (+https://www.terraform.io) terraform-provider-sentry/%s", req.TerraformVersion, p.version)
-
 	config := sentryclient.Config{
-		UserAgent: userAgent,
+		UserAgent: fmt.Sprintf("Terraform/%s (+https://www.terraform.io) terraform-provider-sentry/%s", req.TerraformVersion, p.version),
 		Token:     token,
-		BaseURL:   baseUrl,
 	}
 
 	httpClient := config.HttpClient(ctx)
@@ -103,16 +99,11 @@ func (p *SentryProvider) Configure(ctx context.Context, req provider.ConfigureRe
 			return
 		}
 	}
-	client.UserAgent = userAgent
 
 	// New Sentry client
 	apiClient, err := apiclient.NewClientWithResponses(
-		client.BaseURL.String(),
+		baseUrl,
 		apiclient.WithHTTPClient(httpClient),
-		apiclient.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
-			req.Header.Set("User-Agent", userAgent)
-			return nil
-		}),
 	)
 	if err != nil {
 		resp.Diagnostics.AddError("failed to create Sentry API client", err.Error())

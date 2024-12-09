@@ -2,7 +2,6 @@ package sentry
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -70,32 +69,27 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 		config := sentryclient.Config{
 			UserAgent: p.UserAgent("terraform-provider-sentry", version),
 			Token:     d.Get("token").(string),
-			BaseURL:   d.Get("base_url").(string),
 		}
+		baseUrl := d.Get("base_url").(string)
 
 		httpClient := config.HttpClient(ctx)
 
 		// Old Sentry client
 		var client *sentry.Client
 		var err error
-		if config.BaseURL == "" {
+		if baseUrl == "" {
 			client = sentry.NewClient(httpClient)
 		} else {
-			client, err = sentry.NewOnPremiseClient(config.BaseURL, httpClient)
+			client, err = sentry.NewOnPremiseClient(baseUrl, httpClient)
 			if err != nil {
 				return nil, diag.FromErr(err)
 			}
 		}
-		client.UserAgent = config.UserAgent
 
 		// New Sentry client
 		apiClient, err := apiclient.NewClientWithResponses(
 			client.BaseURL.String(),
 			apiclient.WithHTTPClient(httpClient),
-			apiclient.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
-				req.Header.Set("User-Agent", config.UserAgent)
-				return nil
-			}),
 		)
 		if err != nil {
 			return nil, diag.FromErr(err)
