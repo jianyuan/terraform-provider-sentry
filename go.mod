@@ -18,7 +18,6 @@ require (
 	github.com/jianyuan/go-utils v0.0.0-20241209000508-251c44ce0f68
 	github.com/oapi-codegen/oapi-codegen/v2 v2.4.1
 	github.com/oapi-codegen/runtime v1.1.1
-	golang.org/x/oauth2 v0.24.0
 	golang.org/x/sync v0.10.0
 )
 
