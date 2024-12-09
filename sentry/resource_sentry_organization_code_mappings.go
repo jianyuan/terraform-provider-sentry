@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
 )
 
 func resourceSentryOrganizationCodeMapping() *schema.Resource {
@@ -70,7 +71,7 @@ func resourceSentryOrganizationCodeMapping() *schema.Resource {
 }
 
 func resourceSentryOrganizationCodeMappingCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client := meta.(*providerdata.ProviderData).Client
 
 	org := d.Get("organization").(string)
 
@@ -97,7 +98,7 @@ func resourceSentryOrganizationCodeMappingCreate(ctx context.Context, d *schema.
 }
 
 func resourceSentryOrganizationCodeMappingRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client := meta.(*providerdata.ProviderData).Client
 
 	id := d.Id()
 	org := d.Get("organization").(string)
@@ -154,7 +155,7 @@ func resourceSentryOrganizationCodeMappingRead(ctx context.Context, d *schema.Re
 }
 
 func resourceSentryOrganizationCodeMappingUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client := meta.(*providerdata.ProviderData).Client
 
 	id := d.Id()
 	org := d.Get("organization").(string)
@@ -183,7 +184,7 @@ func resourceSentryOrganizationCodeMappingUpdate(ctx context.Context, d *schema.
 }
 
 func resourceSentryOrganizationCodeMappingDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client := meta.(*providerdata.ProviderData).Client
 
 	id := d.Id()
 	org := d.Get("organization").(string)

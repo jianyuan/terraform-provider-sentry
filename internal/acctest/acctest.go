@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/go-utils/must"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
 )
 
@@ -52,7 +53,6 @@ var (
 )
 
 func init() {
-	var err error
 	var token string
 	if v := os.Getenv("SENTRY_AUTH_TOKEN"); v != "" {
 		token = v
@@ -68,12 +68,15 @@ func init() {
 	}
 
 	config := sentryclient.Config{
-		Token:   token,
-		BaseURL: baseUrl,
+		UserAgent: "Terraform/" + ProviderVersion + " (+https://www.terraform.io) terraform-provider-sentry/" + ProviderVersion,
+		Token:     token,
 	}
-	SharedClient, err = config.Client(context.Background())
-	if err != nil {
-		panic(err)
+	httpClient := config.HttpClient(context.Background())
+
+	if baseUrl == "" {
+		SharedClient = sentry.NewClient(httpClient)
+	} else {
+		SharedClient = must.Get(sentry.NewOnPremiseClient(baseUrl, httpClient))
 	}
 }
 

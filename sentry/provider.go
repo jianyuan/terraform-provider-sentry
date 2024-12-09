@@ -5,6 +5,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
 )
 
@@ -66,14 +69,41 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 		config := sentryclient.Config{
 			UserAgent: p.UserAgent("terraform-provider-sentry", version),
 			Token:     d.Get("token").(string),
-			BaseURL:   d.Get("base_url").(string),
 		}
-		client, err := config.Client(ctx)
+		baseUrl := d.Get("base_url").(string)
+
+		httpClient := config.HttpClient(ctx)
+
+		// Old Sentry client
+		var client *sentry.Client
+		var err error
+		if baseUrl == "" {
+			client = sentry.NewClient(httpClient)
+		} else {
+			client, err = sentry.NewOnPremiseClient(baseUrl, httpClient)
+			if err != nil {
+				return nil, diag.FromErr(err)
+			}
+		}
+
+		// New Sentry client
+		apiClient, err := apiclient.NewClientWithResponses(
+			client.BaseURL.String(),
+			apiclient.WithHTTPClient(httpClient),
+		)
+		if err != nil {
+			return nil, diag.FromErr(err)
+		}
+
+		providerData := &providerdata.ProviderData{
+			Client:    client,
+			ApiClient: apiClient,
+		}
 
 		if err != nil {
 			return nil, diag.FromErr(err)
 		}
 
-		return client, nil
+		return providerData, nil
 	}
 }

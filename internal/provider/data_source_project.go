@@ -8,7 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/go-utils/sliceutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 )
 
@@ -25,21 +26,16 @@ type ProjectDataSourceModel struct {
 	IsPublic     types.Bool   `tfsdk:"is_public"`
 }
 
-func (m *ProjectDataSourceModel) Fill(organization string, project sentry.Project) error {
-	m.Organization = types.StringValue(organization)
+func (m *ProjectDataSourceModel) Fill(project apiclient.Project) error {
 	m.Slug = types.StringValue(project.Slug)
 	m.Id = types.StringValue(project.Slug)
-	m.InternalId = types.StringValue(project.ID)
+	m.InternalId = types.StringValue(project.Id)
 	m.Name = types.StringValue(project.Name)
-	m.Platform = types.StringValue(project.Platform)
+	m.Platform = types.StringPointerValue(project.Platform)
 	m.DateCreated = types.StringValue(project.DateCreated.String())
-
-	featureElements := []attr.Value{}
-	for _, feature := range project.Features {
-		featureElements = append(featureElements, types.StringValue(feature))
-	}
-	m.Features = types.SetValueMust(types.StringType, featureElements)
-
+	m.Features = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
+		return types.StringValue(v)
+	}, project.Features))
 	m.Color = types.StringValue(project.Color)
 	m.IsPublic = types.BoolValue(project.IsPublic)
 
@@ -113,8 +109,13 @@ func (d *ProjectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		return
 	}
 
-	project, apiResp, err := d.client.Projects.Get(ctx, data.Organization.ValueString(), data.Slug.ValueString())
-	if apiResp.StatusCode == http.StatusNotFound {
+	httpResp, err := d.apiClient.GetOrganizationProjectWithResponse(
+		ctx,
+		data.Organization.ValueString(),
+		data.Slug.ValueString(),
+	)
+
+	if httpResp.StatusCode() == http.StatusNotFound {
 		resp.Diagnostics.Append(diagutils.NewNotFoundError("project"))
 		return
 	}
@@ -123,7 +124,7 @@ func (d *ProjectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		return
 	}
 
-	if err := data.Fill(data.Organization.ValueString(), *project); err != nil {
+	if err := data.Fill(*httpResp.JSON200); err != nil {
 		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}

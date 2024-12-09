@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
 )
 
 func resourceSentryOrganizationMember() *schema.Resource {
@@ -69,7 +70,7 @@ func resourceSentryOrganizationMember() *schema.Resource {
 }
 
 func resourceSentryOrganizationMemberCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client := meta.(*providerdata.ProviderData).Client
 
 	org := d.Get("organization").(string)
 	params := &sentry.CreateOrganizationMemberParams{
@@ -92,7 +93,7 @@ func resourceSentryOrganizationMemberCreate(ctx context.Context, d *schema.Resou
 }
 
 func resourceSentryOrganizationMemberRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client := meta.(*providerdata.ProviderData).Client
 
 	org, memberID, err := splitSentryOrganizationMemberID(d.Id())
 
@@ -122,7 +123,7 @@ func resourceSentryOrganizationMemberRead(ctx context.Context, d *schema.Resourc
 }
 
 func resourceSentryOrganizationMemberUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client := meta.(*providerdata.ProviderData).Client
 
 	org, memberID, err := splitSentryOrganizationMemberID(d.Id())
 	if err != nil {
@@ -156,7 +157,7 @@ func resourceSentryOrganizationMemberUpdate(ctx context.Context, d *schema.Resou
 }
 
 func resourceSentryOrganizationMemberDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client := meta.(*providerdata.ProviderData).Client
 
 	org, memberID, err := splitSentryOrganizationMemberID(d.Id())
 	if err != nil {

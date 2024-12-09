@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
 )
 
 func resourceSentryOrganization() *schema.Resource {
@@ -50,7 +51,7 @@ func resourceSentryOrganization() *schema.Resource {
 }
 
 func resourceSentryOrganizationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client := meta.(*providerdata.ProviderData).Client
 
 	params := &sentry.CreateOrganizationParams{
 		Name:       sentry.String(d.Get("name").(string)),
@@ -71,7 +72,7 @@ func resourceSentryOrganizationCreate(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceSentryOrganizationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client := meta.(*providerdata.ProviderData).Client
 	org := d.Id()
 
 	tflog.Debug(ctx, "Reading organization", map[string]interface{}{"org": org})
@@ -97,7 +98,7 @@ func resourceSentryOrganizationRead(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceSentryOrganizationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client := meta.(*providerdata.ProviderData).Client
 	org := d.Id()
 	params := &sentry.UpdateOrganizationParams{
 		Name: sentry.String(d.Get("name").(string)),
@@ -117,7 +118,7 @@ func resourceSentryOrganizationUpdate(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceSentryOrganizationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client := meta.(*providerdata.ProviderData).Client
 	org := d.Id()
 
 	tflog.Debug(ctx, "Deleting organization", map[string]interface{}{"org": org})

@@ -1,0 +1,149 @@
+openapi: 3.0.0
+info:
+  title: Sentry API
+  version: 0.1.0
+servers:
+  - url: https://sentry.io/api
+
+paths:
+  /0/organizations/{organization_id_or_slug}/:
+    get:
+      summary: Retrieve an Organization
+      operationId: getOrganization
+      parameters:
+        - $ref: "#/components/parameters/organization_id_or_slug"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Organization"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+  /0/projects/{organization_id_or_slug}/{project_id_or_slug}/:
+    get:
+      summary: Retrieve a Project
+      operationId: getOrganizationProject
+      parameters:
+        - $ref: "#/components/parameters/organization_id_or_slug"
+        - $ref: "#/components/parameters/project_id_or_slug"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  parameters:
+    organization_id_or_slug:
+      name: organization_id_or_slug
+      in: path
+      required: true
+      schema:
+        type: string
+    project_id_or_slug:
+      name: project_id_or_slug
+      in: path
+      required: true
+      schema:
+        type: string
+  schemas:
+    Organization:
+      type: object
+      required:
+        - id
+        - name
+        - slug
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        slug:
+          type: string
+    Project:
+      type: object
+      required:
+        - organization
+        - id
+        - name
+        - slug
+        - platform
+        - dateCreated
+        - teams
+        - features
+        - options
+        - color
+        - isPublic
+        - digestsMinDelay
+        - digestsMaxDelay
+        - resolveAge
+      properties:
+        organization:
+          $ref: "#/components/schemas/Organization"
+        id:
+          type: string
+        name:
+          type: string
+        slug:
+          type: string
+        platform:
+          type: string
+          nullable: true
+        dateCreated:
+          type: string
+          format: date-time
+        teams:
+          type: array
+          items:
+            $ref: "#/components/schemas/Team"
+        features:
+          type: array
+          items:
+            type: string
+        options:
+          type: object
+        color:
+          type: string
+        isPublic:
+          type: boolean
+        digestsMinDelay:
+          type: integer
+          format: int64
+        digestsMaxDelay:
+          type: integer
+          format: int64
+        resolveAge:
+          type: integer
+          format: int64
+    Team:
+      type: object
+      required:
+        - id
+        - slug
+        - name
+      properties:
+        id:
+          type: string
+        slug:
+          type: string
+        name:
+          type: string

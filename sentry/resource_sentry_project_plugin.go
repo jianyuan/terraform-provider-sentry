@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
 )
 
 func resourceSentryPlugin() *schema.Resource {
@@ -48,7 +48,7 @@ func resourceSentryPlugin() *schema.Resource {
 }
 
 func resourceSentryPluginCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client := meta.(*providerdata.ProviderData).Client
 
 	plugin := d.Get("plugin").(string)
 	org := d.Get("organization").(string)
@@ -80,7 +80,7 @@ func resourceSentryPluginCreate(ctx context.Context, d *schema.ResourceData, met
 }
 
 func resourceSentryPluginRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client := meta.(*providerdata.ProviderData).Client
 
 	id := d.Id()
 	org := d.Get("organization").(string)
@@ -122,7 +122,7 @@ func resourceSentryPluginRead(ctx context.Context, d *schema.ResourceData, meta 
 }
 
 func resourceSentryPluginUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client := meta.(*providerdata.ProviderData).Client
 
 	id := d.Id()
 	org := d.Get("organization").(string)
@@ -148,7 +148,7 @@ func resourceSentryPluginUpdate(ctx context.Context, d *schema.ResourceData, met
 }
 
 func resourceSentryPluginDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client := meta.(*providerdata.ProviderData).Client
 
 	id := d.Id()
 	org := d.Get("organization").(string)

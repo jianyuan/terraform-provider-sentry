@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
 )
 
 func resourceSentryTeam() *schema.Resource {
@@ -68,7 +69,7 @@ func resourceSentryTeam() *schema.Resource {
 }
 
 func resourceSentryTeamCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client := meta.(*providerdata.ProviderData).Client
 
 	org := d.Get("organization").(string)
 	params := &sentry.CreateTeamParams{
@@ -89,7 +90,7 @@ func resourceSentryTeamCreate(ctx context.Context, d *schema.ResourceData, meta 
 }
 
 func resourceSentryTeamRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client := meta.(*providerdata.ProviderData).Client
 
 	teamSlug := d.Id()
 	org := d.Get("organization").(string)
@@ -121,7 +122,7 @@ func resourceSentryTeamRead(ctx context.Context, d *schema.ResourceData, meta in
 }
 
 func resourceSentryTeamUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client := meta.(*providerdata.ProviderData).Client
 
 	teamSlug := d.Id()
 	org := d.Get("organization").(string)
@@ -141,7 +142,7 @@ func resourceSentryTeamUpdate(ctx context.Context, d *schema.ResourceData, meta 
 }
 
 func resourceSentryTeamDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client := meta.(*providerdata.ProviderData).Client
 
 	teamSlug := d.Id()
 	org := d.Get("organization").(string)

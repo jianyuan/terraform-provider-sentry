@@ -43,7 +43,7 @@ func TestAccProjectDataSource_UpgradeFromVersion(t *testing.T) {
 				ConfigStateChecks: append(
 					checks,
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(projectName)),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("platform"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("platform"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("date_created"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("features"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("color"), knownvalue.NotNull()),

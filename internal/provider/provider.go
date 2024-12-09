@@ -10,6 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
 )
 
@@ -80,16 +83,40 @@ func (p *SentryProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	config := sentryclient.Config{
 		UserAgent: fmt.Sprintf("Terraform/%s (+https://www.terraform.io) terraform-provider-sentry/%s", req.TerraformVersion, p.version),
 		Token:     token,
-		BaseURL:   baseUrl,
 	}
-	client, err := config.Client(ctx)
+
+	httpClient := config.HttpClient(ctx)
+
+	// Old Sentry client
+	var client *sentry.Client
+	var err error
+	if baseUrl == "" {
+		client = sentry.NewClient(httpClient)
+	} else {
+		client, err = sentry.NewOnPremiseClient(baseUrl, httpClient)
+		if err != nil {
+			resp.Diagnostics.AddError("failed to create Sentry client", err.Error())
+			return
+		}
+	}
+
+	// New Sentry client
+	apiClient, err := apiclient.NewClientWithResponses(
+		baseUrl,
+		apiclient.WithHTTPClient(httpClient),
+	)
 	if err != nil {
-		resp.Diagnostics.AddError("failed to create Sentry client", err.Error())
+		resp.Diagnostics.AddError("failed to create Sentry API client", err.Error())
 		return
 	}
 
-	resp.DataSourceData = client
-	resp.ResourceData = client
+	providerData := &providerdata.ProviderData{
+		Client:    client,
+		ApiClient: apiClient,
+	}
+
+	resp.DataSourceData = providerData
+	resp.ResourceData = providerData
 }
 
 func (p *SentryProvider) Resources(ctx context.Context) []func() resource.Resource {

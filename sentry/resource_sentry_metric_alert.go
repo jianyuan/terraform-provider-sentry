@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
 )
 
 func resourceSentryMetricAlert() *schema.Resource {
@@ -217,7 +218,7 @@ func resourceSentryMetricAlertObject(d *schema.ResourceData) *sentry.MetricAlert
 }
 
 func resourceSentryMetricAlertCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client := meta.(*providerdata.ProviderData).Client
 
 	org := d.Get("organization").(string)
 	project := d.Get("project").(string)
@@ -239,7 +240,7 @@ func resourceSentryMetricAlertCreate(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceSentryMetricAlertRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client := meta.(*providerdata.ProviderData).Client
 
 	org, project, alertID, err := splitSentryAlertID(d.Id())
 	if err != nil {
@@ -293,7 +294,7 @@ func resourceSentryMetricAlertRead(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceSentryMetricAlertUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client := meta.(*providerdata.ProviderData).Client
 
 	org, project, alertID, err := splitSentryAlertID(d.Id())
 	if err != nil {
@@ -316,7 +317,7 @@ func resourceSentryMetricAlertUpdate(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceSentryMetricAlertDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*sentry.Client)
+	client := meta.(*providerdata.ProviderData).Client
 
 	org, project, alertID, err := splitSentryAlertID(d.Id())
 	if err != nil {
