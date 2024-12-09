@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/oapi-codegen/runtime"
 )
@@ -25,6 +26,37 @@ type Organization struct {
 	Name string `json:"name"`
 	Slug string `json:"slug"`
 }
+
+// Project defines model for Project.
+type Project struct {
+	Color           string                 `json:"color"`
+	DateCreated     time.Time              `json:"dateCreated"`
+	DigestsMaxDelay int64                  `json:"digestsMaxDelay"`
+	DigestsMinDelay int64                  `json:"digestsMinDelay"`
+	Features        []string               `json:"features"`
+	Id              string                 `json:"id"`
+	IsPublic        bool                   `json:"isPublic"`
+	Name            string                 `json:"name"`
+	Options         map[string]interface{} `json:"options"`
+	Organization    Organization           `json:"organization"`
+	Platform        *string                `json:"platform"`
+	ResolveAge      int64                  `json:"resolveAge"`
+	Slug            string                 `json:"slug"`
+	Teams           []Team                 `json:"teams"`
+}
+
+// Team defines model for Team.
+type Team struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
+	Slug string `json:"slug"`
+}
+
+// OrganizationIdOrSlug defines model for organization_id_or_slug.
+type OrganizationIdOrSlug = string
+
+// ProjectIdOrSlug defines model for project_id_or_slug.
+type ProjectIdOrSlug = string
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -100,10 +132,13 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 // The interface specification for the client above.
 type ClientInterface interface {
 	// GetOrganization request
-	GetOrganization(ctx context.Context, organizationIdOrSlug string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetOrganization(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetOrganizationProject request
+	GetOrganizationProject(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
-func (c *Client) GetOrganization(ctx context.Context, organizationIdOrSlug string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) GetOrganization(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetOrganizationRequest(c.Server, organizationIdOrSlug)
 	if err != nil {
 		return nil, err
@@ -115,8 +150,20 @@ func (c *Client) GetOrganization(ctx context.Context, organizationIdOrSlug strin
 	return c.Client.Do(req)
 }
 
+func (c *Client) GetOrganizationProject(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetOrganizationProjectRequest(c.Server, organizationIdOrSlug, projectIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // NewGetOrganizationRequest generates requests for GetOrganization
-func NewGetOrganizationRequest(server string, organizationIdOrSlug string) (*http.Request, error) {
+func NewGetOrganizationRequest(server string, organizationIdOrSlug OrganizationIdOrSlug) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -132,6 +179,47 @@ func NewGetOrganizationRequest(server string, organizationIdOrSlug string) (*htt
 	}
 
 	operationPath := fmt.Sprintf("/0/organizations/%s/", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetOrganizationProjectRequest generates requests for GetOrganizationProject
+func NewGetOrganizationProjectRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organization_id_or_slug", runtime.ParamLocationPath, organizationIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "project_id_or_slug", runtime.ParamLocationPath, projectIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/projects/%s/%s/", pathParam0, pathParam1)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -193,7 +281,10 @@ func WithBaseURL(baseURL string) ClientOption {
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
 	// GetOrganizationWithResponse request
-	GetOrganizationWithResponse(ctx context.Context, organizationIdOrSlug string, reqEditors ...RequestEditorFn) (*GetOrganizationResponse, error)
+	GetOrganizationWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*GetOrganizationResponse, error)
+
+	// GetOrganizationProjectWithResponse request
+	GetOrganizationProjectWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, reqEditors ...RequestEditorFn) (*GetOrganizationProjectResponse, error)
 }
 
 type GetOrganizationResponse struct {
@@ -218,13 +309,44 @@ func (r GetOrganizationResponse) StatusCode() int {
 	return 0
 }
 
+type GetOrganizationProjectResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Project
+}
+
+// Status returns HTTPResponse.Status
+func (r GetOrganizationProjectResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetOrganizationProjectResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 // GetOrganizationWithResponse request returning *GetOrganizationResponse
-func (c *ClientWithResponses) GetOrganizationWithResponse(ctx context.Context, organizationIdOrSlug string, reqEditors ...RequestEditorFn) (*GetOrganizationResponse, error) {
+func (c *ClientWithResponses) GetOrganizationWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*GetOrganizationResponse, error) {
 	rsp, err := c.GetOrganization(ctx, organizationIdOrSlug, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseGetOrganizationResponse(rsp)
+}
+
+// GetOrganizationProjectWithResponse request returning *GetOrganizationProjectResponse
+func (c *ClientWithResponses) GetOrganizationProjectWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, reqEditors ...RequestEditorFn) (*GetOrganizationProjectResponse, error) {
+	rsp, err := c.GetOrganizationProject(ctx, organizationIdOrSlug, projectIdOrSlug, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetOrganizationProjectResponse(rsp)
 }
 
 // ParseGetOrganizationResponse parses an HTTP response from a GetOrganizationWithResponse call
@@ -243,6 +365,32 @@ func ParseGetOrganizationResponse(rsp *http.Response) (*GetOrganizationResponse,
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Organization
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetOrganizationProjectResponse parses an HTTP response from a GetOrganizationProjectWithResponse call
+func ParseGetOrganizationProjectResponse(rsp *http.Response) (*GetOrganizationProjectResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetOrganizationProjectResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Project
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 )
 
@@ -19,12 +20,14 @@ type ProjectSpikeProtectionResourceModel struct {
 	Enabled      types.Bool   `tfsdk:"enabled"`
 }
 
-func (data *ProjectSpikeProtectionResourceModel) Fill(organization string, project sentry.Project) error {
-	data.Id = types.StringValue(buildTwoPartID(organization, project.Slug))
-	data.Organization = types.StringPointerValue(project.Organization.Slug)
+func (data *ProjectSpikeProtectionResourceModel) Fill(project apiclient.Project) error {
+	data.Id = types.StringValue(buildTwoPartID(project.Organization.Slug, project.Slug))
+	data.Organization = types.StringValue(project.Organization.Slug)
 	data.Project = types.StringValue(project.Slug)
 	if disabled, ok := project.Options["quotas:spike-protection-disabled"].(bool); ok {
 		data.Enabled = types.BoolValue(!disabled)
+	} else {
+		data.Enabled = types.BoolNull()
 	}
 
 	return nil
@@ -110,12 +113,12 @@ func (r *ProjectSpikeProtectionResource) Read(ctx context.Context, req resource.
 		return
 	}
 
-	project, apiResp, err := r.client.Projects.Get(
+	httpResp, err := r.apiClient.GetOrganizationProjectWithResponse(
 		ctx,
 		data.Organization.ValueString(),
 		data.Project.ValueString(),
 	)
-	if apiResp.StatusCode == http.StatusNotFound {
+	if httpResp.StatusCode() == http.StatusNotFound {
 		resp.Diagnostics.Append(diagutils.NewNotFoundError("project"))
 		resp.State.RemoveResource(ctx)
 		return
@@ -125,7 +128,7 @@ func (r *ProjectSpikeProtectionResource) Read(ctx context.Context, req resource.
 		return
 	}
 
-	if err := data.Fill(data.Organization.ValueString(), *project); err != nil {
+	if err := data.Fill(*httpResp.JSON200); err != nil {
 		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
