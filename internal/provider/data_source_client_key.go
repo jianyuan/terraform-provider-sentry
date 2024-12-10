@@ -6,36 +6,47 @@ import (
 	"sort"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/go-utils/maputils"
+	"github.com/jianyuan/go-utils/ptr"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
 )
 
-type ClientKeyDataSourceModel struct {
-	Organization    types.String `tfsdk:"organization"`
-	Project         types.String `tfsdk:"project"`
-	Id              types.String `tfsdk:"id"`
-	Name            types.String `tfsdk:"name"`
-	First           types.Bool   `tfsdk:"first"`
-	ProjectId       types.String `tfsdk:"project_id"`
-	RateLimitWindow types.Int64  `tfsdk:"rate_limit_window"`
-	RateLimitCount  types.Int64  `tfsdk:"rate_limit_count"`
-	Public          types.String `tfsdk:"public"`
-	Secret          types.String `tfsdk:"secret"`
-	DsnPublic       types.String `tfsdk:"dsn_public"`
-	DsnSecret       types.String `tfsdk:"dsn_secret"`
-	DsnCsp          types.String `tfsdk:"dsn_csp"`
+type ClientKeyJavascriptLoaderScriptDataSourceModel struct {
+	BrowserSdkVersion            types.String `tfsdk:"browser_sdk_version"`
+	PerformanceMonitoringEnabled types.Bool   `tfsdk:"performance_monitoring_enabled"`
+	SessionReplayEnabled         types.Bool   `tfsdk:"session_replay_enabled"`
+	DebugEnabled                 types.Bool   `tfsdk:"debug_enabled"`
 }
 
-func (m *ClientKeyDataSourceModel) Fill(organization string, project string, first bool, key sentry.ProjectKey) error {
-	m.Organization = types.StringValue(organization)
-	m.Project = types.StringValue(project)
-	m.Id = types.StringValue(key.ID)
+type ClientKeyDataSourceModel struct {
+	Organization           types.String                                  `tfsdk:"organization"`
+	Project                types.String                                  `tfsdk:"project"`
+	Id                     types.String                                  `tfsdk:"id"`
+	Name                   types.String                                  `tfsdk:"name"`
+	First                  types.Bool                                    `tfsdk:"first"`
+	ProjectId              types.String                                  `tfsdk:"project_id"`
+	RateLimitWindow        types.Int64                                   `tfsdk:"rate_limit_window"`
+	RateLimitCount         types.Int64                                   `tfsdk:"rate_limit_count"`
+	JavascriptLoaderScript *ClientKeyJavascriptLoaderScriptResourceModel `tfsdk:"javascript_loader_script"`
+	Public                 types.String                                  `tfsdk:"public"`
+	Secret                 types.String                                  `tfsdk:"secret"`
+	Dsn                    types.Map                                     `tfsdk:"dsn"`
+	DsnPublic              types.String                                  `tfsdk:"dsn_public"`
+	DsnSecret              types.String                                  `tfsdk:"dsn_secret"`
+	DsnCsp                 types.String                                  `tfsdk:"dsn_csp"`
+}
+
+func (m *ClientKeyDataSourceModel) Fill(key apiclient.ProjectKey) error {
+	m.Id = types.StringValue(key.Id)
+	m.ProjectId = types.StringValue(key.ProjectId.String())
 	m.Name = types.StringValue(key.Name)
-	m.First = types.BoolValue(first)
 
 	if key.RateLimit == nil {
 		m.RateLimitWindow = types.Int64Null()
@@ -45,12 +56,36 @@ func (m *ClientKeyDataSourceModel) Fill(organization string, project string, fir
 		m.RateLimitCount = types.Int64Value(int64(key.RateLimit.Count))
 	}
 
-	m.ProjectId = types.StringValue(key.ProjectID.String())
+	m.JavascriptLoaderScript = &ClientKeyJavascriptLoaderScriptResourceModel{
+		BrowserSdkVersion:            types.StringValue(key.BrowserSdkVersion),
+		PerformanceMonitoringEnabled: types.BoolValue(key.DynamicSdkLoaderOptions.HasPerformance),
+		SessionReplayEnabled:         types.BoolValue(key.DynamicSdkLoaderOptions.HasReplay),
+		DebugEnabled:                 types.BoolValue(key.DynamicSdkLoaderOptions.HasDebug),
+	}
 	m.Public = types.StringValue(key.Public)
 	m.Secret = types.StringValue(key.Secret)
-	m.DsnPublic = types.StringValue(key.DSN.Public)
-	m.DsnSecret = types.StringValue(key.DSN.Secret)
-	m.DsnCsp = types.StringValue(key.DSN.CSP)
+
+	m.Dsn = types.MapValueMust(types.StringType, maputils.MapValues(key.Dsn, func(v string) attr.Value {
+		return types.StringValue(v)
+	}))
+
+	if v, ok := key.Dsn["public"]; ok {
+		m.DsnPublic = types.StringValue(v)
+	} else {
+		m.DsnPublic = types.StringNull()
+	}
+
+	if v, ok := key.Dsn["secret"]; ok {
+		m.DsnSecret = types.StringValue(v)
+	} else {
+		m.DsnSecret = types.StringNull()
+	}
+
+	if v, ok := key.Dsn["csp"]; ok {
+		m.DsnCsp = types.StringValue(v)
+	} else {
+		m.DsnCsp = types.StringNull()
+	}
 
 	return nil
 }
@@ -110,16 +145,46 @@ func (d *ClientKeyDataSource) Schema(ctx context.Context, req datasource.SchemaR
 				MarkdownDescription: "Number of events that can be reported within the rate limit window.",
 				Computed:            true,
 			},
+			"javascript_loader_script": schema.SingleNestedAttribute{
+				MarkdownDescription: "The JavaScript loader script configuration.",
+				Computed:            true,
+				Attributes: map[string]schema.Attribute{
+					"browser_sdk_version": schema.StringAttribute{
+						MarkdownDescription: "The version of the browser SDK to load. Valid values are `7.x` and `8.x`.",
+						Computed:            true,
+					},
+					"performance_monitoring_enabled": schema.BoolAttribute{
+						MarkdownDescription: "Whether performance monitoring is enabled for this key.",
+						Computed:            true,
+					},
+					"session_replay_enabled": schema.BoolAttribute{
+						MarkdownDescription: "Whether session replay is enabled for this key.",
+						Computed:            true,
+					},
+					"debug_enabled": schema.BoolAttribute{
+						MarkdownDescription: "Whether debug bundles & logging are enabled for this key.",
+						Computed:            true,
+					},
+				},
+			},
+			"dsn": schema.MapAttribute{
+				MarkdownDescription: "This is a map of DSN values. The keys include `public`, `secret`, `csp`, `security`, `minidump`, `nel`, `unreal`, `cdn`, and `crons`.",
+				Computed:            true,
+				ElementType:         types.StringType,
+			},
 			"dsn_public": schema.StringAttribute{
-				MarkdownDescription: "The DSN tells the SDK where to send the events to.",
+				MarkdownDescription: "The DSN tells the SDK where to send the events to. **Deprecated** Use `dsn[\"public\"]` instead.",
+				DeprecationMessage:  "This field is deprecated and will be removed in a future version. Use `dsn[\"public\"]` instead.",
 				Computed:            true,
 			},
 			"dsn_secret": schema.StringAttribute{
-				MarkdownDescription: "Deprecated DSN includes a secret which is no longer required by newer SDK versions. If you are unsure which to use, follow installation instructions for your language.",
+				MarkdownDescription: "Deprecated DSN includes a secret which is no longer required by newer SDK versions. If you are unsure which to use, follow installation instructions for your language. **Deprecated** Use `dsn[\"secret\"] instead.",
+				DeprecationMessage:  "This field is deprecated and will be removed in a future version. Use `dsn[\"secret\"]` instead.",
 				Computed:            true,
 			},
 			"dsn_csp": schema.StringAttribute{
-				MarkdownDescription: "Security header endpoint for features like CSP and Expect-CT reports.",
+				MarkdownDescription: "Security header endpoint for features like CSP and Expect-CT reports. **Deprecated** Use `dsn[\"csp\"]` instead.",
+				DeprecationMessage:  "This field is deprecated and will be removed in a future version. Use `dsn[\"csp\"]` instead.",
 				Computed:            true,
 			},
 		},
@@ -144,29 +209,38 @@ func (d *ClientKeyDataSource) Read(ctx context.Context, req datasource.ReadReque
 		return
 	}
 
-	var foundKey *sentry.ProjectKey
+	var foundKey *apiclient.ProjectKey
 
 	if data.Id.IsNull() {
-		var allKeys []*sentry.ProjectKey
-		params := &sentry.ListProjectKeysParams{}
+		var allKeys []apiclient.ProjectKey
+		params := &apiclient.ListProjectClientKeysParams{}
 		for {
-			keys, apiResp, err := d.client.ProjectKeys.List(ctx, data.Organization.ValueString(), data.Project.ValueString(), params)
+			httpResp, err := d.apiClient.ListProjectClientKeysWithResponse(
+				ctx,
+				data.Organization.ValueString(),
+				data.Project.ValueString(),
+				params,
+			)
 			if err != nil {
 				resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 				return
 			}
+			if httpResp.StatusCode() != http.StatusOK {
+				resp.Diagnostics.Append(diagutils.NewClientStatusError("read", httpResp.StatusCode(), httpResp.Body))
+				return
+			}
 
-			allKeys = append(allKeys, keys...)
+			allKeys = append(allKeys, *httpResp.JSON200...)
 
-			if apiResp.Cursor == "" {
+			params.Cursor = sentryclient.ParseNextPaginationCursor(httpResp.HTTPResponse)
+			if params.Cursor == nil {
 				break
 			}
-			params.Cursor = apiResp.Cursor
 		}
 
 		if data.Name.IsNull() {
 			if len(allKeys) == 1 {
-				foundKey = allKeys[0]
+				foundKey = ptr.Ptr(allKeys[0])
 			} else if !data.First.IsNull() && data.First.ValueBool() {
 				// Find the first key
 
@@ -175,7 +249,7 @@ func (d *ClientKeyDataSource) Read(ctx context.Context, req datasource.ReadReque
 					return allKeys[i].DateCreated.Before(allKeys[j].DateCreated)
 				})
 
-				foundKey = allKeys[0]
+				foundKey = ptr.Ptr(allKeys[0])
 			} else {
 				resp.Diagnostics.AddError("Client error", "Multiple keys found, please specify the key by `name`, `id`, or set the `first` flag to `true`.")
 				return
@@ -184,7 +258,7 @@ func (d *ClientKeyDataSource) Read(ctx context.Context, req datasource.ReadReque
 			// Find the key by name
 			for _, key := range allKeys {
 				if key.Name == data.Name.ValueString() {
-					foundKey = key
+					foundKey = ptr.Ptr(key)
 					break
 				}
 			}
@@ -192,22 +266,22 @@ func (d *ClientKeyDataSource) Read(ctx context.Context, req datasource.ReadReque
 
 	} else {
 		// Get the key by ID
-		key, apiResp, err := d.client.ProjectKeys.Get(
+		httpResp, err := d.apiClient.GetProjectClientKeyWithResponse(
 			ctx,
 			data.Organization.ValueString(),
 			data.Project.ValueString(),
 			data.Id.ValueString(),
 		)
-		if apiResp.StatusCode == http.StatusNotFound {
-			resp.Diagnostics.Append(diagutils.NewNotFoundError("client key"))
-			return
-		}
 		if err != nil {
 			resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 			return
 		}
+		if httpResp.StatusCode() != http.StatusOK {
+			resp.Diagnostics.Append(diagutils.NewClientError("read", err))
+			return
+		}
 
-		foundKey = key
+		foundKey = httpResp.JSON200
 	}
 
 	if foundKey == nil {
@@ -215,12 +289,7 @@ func (d *ClientKeyDataSource) Read(ctx context.Context, req datasource.ReadReque
 		return
 	}
 
-	if err := data.Fill(
-		data.Organization.ValueString(),
-		data.Project.ValueString(),
-		data.First.ValueBool(),
-		*foundKey,
-	); err != nil {
+	if err := data.Fill(*foundKey); err != nil {
 		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}

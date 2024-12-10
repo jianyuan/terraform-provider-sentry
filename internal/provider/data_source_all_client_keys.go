@@ -2,14 +2,16 @@ package provider
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
 )
 
 type AllClientKeysDataSourceModel struct {
@@ -19,19 +21,16 @@ type AllClientKeysDataSourceModel struct {
 	Keys         []ClientKeyResourceModel `tfsdk:"keys"`
 }
 
-func (m *AllClientKeysDataSourceModel) Fill(organization string, project string, filterStatus *string, keys []*sentry.ProjectKey) error {
-	m.Organization = types.StringValue(organization)
-	m.Project = types.StringValue(project)
-	m.FilterStatus = types.StringPointerValue(filterStatus)
-
-	m.Keys = []ClientKeyResourceModel{}
-	for _, key := range keys {
-		var model ClientKeyResourceModel
-		if err := model.Fill(organization, project, *key); err != nil {
+func (m *AllClientKeysDataSourceModel) Fill(keys []apiclient.ProjectKey) error {
+	m.Keys = make([]ClientKeyResourceModel, len(keys))
+	for i, key := range keys {
+		if err := m.Keys[i].FillAll(
+			m.Organization.ValueString(),
+			m.Project.ValueString(),
+			key,
+		); err != nil {
 			return err
 		}
-
-		m.Keys = append(m.Keys, model)
 	}
 
 	return nil
@@ -110,16 +109,46 @@ func (d *AllClientKeysDataSource) Schema(ctx context.Context, req datasource.Sch
 							MarkdownDescription: "Number of events that can be reported within the rate limit window.",
 							Computed:            true,
 						},
+						"javascript_loader_script": schema.SingleNestedAttribute{
+							MarkdownDescription: "The JavaScript loader script configuration.",
+							Computed:            true,
+							Attributes: map[string]schema.Attribute{
+								"browser_sdk_version": schema.StringAttribute{
+									MarkdownDescription: "The version of the browser SDK to load. Valid values are `7.x` and `8.x`.",
+									Computed:            true,
+								},
+								"performance_monitoring_enabled": schema.BoolAttribute{
+									MarkdownDescription: "Whether performance monitoring is enabled for this key.",
+									Computed:            true,
+								},
+								"session_replay_enabled": schema.BoolAttribute{
+									MarkdownDescription: "Whether session replay is enabled for this key.",
+									Computed:            true,
+								},
+								"debug_enabled": schema.BoolAttribute{
+									MarkdownDescription: "Whether debug bundles & logging are enabled for this key.",
+									Computed:            true,
+								},
+							},
+						},
+						"dsn": schema.MapAttribute{
+							MarkdownDescription: "This is a map of DSN values. The keys include `public`, `secret`, `csp`, `security`, `minidump`, `nel`, `unreal`, `cdn`, and `crons`.",
+							Computed:            true,
+							ElementType:         types.StringType,
+						},
 						"dsn_public": schema.StringAttribute{
-							MarkdownDescription: "The DSN tells the SDK where to send the events to.",
+							MarkdownDescription: "The DSN tells the SDK where to send the events to. **Deprecated** Use `dsn[\"public\"]` instead.",
+							DeprecationMessage:  "This field is deprecated and will be removed in a future version. Use `dsn[\"public\"]` instead.",
 							Computed:            true,
 						},
 						"dsn_secret": schema.StringAttribute{
-							MarkdownDescription: "Deprecated DSN includes a secret which is no longer required by newer SDK versions. If you are unsure which to use, follow installation instructions for your language.",
+							MarkdownDescription: "Deprecated DSN includes a secret which is no longer required by newer SDK versions. If you are unsure which to use, follow installation instructions for your language. **Deprecated** Use `dsn[\"secret\"] instead.",
+							DeprecationMessage:  "This field is deprecated and will be removed in a future version. Use `dsn[\"secret\"]` instead.",
 							Computed:            true,
 						},
 						"dsn_csp": schema.StringAttribute{
-							MarkdownDescription: "Security header endpoint for features like CSP and Expect-CT reports.",
+							MarkdownDescription: "Security header endpoint for features like CSP and Expect-CT reports. **Deprecated** Use `dsn[\"csp\"]` instead.",
+							DeprecationMessage:  "This field is deprecated and will be removed in a future version. Use `dsn[\"csp\"]` instead.",
 							Computed:            true,
 						},
 					},
@@ -137,26 +166,35 @@ func (d *AllClientKeysDataSource) Read(ctx context.Context, req datasource.ReadR
 		return
 	}
 
-	var allKeys []*sentry.ProjectKey
-	params := &sentry.ListProjectKeysParams{
-		Status: data.FilterStatus.ValueStringPointer(),
+	var allKeys []apiclient.ProjectKey
+	params := &apiclient.ListProjectClientKeysParams{
+		Status: (*apiclient.ListProjectClientKeysParamsStatus)(data.FilterStatus.ValueStringPointer()),
 	}
 	for {
-		keys, apiResp, err := d.client.ProjectKeys.List(ctx, data.Organization.ValueString(), data.Project.ValueString(), params)
+		httpResp, err := d.apiClient.ListProjectClientKeysWithResponse(
+			ctx,
+			data.Organization.ValueString(),
+			data.Project.ValueString(),
+			params,
+		)
 		if err != nil {
 			resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 			return
 		}
+		if httpResp.StatusCode() != http.StatusOK {
+			resp.Diagnostics.Append(diagutils.NewClientStatusError("read", httpResp.StatusCode(), httpResp.Body))
+			return
+		}
 
-		allKeys = append(allKeys, keys...)
+		allKeys = append(allKeys, *httpResp.JSON200...)
 
-		if apiResp.Cursor == "" {
+		params.Cursor = sentryclient.ParseNextPaginationCursor(httpResp.HTTPResponse)
+		if params.Cursor == nil {
 			break
 		}
-		params.Cursor = apiResp.Cursor
 	}
 
-	if err := data.Fill(data.Organization.ValueString(), data.Project.ValueString(), data.FilterStatus.ValueStringPointer(), allKeys); err != nil {
+	if err := data.Fill(allKeys); err != nil {
 		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}

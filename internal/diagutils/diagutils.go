@@ -1,9 +1,14 @@
 package diagutils
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+)
+
+var (
+	ErrEmptyResponse = errors.New("empty response")
 )
 
 func NewClientError(action string, err error) diag.ErrorDiagnostic {
