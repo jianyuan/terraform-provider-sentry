@@ -10,6 +10,10 @@ func NewClientError(action string, err error) diag.ErrorDiagnostic {
 	return diag.NewErrorDiagnostic("Client error", fmt.Sprintf("Unable to %s, got error: %s", action, err))
 }
 
+func NewClientStatusError(action string, status int, body []byte) diag.ErrorDiagnostic {
+	return diag.NewErrorDiagnostic("Client error", fmt.Sprintf("Unable to %s, got status %d: %s", action, status, string(body)))
+}
+
 func NewNotFoundError(resource string) diag.ErrorDiagnostic {
 	return diag.NewErrorDiagnostic("Not found", fmt.Sprintf("No matching %s found", resource))
 }

@@ -114,13 +114,17 @@ func (d *ProjectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		data.Organization.ValueString(),
 		data.Slug.ValueString(),
 	)
+	if err != nil {
+		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
+		return
+	}
 
 	if httpResp.StatusCode() == http.StatusNotFound {
 		resp.Diagnostics.Append(diagutils.NewNotFoundError("project"))
+		resp.State.RemoveResource(ctx)
 		return
-	}
-	if err != nil {
-		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
+	} else if httpResp.StatusCode() != http.StatusOK {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("read", httpResp.StatusCode(), httpResp.Body))
 		return
 	}
 

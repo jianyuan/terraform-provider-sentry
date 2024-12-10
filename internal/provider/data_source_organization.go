@@ -76,12 +76,17 @@ func (d *OrganizationDataSource) Read(ctx context.Context, req datasource.ReadRe
 		ctx,
 		data.Slug.ValueString(),
 	)
-	if httpResp.StatusCode() == http.StatusNotFound {
-		resp.Diagnostics.Append(diagutils.NewNotFoundError("organization"))
-		return
-	}
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
+		return
+	}
+
+	if httpResp.StatusCode() == http.StatusNotFound {
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("organization"))
+		resp.State.RemoveResource(ctx)
+		return
+	} else if httpResp.StatusCode() != http.StatusOK {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("read", httpResp.StatusCode(), httpResp.Body))
 		return
 	}
 
