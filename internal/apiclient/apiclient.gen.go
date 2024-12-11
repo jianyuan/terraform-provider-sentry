@@ -4,6 +4,7 @@
 package apiclient
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -18,6 +19,12 @@ import (
 
 const (
 	BearerAuthScopes = "bearerAuth.Scopes"
+)
+
+// Defines values for ListProjectClientKeysParamsStatus.
+const (
+	Active   ListProjectClientKeysParamsStatus = "active"
+	Inactive ListProjectClientKeysParamsStatus = "inactive"
 )
 
 // Organization defines model for Organization.
@@ -45,6 +52,29 @@ type Project struct {
 	Teams           []Team                 `json:"teams"`
 }
 
+// ProjectKey defines model for ProjectKey.
+type ProjectKey struct {
+	BrowserSdkVersion       string            `json:"browserSdkVersion"`
+	DateCreated             time.Time         `json:"dateCreated"`
+	Dsn                     map[string]string `json:"dsn"`
+	DynamicSdkLoaderOptions struct {
+		HasDebug       bool `json:"hasDebug"`
+		HasPerformance bool `json:"hasPerformance"`
+		HasReplay      bool `json:"hasReplay"`
+	} `json:"dynamicSdkLoaderOptions"`
+	Id        string      `json:"id"`
+	IsActive  bool        `json:"isActive"`
+	Label     string      `json:"label"`
+	Name      string      `json:"name"`
+	ProjectId json.Number `json:"projectId"`
+	Public    string      `json:"public"`
+	RateLimit *struct {
+		Count  int64 `json:"count"`
+		Window int64 `json:"window"`
+	} `json:"rateLimit"`
+	Secret string `json:"secret"`
+}
+
 // Team defines model for Team.
 type Team struct {
 	Id   string `json:"id"`
@@ -52,11 +82,59 @@ type Team struct {
 	Slug string `json:"slug"`
 }
 
+// Cursor defines model for cursor.
+type Cursor = string
+
 // OrganizationIdOrSlug defines model for organization_id_or_slug.
 type OrganizationIdOrSlug = string
 
 // ProjectIdOrSlug defines model for project_id_or_slug.
 type ProjectIdOrSlug = string
+
+// ListProjectClientKeysParams defines parameters for ListProjectClientKeys.
+type ListProjectClientKeysParams struct {
+	Cursor *Cursor                            `form:"cursor,omitempty" json:"cursor,omitempty"`
+	Status *ListProjectClientKeysParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+}
+
+// ListProjectClientKeysParamsStatus defines parameters for ListProjectClientKeys.
+type ListProjectClientKeysParamsStatus string
+
+// CreateProjectClientKeyJSONBody defines parameters for CreateProjectClientKey.
+type CreateProjectClientKeyJSONBody struct {
+	BrowserSdkVersion       *string `json:"browserSdkVersion,omitempty"`
+	DynamicSdkLoaderOptions *struct {
+		HasDebug       *bool `json:"hasDebug,omitempty"`
+		HasPerformance *bool `json:"hasPerformance,omitempty"`
+		HasReplay      *bool `json:"hasReplay,omitempty"`
+	} `json:"dynamicSdkLoaderOptions,omitempty"`
+	Name      string `json:"name"`
+	RateLimit *struct {
+		Count  int64 `json:"count"`
+		Window int64 `json:"window"`
+	} `json:"rateLimit,omitempty"`
+}
+
+// UpdateProjectClientKeyJSONBody defines parameters for UpdateProjectClientKey.
+type UpdateProjectClientKeyJSONBody struct {
+	BrowserSdkVersion       *string `json:"browserSdkVersion,omitempty"`
+	DynamicSdkLoaderOptions *struct {
+		HasDebug       *bool `json:"hasDebug,omitempty"`
+		HasPerformance *bool `json:"hasPerformance,omitempty"`
+		HasReplay      *bool `json:"hasReplay,omitempty"`
+	} `json:"dynamicSdkLoaderOptions,omitempty"`
+	Name      *string `json:"name,omitempty"`
+	RateLimit *struct {
+		Count  int64 `json:"count"`
+		Window int64 `json:"window"`
+	} `json:"rateLimit,omitempty"`
+}
+
+// CreateProjectClientKeyJSONRequestBody defines body for CreateProjectClientKey for application/json ContentType.
+type CreateProjectClientKeyJSONRequestBody CreateProjectClientKeyJSONBody
+
+// UpdateProjectClientKeyJSONRequestBody defines body for UpdateProjectClientKey for application/json ContentType.
+type UpdateProjectClientKeyJSONRequestBody UpdateProjectClientKeyJSONBody
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -136,6 +214,22 @@ type ClientInterface interface {
 
 	// GetOrganizationProject request
 	GetOrganizationProject(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListProjectClientKeys request
+	ListProjectClientKeys(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, params *ListProjectClientKeysParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateProjectClientKeyWithBody request with any body
+	CreateProjectClientKeyWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateProjectClientKey(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body CreateProjectClientKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetProjectClientKey request
+	GetProjectClientKey(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, keyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateProjectClientKeyWithBody request with any body
+	UpdateProjectClientKeyWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, keyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateProjectClientKey(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, keyId string, body UpdateProjectClientKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) GetOrganization(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -152,6 +246,78 @@ func (c *Client) GetOrganization(ctx context.Context, organizationIdOrSlug Organ
 
 func (c *Client) GetOrganizationProject(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetOrganizationProjectRequest(c.Server, organizationIdOrSlug, projectIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListProjectClientKeys(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, params *ListProjectClientKeysParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListProjectClientKeysRequest(c.Server, organizationIdOrSlug, projectIdOrSlug, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateProjectClientKeyWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateProjectClientKeyRequestWithBody(c.Server, organizationIdOrSlug, projectIdOrSlug, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateProjectClientKey(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body CreateProjectClientKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateProjectClientKeyRequest(c.Server, organizationIdOrSlug, projectIdOrSlug, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetProjectClientKey(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, keyId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetProjectClientKeyRequest(c.Server, organizationIdOrSlug, projectIdOrSlug, keyId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateProjectClientKeyWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, keyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateProjectClientKeyRequestWithBody(c.Server, organizationIdOrSlug, projectIdOrSlug, keyId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateProjectClientKey(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, keyId string, body UpdateProjectClientKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateProjectClientKeyRequest(c.Server, organizationIdOrSlug, projectIdOrSlug, keyId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -237,6 +403,248 @@ func NewGetOrganizationProjectRequest(server string, organizationIdOrSlug Organi
 	return req, nil
 }
 
+// NewListProjectClientKeysRequest generates requests for ListProjectClientKeys
+func NewListProjectClientKeysRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, params *ListProjectClientKeysParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organization_id_or_slug", runtime.ParamLocationPath, organizationIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "project_id_or_slug", runtime.ParamLocationPath, projectIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/projects/%s/%s/keys/", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "cursor", runtime.ParamLocationQuery, *params.Cursor); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "status", runtime.ParamLocationQuery, *params.Status); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateProjectClientKeyRequest calls the generic CreateProjectClientKey builder with application/json body
+func NewCreateProjectClientKeyRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body CreateProjectClientKeyJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateProjectClientKeyRequestWithBody(server, organizationIdOrSlug, projectIdOrSlug, "application/json", bodyReader)
+}
+
+// NewCreateProjectClientKeyRequestWithBody generates requests for CreateProjectClientKey with any type of body
+func NewCreateProjectClientKeyRequestWithBody(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organization_id_or_slug", runtime.ParamLocationPath, organizationIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "project_id_or_slug", runtime.ParamLocationPath, projectIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/projects/%s/%s/keys/", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetProjectClientKeyRequest generates requests for GetProjectClientKey
+func NewGetProjectClientKeyRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, keyId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organization_id_or_slug", runtime.ParamLocationPath, organizationIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "project_id_or_slug", runtime.ParamLocationPath, projectIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam2 string
+
+	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "key_id", runtime.ParamLocationPath, keyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/projects/%s/%s/keys/%s/", pathParam0, pathParam1, pathParam2)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateProjectClientKeyRequest calls the generic UpdateProjectClientKey builder with application/json body
+func NewUpdateProjectClientKeyRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, keyId string, body UpdateProjectClientKeyJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateProjectClientKeyRequestWithBody(server, organizationIdOrSlug, projectIdOrSlug, keyId, "application/json", bodyReader)
+}
+
+// NewUpdateProjectClientKeyRequestWithBody generates requests for UpdateProjectClientKey with any type of body
+func NewUpdateProjectClientKeyRequestWithBody(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, keyId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organization_id_or_slug", runtime.ParamLocationPath, organizationIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "project_id_or_slug", runtime.ParamLocationPath, projectIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam2 string
+
+	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "key_id", runtime.ParamLocationPath, keyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/projects/%s/%s/keys/%s/", pathParam0, pathParam1, pathParam2)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -285,6 +693,22 @@ type ClientWithResponsesInterface interface {
 
 	// GetOrganizationProjectWithResponse request
 	GetOrganizationProjectWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, reqEditors ...RequestEditorFn) (*GetOrganizationProjectResponse, error)
+
+	// ListProjectClientKeysWithResponse request
+	ListProjectClientKeysWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, params *ListProjectClientKeysParams, reqEditors ...RequestEditorFn) (*ListProjectClientKeysResponse, error)
+
+	// CreateProjectClientKeyWithBodyWithResponse request with any body
+	CreateProjectClientKeyWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateProjectClientKeyResponse, error)
+
+	CreateProjectClientKeyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body CreateProjectClientKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateProjectClientKeyResponse, error)
+
+	// GetProjectClientKeyWithResponse request
+	GetProjectClientKeyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, keyId string, reqEditors ...RequestEditorFn) (*GetProjectClientKeyResponse, error)
+
+	// UpdateProjectClientKeyWithBodyWithResponse request with any body
+	UpdateProjectClientKeyWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, keyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProjectClientKeyResponse, error)
+
+	UpdateProjectClientKeyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, keyId string, body UpdateProjectClientKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectClientKeyResponse, error)
 }
 
 type GetOrganizationResponse struct {
@@ -331,6 +755,94 @@ func (r GetOrganizationProjectResponse) StatusCode() int {
 	return 0
 }
 
+type ListProjectClientKeysResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]ProjectKey
+}
+
+// Status returns HTTPResponse.Status
+func (r ListProjectClientKeysResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListProjectClientKeysResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateProjectClientKeyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *ProjectKey
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateProjectClientKeyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateProjectClientKeyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetProjectClientKeyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ProjectKey
+}
+
+// Status returns HTTPResponse.Status
+func (r GetProjectClientKeyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetProjectClientKeyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateProjectClientKeyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ProjectKey
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateProjectClientKeyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateProjectClientKeyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 // GetOrganizationWithResponse request returning *GetOrganizationResponse
 func (c *ClientWithResponses) GetOrganizationWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*GetOrganizationResponse, error) {
 	rsp, err := c.GetOrganization(ctx, organizationIdOrSlug, reqEditors...)
@@ -347,6 +859,58 @@ func (c *ClientWithResponses) GetOrganizationProjectWithResponse(ctx context.Con
 		return nil, err
 	}
 	return ParseGetOrganizationProjectResponse(rsp)
+}
+
+// ListProjectClientKeysWithResponse request returning *ListProjectClientKeysResponse
+func (c *ClientWithResponses) ListProjectClientKeysWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, params *ListProjectClientKeysParams, reqEditors ...RequestEditorFn) (*ListProjectClientKeysResponse, error) {
+	rsp, err := c.ListProjectClientKeys(ctx, organizationIdOrSlug, projectIdOrSlug, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListProjectClientKeysResponse(rsp)
+}
+
+// CreateProjectClientKeyWithBodyWithResponse request with arbitrary body returning *CreateProjectClientKeyResponse
+func (c *ClientWithResponses) CreateProjectClientKeyWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateProjectClientKeyResponse, error) {
+	rsp, err := c.CreateProjectClientKeyWithBody(ctx, organizationIdOrSlug, projectIdOrSlug, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateProjectClientKeyResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateProjectClientKeyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body CreateProjectClientKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateProjectClientKeyResponse, error) {
+	rsp, err := c.CreateProjectClientKey(ctx, organizationIdOrSlug, projectIdOrSlug, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateProjectClientKeyResponse(rsp)
+}
+
+// GetProjectClientKeyWithResponse request returning *GetProjectClientKeyResponse
+func (c *ClientWithResponses) GetProjectClientKeyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, keyId string, reqEditors ...RequestEditorFn) (*GetProjectClientKeyResponse, error) {
+	rsp, err := c.GetProjectClientKey(ctx, organizationIdOrSlug, projectIdOrSlug, keyId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetProjectClientKeyResponse(rsp)
+}
+
+// UpdateProjectClientKeyWithBodyWithResponse request with arbitrary body returning *UpdateProjectClientKeyResponse
+func (c *ClientWithResponses) UpdateProjectClientKeyWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, keyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProjectClientKeyResponse, error) {
+	rsp, err := c.UpdateProjectClientKeyWithBody(ctx, organizationIdOrSlug, projectIdOrSlug, keyId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateProjectClientKeyResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateProjectClientKeyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, keyId string, body UpdateProjectClientKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectClientKeyResponse, error) {
+	rsp, err := c.UpdateProjectClientKey(ctx, organizationIdOrSlug, projectIdOrSlug, keyId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateProjectClientKeyResponse(rsp)
 }
 
 // ParseGetOrganizationResponse parses an HTTP response from a GetOrganizationWithResponse call
@@ -391,6 +955,110 @@ func ParseGetOrganizationProjectResponse(rsp *http.Response) (*GetOrganizationPr
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Project
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListProjectClientKeysResponse parses an HTTP response from a ListProjectClientKeysWithResponse call
+func ParseListProjectClientKeysResponse(rsp *http.Response) (*ListProjectClientKeysResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListProjectClientKeysResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []ProjectKey
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateProjectClientKeyResponse parses an HTTP response from a CreateProjectClientKeyWithResponse call
+func ParseCreateProjectClientKeyResponse(rsp *http.Response) (*CreateProjectClientKeyResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateProjectClientKeyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest ProjectKey
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetProjectClientKeyResponse parses an HTTP response from a GetProjectClientKeyWithResponse call
+func ParseGetProjectClientKeyResponse(rsp *http.Response) (*GetProjectClientKeyResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetProjectClientKeyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProjectKey
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateProjectClientKeyResponse parses an HTTP response from a UpdateProjectClientKeyWithResponse call
+func ParseUpdateProjectClientKeyResponse(rsp *http.Response) (*UpdateProjectClientKeyResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateProjectClientKeyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProjectKey
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

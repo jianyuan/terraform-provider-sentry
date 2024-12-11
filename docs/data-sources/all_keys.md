@@ -41,10 +41,12 @@ data "sentry_all_keys" "all" {
 
 Read-Only:
 
-- `dsn_csp` (String) Security header endpoint for features like CSP and Expect-CT reports.
-- `dsn_public` (String) The DSN tells the SDK where to send the events to.
-- `dsn_secret` (String) Deprecated DSN includes a secret which is no longer required by newer SDK versions. If you are unsure which to use, follow installation instructions for your language.
+- `dsn` (Map of String) This is a map of DSN values. The keys include `public`, `secret`, `csp`, `security`, `minidump`, `nel`, `unreal`, `cdn`, and `crons`.
+- `dsn_csp` (String, Deprecated) Security header endpoint for features like CSP and Expect-CT reports. **Deprecated** Use `dsn["csp"]` instead.
+- `dsn_public` (String, Deprecated) The DSN tells the SDK where to send the events to. **Deprecated** Use `dsn["public"]` instead.
+- `dsn_secret` (String, Deprecated) Deprecated DSN includes a secret which is no longer required by newer SDK versions. If you are unsure which to use, follow installation instructions for your language. **Deprecated** Use `dsn["secret"] instead.
 - `id` (String) The ID of this resource.
+- `javascript_loader_script` (Attributes) The JavaScript loader script configuration. (see [below for nested schema](#nestedatt--keys--javascript_loader_script))
 - `name` (String) The name of the client key.
 - `organization` (String) The slug of the organization the resource belongs to.
 - `project` (String) The slug of the project the resource belongs to.
@@ -53,3 +55,13 @@ Read-Only:
 - `rate_limit_count` (Number) Number of events that can be reported within the rate limit window.
 - `rate_limit_window` (Number) Length of time in seconds that will be considered when checking the rate limit.
 - `secret` (String) The secret key.
+
+<a id="nestedatt--keys--javascript_loader_script"></a>
+### Nested Schema for `keys.javascript_loader_script`
+
+Read-Only:
+
+- `browser_sdk_version` (String) The version of the browser SDK to load. Valid values are `7.x` and `8.x`.
+- `debug_enabled` (Boolean) Whether debug bundles & logging are enabled for this key.
+- `performance_monitoring_enabled` (Boolean) Whether performance monitoring is enabled for this key.
+- `session_replay_enabled` (Boolean) Whether session replay is enabled for this key.

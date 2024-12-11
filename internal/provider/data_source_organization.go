@@ -88,6 +88,9 @@ func (d *OrganizationDataSource) Read(ctx context.Context, req datasource.ReadRe
 	} else if httpResp.StatusCode() != http.StatusOK {
 		resp.Diagnostics.Append(diagutils.NewClientStatusError("read", httpResp.StatusCode(), httpResp.Body))
 		return
+	} else if httpResp.JSON200 == nil {
+		resp.Diagnostics.Append(diagutils.NewClientError("read", diagutils.ErrEmptyResponse))
+		return
 	}
 
 	if err := data.Fill(*httpResp.JSON200); err != nil {

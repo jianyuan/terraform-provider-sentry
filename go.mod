@@ -15,9 +15,10 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.35.0
 	github.com/hashicorp/terraform-plugin-testing v1.11.0
 	github.com/jianyuan/go-sentry/v2 v2.8.4
-	github.com/jianyuan/go-utils v0.0.0-20241209000508-251c44ce0f68
+	github.com/jianyuan/go-utils v0.0.0-20241210005310-ec4088c3adbd
 	github.com/oapi-codegen/oapi-codegen/v2 v2.4.1
 	github.com/oapi-codegen/runtime v1.1.1
+	github.com/peterhellberg/link v1.2.0
 	golang.org/x/sync v0.10.0
 )
 
@@ -76,7 +77,6 @@ require (
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 	github.com/oklog/run v1.1.0 // indirect
 	github.com/perimeterx/marshmallow v1.1.5 // indirect
-	github.com/peterhellberg/link v1.2.0 // indirect
 	github.com/posener/complete v1.2.3 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/speakeasy-api/openapi-overlay v0.9.0 // indirect
