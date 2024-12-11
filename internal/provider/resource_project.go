@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
@@ -18,33 +17,35 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/go-utils/sliceutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryplatforms"
+	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
 
-type ProjectResourceFilterModel struct {
+type ProjectFilterResourceModel struct {
 	BlacklistedIps types.Set `tfsdk:"blacklisted_ips"`
 	Releases       types.Set `tfsdk:"releases"`
 	ErrorMessages  types.Set `tfsdk:"error_messages"`
 }
 
-func (data *ProjectResourceFilterModel) Fill(project sentry.Project) error {
+func (m *ProjectFilterResourceModel) Fill(project apiclient.Project) error {
 	if project.Options == nil {
-		data.BlacklistedIps = types.SetNull(types.StringType)
-		data.Releases = types.SetNull(types.StringType)
-		data.ErrorMessages = types.SetNull(types.StringType)
+		m.BlacklistedIps = types.SetNull(types.StringType)
+		m.Releases = types.SetNull(types.StringType)
+		m.ErrorMessages = types.SetNull(types.StringType)
 		return nil
 	}
 
 	if values, ok := project.Options["filters:blacklisted_ips"].(string); ok {
 		if values == "" {
-			data.BlacklistedIps = types.SetNull(types.StringType)
+			m.BlacklistedIps = types.SetNull(types.StringType)
 		} else {
-			var elements []attr.Value
-			for _, value := range strings.Split(values, "\n") {
-				elements = append(elements, types.StringValue(value))
-			}
-			data.BlacklistedIps = types.SetValueMust(types.StringType, elements)
+			m.BlacklistedIps = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
+				return types.StringValue(v)
+			}, strings.Split(values, "\n")))
 		}
 	} else {
 		return fmt.Errorf("invalid type for filters:blacklisted_ips: %T", project.Options["filters:blacklisted_ips"])
@@ -52,13 +53,11 @@ func (data *ProjectResourceFilterModel) Fill(project sentry.Project) error {
 
 	if values, ok := project.Options["filters:releases"].(string); ok {
 		if values == "" {
-			data.Releases = types.SetNull(types.StringType)
+			m.Releases = types.SetNull(types.StringType)
 		} else {
-			var elements []attr.Value
-			for _, value := range strings.Split(values, "\n") {
-				elements = append(elements, types.StringValue(value))
-			}
-			data.Releases = types.SetValueMust(types.StringType, elements)
+			m.Releases = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
+				return types.StringValue(v)
+			}, strings.Split(values, "\n")))
 		}
 	} else {
 		return fmt.Errorf("invalid type for filters:releases: %T", project.Options["filters:releases"])
@@ -66,13 +65,58 @@ func (data *ProjectResourceFilterModel) Fill(project sentry.Project) error {
 
 	if values, ok := project.Options["filters:error_messages"].(string); ok {
 		if values == "" {
-			data.ErrorMessages = types.SetNull(types.StringType)
+			m.ErrorMessages = types.SetNull(types.StringType)
 		} else {
-			var elements []attr.Value
-			for _, value := range strings.Split(values, "\n") {
-				elements = append(elements, types.StringValue(value))
-			}
-			data.ErrorMessages = types.SetValueMust(types.StringType, elements)
+			m.ErrorMessages = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
+				return types.StringValue(v)
+			}, strings.Split(values, "\n")))
+		}
+	} else {
+		return fmt.Errorf("invalid type for filters:error_messages: %T", project.Options["filters:error_messages"])
+	}
+
+	return nil
+}
+
+func (m *ProjectFilterResourceModel) FillOld(project sentry.Project) error {
+	if project.Options == nil {
+		m.BlacklistedIps = types.SetNull(types.StringType)
+		m.Releases = types.SetNull(types.StringType)
+		m.ErrorMessages = types.SetNull(types.StringType)
+		return nil
+	}
+
+	if values, ok := project.Options["filters:blacklisted_ips"].(string); ok {
+		if values == "" {
+			m.BlacklistedIps = types.SetNull(types.StringType)
+		} else {
+			m.BlacklistedIps = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
+				return types.StringValue(v)
+			}, strings.Split(values, "\n")))
+		}
+	} else {
+		return fmt.Errorf("invalid type for filters:blacklisted_ips: %T", project.Options["filters:blacklisted_ips"])
+	}
+
+	if values, ok := project.Options["filters:releases"].(string); ok {
+		if values == "" {
+			m.Releases = types.SetNull(types.StringType)
+		} else {
+			m.Releases = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
+				return types.StringValue(v)
+			}, strings.Split(values, "\n")))
+		}
+	} else {
+		return fmt.Errorf("invalid type for filters:releases: %T", project.Options["filters:releases"])
+	}
+
+	if values, ok := project.Options["filters:error_messages"].(string); ok {
+		if values == "" {
+			m.ErrorMessages = types.SetNull(types.StringType)
+		} else {
+			m.ErrorMessages = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
+				return types.StringValue(v)
+			}, strings.Split(values, "\n")))
 		}
 	} else {
 		return fmt.Errorf("invalid type for filters:error_messages: %T", project.Options["filters:error_messages"])
@@ -95,68 +139,113 @@ type ProjectResourceModel struct {
 	DigestsMinDelay      types.Int64                 `tfsdk:"digests_min_delay"`
 	DigestsMaxDelay      types.Int64                 `tfsdk:"digests_max_delay"`
 	ResolveAge           types.Int64                 `tfsdk:"resolve_age"`
-	Filters              *ProjectResourceFilterModel `tfsdk:"filters"`
+	Filters              *ProjectFilterResourceModel `tfsdk:"filters"`
 	FingerprintingRules  types.String                `tfsdk:"fingerprinting_rules"`
 	GroupingEnhancements types.String                `tfsdk:"grouping_enhancements"`
 }
 
-func (data *ProjectResourceModel) Fill(organization string, project sentry.Project) error {
-	data.Id = types.StringValue(project.Slug)
-	data.Organization = types.StringValue(organization)
-	data.Name = types.StringValue(project.Name)
-	data.Slug = types.StringValue(project.Slug)
+func (m *ProjectResourceModel) Fill(project apiclient.Project) error {
+	m.Id = types.StringValue(project.Slug)
+	m.Organization = types.StringValue(project.Organization.Slug)
+	m.Teams = types.SetValueMust(types.StringType, sliceutils.Map(func(v apiclient.Team) attr.Value {
+		return types.StringValue(v.Slug)
+	}, project.Teams))
+	m.Name = types.StringValue(project.Name)
+	m.Slug = types.StringValue(project.Slug)
+
+	if project.Platform == nil || *project.Platform == "" {
+		m.Platform = types.StringNull()
+	} else {
+		m.Platform = types.StringPointerValue(project.Platform)
+	}
+
+	m.InternalId = types.StringValue(project.Id)
+	m.Features = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
+		return types.StringValue(v)
+	}, project.Features))
+
+	if !m.DigestsMinDelay.IsNull() {
+		m.DigestsMinDelay = types.Int64Value(project.DigestsMinDelay)
+	}
+	if !m.DigestsMaxDelay.IsNull() {
+		m.DigestsMaxDelay = types.Int64Value(project.DigestsMaxDelay)
+	}
+	if !m.ResolveAge.IsNull() {
+		m.ResolveAge = types.Int64Value(project.ResolveAge)
+	}
+
+	if m.Filters != nil {
+		m.Filters.Fill(project)
+	}
+
+	if !m.FingerprintingRules.IsNull() {
+		if strings.TrimRight(m.FingerprintingRules.ValueString(), "\n") != project.FingerprintingRules {
+			m.FingerprintingRules = types.StringValue(project.FingerprintingRules)
+		}
+	}
+
+	if !m.GroupingEnhancements.IsNull() {
+		if strings.TrimRight(m.GroupingEnhancements.ValueString(), "\n") != project.GroupingEnhancements {
+			m.GroupingEnhancements = types.StringValue(project.GroupingEnhancements)
+		}
+	}
+
+	return nil
+}
+
+func (m *ProjectResourceModel) FillOld(organization string, project sentry.Project) error {
+	m.Id = types.StringValue(project.Slug)
+	m.Organization = types.StringValue(organization)
+	m.Name = types.StringValue(project.Name)
+	m.Slug = types.StringValue(project.Slug)
 
 	if project.Platform == "" {
-		data.Platform = types.StringNull()
+		m.Platform = types.StringNull()
 	} else {
-		data.Platform = types.StringValue(project.Platform)
+		m.Platform = types.StringValue(project.Platform)
 	}
 
-	data.InternalId = types.StringValue(project.ID)
+	m.InternalId = types.StringValue(project.ID)
 
-	if !data.DigestsMinDelay.IsNull() {
-		data.DigestsMinDelay = types.Int64Value(int64(project.DigestsMinDelay))
+	if !m.DigestsMinDelay.IsNull() {
+		m.DigestsMinDelay = types.Int64Value(int64(project.DigestsMinDelay))
 	}
-	if !data.DigestsMaxDelay.IsNull() {
-		data.DigestsMaxDelay = types.Int64Value(int64(project.DigestsMaxDelay))
+	if !m.DigestsMaxDelay.IsNull() {
+		m.DigestsMaxDelay = types.Int64Value(int64(project.DigestsMaxDelay))
 	}
-	if !data.ResolveAge.IsNull() {
-		data.ResolveAge = types.Int64Value(int64(project.ResolveAge))
+	if !m.ResolveAge.IsNull() {
+		m.ResolveAge = types.Int64Value(int64(project.ResolveAge))
 	}
 
-	var teamElements []attr.Value
-	for _, team := range project.Teams {
-		teamElements = append(teamElements, types.StringPointerValue(team.Slug))
-	}
-	data.Teams = types.SetValueMust(types.StringType, teamElements)
+	m.Teams = types.SetValueMust(types.StringType, sliceutils.Map(func(v sentry.Team) attr.Value {
+		return types.StringPointerValue(v.Slug)
+	}, project.Teams))
 
-	var featureElements []attr.Value
-	for _, feature := range project.Features {
-		featureElements = append(featureElements, types.StringValue(feature))
-	}
-	data.Features = types.SetValueMust(types.StringType, featureElements)
+	m.Features = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
+		return types.StringValue(v)
+	}, project.Features))
 
-	if data.Filters != nil {
-		data.Filters.Fill(project)
+	if m.Filters != nil {
+		m.Filters.FillOld(project)
 	}
 
 	if project.FingerprintingRules == "" {
-		if !data.FingerprintingRules.IsNull() {
-			data.FingerprintingRules = types.StringNull()
+		if !m.FingerprintingRules.IsNull() {
+			m.FingerprintingRules = types.StringNull()
 		}
 	} else {
-		if data.FingerprintingRules.IsNull() || strings.TrimRight(data.FingerprintingRules.ValueString(), "\n") != project.FingerprintingRules {
-			data.FingerprintingRules = types.StringValue(project.FingerprintingRules)
+		if m.FingerprintingRules.IsNull() || strings.TrimRight(m.FingerprintingRules.ValueString(), "\n") != project.FingerprintingRules {
+			m.FingerprintingRules = types.StringValue(project.FingerprintingRules)
 		}
 	}
 
 	if project.GroupingEnhancements == "" {
-		if !data.GroupingEnhancements.IsNull() {
-			data.GroupingEnhancements = types.StringNull()
+		if !m.GroupingEnhancements.IsNull() {
+			m.GroupingEnhancements = types.StringNull()
 		}
 	} else {
-		if data.GroupingEnhancements.IsNull() || strings.TrimRight(data.GroupingEnhancements.ValueString(), "\n") != project.GroupingEnhancements {
-			data.GroupingEnhancements = types.StringValue(project.GroupingEnhancements)
+		if m.GroupingEnhancements.IsNull() || strings.TrimRight(m.GroupingEnhancements.ValueString(), "\n") != project.GroupingEnhancements {
+			m.GroupingEnhancements = types.StringValue(project.GroupingEnhancements)
 		}
 	}
 
@@ -207,7 +296,7 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 				MarkdownDescription: "The platform for this project. For a list of valid values, [see this page](https://github.com/jianyuan/terraform-provider-sentry/blob/main/internal/sentryplatforms/platforms.txt). Use `other` for platforms not listed.",
 				Optional:            true,
 				Validators: []validator.String{
-					stringvalidator.OneOf(append([]string{"other"}, sentryplatforms.Platforms...)...),
+					stringvalidator.OneOf(append(sentryplatforms.Platforms, "other")...),
 				},
 			},
 			"default_rules": schema.BoolAttribute{
@@ -306,102 +395,115 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 	}
 
 	// Create the project
-	project, _, err := r.client.Projects.Create(
+	createBody := apiclient.CreateOrganizationTeamProjectJSONRequestBody{
+		Name:         data.Name.ValueString(),
+		Platform:     data.Platform.ValueStringPointer(),
+		DefaultRules: data.DefaultRules.ValueBoolPointer(),
+	}
+	if data.Slug.ValueString() != "" {
+		createBody.Slug = data.Slug.ValueStringPointer()
+	}
+
+	httpRespCreate, err := r.apiClient.CreateOrganizationTeamProjectWithResponse(
 		ctx,
 		data.Organization.ValueString(),
 		teams[0],
-		&sentry.CreateProjectParams{
-			Name:         data.Name.ValueString(),
-			Slug:         data.Slug.ValueString(),
-			Platform:     data.Platform.ValueString(),
-			DefaultRules: data.DefaultRules.ValueBoolPointer(),
-		},
+		createBody,
 	)
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("create", err))
 		return
+	} else if httpRespCreate.StatusCode() != http.StatusCreated || httpRespCreate.JSON201 == nil {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("create", httpRespCreate.StatusCode(), httpRespCreate.Body))
+		return
 	}
 
 	// Update the project
-	updateParams := &sentry.UpdateProjectParams{
-		Name:     data.Name.ValueString(),
-		Slug:     data.Slug.ValueString(),
-		Platform: data.Platform.ValueString(),
+	updateBody := apiclient.UpdateOrganizationProjectJSONRequestBody{
+		Name:            data.Name.ValueStringPointer(),
+		Platform:        data.Platform.ValueStringPointer(),
+		DigestsMinDelay: data.DigestsMinDelay.ValueInt64Pointer(),
+		DigestsMaxDelay: data.DigestsMaxDelay.ValueInt64Pointer(),
+		ResolveAge:      data.ResolveAge.ValueInt64Pointer(),
 	}
-	if !data.DigestsMinDelay.IsNull() {
-		updateParams.DigestsMinDelay = sentry.Int(int(data.DigestsMinDelay.ValueInt64()))
+
+	if data.Slug.ValueString() != "" {
+		updateBody.Slug = data.Slug.ValueStringPointer()
 	}
-	if !data.DigestsMaxDelay.IsNull() {
-		updateParams.DigestsMaxDelay = sentry.Int(int(data.DigestsMaxDelay.ValueInt64()))
-	}
-	if !data.ResolveAge.IsNull() {
-		updateParams.ResolveAge = sentry.Int(int(data.ResolveAge.ValueInt64()))
-	}
+
 	if data.Filters != nil {
-		updateParams.Options = make(map[string]interface{})
+		options := make(map[string]interface{})
 		if data.Filters.BlacklistedIps.IsNull() {
-			updateParams.Options["filters:blacklisted_ips"] = ""
+			options["filters:blacklisted_ips"] = ""
 		} else {
 			values := []string{}
 			resp.Diagnostics.Append(data.Filters.BlacklistedIps.ElementsAs(ctx, &values, false)...)
 			if resp.Diagnostics.HasError() {
 				return
 			}
-			updateParams.Options["filters:blacklisted_ips"] = strings.Join(values, "\n")
+			options["filters:blacklisted_ips"] = strings.Join(values, "\n")
 		}
 
 		if data.Filters.Releases.IsNull() {
-			updateParams.Options["filters:releases"] = ""
+			options["filters:releases"] = ""
 		} else {
 			values := []string{}
 			resp.Diagnostics.Append(data.Filters.Releases.ElementsAs(ctx, &values, false)...)
 			if resp.Diagnostics.HasError() {
 				return
 			}
-			updateParams.Options["filters:releases"] = strings.Join(values, "\n")
+			options["filters:releases"] = strings.Join(values, "\n")
 		}
 
 		if data.Filters.ErrorMessages.IsNull() {
-			updateParams.Options["filters:error_messages"] = ""
+			options["filters:error_messages"] = ""
 		} else {
 			values := []string{}
 			resp.Diagnostics.Append(data.Filters.ErrorMessages.ElementsAs(ctx, &values, false)...)
 			if resp.Diagnostics.HasError() {
 				return
 			}
-			updateParams.Options["filters:error_messages"] = strings.Join(values, "\n")
+			options["filters:error_messages"] = strings.Join(values, "\n")
+		}
+
+		if len(options) > 0 {
+			updateBody.Options = &options
 		}
 	}
+
 	if data.FingerprintingRules.IsNull() {
-		updateParams.FingerprintingRules = sentry.String("")
+		updateBody.FingerprintingRules = sentry.String("")
 	} else {
-		updateParams.FingerprintingRules = sentry.String(data.FingerprintingRules.ValueString())
-	}
-	if data.GroupingEnhancements.IsNull() {
-		updateParams.GroupingEnhancements = sentry.String("")
-	} else {
-		updateParams.GroupingEnhancements = sentry.String(data.GroupingEnhancements.ValueString())
+		updateBody.FingerprintingRules = sentry.String(data.FingerprintingRules.ValueString())
 	}
 
-	project, apiResp, err := r.client.Projects.Update(
+	if data.GroupingEnhancements.IsNull() {
+		updateBody.GroupingEnhancements = sentry.String("")
+	} else {
+		updateBody.GroupingEnhancements = sentry.String(data.GroupingEnhancements.ValueString())
+	}
+
+	httpRespUpdate, err := r.apiClient.UpdateOrganizationProjectWithResponse(
 		ctx,
 		data.Organization.ValueString(),
-		project.ID,
-		updateParams,
+		httpRespCreate.JSON201.Slug,
+		updateBody,
 	)
-	if apiResp.StatusCode == http.StatusNotFound {
+	if err != nil {
+		resp.Diagnostics.Append(diagutils.NewClientError("update", err))
+		return
+	} else if httpRespUpdate.StatusCode() == http.StatusNotFound {
 		resp.Diagnostics.Append(diagutils.NewNotFoundError("project"))
 		resp.State.RemoveResource(ctx)
 		return
-	}
-	if err != nil {
-		resp.Diagnostics.Append(diagutils.NewClientError("update", err))
+	} else if httpRespUpdate.StatusCode() != http.StatusOK || httpRespUpdate.JSON200 == nil {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("update", httpRespUpdate.StatusCode(), httpRespUpdate.Body))
 		return
 	}
 
 	// If the default key is set to false, remove the default key
 	if !data.DefaultKey.IsNull() && !data.DefaultKey.ValueBool() {
-		if err := r.removeDefaultKey(ctx, data.Organization.ValueString(), project); err != nil {
+		if err := r.removeDefaultKey(ctx, data.Organization.ValueString(), *httpRespUpdate.JSON200); err != nil {
 			resp.Diagnostics.Append(diagutils.NewClientError("remove default key", err))
 			return
 		}
@@ -410,26 +512,37 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 	// Add additional teams
 	if len(teams) > 1 {
 		for _, team := range teams[1:] {
-			_, _, err := r.client.Projects.AddTeam(ctx, data.Organization.ValueString(), project.Slug, team)
+			httpResp, err := r.apiClient.AddTeamToProjectWithResponse(
+				ctx,
+				data.Organization.ValueString(),
+				httpRespUpdate.JSON200.Slug,
+				team,
+			)
 			if err != nil {
 				resp.Diagnostics.Append(diagutils.NewClientError("add team to project", err))
+				return
+			} else if httpResp.StatusCode() != http.StatusCreated {
+				resp.Diagnostics.Append(diagutils.NewClientStatusError("add team to project", httpResp.StatusCode(), httpResp.Body))
 				return
 			}
 		}
 	}
 
-	project, apiResp, err = r.client.Projects.Get(ctx, data.Organization.ValueString(), project.Slug)
-	if apiResp.StatusCode == http.StatusNotFound {
+	httpRespRead, err := r.apiClient.GetOrganizationProjectWithResponse(
+		ctx,
+		data.Organization.ValueString(),
+		httpRespUpdate.JSON200.Slug,
+	)
+	if err != nil {
+		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
+		return
+	} else if httpRespRead.StatusCode() != http.StatusOK || httpRespRead.JSON200 == nil {
 		resp.Diagnostics.Append(diagutils.NewNotFoundError("project"))
 		resp.State.RemoveResource(ctx)
 		return
 	}
-	if err != nil {
-		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
-		return
-	}
 
-	if err := data.Fill(data.Organization.ValueString(), *project); err != nil {
+	if err := data.Fill(*httpRespRead.JSON200); err != nil {
 		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
@@ -445,22 +558,24 @@ func (r *ProjectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	project, apiResp, err := r.client.Projects.Get(
+	httpResp, err := r.apiClient.GetOrganizationProjectWithResponse(
 		ctx,
 		data.Organization.ValueString(),
 		data.Id.ValueString(),
 	)
-	if apiResp.StatusCode == http.StatusNotFound {
-		resp.Diagnostics.Append(diagutils.NewNotFoundError("project"))
-		resp.State.RemoveResource(ctx)
-		return
-	}
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 		return
+	} else if httpResp.StatusCode() == http.StatusNotFound {
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("project"))
+		resp.State.RemoveResource(ctx)
+		return
+	} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("read", httpResp.StatusCode(), httpResp.Body))
+		return
 	}
 
-	if err := data.Fill(data.Organization.ValueString(), *project); err != nil {
+	if err := data.Fill(*httpResp.JSON200); err != nil {
 		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
@@ -477,85 +592,91 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	params := &sentry.UpdateProjectParams{
-		Name:     plan.Name.ValueString(),
-		Slug:     plan.Slug.ValueString(),
-		Platform: plan.Platform.ValueString(),
+	params := apiclient.UpdateOrganizationProjectJSONRequestBody{
+		Name:            plan.Name.ValueStringPointer(),
+		Platform:        plan.Platform.ValueStringPointer(),
+		DigestsMinDelay: plan.DigestsMinDelay.ValueInt64Pointer(),
+		DigestsMaxDelay: plan.DigestsMaxDelay.ValueInt64Pointer(),
+		ResolveAge:      plan.ResolveAge.ValueInt64Pointer(),
 	}
-	if !plan.DigestsMinDelay.IsNull() {
-		params.DigestsMinDelay = sentry.Int(int(plan.DigestsMinDelay.ValueInt64()))
+
+	if plan.Slug.ValueString() != "" {
+		params.Slug = plan.Slug.ValueStringPointer()
 	}
-	if !plan.DigestsMaxDelay.IsNull() {
-		params.DigestsMaxDelay = sentry.Int(int(plan.DigestsMaxDelay.ValueInt64()))
-	}
-	if !plan.ResolveAge.IsNull() {
-		params.ResolveAge = sentry.Int(int(plan.ResolveAge.ValueInt64()))
-	}
+
 	if plan.Filters != nil {
-		params.Options = make(map[string]interface{})
+		options := make(map[string]interface{})
 		if plan.Filters.BlacklistedIps.IsNull() {
-			params.Options["filters:blacklisted_ips"] = ""
+			options["filters:blacklisted_ips"] = ""
 		} else {
 			values := []string{}
 			resp.Diagnostics.Append(plan.Filters.BlacklistedIps.ElementsAs(ctx, &values, false)...)
 			if resp.Diagnostics.HasError() {
 				return
 			}
-			params.Options["filters:blacklisted_ips"] = strings.Join(values, "\n")
+			options["filters:blacklisted_ips"] = strings.Join(values, "\n")
 		}
 
 		if plan.Filters.Releases.IsNull() {
-			params.Options["filters:releases"] = ""
+			options["filters:releases"] = ""
 		} else {
 			values := []string{}
 			resp.Diagnostics.Append(plan.Filters.Releases.ElementsAs(ctx, &values, false)...)
 			if resp.Diagnostics.HasError() {
 				return
 			}
-			params.Options["filters:releases"] = strings.Join(values, "\n")
+			options["filters:releases"] = strings.Join(values, "\n")
 		}
 
 		if plan.Filters.ErrorMessages.IsNull() {
-			params.Options["filters:error_messages"] = ""
+			options["filters:error_messages"] = ""
 		} else {
 			values := []string{}
 			resp.Diagnostics.Append(plan.Filters.ErrorMessages.ElementsAs(ctx, &values, false)...)
 			if resp.Diagnostics.HasError() {
 				return
 			}
-			params.Options["filters:error_messages"] = strings.Join(values, "\n")
+			options["filters:error_messages"] = strings.Join(values, "\n")
+		}
+
+		if len(options) > 0 {
+			params.Options = &options
 		}
 	}
+
 	if plan.FingerprintingRules.IsNull() {
 		params.FingerprintingRules = sentry.String("")
 	} else {
 		params.FingerprintingRules = sentry.String(plan.FingerprintingRules.ValueString())
 	}
+
 	if plan.GroupingEnhancements.IsNull() {
 		params.GroupingEnhancements = sentry.String("")
 	} else {
 		params.GroupingEnhancements = sentry.String(plan.GroupingEnhancements.ValueString())
 	}
 
-	project, apiResp, err := r.client.Projects.Update(
+	httpRespUpdate, err := r.apiClient.UpdateOrganizationProjectWithResponse(
 		ctx,
 		plan.Organization.ValueString(),
 		plan.Id.ValueString(),
 		params,
 	)
-	if apiResp.StatusCode == http.StatusNotFound {
+	if err != nil {
+		resp.Diagnostics.Append(diagutils.NewClientError("update", err))
+		return
+	} else if httpRespUpdate.StatusCode() == http.StatusNotFound {
 		resp.Diagnostics.Append(diagutils.NewNotFoundError("project"))
 		resp.State.RemoveResource(ctx)
 		return
-	}
-	if err != nil {
-		resp.Diagnostics.Append(diagutils.NewClientError("update", err))
+	} else if httpRespUpdate.StatusCode() != http.StatusOK || httpRespUpdate.JSON200 == nil {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("update", httpRespUpdate.StatusCode(), httpRespUpdate.Body))
 		return
 	}
 
 	// If the default key is set to false, remove the default key
 	if !plan.DefaultKey.IsNull() && !plan.DefaultKey.ValueBool() {
-		if err := r.removeDefaultKey(ctx, plan.Organization.ValueString(), project); err != nil {
+		if err := r.removeDefaultKey(ctx, plan.Organization.ValueString(), *httpRespUpdate.JSON200); err != nil {
 			resp.Diagnostics.Append(diagutils.NewClientError("remove default key", err))
 			return
 		}
@@ -574,14 +695,17 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 		// Add teams
 		for _, team := range planTeams {
 			if !slices.Contains(stateTeams, team) {
-				_, _, err := r.client.Projects.AddTeam(
+				httpResp, err := r.apiClient.AddTeamToProjectWithResponse(
 					ctx,
 					plan.Organization.ValueString(),
-					project.Slug,
+					httpRespUpdate.JSON200.Slug,
 					team,
 				)
 				if err != nil {
 					resp.Diagnostics.Append(diagutils.NewClientError("add team to project", err))
+					return
+				} else if httpResp.StatusCode() != http.StatusCreated {
+					resp.Diagnostics.Append(diagutils.NewClientStatusError("add team to project", httpResp.StatusCode(), httpResp.Body))
 					return
 				}
 			}
@@ -590,36 +714,41 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 		// Remove teams
 		for _, team := range stateTeams {
 			if !slices.Contains(planTeams, team) {
-				_, err := r.client.Projects.RemoveTeam(
+				httpResp, err := r.apiClient.RemoveTeamFromProjectWithResponse(
 					ctx,
 					plan.Organization.ValueString(),
-					project.Slug,
+					httpRespUpdate.JSON200.Slug,
 					team,
 				)
 				if err != nil {
 					resp.Diagnostics.Append(diagutils.NewClientError("remove team from project", err))
+					return
+				} else if httpResp.StatusCode() != http.StatusOK {
+					resp.Diagnostics.Append(diagutils.NewClientStatusError("remove team from project", httpResp.StatusCode(), httpResp.Body))
 					return
 				}
 			}
 		}
 	}
 
-	project, apiResp, err = r.client.Projects.Get(
+	httpRespRead, err := r.apiClient.GetOrganizationProjectWithResponse(
 		ctx,
 		plan.Organization.ValueString(),
 		plan.Id.ValueString(),
 	)
-	if apiResp.StatusCode == http.StatusNotFound {
-		resp.Diagnostics.Append(diagutils.NewNotFoundError("project"))
-		resp.State.RemoveResource(ctx)
-		return
-	}
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 		return
+	} else if httpRespRead.StatusCode() == http.StatusNotFound {
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("project"))
+		resp.State.RemoveResource(ctx)
+		return
+	} else if httpRespRead.StatusCode() != http.StatusOK || httpRespRead.JSON200 == nil {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("read", httpRespRead.StatusCode(), httpRespRead.Body))
+		return
 	}
 
-	if err := plan.Fill(plan.Organization.ValueString(), *project); err != nil {
+	if err := plan.Fill(*httpRespRead.JSON200); err != nil {
 		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
@@ -627,30 +756,46 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *ProjectResource) removeDefaultKey(ctx context.Context, organization string, project *sentry.Project) error {
-	params := &sentry.ListProjectKeysParams{}
+func (r *ProjectResource) removeDefaultKey(ctx context.Context, organization string, project apiclient.Project) error {
+	params := &apiclient.ListProjectClientKeysParams{}
 
 	for {
-		keys, apiResp, err := r.client.ProjectKeys.List(ctx, organization, project.Slug, params)
+		httpResp, err := r.apiClient.ListProjectClientKeysWithResponse(
+			ctx,
+			organization,
+			project.Slug,
+			params,
+		)
 		if err != nil {
 			return err
+		} else if httpResp.StatusCode() != http.StatusOK {
+			return fmt.Errorf("unable to list project client keys, got status %d: %s", httpResp.StatusCode(), string(httpResp.Body))
 		}
 
-		for _, key := range keys {
+		for _, key := range *httpResp.JSON200 {
 			if key.Name == "Default" {
-				_, err := r.client.ProjectKeys.Delete(ctx, organization, project.ID, key.ID)
+				httpResp, err := r.apiClient.DeleteProjectClientKeyWithResponse(
+					ctx,
+					organization,
+					project.Id,
+					key.Id,
+				)
 				if err != nil {
 					return err
+				} else if httpResp.StatusCode() == http.StatusNotFound {
+					return nil
+				} else if httpResp.StatusCode() != http.StatusNoContent {
+					return fmt.Errorf("unable to delete project client key, got status %d: %s", httpResp.StatusCode(), string(httpResp.Body))
 				}
 
 				return nil
 			}
 		}
 
-		if apiResp.Cursor == "" {
+		params.Cursor = sentryclient.ParseNextPaginationCursor(httpResp.HTTPResponse)
+		if params.Cursor == nil {
 			break
 		}
-		params.Cursor = apiResp.Cursor
 	}
 
 	return nil
@@ -664,30 +809,22 @@ func (r *ProjectResource) Delete(ctx context.Context, req resource.DeleteRequest
 		return
 	}
 
-	apiResp, err := r.client.Projects.Delete(
+	httpResp, err := r.apiClient.DeleteOrganizationProjectWithResponse(
 		ctx,
 		data.Organization.ValueString(),
 		data.Id.ValueString(),
 	)
-	if apiResp.StatusCode == http.StatusNotFound {
-		return
-	}
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("delete", err))
+		return
+	} else if httpResp.StatusCode() == http.StatusNotFound {
+		return
+	} else if httpResp.StatusCode() != http.StatusNoContent {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("delete", httpResp.StatusCode(), httpResp.Body))
 		return
 	}
 }
 
 func (r *ProjectResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	organization, project, err := splitTwoPartID(req.ID, "organization", "project-slug")
-	if err != nil {
-		resp.Diagnostics.Append(diagutils.NewImportError(err))
-		return
-	}
-	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("organization"), organization,
-	)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("id"), project,
-	)...)
+	tfutils.ImportStateTwoPartId(ctx, "organization", req, resp)
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"regexp"
 	"strings"
 	"testing"
@@ -40,7 +41,11 @@ func init() {
 
 					log.Printf("[INFO] Destroying Project: %s", project.Slug)
 
-					_, err := acctest.SharedClient.Projects.Delete(ctx, acctest.TestOrganization, project.Slug)
+					_, err := acctest.SharedApiClient.DeleteOrganizationProjectWithResponse(
+						ctx,
+						acctest.TestOrganization,
+						project.Slug,
+					)
 					if err != nil {
 						log.Printf("[ERROR] Failed to destroy Project %q: %s", project.Slug, err)
 						continue
@@ -138,17 +143,9 @@ func TestAccProjectResource_basic(t *testing.T) {
 				),
 			},
 			{
-				ResourceName: rn,
-				ImportState:  true,
-				ImportStateIdFunc: func(s *terraform.State) (string, error) {
-					rs, ok := s.RootModule().Resources[rn]
-					if !ok {
-						return "", fmt.Errorf("not found: %s", rn)
-					}
-					organization := rs.Primary.Attributes["organization"]
-					project := rs.Primary.ID
-					return buildTwoPartID(organization, project), nil
-				},
+				ResourceName:      rn,
+				ImportState:       true,
+				ImportStateIdFunc: acctest.TwoPartImportStateIdFunc(rn, "organization"),
 				ImportStateVerify: true,
 			},
 		},
@@ -568,18 +565,15 @@ func testAccCheckProjectDestroy(s *terraform.State) error {
 		}
 
 		ctx := context.Background()
-		project, resp, err := acctest.SharedClient.Projects.Get(
+		httpResp, err := acctest.SharedApiClient.GetOrganizationProjectWithResponse(
 			ctx,
 			rs.Primary.Attributes["organization"],
 			rs.Primary.ID,
 		)
-		if err == nil {
-			if project != nil {
-				return fmt.Errorf("project %q still exists", rs.Primary.ID)
-			}
-		}
-		if resp.StatusCode != 404 {
+		if err != nil {
 			return err
+		} else if httpResp.StatusCode() != http.StatusNotFound {
+			return fmt.Errorf("project %q still exists", rs.Primary.ID)
 		}
 		return nil
 	}

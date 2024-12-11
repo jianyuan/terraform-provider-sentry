@@ -307,9 +307,7 @@ func (r *ClientKeyResource) Create(ctx context.Context, req resource.CreateReque
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("create", err))
 		return
-	}
-
-	if httpResp.StatusCode() != http.StatusCreated {
+	} else if httpResp.StatusCode() != http.StatusCreated {
 		resp.Diagnostics.Append(diagutils.NewClientStatusError("create", httpResp.StatusCode(), httpResp.Body))
 		return
 	}
@@ -339,9 +337,7 @@ func (r *ClientKeyResource) Read(ctx context.Context, req resource.ReadRequest, 
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 		return
-	}
-
-	if httpResp.StatusCode() == http.StatusNotFound {
+	} else if httpResp.StatusCode() == http.StatusNotFound {
 		resp.Diagnostics.Append(diagutils.NewNotFoundError("client key"))
 		resp.State.RemoveResource(ctx)
 		return
@@ -429,9 +425,7 @@ func (r *ClientKeyResource) Update(ctx context.Context, req resource.UpdateReque
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("update", err))
 		return
-	}
-
-	if httpResp.StatusCode() == http.StatusNotFound {
+	} else if httpResp.StatusCode() == http.StatusNotFound {
 		resp.Diagnostics.Append(diagutils.NewNotFoundError("client key"))
 		resp.State.RemoveResource(ctx)
 		return
@@ -456,17 +450,19 @@ func (r *ClientKeyResource) Delete(ctx context.Context, req resource.DeleteReque
 		return
 	}
 
-	apiResp, err := r.client.ProjectKeys.Delete(
+	httpResp, err := r.apiClient.DeleteProjectClientKeyWithResponse(
 		ctx,
 		data.Organization.ValueString(),
 		data.Project.ValueString(),
 		data.Id.ValueString(),
 	)
-	if apiResp.StatusCode == http.StatusNotFound {
-		return
-	}
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("delete", err))
+		return
+	} else if httpResp.StatusCode() == http.StatusNotFound {
+		return
+	} else if httpResp.StatusCode() != http.StatusNoContent {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("delete", httpResp.StatusCode(), httpResp.Body))
 		return
 	}
 }

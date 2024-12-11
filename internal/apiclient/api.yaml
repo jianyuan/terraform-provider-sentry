@@ -7,11 +7,11 @@ servers:
 
 paths:
   /0/organizations/{organization_id_or_slug}/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
     get:
       summary: Retrieve an Organization
       operationId: getOrganization
-      parameters:
-        - $ref: "#/components/parameters/organization_id_or_slug"
       responses:
         "200":
           description: OK
@@ -25,13 +25,143 @@ paths:
           description: Forbidden
         "404":
           description: Not Found
+  /0/teams/{organization_id_or_slug}/{team_id_or_slug}/projects/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+      - $ref: "#/components/parameters/team_id_or_slug"
+    post:
+      summary: Create a Project
+      operationId: createOrganizationTeamProject
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                slug:
+                  type: string
+                platform:
+                  type: string
+                default_rules:
+                  type: boolean
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
   /0/projects/{organization_id_or_slug}/{project_id_or_slug}/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+      - $ref: "#/components/parameters/project_id_or_slug"
     get:
       summary: Retrieve a Project
       operationId: getOrganizationProject
-      parameters:
-        - $ref: "#/components/parameters/organization_id_or_slug"
-        - $ref: "#/components/parameters/project_id_or_slug"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+    put:
+      summary: Update a Project
+      operationId: updateOrganizationProject
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                slug:
+                  type: string
+                platform:
+                  type: string
+                digestsMinDelay:
+                  type: integer
+                  format: int64
+                digestsMaxDelay:
+                  type: integer
+                  format: int64
+                resolveAge:
+                  type: integer
+                  format: int64
+                fingerprintingRules:
+                  type: string
+                groupingEnhancements:
+                  type: string
+                options:
+                  type: object
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+    delete:
+      summary: Delete a Project
+      operationId: deleteOrganizationProject
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+  /0/projects/{organization_id_or_slug}/{project_id_or_slug}/teams/{team_id_or_slug}/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+      - $ref: "#/components/parameters/project_id_or_slug"
+      - $ref: "#/components/parameters/team_id_or_slug"
+    post:
+      summary: Add a Team to a Project
+      operationId: addTeamToProject
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+    delete:
+      summary: Remove a Team from a Project
+      operationId: removeTeamFromProject
       responses:
         "200":
           description: OK
@@ -46,12 +176,13 @@ paths:
         "404":
           description: Not Found
   /0/projects/{organization_id_or_slug}/{project_id_or_slug}/keys/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+      - $ref: "#/components/parameters/project_id_or_slug"
     get:
       summary: List Client Keys
       operationId: listProjectClientKeys
       parameters:
-        - $ref: "#/components/parameters/organization_id_or_slug"
-        - $ref: "#/components/parameters/project_id_or_slug"
         - $ref: "#/components/parameters/cursor"
         - name: status
           in: query
@@ -79,9 +210,6 @@ paths:
     post:
       summary: Create a Client Key
       operationId: createProjectClientKey
-      parameters:
-        - $ref: "#/components/parameters/organization_id_or_slug"
-        - $ref: "#/components/parameters/project_id_or_slug"
       requestBody:
         required: true
         content:
@@ -130,17 +258,17 @@ paths:
         "404":
           description: Not Found
   /0/projects/{organization_id_or_slug}/{project_id_or_slug}/keys/{key_id}/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+      - $ref: "#/components/parameters/project_id_or_slug"
+      - name: key_id
+        in: path
+        required: true
+        schema:
+          type: string
     get:
       summary: Retrieve a Client Key
       operationId: getProjectClientKey
-      parameters:
-        - $ref: "#/components/parameters/organization_id_or_slug"
-        - $ref: "#/components/parameters/project_id_or_slug"
-        - name: key_id
-          in: path
-          required: true
-          schema:
-            type: string
       responses:
         "200":
           description: OK
@@ -157,14 +285,6 @@ paths:
     put:
       summary: Update a Client Key
       operationId: updateProjectClientKey
-      parameters:
-        - $ref: "#/components/parameters/organization_id_or_slug"
-        - $ref: "#/components/parameters/project_id_or_slug"
-        - name: key_id
-          in: path
-          required: true
-          schema:
-            type: string
       requestBody:
         required: true
         content:
@@ -210,6 +330,18 @@ paths:
           description: Forbidden
         "404":
           description: Not Found
+    delete:
+      summary: Delete a Client Key
+      operationId: deleteProjectClientKey
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
 security:
   - bearerAuth: []
 components:
@@ -226,6 +358,12 @@ components:
         type: string
     project_id_or_slug:
       name: project_id_or_slug
+      in: path
+      required: true
+      schema:
+        type: string
+    team_id_or_slug:
+      name: team_id_or_slug
       in: path
       required: true
       schema:
@@ -267,6 +405,8 @@ components:
         - digestsMinDelay
         - digestsMaxDelay
         - resolveAge
+        - fingerprintingRules
+        - groupingEnhancements
       properties:
         organization:
           $ref: "#/components/schemas/Organization"
@@ -305,6 +445,10 @@ components:
         resolveAge:
           type: integer
           format: int64
+        fingerprintingRules:
+          type: string
+        groupingEnhancements:
+          type: string
     ProjectKey:
       type: object
       required:
