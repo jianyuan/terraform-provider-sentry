@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"regexp"
+	"slices"
 	"strings"
 	"testing"
 	"text/template"
@@ -16,7 +18,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/go-utils/must"
+	"github.com/jianyuan/go-utils/sliceutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 )
 
 func init() {
@@ -40,7 +44,11 @@ func init() {
 
 					log.Printf("[INFO] Destroying Project: %s", project.Slug)
 
-					_, err := acctest.SharedClient.Projects.Delete(ctx, acctest.TestOrganization, project.Slug)
+					_, err := acctest.SharedApiClient.DeleteOrganizationProjectWithResponse(
+						ctx,
+						acctest.TestOrganization,
+						project.Slug,
+					)
 					if err != nil {
 						log.Printf("[ERROR] Failed to destroy Project %q: %s", project.Slug, err)
 						continue
@@ -67,20 +75,74 @@ func TestAccProjectResource_basic(t *testing.T) {
 	projectName := acctest.RandomWithPrefix("tf-project")
 	rn := "sentry_project.test"
 
-	checks := []statecheck.StateCheck{
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("slug"), knownvalue.NotNull()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_rules"), knownvalue.Null()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_key"), knownvalue.Null()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("internal_id"), knownvalue.NotNull()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("features"), knownvalue.NotNull()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_min_delay"), knownvalue.Null()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_max_delay"), knownvalue.Null()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("resolve_age"), knownvalue.Null()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.Null()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("fingerprinting_rules"), knownvalue.Null()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("grouping_enhancements"), knownvalue.Null()),
+	step1Data := testAccProjectResourceConfig_teamsData{
+		AllTeamNames: []string{teamName1, teamName2, teamName3},
+		TeamIds:      []int{0, 1},
+		ProjectName:  projectName,
+		Platform:     "go",
+	}
+	step2Data := testAccProjectResourceConfig_teamsData{
+		AllTeamNames: []string{teamName1, teamName2, teamName3},
+		TeamIds:      []int{0},
+		ProjectName:  projectName + "-renamed",
+		Platform:     "python",
+	}
+	step3Data := testAccProjectResourceConfig_teamsData{
+		AllTeamNames: []string{teamName1, teamName2, teamName3},
+		TeamIds:      []int{2},
+		ProjectName:  projectName + "-renamed-again",
+		Platform:     "python",
+	}
+
+	checkProperties := func(data testAccProjectResourceConfig_teamsData) func(apiclient.Project) error {
+		return func(project apiclient.Project) error {
+			if project.Name != data.ProjectName {
+				return fmt.Errorf("unexpected project name %q", project.Name)
+			}
+
+			if project.Platform == nil {
+				return fmt.Errorf("platform is nil")
+			} else if *project.Platform != data.Platform {
+				return fmt.Errorf("unexpected platform %q", *project.Platform)
+			}
+
+			if len(project.Teams) != len(data.TeamIds) {
+				return fmt.Errorf("unexpected number of teams %d", len(project.Teams))
+			}
+
+			for _, teamId := range data.TeamIds {
+				if !slices.ContainsFunc(project.Teams, func(team apiclient.Team) bool {
+					return team.Slug == data.AllTeamNames[teamId]
+				}) {
+					return fmt.Errorf("team %q not found", teamName1)
+				}
+			}
+
+			return nil
+		}
+	}
+
+	configStateChecks := func(data testAccProjectResourceConfig_teamsData) []statecheck.StateCheck {
+		return []statecheck.StateCheck{
+			statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
+			statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
+			statecheck.ExpectKnownValue(rn, tfjsonpath.New("slug"), knownvalue.NotNull()),
+			statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_rules"), knownvalue.Null()),
+			statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_key"), knownvalue.Null()),
+			statecheck.ExpectKnownValue(rn, tfjsonpath.New("internal_id"), knownvalue.NotNull()),
+			statecheck.ExpectKnownValue(rn, tfjsonpath.New("features"), knownvalue.NotNull()),
+			statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_min_delay"), knownvalue.Null()),
+			statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_max_delay"), knownvalue.Null()),
+			statecheck.ExpectKnownValue(rn, tfjsonpath.New("resolve_age"), knownvalue.Null()),
+			statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.Null()),
+			statecheck.ExpectKnownValue(rn, tfjsonpath.New("fingerprinting_rules"), knownvalue.Null()),
+			statecheck.ExpectKnownValue(rn, tfjsonpath.New("grouping_enhancements"), knownvalue.Null()),
+			statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(data.ProjectName)),
+			statecheck.ExpectKnownValue(rn, tfjsonpath.New("teams"), knownvalue.SetExact(sliceutils.Map(func(teamId int) knownvalue.Check {
+				return knownvalue.StringExact(data.AllTeamNames[teamId])
+			}, data.TeamIds))),
+			statecheck.ExpectKnownValue(rn, tfjsonpath.New("platform"), knownvalue.StringExact(data.Platform)),
+		}
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -89,66 +151,24 @@ func TestAccProjectResource_basic(t *testing.T) {
 		CheckDestroy:             testAccCheckProjectDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccProjectResourceConfig_teams(testAccProjectResourceConfig_teamsData{
-					AllTeamNames: []string{teamName1, teamName2, teamName3},
-					TeamIds:      []int{0, 1},
-					ProjectName:  projectName,
-					Platform:     "go",
-				}),
-				ConfigStateChecks: append(
-					checks,
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(projectName)),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("teams"), knownvalue.SetExact([]knownvalue.Check{
-						knownvalue.StringExact(teamName1),
-						knownvalue.StringExact(teamName2),
-					})),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("platform"), knownvalue.StringExact("go")),
-				),
+				Config:            testAccProjectResourceConfig_teams(step1Data),
+				Check:             testAccCheckProject(rn, checkProperties(step1Data)),
+				ConfigStateChecks: configStateChecks(step1Data),
 			},
 			{
-				Config: testAccProjectResourceConfig_teams(testAccProjectResourceConfig_teamsData{
-					AllTeamNames: []string{teamName1, teamName2, teamName3},
-					TeamIds:      []int{0},
-					ProjectName:  projectName + "-renamed",
-					Platform:     "python",
-				}),
-				ConfigStateChecks: append(
-					checks,
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(projectName+"-renamed")),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("teams"), knownvalue.SetExact([]knownvalue.Check{
-						knownvalue.StringExact(teamName1),
-					})),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("platform"), knownvalue.StringExact("python")),
-				),
+				Config:            testAccProjectResourceConfig_teams(step2Data),
+				Check:             testAccCheckProject(rn, checkProperties(step2Data)),
+				ConfigStateChecks: configStateChecks(step2Data),
 			},
 			{
-				Config: testAccProjectResourceConfig_teams(testAccProjectResourceConfig_teamsData{
-					AllTeamNames: []string{teamName1, teamName2, teamName3},
-					TeamIds:      []int{2},
-					ProjectName:  projectName + "-renamed-again",
-					Platform:     "python",
-				}),
-				ConfigStateChecks: append(
-					checks,
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(projectName+"-renamed-again")),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("teams"), knownvalue.SetExact([]knownvalue.Check{
-						knownvalue.StringExact(teamName3),
-					})),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("platform"), knownvalue.StringExact("python")),
-				),
+				Config:            testAccProjectResourceConfig_teams(step3Data),
+				Check:             testAccCheckProject(rn, checkProperties(step3Data)),
+				ConfigStateChecks: configStateChecks(step3Data),
 			},
 			{
-				ResourceName: rn,
-				ImportState:  true,
-				ImportStateIdFunc: func(s *terraform.State) (string, error) {
-					rs, ok := s.RootModule().Resources[rn]
-					if !ok {
-						return "", fmt.Errorf("not found: %s", rn)
-					}
-					organization := rs.Primary.Attributes["organization"]
-					project := rs.Primary.ID
-					return buildTwoPartID(organization, project), nil
-				},
+				ResourceName:      rn,
+				ImportState:       true,
+				ImportStateIdFunc: acctest.TwoPartImportStateIdFunc(rn, "organization"),
 				ImportStateVerify: true,
 			},
 		},
@@ -561,26 +581,46 @@ func TestAccProjectResource_UpgradeFromVersion(t *testing.T) {
 	})
 }
 
+func testAccCheckProject(rn string, check func(apiclient.Project) error) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs := s.RootModule().Resources[rn]
+
+		httpResp, err := acctest.SharedApiClient.GetOrganizationProjectWithResponse(
+			context.Background(),
+			rs.Primary.Attributes["organization"],
+			rs.Primary.ID,
+		)
+		if err != nil {
+			return err
+		} else if httpResp.StatusCode() == http.StatusNotFound {
+			return fmt.Errorf("project %q not found", rs.Primary.ID)
+		} else if httpResp.StatusCode() != http.StatusOK {
+			return fmt.Errorf("unexpected status code %d: %s", httpResp.StatusCode(), string(httpResp.Body))
+		} else if httpResp.JSON200 == nil {
+			return fmt.Errorf("response body is empty")
+		}
+
+		return check(*httpResp.JSON200)
+	}
+}
+
 func testAccCheckProjectDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "sentry_project" {
 			continue
 		}
 
-		ctx := context.Background()
-		project, resp, err := acctest.SharedClient.Projects.Get(
-			ctx,
+		httpResp, err := acctest.SharedApiClient.GetOrganizationProjectWithResponse(
+			context.Background(),
 			rs.Primary.Attributes["organization"],
 			rs.Primary.ID,
 		)
-		if err == nil {
-			if project != nil {
-				return fmt.Errorf("project %q still exists", rs.Primary.ID)
-			}
-		}
-		if resp.StatusCode != 404 {
+		if err != nil {
 			return err
+		} else if httpResp.StatusCode() != http.StatusNotFound {
+			return fmt.Errorf("project %q still exists", rs.Primary.ID)
 		}
+
 		return nil
 	}
 

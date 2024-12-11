@@ -7,6 +7,7 @@ import (
 
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/go-utils/must"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
 )
 
@@ -48,6 +49,9 @@ var (
 	// TestVSTSRepositoryIdentifier is the VSTS repository identifier used for acceptance tests.
 	TestVSTSRepositoryIdentifier = os.Getenv("SENTRY_TEST_VSTS_REPOSITORY_IDENTIFIER")
 
+	// SharedApiClient is a shared Sentry API client for acceptance tests.
+	SharedApiClient *apiclient.ClientWithResponses
+
 	// SharedClient is a shared Sentry client for acceptance tests.
 	SharedClient *sentry.Client
 )
@@ -72,6 +76,11 @@ func init() {
 		Token:     token,
 	}
 	httpClient := config.HttpClient(context.Background())
+
+	SharedApiClient = must.Get(apiclient.NewClientWithResponses(
+		baseUrl,
+		apiclient.WithHTTPClient(httpClient),
+	))
 
 	if baseUrl == "" {
 		SharedClient = sentry.NewClient(httpClient)

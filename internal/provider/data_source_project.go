@@ -27,11 +27,18 @@ type ProjectDataSourceModel struct {
 }
 
 func (m *ProjectDataSourceModel) Fill(project apiclient.Project) error {
+	m.Organization = types.StringValue(project.Organization.Slug)
 	m.Slug = types.StringValue(project.Slug)
 	m.Id = types.StringValue(project.Slug)
 	m.InternalId = types.StringValue(project.Id)
 	m.Name = types.StringValue(project.Name)
-	m.Platform = types.StringPointerValue(project.Platform)
+
+	if project.Platform == nil || *project.Platform == "" {
+		m.Platform = types.StringNull()
+	} else {
+		m.Platform = types.StringPointerValue(project.Platform)
+	}
+
 	m.DateCreated = types.StringValue(project.DateCreated.String())
 	m.Features = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
 		return types.StringValue(v)
