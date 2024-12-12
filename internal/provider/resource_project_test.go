@@ -131,12 +131,12 @@ func TestAccProjectResource_basic(t *testing.T) {
 			statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_key"), knownvalue.Null()),
 			statecheck.ExpectKnownValue(rn, tfjsonpath.New("internal_id"), knownvalue.NotNull()),
 			statecheck.ExpectKnownValue(rn, tfjsonpath.New("features"), knownvalue.NotNull()),
-			statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_min_delay"), knownvalue.Null()),
-			statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_max_delay"), knownvalue.Null()),
-			statecheck.ExpectKnownValue(rn, tfjsonpath.New("resolve_age"), knownvalue.Null()),
+			statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_min_delay"), knownvalue.Int64Exact(300)),
+			statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_max_delay"), knownvalue.Int64Exact(1800)),
+			statecheck.ExpectKnownValue(rn, tfjsonpath.New("resolve_age"), knownvalue.Int64Exact(0)),
 			statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.Null()),
-			statecheck.ExpectKnownValue(rn, tfjsonpath.New("fingerprinting_rules"), knownvalue.Null()),
-			statecheck.ExpectKnownValue(rn, tfjsonpath.New("grouping_enhancements"), knownvalue.Null()),
+			statecheck.ExpectKnownValue(rn, tfjsonpath.New("fingerprinting_rules"), knownvalue.StringExact("")),
+			statecheck.ExpectKnownValue(rn, tfjsonpath.New("grouping_enhancements"), knownvalue.StringExact("")),
 			statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(data.ProjectName)),
 			statecheck.ExpectKnownValue(rn, tfjsonpath.New("teams"), knownvalue.SetExact(sliceutils.Map(func(teamId int) knownvalue.Check {
 				return knownvalue.StringExact(data.AllTeamNames[teamId])
@@ -191,11 +191,11 @@ func TestAccProjectResource_filters(t *testing.T) {
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_key"), knownvalue.Null()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("internal_id"), knownvalue.NotNull()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("features"), knownvalue.NotNull()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_min_delay"), knownvalue.Null()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_max_delay"), knownvalue.Null()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("resolve_age"), knownvalue.Null()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("fingerprinting_rules"), knownvalue.Null()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("grouping_enhancements"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_min_delay"), knownvalue.Int64Exact(300)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_max_delay"), knownvalue.Int64Exact(1800)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("resolve_age"), knownvalue.Int64Exact(0)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("fingerprinting_rules"), knownvalue.StringExact("")),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("grouping_enhancements"), knownvalue.StringExact("")),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -294,9 +294,9 @@ func TestAccProjectResource_issueGrouping(t *testing.T) {
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_key"), knownvalue.Null()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("internal_id"), knownvalue.NotNull()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("features"), knownvalue.NotNull()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_min_delay"), knownvalue.Null()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_max_delay"), knownvalue.Null()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("resolve_age"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_min_delay"), knownvalue.Int64Exact(300)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_max_delay"), knownvalue.Int64Exact(1800)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("resolve_age"), knownvalue.Int64Exact(0)),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.Null()),
 	}
 
@@ -358,8 +358,8 @@ func TestAccProjectResource_issueGrouping(t *testing.T) {
 				}),
 				ConfigStateChecks: append(
 					checks,
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("fingerprinting_rules"), knownvalue.Null()),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("grouping_enhancements"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("fingerprinting_rules"), knownvalue.StringExact("# force all errors of the same type to have the same fingerprint\nerror.type:DatabaseUnavailable -> system-down\n# force all memory allocation errors to be grouped together\nstack.function:malloc -> memory-allocation-error\n")),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("grouping_enhancements"), knownvalue.StringExact("# remove all frames above a certain function from grouping\nstack.function:panic_handler ^-group\n# mark all functions following a prefix in-app\nstack.function:mylibrary_* +app\n")),
 				),
 			},
 		},
@@ -400,12 +400,12 @@ func TestAccProjectResource_noDefaultKeyOnCreate(t *testing.T) {
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_key"), knownvalue.Bool(false)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("internal_id"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("features"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_min_delay"), knownvalue.Null()),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_max_delay"), knownvalue.Null()),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("resolve_age"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_min_delay"), knownvalue.Int64Exact(300)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_max_delay"), knownvalue.Int64Exact(1800)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("resolve_age"), knownvalue.Int64Exact(0)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.Null()),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("fingerprinting_rules"), knownvalue.Null()),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("grouping_enhancements"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("fingerprinting_rules"), knownvalue.StringExact("")),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("grouping_enhancements"), knownvalue.StringExact("")),
 					statecheck.ExpectKnownValue("data.sentry_all_keys.test", tfjsonpath.New("keys"), knownvalue.ListSizeExact(0)),
 				},
 			},
@@ -428,12 +428,12 @@ func TestAccProjectResource_noDefaultKeyOnUpdate(t *testing.T) {
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_rules"), knownvalue.Null()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("internal_id"), knownvalue.NotNull()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("features"), knownvalue.NotNull()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_min_delay"), knownvalue.Null()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_max_delay"), knownvalue.Null()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("resolve_age"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_min_delay"), knownvalue.Int64Exact(300)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_max_delay"), knownvalue.Int64Exact(1800)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("resolve_age"), knownvalue.Int64Exact(0)),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.Null()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("fingerprinting_rules"), knownvalue.Null()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("grouping_enhancements"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("fingerprinting_rules"), knownvalue.StringExact("")),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("grouping_enhancements"), knownvalue.StringExact("")),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -519,10 +519,16 @@ func TestAccProjectResource_noTeam(t *testing.T) {
 	})
 }
 
-func TestAccProjectResource_UpgradeFromVersion(t *testing.T) {
+func TestAccProjectResource_upgradeFromVersion(t *testing.T) {
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	rn := "sentry_project.test"
+
+	config := testAccProjectResourceConfig(testAccProjectResourceConfigData{
+		TeamName:    teamName,
+		ProjectName: projectName,
+		Platform:    "go",
+	})
 
 	checks := []statecheck.StateCheck{
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
@@ -546,11 +552,7 @@ func TestAccProjectResource_UpgradeFromVersion(t *testing.T) {
 						VersionConstraint: "0.12.3",
 					},
 				},
-				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
-					TeamName:    teamName,
-					ProjectName: projectName,
-					Platform:    "go",
-				}),
+				Config: config,
 				ConfigStateChecks: append(
 					checks,
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_rules"), knownvalue.Bool(true)),
@@ -561,12 +563,13 @@ func TestAccProjectResource_UpgradeFromVersion(t *testing.T) {
 				),
 			},
 			{
-				ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
-					TeamName:    teamName,
-					ProjectName: projectName,
-					Platform:    "go",
-				}),
+				ExternalProviders: map[string]resource.ExternalProvider{
+					acctest.ProviderName: {
+						Source:            "jianyuan/sentry",
+						VersionConstraint: "0.14.1",
+					},
+				},
+				Config: config,
 				ConfigStateChecks: append(
 					checks,
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_rules"), knownvalue.Null()),
@@ -575,6 +578,24 @@ func TestAccProjectResource_UpgradeFromVersion(t *testing.T) {
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_max_delay"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("resolve_age"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("fingerprinting_rules"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("grouping_enhancements"), knownvalue.Null()),
+				),
+			},
+			// Some optional fields are now computed
+			{
+				ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+				Config:                   config,
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_rules"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_key"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_min_delay"), knownvalue.Int64Exact(300)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_max_delay"), knownvalue.Int64Exact(1800)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("resolve_age"), knownvalue.Int64Exact(0)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("fingerprinting_rules"), knownvalue.StringExact("")),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("grouping_enhancements"), knownvalue.StringExact("")),
 				),
 			},
 		},

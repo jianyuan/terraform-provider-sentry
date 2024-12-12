@@ -13,15 +13,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/go-utils/sliceutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryplatforms"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
 
@@ -32,53 +34,6 @@ type ProjectFilterResourceModel struct {
 }
 
 func (m *ProjectFilterResourceModel) Fill(project apiclient.Project) error {
-	if project.Options == nil {
-		m.BlacklistedIps = types.SetNull(types.StringType)
-		m.Releases = types.SetNull(types.StringType)
-		m.ErrorMessages = types.SetNull(types.StringType)
-		return nil
-	}
-
-	if values, ok := project.Options["filters:blacklisted_ips"].(string); ok {
-		if values == "" {
-			m.BlacklistedIps = types.SetNull(types.StringType)
-		} else {
-			m.BlacklistedIps = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
-				return types.StringValue(v)
-			}, strings.Split(values, "\n")))
-		}
-	} else {
-		return fmt.Errorf("invalid type for filters:blacklisted_ips: %T", project.Options["filters:blacklisted_ips"])
-	}
-
-	if values, ok := project.Options["filters:releases"].(string); ok {
-		if values == "" {
-			m.Releases = types.SetNull(types.StringType)
-		} else {
-			m.Releases = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
-				return types.StringValue(v)
-			}, strings.Split(values, "\n")))
-		}
-	} else {
-		return fmt.Errorf("invalid type for filters:releases: %T", project.Options["filters:releases"])
-	}
-
-	if values, ok := project.Options["filters:error_messages"].(string); ok {
-		if values == "" {
-			m.ErrorMessages = types.SetNull(types.StringType)
-		} else {
-			m.ErrorMessages = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
-				return types.StringValue(v)
-			}, strings.Split(values, "\n")))
-		}
-	} else {
-		return fmt.Errorf("invalid type for filters:error_messages: %T", project.Options["filters:error_messages"])
-	}
-
-	return nil
-}
-
-func (m *ProjectFilterResourceModel) FillOld(project sentry.Project) error {
 	if project.Options == nil {
 		m.BlacklistedIps = types.SetNull(types.StringType)
 		m.Releases = types.SetNull(types.StringType)
@@ -140,8 +95,8 @@ type ProjectResourceModel struct {
 	DigestsMaxDelay      types.Int64                 `tfsdk:"digests_max_delay"`
 	ResolveAge           types.Int64                 `tfsdk:"resolve_age"`
 	Filters              *ProjectFilterResourceModel `tfsdk:"filters"`
-	FingerprintingRules  types.String                `tfsdk:"fingerprinting_rules"`
-	GroupingEnhancements types.String                `tfsdk:"grouping_enhancements"`
+	FingerprintingRules  sentrytypes.TrimmedString   `tfsdk:"fingerprinting_rules"`
+	GroupingEnhancements sentrytypes.TrimmedString   `tfsdk:"grouping_enhancements"`
 }
 
 func (m *ProjectResourceModel) Fill(project apiclient.Project) error {
@@ -164,90 +119,16 @@ func (m *ProjectResourceModel) Fill(project apiclient.Project) error {
 		return types.StringValue(v)
 	}, project.Features))
 
-	if !m.DigestsMinDelay.IsNull() {
-		m.DigestsMinDelay = types.Int64Value(project.DigestsMinDelay)
-	}
-	if !m.DigestsMaxDelay.IsNull() {
-		m.DigestsMaxDelay = types.Int64Value(project.DigestsMaxDelay)
-	}
-	if !m.ResolveAge.IsNull() {
-		m.ResolveAge = types.Int64Value(project.ResolveAge)
-	}
+	m.DigestsMinDelay = types.Int64Value(project.DigestsMinDelay)
+	m.DigestsMaxDelay = types.Int64Value(project.DigestsMaxDelay)
+	m.ResolveAge = types.Int64Value(project.ResolveAge)
 
 	if m.Filters != nil {
 		m.Filters.Fill(project)
 	}
 
-	if !m.FingerprintingRules.IsNull() {
-		if strings.TrimRight(m.FingerprintingRules.ValueString(), "\n") != project.FingerprintingRules {
-			m.FingerprintingRules = types.StringValue(project.FingerprintingRules)
-		}
-	}
-
-	if !m.GroupingEnhancements.IsNull() {
-		if strings.TrimRight(m.GroupingEnhancements.ValueString(), "\n") != project.GroupingEnhancements {
-			m.GroupingEnhancements = types.StringValue(project.GroupingEnhancements)
-		}
-	}
-
-	return nil
-}
-
-func (m *ProjectResourceModel) FillOld(organization string, project sentry.Project) error {
-	m.Id = types.StringValue(project.Slug)
-	m.Organization = types.StringValue(organization)
-	m.Name = types.StringValue(project.Name)
-	m.Slug = types.StringValue(project.Slug)
-
-	if project.Platform == "" {
-		m.Platform = types.StringNull()
-	} else {
-		m.Platform = types.StringValue(project.Platform)
-	}
-
-	m.InternalId = types.StringValue(project.ID)
-
-	if !m.DigestsMinDelay.IsNull() {
-		m.DigestsMinDelay = types.Int64Value(int64(project.DigestsMinDelay))
-	}
-	if !m.DigestsMaxDelay.IsNull() {
-		m.DigestsMaxDelay = types.Int64Value(int64(project.DigestsMaxDelay))
-	}
-	if !m.ResolveAge.IsNull() {
-		m.ResolveAge = types.Int64Value(int64(project.ResolveAge))
-	}
-
-	m.Teams = types.SetValueMust(types.StringType, sliceutils.Map(func(v sentry.Team) attr.Value {
-		return types.StringPointerValue(v.Slug)
-	}, project.Teams))
-
-	m.Features = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
-		return types.StringValue(v)
-	}, project.Features))
-
-	if m.Filters != nil {
-		m.Filters.FillOld(project)
-	}
-
-	if project.FingerprintingRules == "" {
-		if !m.FingerprintingRules.IsNull() {
-			m.FingerprintingRules = types.StringNull()
-		}
-	} else {
-		if m.FingerprintingRules.IsNull() || strings.TrimRight(m.FingerprintingRules.ValueString(), "\n") != project.FingerprintingRules {
-			m.FingerprintingRules = types.StringValue(project.FingerprintingRules)
-		}
-	}
-
-	if project.GroupingEnhancements == "" {
-		if !m.GroupingEnhancements.IsNull() {
-			m.GroupingEnhancements = types.StringNull()
-		}
-	} else {
-		if m.GroupingEnhancements.IsNull() || strings.TrimRight(m.GroupingEnhancements.ValueString(), "\n") != project.GroupingEnhancements {
-			m.GroupingEnhancements = types.StringValue(project.GroupingEnhancements)
-		}
-	}
+	m.FingerprintingRules = sentrytypes.TrimmedStringValue(project.FingerprintingRules)
+	m.GroupingEnhancements = sentrytypes.TrimmedStringValue(project.GroupingEnhancements)
 
 	return nil
 }
@@ -291,6 +172,9 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 				Description: "The optional slug for this project.",
 				Optional:    true,
 				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"platform": schema.StringAttribute{
 				MarkdownDescription: "The platform for this project. For a list of valid values, [see this page](https://github.com/jianyuan/terraform-provider-sentry/blob/main/internal/sentryplatforms/platforms.txt). Use `other` for platforms not listed.",
@@ -316,6 +200,9 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 			"internal_id": schema.StringAttribute{
 				Description: "The internal ID for this project.",
 				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"features": schema.SetAttribute{
 				ElementType: types.StringType,
@@ -324,14 +211,26 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 			"digests_min_delay": schema.Int64Attribute{
 				Description: "The minimum amount of time (in seconds) to wait between scheduling digests for delivery after the initial scheduling.",
 				Optional:    true,
+				Computed:    true,
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
 			},
 			"digests_max_delay": schema.Int64Attribute{
 				Description: "The maximum amount of time (in seconds) to wait between scheduling digests for delivery.",
 				Optional:    true,
+				Computed:    true,
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
 			},
 			"resolve_age": schema.Int64Attribute{
 				Description: "Hours in which an issue is automatically resolve if not seen after this amount of time.",
 				Optional:    true,
+				Computed:    true,
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
 			},
 			"filters": schema.SingleNestedAttribute{
 				Description: "Custom filters for this project.",
@@ -365,11 +264,21 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 			},
 			"fingerprinting_rules": schema.StringAttribute{
 				MarkdownDescription: "This can be used to modify the fingerprint rules on the server with custom rules. Rules follow the pattern `matcher:glob -> fingerprint, values`. To learn more about fingerprint rules, [read the docs](https://docs.sentry.io/concepts/data-management/event-grouping/fingerprint-rules/).",
+				CustomType:          sentrytypes.TrimmedStringType{},
 				Optional:            true,
+				Computed:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"grouping_enhancements": schema.StringAttribute{
 				MarkdownDescription: "This can be used to enhance the grouping algorithm with custom rules. Rules follow the pattern `matcher:glob [v^]?[+-]flag`. To learn more about stack trace rules, [read the docs](https://docs.sentry.io/concepts/data-management/event-grouping/stack-trace-rules/).",
+				CustomType:          sentrytypes.TrimmedStringType{},
 				Optional:            true,
+				Computed:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 		},
 	}
@@ -400,7 +309,8 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 		Platform:     data.Platform.ValueStringPointer(),
 		DefaultRules: data.DefaultRules.ValueBoolPointer(),
 	}
-	if data.Slug.ValueString() != "" {
+
+	if !data.Slug.IsUnknown() {
 		createBody.Slug = data.Slug.ValueStringPointer()
 	}
 
@@ -420,15 +330,27 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 
 	// Update the project
 	updateBody := apiclient.UpdateOrganizationProjectJSONRequestBody{
-		Name:            data.Name.ValueStringPointer(),
-		Platform:        data.Platform.ValueStringPointer(),
-		DigestsMinDelay: data.DigestsMinDelay.ValueInt64Pointer(),
-		DigestsMaxDelay: data.DigestsMaxDelay.ValueInt64Pointer(),
-		ResolveAge:      data.ResolveAge.ValueInt64Pointer(),
+		Name: data.Name.ValueStringPointer(),
 	}
 
-	if data.Slug.ValueString() != "" {
+	if !data.Slug.IsUnknown() {
 		updateBody.Slug = data.Slug.ValueStringPointer()
+	}
+
+	if !data.Platform.IsUnknown() {
+		updateBody.Platform = data.Platform.ValueStringPointer()
+	}
+
+	if !data.DigestsMinDelay.IsUnknown() {
+		updateBody.DigestsMinDelay = data.DigestsMinDelay.ValueInt64Pointer()
+	}
+
+	if !data.DigestsMaxDelay.IsUnknown() {
+		updateBody.DigestsMaxDelay = data.DigestsMaxDelay.ValueInt64Pointer()
+	}
+
+	if !data.ResolveAge.IsUnknown() {
+		updateBody.ResolveAge = data.ResolveAge.ValueInt64Pointer()
 	}
 
 	if data.Filters != nil {
@@ -471,16 +393,12 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 		}
 	}
 
-	if data.FingerprintingRules.IsNull() {
-		updateBody.FingerprintingRules = sentry.String("")
-	} else {
-		updateBody.FingerprintingRules = sentry.String(data.FingerprintingRules.ValueString())
+	if !data.FingerprintingRules.IsUnknown() {
+		updateBody.FingerprintingRules = data.FingerprintingRules.ValueStringPointer()
 	}
 
-	if data.GroupingEnhancements.IsNull() {
-		updateBody.GroupingEnhancements = sentry.String("")
-	} else {
-		updateBody.GroupingEnhancements = sentry.String(data.GroupingEnhancements.ValueString())
+	if !data.GroupingEnhancements.IsUnknown() {
+		updateBody.GroupingEnhancements = data.GroupingEnhancements.ValueStringPointer()
 	}
 
 	httpRespUpdate, err := r.apiClient.UpdateOrganizationProjectWithResponse(
@@ -592,16 +510,30 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	params := apiclient.UpdateOrganizationProjectJSONRequestBody{
-		Name:            plan.Name.ValueStringPointer(),
-		Platform:        plan.Platform.ValueStringPointer(),
-		DigestsMinDelay: plan.DigestsMinDelay.ValueInt64Pointer(),
-		DigestsMaxDelay: plan.DigestsMaxDelay.ValueInt64Pointer(),
-		ResolveAge:      plan.ResolveAge.ValueInt64Pointer(),
+	updateBody := apiclient.UpdateOrganizationProjectJSONRequestBody{}
+
+	if !plan.Name.Equal(state.Name) {
+		updateBody.Name = plan.Name.ValueStringPointer()
 	}
 
-	if plan.Slug.ValueString() != "" {
-		params.Slug = plan.Slug.ValueStringPointer()
+	if !plan.Slug.Equal(state.Slug) {
+		updateBody.Slug = plan.Slug.ValueStringPointer()
+	}
+
+	if !plan.Platform.Equal(state.Platform) {
+		updateBody.Platform = plan.Platform.ValueStringPointer()
+	}
+
+	if !plan.DigestsMinDelay.Equal(state.DigestsMinDelay) {
+		updateBody.DigestsMinDelay = plan.DigestsMinDelay.ValueInt64Pointer()
+	}
+
+	if !plan.DigestsMaxDelay.Equal(state.DigestsMaxDelay) {
+		updateBody.DigestsMaxDelay = plan.DigestsMaxDelay.ValueInt64Pointer()
+	}
+
+	if !plan.ResolveAge.Equal(state.ResolveAge) {
+		updateBody.ResolveAge = plan.ResolveAge.ValueInt64Pointer()
 	}
 
 	if plan.Filters != nil {
@@ -640,27 +572,23 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 		}
 
 		if len(options) > 0 {
-			params.Options = &options
+			updateBody.Options = &options
 		}
 	}
 
-	if plan.FingerprintingRules.IsNull() {
-		params.FingerprintingRules = sentry.String("")
-	} else {
-		params.FingerprintingRules = sentry.String(plan.FingerprintingRules.ValueString())
+	if !plan.FingerprintingRules.Equal(state.FingerprintingRules) {
+		updateBody.FingerprintingRules = plan.FingerprintingRules.ValueStringPointer()
 	}
 
-	if plan.GroupingEnhancements.IsNull() {
-		params.GroupingEnhancements = sentry.String("")
-	} else {
-		params.GroupingEnhancements = sentry.String(plan.GroupingEnhancements.ValueString())
+	if !plan.GroupingEnhancements.Equal(state.GroupingEnhancements) {
+		updateBody.GroupingEnhancements = plan.GroupingEnhancements.ValueStringPointer()
 	}
 
 	httpRespUpdate, err := r.apiClient.UpdateOrganizationProjectWithResponse(
 		ctx,
 		plan.Organization.ValueString(),
 		plan.Id.ValueString(),
-		params,
+		updateBody,
 	)
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("update", err))
