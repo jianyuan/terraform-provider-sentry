@@ -113,6 +113,18 @@ paths:
                   type: string
                 options:
                   type: object
+                allowedDomains:
+                  type: array
+                  items:
+                    type: string
+                scrapeJavaScript:
+                  type: boolean
+                securityToken:
+                  type: string
+                securityTokenHeader:
+                  type: string
+                verifySSL:
+                  type: boolean
       responses:
         "200":
           description: OK
@@ -407,6 +419,11 @@ components:
         - resolveAge
         - fingerprintingRules
         - groupingEnhancements
+        - allowedDomains
+        - scrapeJavaScript
+        - securityToken
+        - securityTokenHeader
+        - verifySSL
       properties:
         organization:
           $ref: "#/components/schemas/Organization"
@@ -449,6 +466,19 @@ components:
           type: string
         groupingEnhancements:
           type: string
+        allowedDomains:
+          type: array
+          items:
+            type: string
+        scrapeJavaScript:
+          type: boolean
+        securityToken:
+          type: string
+        securityTokenHeader:
+          type: string
+          nullable: true
+        verifySSL:
+          type: boolean
     ProjectKey:
       type: object
       required:

@@ -58,6 +58,7 @@ resource "sentry_project" "default" {
 
 ### Optional
 
+- `client_security` (Attributes) Configure origin URLs which Sentry should accept events from. This is used for communication with clients like [sentry-javascript](https://github.com/getsentry/sentry-javascript). (see [below for nested schema](#nestedatt--client_security))
 - `default_key` (Boolean) Whether to create a default key. By default, Sentry will create a key for you. If you wish to manage keys manually, set this to false and create keys using the `sentry_key` resource.
 - `default_rules` (Boolean) Whether to create a default issue alert. Defaults to true where the behavior is to alert the user on every new issue.
 - `digests_max_delay` (Number) The maximum amount of time (in seconds) to wait between scheduling digests for delivery.
@@ -74,6 +75,18 @@ resource "sentry_project" "default" {
 - `features` (Set of String)
 - `id` (String) The ID of this resource.
 - `internal_id` (String) The internal ID for this project.
+
+<a id="nestedatt--client_security"></a>
+### Nested Schema for `client_security`
+
+Optional:
+
+- `allowed_domains` (Set of String) A list of allowed domains. Examples: https://example.com, *, *.example.com, *:80.
+- `scrape_javascript` (Boolean) Enable JavaScript source fetching. Allow Sentry to scrape missing JavaScript source context when possible.
+- `security_token` (String) Security Token. Outbound requests matching Allowed Domains will have the header "{security_token_header}: {security_token}" appended.
+- `security_token_header` (String) Security Token Header. Outbound requests matching Allowed Domains will have the header "{security_token_header}: {security_token}" appended.
+- `verify_tls_ssl` (Boolean) Verify TLS/SSL. Outbound requests will verify TLS (sometimes known as SSL) connections.
+
 
 <a id="nestedatt--filters"></a>
 ### Nested Schema for `filters`

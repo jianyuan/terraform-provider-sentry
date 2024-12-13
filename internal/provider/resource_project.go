@@ -93,6 +93,42 @@ func (m *ProjectFilterResourceModel) Fill(ctx context.Context, project apiclient
 	return
 }
 
+type ProjectClientSecurityResourceModel struct {
+	AllowedDomains      types.Set    `tfsdk:"allowed_domains"`
+	ScrapeJavascript    types.Bool   `tfsdk:"scrape_javascript"`
+	SecurityToken       types.String `tfsdk:"security_token"`
+	SecurityTokenHeader types.String `tfsdk:"security_token_header"`
+	VerifyTlsSsl        types.Bool   `tfsdk:"verify_tls_ssl"`
+}
+
+func (m ProjectClientSecurityResourceModel) AttributeTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"allowed_domains":       types.SetType{ElemType: types.StringType},
+		"scrape_javascript":     types.BoolType,
+		"security_token":        types.StringType,
+		"security_token_header": types.StringType,
+		"verify_tls_ssl":        types.BoolType,
+	}
+}
+
+func (m *ProjectClientSecurityResourceModel) Fill(ctx context.Context, project apiclient.Project) (diags diag.Diagnostics) {
+	m.AllowedDomains = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
+		return types.StringValue(v)
+	}, project.AllowedDomains))
+	m.ScrapeJavascript = types.BoolValue(project.ScrapeJavaScript)
+	m.SecurityToken = types.StringValue(project.SecurityToken)
+
+	if project.SecurityTokenHeader == nil {
+		m.SecurityTokenHeader = types.StringValue("")
+	} else {
+		m.SecurityTokenHeader = types.StringPointerValue(project.SecurityTokenHeader)
+	}
+
+	m.VerifyTlsSsl = types.BoolValue(project.VerifySSL)
+
+	return
+}
+
 type ProjectResourceModel struct {
 	Id                   types.String              `tfsdk:"id"`
 	Organization         types.String              `tfsdk:"organization"`
@@ -110,6 +146,7 @@ type ProjectResourceModel struct {
 	Filters              types.Object              `tfsdk:"filters"`
 	FingerprintingRules  sentrytypes.TrimmedString `tfsdk:"fingerprinting_rules"`
 	GroupingEnhancements sentrytypes.TrimmedString `tfsdk:"grouping_enhancements"`
+	ClientSecurity       types.Object              `tfsdk:"client_security"`
 }
 
 func (m *ProjectResourceModel) Fill(ctx context.Context, project apiclient.Project) (diags diag.Diagnostics) {
@@ -145,6 +182,13 @@ func (m *ProjectResourceModel) Fill(ctx context.Context, project apiclient.Proje
 
 	m.FingerprintingRules = sentrytypes.TrimmedStringValue(project.FingerprintingRules)
 	m.GroupingEnhancements = sentrytypes.TrimmedStringValue(project.GroupingEnhancements)
+
+	var clientSecurity ProjectClientSecurityResourceModel
+	diags.Append(clientSecurity.Fill(ctx, project)...)
+
+	var clientSecurityDiags diag.Diagnostics
+	m.ClientSecurity, clientSecurityDiags = types.ObjectValueFrom(ctx, clientSecurity.AttributeTypes(), clientSecurity)
+	diags.Append(clientSecurityDiags...)
 
 	return
 }
@@ -315,6 +359,63 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
+			"client_security": schema.SingleNestedAttribute{
+				MarkdownDescription: "Configure origin URLs which Sentry should accept events from. This is used for communication with clients like [sentry-javascript](https://github.com/getsentry/sentry-javascript).",
+				Optional:            true,
+				Computed:            true,
+				Attributes: map[string]schema.Attribute{
+					"allowed_domains": schema.SetAttribute{
+						MarkdownDescription: "A list of allowed domains. Examples: https://example.com, *, *.example.com, *:80.",
+						ElementType:         types.StringType,
+						Optional:            true,
+						Computed:            true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+						},
+						PlanModifiers: []planmodifier.Set{
+							setplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"scrape_javascript": schema.BoolAttribute{
+						MarkdownDescription: "Enable JavaScript source fetching. Allow Sentry to scrape missing JavaScript source context when possible.",
+						Optional:            true,
+						Computed:            true,
+						PlanModifiers: []planmodifier.Bool{
+							boolplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"security_token": schema.StringAttribute{
+						MarkdownDescription: "Security Token. Outbound requests matching Allowed Domains will have the header \"{security_token_header}: {security_token}\" appended.",
+						Optional:            true,
+						Computed:            true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"security_token_header": schema.StringAttribute{
+						MarkdownDescription: "Security Token Header. Outbound requests matching Allowed Domains will have the header \"{security_token_header}: {security_token}\" appended.",
+						Optional:            true,
+						Computed:            true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtMost(20),
+						},
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"verify_tls_ssl": schema.BoolAttribute{
+						MarkdownDescription: "Verify TLS/SSL. Outbound requests will verify TLS (sometimes known as SSL) connections.",
+						Optional:            true,
+						Computed:            true,
+						PlanModifiers: []planmodifier.Bool{
+							boolplanmodifier.UseStateForUnknown(),
+						},
+					},
+				},
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.UseStateForUnknown(),
+				},
+			},
 		},
 	}
 }
@@ -434,6 +535,37 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 
 	if !data.GroupingEnhancements.IsUnknown() {
 		updateBody.GroupingEnhancements = data.GroupingEnhancements.ValueStringPointer()
+	}
+
+	if !data.ClientSecurity.IsUnknown() {
+		var clientSecurity ProjectClientSecurityResourceModel
+		resp.Diagnostics.Append(data.ClientSecurity.As(ctx, &clientSecurity, basetypes.ObjectAsOptions{})...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		if !clientSecurity.AllowedDomains.IsUnknown() {
+			resp.Diagnostics.Append(clientSecurity.AllowedDomains.ElementsAs(ctx, &updateBody.AllowedDomains, false)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+		}
+
+		if !clientSecurity.ScrapeJavascript.IsUnknown() {
+			updateBody.ScrapeJavaScript = clientSecurity.ScrapeJavascript.ValueBoolPointer()
+		}
+
+		if !clientSecurity.SecurityToken.IsUnknown() {
+			updateBody.SecurityToken = clientSecurity.SecurityToken.ValueStringPointer()
+		}
+
+		if !clientSecurity.SecurityTokenHeader.IsUnknown() {
+			updateBody.SecurityTokenHeader = clientSecurity.SecurityTokenHeader.ValueStringPointer()
+		}
+
+		if !clientSecurity.VerifyTlsSsl.IsUnknown() {
+			updateBody.VerifySSL = clientSecurity.VerifyTlsSsl.ValueBoolPointer()
+		}
 	}
 
 	httpRespUpdate, err := r.apiClient.UpdateOrganizationProjectWithResponse(
@@ -618,6 +750,38 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	if !plan.GroupingEnhancements.Equal(state.GroupingEnhancements) {
 		updateBody.GroupingEnhancements = plan.GroupingEnhancements.ValueStringPointer()
+	}
+
+	if !plan.ClientSecurity.Equal(state.ClientSecurity) {
+		var clientSecurityPlan, clientSecurityState ProjectClientSecurityResourceModel
+		resp.Diagnostics.Append(plan.ClientSecurity.As(ctx, &clientSecurityPlan, basetypes.ObjectAsOptions{})...)
+		resp.Diagnostics.Append(state.ClientSecurity.As(ctx, &clientSecurityState, basetypes.ObjectAsOptions{})...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		if !clientSecurityPlan.AllowedDomains.Equal(clientSecurityState.AllowedDomains) {
+			resp.Diagnostics.Append(clientSecurityPlan.AllowedDomains.ElementsAs(ctx, &updateBody.AllowedDomains, false)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+		}
+
+		if !clientSecurityPlan.ScrapeJavascript.Equal(clientSecurityState.ScrapeJavascript) {
+			updateBody.ScrapeJavaScript = clientSecurityPlan.ScrapeJavascript.ValueBoolPointer()
+		}
+
+		if !clientSecurityPlan.SecurityToken.Equal(clientSecurityState.SecurityToken) {
+			updateBody.SecurityToken = clientSecurityPlan.SecurityToken.ValueStringPointer()
+		}
+
+		if !clientSecurityPlan.SecurityTokenHeader.Equal(clientSecurityState.SecurityTokenHeader) {
+			updateBody.SecurityTokenHeader = clientSecurityPlan.SecurityTokenHeader.ValueStringPointer()
+		}
+
+		if !clientSecurityPlan.VerifyTlsSsl.Equal(clientSecurityState.VerifyTlsSsl) {
+			updateBody.VerifySSL = clientSecurityPlan.VerifyTlsSsl.ValueBoolPointer()
+		}
 	}
 
 	httpRespUpdate, err := r.apiClient.UpdateOrganizationProjectWithResponse(
