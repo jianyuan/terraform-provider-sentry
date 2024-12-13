@@ -146,7 +146,7 @@ func (d *IssueAlertDataSource) Schema(ctx context.Context, req datasource.Schema
 }
 
 func (d *IssueAlertDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data IssueAlertResourceModel
+	var data IssueAlertDataSourceModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {

@@ -82,6 +82,21 @@ type ProjectKey struct {
 	Secret string `json:"secret"`
 }
 
+// ProjectRule defines model for ProjectRule.
+type ProjectRule struct {
+	ActionMatch string                   `json:"actionMatch"`
+	Actions     []map[string]interface{} `json:"actions"`
+	Conditions  []map[string]interface{} `json:"conditions"`
+	Environment *string                  `json:"environment"`
+	FilterMatch string                   `json:"filterMatch"`
+	Filters     []map[string]interface{} `json:"filters"`
+	Frequency   int64                    `json:"frequency"`
+	Id          string                   `json:"id"`
+	Name        string                   `json:"name"`
+	Owner       *string                  `json:"owner"`
+	Projects    []string                 `json:"projects"`
+}
+
 // Team defines model for Team.
 type Team struct {
 	Id   string `json:"id"`
@@ -158,6 +173,42 @@ type UpdateProjectClientKeyJSONBody struct {
 	} `json:"rateLimit,omitempty"`
 }
 
+// CreateProjectRuleJSONBody defines parameters for CreateProjectRule.
+type CreateProjectRuleJSONBody struct {
+	Actions *[]struct {
+		Category string    `json:"category"`
+		Id       string    `json:"id"`
+		Type     string    `json:"type"`
+		Values   *[]string `json:"values,omitempty"`
+	} `json:"actions,omitempty"`
+	Conditions *[]struct {
+		Category string    `json:"category"`
+		Id       string    `json:"id"`
+		Type     string    `json:"type"`
+		Values   *[]string `json:"values,omitempty"`
+	} `json:"conditions,omitempty"`
+	Environment *string `json:"environment,omitempty"`
+	Name        string  `json:"name"`
+}
+
+// UpdateProjectRuleJSONBody defines parameters for UpdateProjectRule.
+type UpdateProjectRuleJSONBody struct {
+	Actions *[]struct {
+		Category string    `json:"category"`
+		Id       string    `json:"id"`
+		Type     string    `json:"type"`
+		Values   *[]string `json:"values,omitempty"`
+	} `json:"actions,omitempty"`
+	Conditions *[]struct {
+		Category string    `json:"category"`
+		Id       string    `json:"id"`
+		Type     string    `json:"type"`
+		Values   *[]string `json:"values,omitempty"`
+	} `json:"conditions,omitempty"`
+	Environment *string `json:"environment,omitempty"`
+	Name        *string `json:"name,omitempty"`
+}
+
 // CreateOrganizationTeamProjectJSONBody defines parameters for CreateOrganizationTeamProject.
 type CreateOrganizationTeamProjectJSONBody struct {
 	DefaultRules *bool   `json:"default_rules,omitempty"`
@@ -174,6 +225,12 @@ type CreateProjectClientKeyJSONRequestBody CreateProjectClientKeyJSONBody
 
 // UpdateProjectClientKeyJSONRequestBody defines body for UpdateProjectClientKey for application/json ContentType.
 type UpdateProjectClientKeyJSONRequestBody UpdateProjectClientKeyJSONBody
+
+// CreateProjectRuleJSONRequestBody defines body for CreateProjectRule for application/json ContentType.
+type CreateProjectRuleJSONRequestBody CreateProjectRuleJSONBody
+
+// UpdateProjectRuleJSONRequestBody defines body for UpdateProjectRule for application/json ContentType.
+type UpdateProjectRuleJSONRequestBody UpdateProjectRuleJSONBody
 
 // CreateOrganizationTeamProjectJSONRequestBody defines body for CreateOrganizationTeamProject for application/json ContentType.
 type CreateOrganizationTeamProjectJSONRequestBody CreateOrganizationTeamProjectJSONBody
@@ -283,6 +340,22 @@ type ClientInterface interface {
 	UpdateProjectClientKeyWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, keyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateProjectClientKey(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, keyId string, body UpdateProjectClientKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateProjectRuleWithBody request with any body
+	CreateProjectRuleWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateProjectRule(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body CreateProjectRuleJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteProjectRule request
+	DeleteProjectRule(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, ruleId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetProjectRule request
+	GetProjectRule(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, ruleId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateProjectRuleWithBody request with any body
+	UpdateProjectRuleWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, ruleId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateProjectRule(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, ruleId string, body UpdateProjectRuleJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// RemoveTeamFromProject request
 	RemoveTeamFromProject(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, teamIdOrSlug TeamIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -430,6 +503,78 @@ func (c *Client) UpdateProjectClientKeyWithBody(ctx context.Context, organizatio
 
 func (c *Client) UpdateProjectClientKey(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, keyId string, body UpdateProjectClientKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateProjectClientKeyRequest(c.Server, organizationIdOrSlug, projectIdOrSlug, keyId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateProjectRuleWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateProjectRuleRequestWithBody(c.Server, organizationIdOrSlug, projectIdOrSlug, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateProjectRule(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body CreateProjectRuleJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateProjectRuleRequest(c.Server, organizationIdOrSlug, projectIdOrSlug, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteProjectRule(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, ruleId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteProjectRuleRequest(c.Server, organizationIdOrSlug, projectIdOrSlug, ruleId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetProjectRule(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, ruleId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetProjectRuleRequest(c.Server, organizationIdOrSlug, projectIdOrSlug, ruleId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateProjectRuleWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, ruleId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateProjectRuleRequestWithBody(c.Server, organizationIdOrSlug, projectIdOrSlug, ruleId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateProjectRule(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, ruleId string, body UpdateProjectRuleJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateProjectRuleRequest(c.Server, organizationIdOrSlug, projectIdOrSlug, ruleId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -948,6 +1093,217 @@ func NewUpdateProjectClientKeyRequestWithBody(server string, organizationIdOrSlu
 	return req, nil
 }
 
+// NewCreateProjectRuleRequest calls the generic CreateProjectRule builder with application/json body
+func NewCreateProjectRuleRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body CreateProjectRuleJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateProjectRuleRequestWithBody(server, organizationIdOrSlug, projectIdOrSlug, "application/json", bodyReader)
+}
+
+// NewCreateProjectRuleRequestWithBody generates requests for CreateProjectRule with any type of body
+func NewCreateProjectRuleRequestWithBody(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organization_id_or_slug", runtime.ParamLocationPath, organizationIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "project_id_or_slug", runtime.ParamLocationPath, projectIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/projects/%s/%s/rules/", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteProjectRuleRequest generates requests for DeleteProjectRule
+func NewDeleteProjectRuleRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, ruleId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organization_id_or_slug", runtime.ParamLocationPath, organizationIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "project_id_or_slug", runtime.ParamLocationPath, projectIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam2 string
+
+	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "rule_id", runtime.ParamLocationPath, ruleId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/projects/%s/%s/rules/%s/", pathParam0, pathParam1, pathParam2)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetProjectRuleRequest generates requests for GetProjectRule
+func NewGetProjectRuleRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, ruleId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organization_id_or_slug", runtime.ParamLocationPath, organizationIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "project_id_or_slug", runtime.ParamLocationPath, projectIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam2 string
+
+	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "rule_id", runtime.ParamLocationPath, ruleId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/projects/%s/%s/rules/%s/", pathParam0, pathParam1, pathParam2)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateProjectRuleRequest calls the generic UpdateProjectRule builder with application/json body
+func NewUpdateProjectRuleRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, ruleId string, body UpdateProjectRuleJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateProjectRuleRequestWithBody(server, organizationIdOrSlug, projectIdOrSlug, ruleId, "application/json", bodyReader)
+}
+
+// NewUpdateProjectRuleRequestWithBody generates requests for UpdateProjectRule with any type of body
+func NewUpdateProjectRuleRequestWithBody(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, ruleId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organization_id_or_slug", runtime.ParamLocationPath, organizationIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "project_id_or_slug", runtime.ParamLocationPath, projectIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam2 string
+
+	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "rule_id", runtime.ParamLocationPath, ruleId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/projects/%s/%s/rules/%s/", pathParam0, pathParam1, pathParam2)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewRemoveTeamFromProjectRequest generates requests for RemoveTeamFromProject
 func NewRemoveTeamFromProjectRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, teamIdOrSlug TeamIdOrSlug) (*http.Request, error) {
 	var err error
@@ -1174,6 +1530,22 @@ type ClientWithResponsesInterface interface {
 
 	UpdateProjectClientKeyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, keyId string, body UpdateProjectClientKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectClientKeyResponse, error)
 
+	// CreateProjectRuleWithBodyWithResponse request with any body
+	CreateProjectRuleWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateProjectRuleResponse, error)
+
+	CreateProjectRuleWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body CreateProjectRuleJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateProjectRuleResponse, error)
+
+	// DeleteProjectRuleWithResponse request
+	DeleteProjectRuleWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, ruleId string, reqEditors ...RequestEditorFn) (*DeleteProjectRuleResponse, error)
+
+	// GetProjectRuleWithResponse request
+	GetProjectRuleWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, ruleId string, reqEditors ...RequestEditorFn) (*GetProjectRuleResponse, error)
+
+	// UpdateProjectRuleWithBodyWithResponse request with any body
+	UpdateProjectRuleWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, ruleId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProjectRuleResponse, error)
+
+	UpdateProjectRuleWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, ruleId string, body UpdateProjectRuleJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectRuleResponse, error)
+
 	// RemoveTeamFromProjectWithResponse request
 	RemoveTeamFromProjectWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, teamIdOrSlug TeamIdOrSlug, reqEditors ...RequestEditorFn) (*RemoveTeamFromProjectResponse, error)
 
@@ -1382,6 +1754,96 @@ func (r UpdateProjectClientKeyResponse) StatusCode() int {
 	return 0
 }
 
+type CreateProjectRuleResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *ProjectRule
+	JSON202      *struct {
+		Uuid string `json:"uuid"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateProjectRuleResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateProjectRuleResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteProjectRuleResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteProjectRuleResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteProjectRuleResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetProjectRuleResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ProjectRule
+}
+
+// Status returns HTTPResponse.Status
+func (r GetProjectRuleResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetProjectRuleResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateProjectRuleResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ProjectRule
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateProjectRuleResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateProjectRuleResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type RemoveTeamFromProjectResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -1551,6 +2013,58 @@ func (c *ClientWithResponses) UpdateProjectClientKeyWithResponse(ctx context.Con
 		return nil, err
 	}
 	return ParseUpdateProjectClientKeyResponse(rsp)
+}
+
+// CreateProjectRuleWithBodyWithResponse request with arbitrary body returning *CreateProjectRuleResponse
+func (c *ClientWithResponses) CreateProjectRuleWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateProjectRuleResponse, error) {
+	rsp, err := c.CreateProjectRuleWithBody(ctx, organizationIdOrSlug, projectIdOrSlug, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateProjectRuleResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateProjectRuleWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body CreateProjectRuleJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateProjectRuleResponse, error) {
+	rsp, err := c.CreateProjectRule(ctx, organizationIdOrSlug, projectIdOrSlug, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateProjectRuleResponse(rsp)
+}
+
+// DeleteProjectRuleWithResponse request returning *DeleteProjectRuleResponse
+func (c *ClientWithResponses) DeleteProjectRuleWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, ruleId string, reqEditors ...RequestEditorFn) (*DeleteProjectRuleResponse, error) {
+	rsp, err := c.DeleteProjectRule(ctx, organizationIdOrSlug, projectIdOrSlug, ruleId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteProjectRuleResponse(rsp)
+}
+
+// GetProjectRuleWithResponse request returning *GetProjectRuleResponse
+func (c *ClientWithResponses) GetProjectRuleWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, ruleId string, reqEditors ...RequestEditorFn) (*GetProjectRuleResponse, error) {
+	rsp, err := c.GetProjectRule(ctx, organizationIdOrSlug, projectIdOrSlug, ruleId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetProjectRuleResponse(rsp)
+}
+
+// UpdateProjectRuleWithBodyWithResponse request with arbitrary body returning *UpdateProjectRuleResponse
+func (c *ClientWithResponses) UpdateProjectRuleWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, ruleId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProjectRuleResponse, error) {
+	rsp, err := c.UpdateProjectRuleWithBody(ctx, organizationIdOrSlug, projectIdOrSlug, ruleId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateProjectRuleResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateProjectRuleWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, ruleId string, body UpdateProjectRuleJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectRuleResponse, error) {
+	rsp, err := c.UpdateProjectRule(ctx, organizationIdOrSlug, projectIdOrSlug, ruleId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateProjectRuleResponse(rsp)
 }
 
 // RemoveTeamFromProjectWithResponse request returning *RemoveTeamFromProjectResponse
@@ -1792,6 +2306,109 @@ func ParseUpdateProjectClientKeyResponse(rsp *http.Response) (*UpdateProjectClie
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest ProjectKey
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateProjectRuleResponse parses an HTTP response from a CreateProjectRuleWithResponse call
+func ParseCreateProjectRuleResponse(rsp *http.Response) (*CreateProjectRuleResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateProjectRuleResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest ProjectRule
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 202:
+		var dest struct {
+			Uuid string `json:"uuid"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON202 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteProjectRuleResponse parses an HTTP response from a DeleteProjectRuleWithResponse call
+func ParseDeleteProjectRuleResponse(rsp *http.Response) (*DeleteProjectRuleResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteProjectRuleResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetProjectRuleResponse parses an HTTP response from a GetProjectRuleWithResponse call
+func ParseGetProjectRuleResponse(rsp *http.Response) (*GetProjectRuleResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetProjectRuleResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProjectRule
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateProjectRuleResponse parses an HTTP response from a UpdateProjectRuleWithResponse call
+func ParseUpdateProjectRuleResponse(rsp *http.Response) (*UpdateProjectRuleResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateProjectRuleResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProjectRule
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

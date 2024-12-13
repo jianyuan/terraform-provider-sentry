@@ -7,15 +7,17 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/go-utils/must"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
+	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
 
 type IssueAlertResourceModel struct {
@@ -33,7 +35,51 @@ type IssueAlertResourceModel struct {
 	Owner        types.String          `tfsdk:"owner"`
 }
 
-func (m *IssueAlertResourceModel) Fill(organization string, alert sentry.IssueAlert) error {
+func (m IssueAlertResourceModel) Fill(ctx context.Context, alert apiclient.ProjectRule) (diags diag.Diagnostics) {
+	m.Id = types.StringValue(alert.Id)
+
+	if len(alert.Projects) != 1 {
+		diags.AddError("Invalid project count", fmt.Sprintf("Expected 1 project, got %d", len(alert.Projects)))
+	}
+	m.Project = types.StringValue(alert.Projects[0])
+	m.Name = types.StringValue(alert.Name)
+	m.ActionMatch = types.StringValue(alert.ActionMatch)
+	m.FilterMatch = types.StringValue(alert.FilterMatch)
+	m.Frequency = types.Int64Value(alert.Frequency)
+	m.Environment = types.StringPointerValue(alert.Environment)
+	m.Owner = types.StringPointerValue(alert.Owner)
+
+	m.Conditions = sentrytypes.NewLossyJsonValue("[]")
+	if len(alert.Conditions) > 0 {
+		if conditions, err := json.Marshal(alert.Conditions); err == nil {
+			m.Conditions = sentrytypes.NewLossyJsonValue(string(conditions))
+		} else {
+			diags.AddError("Invalid conditions", err.Error())
+		}
+	}
+
+	m.Filters = sentrytypes.NewLossyJsonNull()
+	if len(alert.Filters) > 0 {
+		if filters, err := json.Marshal(alert.Filters); err == nil {
+			m.Filters = sentrytypes.NewLossyJsonValue(string(filters))
+		} else {
+			diags.AddError("Invalid filters", err.Error())
+		}
+	}
+
+	m.Actions = sentrytypes.NewLossyJsonNull()
+	if len(alert.Actions) > 0 {
+		if actions, err := json.Marshal(alert.Actions); err == nil && len(actions) > 0 {
+			m.Actions = sentrytypes.NewLossyJsonValue(string(actions))
+		} else {
+			diags.AddError("Invalid actions", err.Error())
+		}
+	}
+
+	return
+}
+
+func (m *IssueAlertResourceModel) FillOld(organization string, alert sentry.IssueAlert) error {
 	m.Id = types.StringPointerValue(alert.ID)
 	m.Organization = types.StringValue(organization)
 	m.Project = types.StringValue(alert.Projects[0])
@@ -210,7 +256,7 @@ func (r *IssueAlertResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	if err := data.Fill(data.Organization.ValueString(), *action); err != nil {
+	if err := data.FillOld(data.Organization.ValueString(), *action); err != nil {
 		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
@@ -230,24 +276,26 @@ func (r *IssueAlertResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	action, apiResp, err := r.client.IssueAlerts.Get(
+	httpResp, err := r.apiClient.GetProjectRuleWithResponse(
 		ctx,
 		data.Organization.ValueString(),
 		data.Project.ValueString(),
 		data.Id.ValueString(),
 	)
-	if apiResp.StatusCode == http.StatusNotFound {
-		resp.Diagnostics.Append(diagutils.NewNotFoundError("issue alert"))
-		resp.State.RemoveResource(ctx)
-		return
-	}
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 		return
+	} else if httpResp.StatusCode() == http.StatusNotFound {
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("issue alert"))
+		resp.State.RemoveResource(ctx)
+		return
+	} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("read", httpResp.StatusCode(), httpResp.Body))
+		return
 	}
 
-	if err := data.Fill(data.Organization.ValueString(), *action); err != nil {
-		resp.Diagnostics.Append(diagutils.NewFillError(err))
+	resp.Diagnostics.Append(data.Fill(ctx, *httpResp.JSON200)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -302,7 +350,7 @@ func (r *IssueAlertResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	if err := data.Fill(data.Organization.ValueString(), *action); err != nil {
+	if err := data.FillOld(data.Organization.ValueString(), *action); err != nil {
 		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
@@ -334,20 +382,7 @@ func (r *IssueAlertResource) Delete(ctx context.Context, req resource.DeleteRequ
 }
 
 func (r *IssueAlertResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	organization, project, actionId, err := splitThreePartID(req.ID, "organization", "project-slug", "alert-id")
-	if err != nil {
-		resp.Diagnostics.Append(diagutils.NewFillError(err))
-		return
-	}
-	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("organization"), organization,
-	)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("project"), project,
-	)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("id"), actionId,
-	)...)
+	tfutils.ImportStateThreePartId(ctx, "organization", "project", req, resp)
 }
 
 func (r *IssueAlertResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {

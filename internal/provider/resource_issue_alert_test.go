@@ -7,7 +7,10 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 )
@@ -40,6 +43,17 @@ func TestAccIssueAlertResource(t *testing.T) {
 		)
 	}
 
+	checks := []statecheck.StateCheck{
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("project"), knownvalue.StringExact(project)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("action_match"), knownvalue.StringExact("any")),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filter_match"), knownvalue.StringExact("any")),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("frequency"), knownvalue.Int64Exact(30)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("environment"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("owner"), knownvalue.Null()),
+	}
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -48,29 +62,29 @@ func TestAccIssueAlertResource(t *testing.T) {
 			{
 				Config: testAccIssueAlertConfig(team, project, alert),
 				Check:  check(alert),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(alert)),
+				),
 			},
 			{
 				Config: testAccIssueAlertConfig(team, project, alert+"-updated"),
 				Check:  check(alert + "-updated"),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(alert+"-updated")),
+				),
 			},
 			{
-				ResourceName: rn,
-				ImportState:  true,
-				ImportStateIdFunc: func(s *terraform.State) (string, error) {
-					rs, ok := s.RootModule().Resources[rn]
-					if !ok {
-						return "", fmt.Errorf("not found: %s", rn)
-					}
-					return buildThreePartID(rs.Primary.Attributes["organization"], rs.Primary.Attributes["project"], rs.Primary.ID), nil
-				},
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"conditions", "filters", "actions"},
+				ResourceName:      rn,
+				ImportState:       true,
+				ImportStateIdFunc: acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
 			},
 		},
 	})
 }
 
-func TestAccIssueAlertResource_UpgradeFromVersion(t *testing.T) {
+func TestAccIssueAlertResource_upgradeFromVersion(t *testing.T) {
 	rn := "sentry_issue_alert.test"
 	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")
@@ -201,7 +215,7 @@ resource "sentry_issue_alert" "test" {
 	})
 }
 
-func TestAccIssueAlertResource_EmptyArray(t *testing.T) {
+func TestAccIssueAlertResource_emptyArray(t *testing.T) {
 	rn := "sentry_issue_alert.test"
 	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")
@@ -242,17 +256,9 @@ func TestAccIssueAlertResource_EmptyArray(t *testing.T) {
 				Check:  check(alert + "-updated"),
 			},
 			{
-				ResourceName: rn,
-				ImportState:  true,
-				ImportStateIdFunc: func(s *terraform.State) (string, error) {
-					rs, ok := s.RootModule().Resources[rn]
-					if !ok {
-						return "", fmt.Errorf("not found: %s", rn)
-					}
-					return buildThreePartID(rs.Primary.Attributes["organization"], rs.Primary.Attributes["project"], rs.Primary.ID), nil
-				},
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"actions"},
+				ResourceName:      rn,
+				ImportState:       true,
+				ImportStateIdFunc: acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
 			},
 		},
 	})
