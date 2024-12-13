@@ -15,10 +15,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/jianyuan/go-utils/sliceutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
@@ -34,6 +37,14 @@ type ProjectFilterResourceModel struct {
 	ErrorMessages  types.Set `tfsdk:"error_messages"`
 }
 
+func (m ProjectFilterResourceModel) AttributeTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"blacklisted_ips": types.SetType{ElemType: types.StringType},
+		"releases":        types.SetType{ElemType: types.StringType},
+		"error_messages":  types.SetType{ElemType: types.StringType},
+	}
+}
+
 func (m *ProjectFilterResourceModel) Fill(ctx context.Context, project apiclient.Project) (diags diag.Diagnostics) {
 	if project.Options == nil {
 		m.BlacklistedIps = types.SetNull(types.StringType)
@@ -45,7 +56,7 @@ func (m *ProjectFilterResourceModel) Fill(ctx context.Context, project apiclient
 
 	if values, ok := project.Options["filters:blacklisted_ips"].(string); ok {
 		if values == "" {
-			m.BlacklistedIps = types.SetNull(types.StringType)
+			m.BlacklistedIps = types.SetValueMust(types.StringType, []attr.Value{})
 		} else {
 			m.BlacklistedIps = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
 				return types.StringValue(v)
@@ -57,7 +68,7 @@ func (m *ProjectFilterResourceModel) Fill(ctx context.Context, project apiclient
 
 	if values, ok := project.Options["filters:releases"].(string); ok {
 		if values == "" {
-			m.Releases = types.SetNull(types.StringType)
+			m.Releases = types.SetValueMust(types.StringType, []attr.Value{})
 		} else {
 			m.Releases = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
 				return types.StringValue(v)
@@ -69,7 +80,7 @@ func (m *ProjectFilterResourceModel) Fill(ctx context.Context, project apiclient
 
 	if values, ok := project.Options["filters:error_messages"].(string); ok {
 		if values == "" {
-			m.ErrorMessages = types.SetNull(types.StringType)
+			m.ErrorMessages = types.SetValueMust(types.StringType, []attr.Value{})
 		} else {
 			m.ErrorMessages = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
 				return types.StringValue(v)
@@ -83,22 +94,22 @@ func (m *ProjectFilterResourceModel) Fill(ctx context.Context, project apiclient
 }
 
 type ProjectResourceModel struct {
-	Id                   types.String                `tfsdk:"id"`
-	Organization         types.String                `tfsdk:"organization"`
-	Teams                types.Set                   `tfsdk:"teams"`
-	Name                 types.String                `tfsdk:"name"`
-	Slug                 types.String                `tfsdk:"slug"`
-	Platform             types.String                `tfsdk:"platform"`
-	DefaultRules         types.Bool                  `tfsdk:"default_rules"`
-	DefaultKey           types.Bool                  `tfsdk:"default_key"`
-	InternalId           types.String                `tfsdk:"internal_id"`
-	Features             types.Set                   `tfsdk:"features"`
-	DigestsMinDelay      types.Int64                 `tfsdk:"digests_min_delay"`
-	DigestsMaxDelay      types.Int64                 `tfsdk:"digests_max_delay"`
-	ResolveAge           types.Int64                 `tfsdk:"resolve_age"`
-	Filters              *ProjectFilterResourceModel `tfsdk:"filters"`
-	FingerprintingRules  sentrytypes.TrimmedString   `tfsdk:"fingerprinting_rules"`
-	GroupingEnhancements sentrytypes.TrimmedString   `tfsdk:"grouping_enhancements"`
+	Id                   types.String              `tfsdk:"id"`
+	Organization         types.String              `tfsdk:"organization"`
+	Teams                types.Set                 `tfsdk:"teams"`
+	Name                 types.String              `tfsdk:"name"`
+	Slug                 types.String              `tfsdk:"slug"`
+	Platform             types.String              `tfsdk:"platform"`
+	DefaultRules         types.Bool                `tfsdk:"default_rules"`
+	DefaultKey           types.Bool                `tfsdk:"default_key"`
+	InternalId           types.String              `tfsdk:"internal_id"`
+	Features             types.Set                 `tfsdk:"features"`
+	DigestsMinDelay      types.Int64               `tfsdk:"digests_min_delay"`
+	DigestsMaxDelay      types.Int64               `tfsdk:"digests_max_delay"`
+	ResolveAge           types.Int64               `tfsdk:"resolve_age"`
+	Filters              types.Object              `tfsdk:"filters"`
+	FingerprintingRules  sentrytypes.TrimmedString `tfsdk:"fingerprinting_rules"`
+	GroupingEnhancements sentrytypes.TrimmedString `tfsdk:"grouping_enhancements"`
 }
 
 func (m *ProjectResourceModel) Fill(ctx context.Context, project apiclient.Project) (diags diag.Diagnostics) {
@@ -125,9 +136,12 @@ func (m *ProjectResourceModel) Fill(ctx context.Context, project apiclient.Proje
 	m.DigestsMaxDelay = types.Int64Value(project.DigestsMaxDelay)
 	m.ResolveAge = types.Int64Value(project.ResolveAge)
 
-	if m.Filters != nil {
-		diags.Append(m.Filters.Fill(ctx, project)...)
-	}
+	var filters ProjectFilterResourceModel
+	diags.Append(filters.Fill(ctx, project)...)
+
+	var filtersDiags diag.Diagnostics
+	m.Filters, filtersDiags = types.ObjectValueFrom(ctx, filters.AttributeTypes(), filters)
+	diags.Append(filtersDiags...)
 
 	m.FingerprintingRules = sentrytypes.TrimmedStringValue(project.FingerprintingRules)
 	m.GroupingEnhancements = sentrytypes.TrimmedStringValue(project.GroupingEnhancements)
@@ -209,6 +223,9 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 			"features": schema.SetAttribute{
 				ElementType: types.StringType,
 				Computed:    true,
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"digests_min_delay": schema.Int64Attribute{
 				Description: "The minimum amount of time (in seconds) to wait between scheduling digests for delivery after the initial scheduling.",
@@ -237,31 +254,47 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 			"filters": schema.SingleNestedAttribute{
 				Description: "Custom filters for this project.",
 				Optional:    true,
+				Computed:    true,
 				Attributes: map[string]schema.Attribute{
 					"blacklisted_ips": schema.SetAttribute{
 						Description: "Filter events from these IP addresses. (e.g. 127.0.0.1 or 10.0.0.0/8)",
 						ElementType: types.StringType,
 						Optional:    true,
+						Computed:    true,
 						Validators: []validator.Set{
 							setvalidator.SizeAtLeast(1),
+						},
+						PlanModifiers: []planmodifier.Set{
+							setplanmodifier.UseStateForUnknown(),
 						},
 					},
 					"releases": schema.SetAttribute{
 						MarkdownDescription: "Filter events from these releases. Allows [glob pattern matching](https://en.wikipedia.org/wiki/Glob_(programming)). (e.g. 1.* or [!3].[0-9].*)",
 						ElementType:         types.StringType,
 						Optional:            true,
+						Computed:            true,
 						Validators: []validator.Set{
 							setvalidator.SizeAtLeast(1),
+						},
+						PlanModifiers: []planmodifier.Set{
+							setplanmodifier.UseStateForUnknown(),
 						},
 					},
 					"error_messages": schema.SetAttribute{
 						MarkdownDescription: "Filter events by error messages. Allows [glob pattern matching](https://en.wikipedia.org/wiki/Glob_(programming)). (e.g. TypeError* or *: integer division or modulo by zero)",
 						ElementType:         types.StringType,
 						Optional:            true,
+						Computed:            true,
 						Validators: []validator.Set{
 							setvalidator.SizeAtLeast(1),
 						},
+						PlanModifiers: []planmodifier.Set{
+							setplanmodifier.UseStateForUnknown(),
+						},
 					},
+				},
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"fingerprinting_rules": schema.StringAttribute{
@@ -355,35 +388,35 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 		updateBody.ResolveAge = data.ResolveAge.ValueInt64Pointer()
 	}
 
-	if data.Filters != nil {
+	if !data.Filters.IsUnknown() {
+		var filters ProjectFilterResourceModel
+		resp.Diagnostics.Append(data.Filters.As(ctx, &filters, basetypes.ObjectAsOptions{})...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
 		options := make(map[string]interface{})
-		if data.Filters.BlacklistedIps.IsNull() {
-			options["filters:blacklisted_ips"] = ""
-		} else {
-			values := []string{}
-			resp.Diagnostics.Append(data.Filters.BlacklistedIps.ElementsAs(ctx, &values, false)...)
+		if !filters.BlacklistedIps.IsUnknown() {
+			var values []string
+			resp.Diagnostics.Append(filters.BlacklistedIps.ElementsAs(ctx, &values, false)...)
 			if resp.Diagnostics.HasError() {
 				return
 			}
 			options["filters:blacklisted_ips"] = strings.Join(values, "\n")
 		}
 
-		if data.Filters.Releases.IsNull() {
-			options["filters:releases"] = ""
-		} else {
-			values := []string{}
-			resp.Diagnostics.Append(data.Filters.Releases.ElementsAs(ctx, &values, false)...)
+		if !filters.Releases.IsUnknown() {
+			var values []string
+			resp.Diagnostics.Append(filters.Releases.ElementsAs(ctx, &values, false)...)
 			if resp.Diagnostics.HasError() {
 				return
 			}
 			options["filters:releases"] = strings.Join(values, "\n")
 		}
 
-		if data.Filters.ErrorMessages.IsNull() {
-			options["filters:error_messages"] = ""
-		} else {
-			values := []string{}
-			resp.Diagnostics.Append(data.Filters.ErrorMessages.ElementsAs(ctx, &values, false)...)
+		if !filters.ErrorMessages.IsUnknown() {
+			var values []string
+			resp.Diagnostics.Append(filters.ErrorMessages.ElementsAs(ctx, &values, false)...)
 			if resp.Diagnostics.HasError() {
 				return
 			}
@@ -538,35 +571,36 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 		updateBody.ResolveAge = plan.ResolveAge.ValueInt64Pointer()
 	}
 
-	if plan.Filters != nil {
+	if !plan.Filters.Equal(state.Filters) {
+		var filtersPlan, filtersState ProjectFilterResourceModel
+		resp.Diagnostics.Append(plan.Filters.As(ctx, &filtersPlan, basetypes.ObjectAsOptions{})...)
+		resp.Diagnostics.Append(state.Filters.As(ctx, &filtersState, basetypes.ObjectAsOptions{})...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
 		options := make(map[string]interface{})
-		if plan.Filters.BlacklistedIps.IsNull() {
-			options["filters:blacklisted_ips"] = ""
-		} else {
-			values := []string{}
-			resp.Diagnostics.Append(plan.Filters.BlacklistedIps.ElementsAs(ctx, &values, false)...)
+		if !filtersPlan.BlacklistedIps.Equal(filtersState.BlacklistedIps) {
+			var values []string
+			resp.Diagnostics.Append(filtersPlan.BlacklistedIps.ElementsAs(ctx, &values, false)...)
 			if resp.Diagnostics.HasError() {
 				return
 			}
 			options["filters:blacklisted_ips"] = strings.Join(values, "\n")
 		}
 
-		if plan.Filters.Releases.IsNull() {
-			options["filters:releases"] = ""
-		} else {
-			values := []string{}
-			resp.Diagnostics.Append(plan.Filters.Releases.ElementsAs(ctx, &values, false)...)
+		if !filtersPlan.Releases.Equal(filtersState.Releases) {
+			var values []string
+			resp.Diagnostics.Append(filtersPlan.Releases.ElementsAs(ctx, &values, false)...)
 			if resp.Diagnostics.HasError() {
 				return
 			}
 			options["filters:releases"] = strings.Join(values, "\n")
 		}
 
-		if plan.Filters.ErrorMessages.IsNull() {
-			options["filters:error_messages"] = ""
-		} else {
-			values := []string{}
-			resp.Diagnostics.Append(plan.Filters.ErrorMessages.ElementsAs(ctx, &values, false)...)
+		if !filtersPlan.ErrorMessages.Equal(filtersState.ErrorMessages) {
+			var values []string
+			resp.Diagnostics.Append(filtersPlan.ErrorMessages.ElementsAs(ctx, &values, false)...)
 			if resp.Diagnostics.HasError() {
 				return
 			}

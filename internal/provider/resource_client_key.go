@@ -378,29 +378,22 @@ func (r *ClientKeyResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 
 	if !plan.JavascriptLoaderScript.Equal(state.JavascriptLoaderScript) {
-		var javascriptLoaderScriptPlan, javascriptLoaderScriptState ClientKeyJavascriptLoaderScriptResourceModel
-		resp.Diagnostics.Append(plan.JavascriptLoaderScript.As(ctx, &javascriptLoaderScriptPlan, basetypes.ObjectAsOptions{})...)
-		resp.Diagnostics.Append(state.JavascriptLoaderScript.As(ctx, &javascriptLoaderScriptState, basetypes.ObjectAsOptions{})...)
+		var javascriptLoaderScript ClientKeyJavascriptLoaderScriptResourceModel
+		resp.Diagnostics.Append(plan.JavascriptLoaderScript.As(ctx, &javascriptLoaderScript, basetypes.ObjectAsOptions{})...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 
-		if !javascriptLoaderScriptPlan.BrowserSdkVersion.Equal(javascriptLoaderScriptState.BrowserSdkVersion) {
-			body.BrowserSdkVersion = javascriptLoaderScriptPlan.BrowserSdkVersion.ValueStringPointer()
-		}
-
-		if !javascriptLoaderScriptPlan.SessionReplayEnabled.Equal(javascriptLoaderScriptState.SessionReplayEnabled) ||
-			!javascriptLoaderScriptPlan.PerformanceMonitoringEnabled.Equal(javascriptLoaderScriptState.PerformanceMonitoringEnabled) ||
-			!javascriptLoaderScriptPlan.DebugEnabled.Equal(javascriptLoaderScriptState.DebugEnabled) {
-			body.DynamicSdkLoaderOptions = &struct {
-				HasDebug       *bool `json:"hasDebug,omitempty"`
-				HasPerformance *bool `json:"hasPerformance,omitempty"`
-				HasReplay      *bool `json:"hasReplay,omitempty"`
-			}{
-				HasReplay:      javascriptLoaderScriptPlan.SessionReplayEnabled.ValueBoolPointer(),
-				HasDebug:       javascriptLoaderScriptPlan.DebugEnabled.ValueBoolPointer(),
-				HasPerformance: javascriptLoaderScriptPlan.PerformanceMonitoringEnabled.ValueBoolPointer(),
-			}
+		// NOTE: Both `BrowserSdkVersion` and `DynamicSdkLoaderOptions` must be set together.
+		body.BrowserSdkVersion = javascriptLoaderScript.BrowserSdkVersion.ValueStringPointer()
+		body.DynamicSdkLoaderOptions = &struct {
+			HasDebug       *bool `json:"hasDebug,omitempty"`
+			HasPerformance *bool `json:"hasPerformance,omitempty"`
+			HasReplay      *bool `json:"hasReplay,omitempty"`
+		}{
+			HasReplay:      javascriptLoaderScript.SessionReplayEnabled.ValueBoolPointer(),
+			HasDebug:       javascriptLoaderScript.DebugEnabled.ValueBoolPointer(),
+			HasPerformance: javascriptLoaderScript.PerformanceMonitoringEnabled.ValueBoolPointer(),
 		}
 	}
 

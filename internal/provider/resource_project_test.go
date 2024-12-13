@@ -134,7 +134,11 @@ func TestAccProjectResource_basic(t *testing.T) {
 			statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_min_delay"), knownvalue.Int64Exact(300)),
 			statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_max_delay"), knownvalue.Int64Exact(1800)),
 			statecheck.ExpectKnownValue(rn, tfjsonpath.New("resolve_age"), knownvalue.Int64Exact(0)),
-			statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.Null()),
+			statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.ObjectExact(map[string]knownvalue.Check{
+				"blacklisted_ips": knownvalue.SetSizeExact(0),
+				"releases":        knownvalue.SetSizeExact(0),
+				"error_messages":  knownvalue.SetSizeExact(0),
+			})),
 			statecheck.ExpectKnownValue(rn, tfjsonpath.New("fingerprinting_rules"), knownvalue.StringExact("")),
 			statecheck.ExpectKnownValue(rn, tfjsonpath.New("grouping_enhancements"), knownvalue.StringExact("")),
 			statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(data.ProjectName)),
@@ -216,12 +220,12 @@ func TestAccProjectResource_filters(t *testing.T) {
 				}),
 				ConfigStateChecks: append(
 					checks,
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.MapExact(map[string]knownvalue.Check{
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.ObjectExact(map[string]knownvalue.Check{
 						"blacklisted_ips": knownvalue.SetExact([]knownvalue.Check{
 							knownvalue.StringExact("127.0.0.1"),
 							knownvalue.StringExact("0.0.0.0/8"),
 						}),
-						"releases": knownvalue.Null(),
+						"releases": knownvalue.SetSizeExact(0),
 						"error_messages": knownvalue.SetExact([]knownvalue.Check{
 							knownvalue.StringExact("TypeError*"),
 							knownvalue.StringExact("*: integer division or modulo by zero"),
@@ -243,7 +247,7 @@ func TestAccProjectResource_filters(t *testing.T) {
 				}),
 				ConfigStateChecks: append(
 					checks,
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.MapExact(map[string]knownvalue.Check{
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.ObjectExact(map[string]knownvalue.Check{
 						"blacklisted_ips": knownvalue.SetExact([]knownvalue.Check{
 							knownvalue.StringExact("0.0.0.0/8"),
 						}),
@@ -267,10 +271,17 @@ func TestAccProjectResource_filters(t *testing.T) {
 				}),
 				ConfigStateChecks: append(
 					checks,
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.MapExact(map[string]knownvalue.Check{
-						"blacklisted_ips": knownvalue.Null(),
-						"releases":        knownvalue.Null(),
-						"error_messages":  knownvalue.Null(),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.ObjectExact(map[string]knownvalue.Check{
+						"blacklisted_ips": knownvalue.SetExact([]knownvalue.Check{
+							knownvalue.StringExact("0.0.0.0/8"),
+						}),
+						"releases": knownvalue.SetExact([]knownvalue.Check{
+							knownvalue.StringExact("1.*"),
+							knownvalue.StringExact("[!3].[0-9].*"),
+						}),
+						"error_messages": knownvalue.SetExact([]knownvalue.Check{
+							knownvalue.StringExact("TypeError*"),
+						}),
 					})),
 				),
 			},
@@ -297,7 +308,11 @@ func TestAccProjectResource_issueGrouping(t *testing.T) {
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_min_delay"), knownvalue.Int64Exact(300)),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_max_delay"), knownvalue.Int64Exact(1800)),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("resolve_age"), knownvalue.Int64Exact(0)),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.ObjectExact(map[string]knownvalue.Check{
+			"blacklisted_ips": knownvalue.SetSizeExact(0),
+			"releases":        knownvalue.SetSizeExact(0),
+			"error_messages":  knownvalue.SetSizeExact(0),
+		})),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -403,7 +418,11 @@ func TestAccProjectResource_noDefaultKeyOnCreate(t *testing.T) {
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_min_delay"), knownvalue.Int64Exact(300)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_max_delay"), knownvalue.Int64Exact(1800)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("resolve_age"), knownvalue.Int64Exact(0)),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.ObjectExact(map[string]knownvalue.Check{
+						"blacklisted_ips": knownvalue.SetSizeExact(0),
+						"releases":        knownvalue.SetSizeExact(0),
+						"error_messages":  knownvalue.SetSizeExact(0),
+					})),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("fingerprinting_rules"), knownvalue.StringExact("")),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("grouping_enhancements"), knownvalue.StringExact("")),
 					statecheck.ExpectKnownValue("data.sentry_all_keys.test", tfjsonpath.New("keys"), knownvalue.ListSizeExact(0)),
@@ -431,7 +450,11 @@ func TestAccProjectResource_noDefaultKeyOnUpdate(t *testing.T) {
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_min_delay"), knownvalue.Int64Exact(300)),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_max_delay"), knownvalue.Int64Exact(1800)),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("resolve_age"), knownvalue.Int64Exact(0)),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.ObjectExact(map[string]knownvalue.Check{
+			"blacklisted_ips": knownvalue.SetSizeExact(0),
+			"releases":        knownvalue.SetSizeExact(0),
+			"error_messages":  knownvalue.SetSizeExact(0),
+		})),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("fingerprinting_rules"), knownvalue.StringExact("")),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("grouping_enhancements"), knownvalue.StringExact("")),
 	}
@@ -480,7 +503,7 @@ func TestAccProjectResource_noDefaultKeyOnUpdate(t *testing.T) {
 	})
 }
 
-func TestAccProjectResource_invalidPlatform(t *testing.T) {
+func TestAccProjectResource_validation(t *testing.T) {
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 
@@ -497,18 +520,6 @@ func TestAccProjectResource_invalidPlatform(t *testing.T) {
 				}),
 				ExpectError: regexp.MustCompile(`Attribute platform value must be one of`),
 			},
-		},
-	})
-}
-
-func TestAccProjectResource_noTeam(t *testing.T) {
-	projectName := acctest.RandomWithPrefix("tf-project")
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckProjectDestroy,
-		Steps: []resource.TestStep{
 			{
 				Config: testAccProjectResourceConfig_teams(testAccProjectResourceConfig_teamsData{
 					ProjectName: projectName,
@@ -593,7 +604,11 @@ func TestAccProjectResource_upgradeFromVersion(t *testing.T) {
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_min_delay"), knownvalue.Int64Exact(300)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_max_delay"), knownvalue.Int64Exact(1800)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("resolve_age"), knownvalue.Int64Exact(0)),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.ObjectExact(map[string]knownvalue.Check{
+						"blacklisted_ips": knownvalue.SetSizeExact(0),
+						"releases":        knownvalue.SetSizeExact(0),
+						"error_messages":  knownvalue.SetSizeExact(0),
+					})),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("fingerprinting_rules"), knownvalue.StringExact("")),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("grouping_enhancements"), knownvalue.StringExact("")),
 				),

@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
@@ -21,13 +22,13 @@ type OrganizationDataSourceModel struct {
 	InternalId types.String `tfsdk:"internal_id"`
 }
 
-func (m *OrganizationDataSourceModel) Fill(org apiclient.Organization) error {
+func (m *OrganizationDataSourceModel) Fill(ctx context.Context, org apiclient.Organization) (diags diag.Diagnostics) {
 	m.Id = types.StringValue(org.Slug)
 	m.Slug = types.StringValue(org.Slug)
 	m.Name = types.StringValue(org.Name)
 	m.InternalId = types.StringValue(org.Id)
 
-	return nil
+	return
 }
 
 func NewOrganizationDataSource() datasource.DataSource {
@@ -85,16 +86,13 @@ func (d *OrganizationDataSource) Read(ctx context.Context, req datasource.ReadRe
 		resp.Diagnostics.Append(diagutils.NewNotFoundError("organization"))
 		resp.State.RemoveResource(ctx)
 		return
-	} else if httpResp.StatusCode() != http.StatusOK {
+	} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
 		resp.Diagnostics.Append(diagutils.NewClientStatusError("read", httpResp.StatusCode(), httpResp.Body))
-		return
-	} else if httpResp.JSON200 == nil {
-		resp.Diagnostics.Append(diagutils.NewClientError("read", diagutils.ErrEmptyResponse))
 		return
 	}
 
-	if err := data.Fill(*httpResp.JSON200); err != nil {
-		resp.Diagnostics.Append(diagutils.NewFillError(err))
+	resp.Diagnostics.Append(data.Fill(ctx, *httpResp.JSON200)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
