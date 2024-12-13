@@ -36,6 +36,7 @@ type Organization struct {
 
 // Project defines model for Project.
 type Project struct {
+	AllowedDomains       []string               `json:"allowedDomains"`
 	Color                string                 `json:"color"`
 	DateCreated          time.Time              `json:"dateCreated"`
 	DigestsMaxDelay      int64                  `json:"digestsMaxDelay"`
@@ -50,8 +51,12 @@ type Project struct {
 	Organization         Organization           `json:"organization"`
 	Platform             *string                `json:"platform"`
 	ResolveAge           int64                  `json:"resolveAge"`
+	ScrapeJavaScript     bool                   `json:"scrapeJavaScript"`
+	SecurityToken        string                 `json:"securityToken"`
+	SecurityTokenHeader  *string                `json:"securityTokenHeader"`
 	Slug                 string                 `json:"slug"`
 	Teams                []Team                 `json:"teams"`
+	VerifySSL            bool                   `json:"verifySSL"`
 }
 
 // ProjectKey defines model for ProjectKey.
@@ -98,6 +103,7 @@ type TeamIdOrSlug = string
 
 // UpdateOrganizationProjectJSONBody defines parameters for UpdateOrganizationProject.
 type UpdateOrganizationProjectJSONBody struct {
+	AllowedDomains       *[]string               `json:"allowedDomains,omitempty"`
 	DigestsMaxDelay      *int64                  `json:"digestsMaxDelay,omitempty"`
 	DigestsMinDelay      *int64                  `json:"digestsMinDelay,omitempty"`
 	FingerprintingRules  *string                 `json:"fingerprintingRules,omitempty"`
@@ -106,7 +112,11 @@ type UpdateOrganizationProjectJSONBody struct {
 	Options              *map[string]interface{} `json:"options,omitempty"`
 	Platform             *string                 `json:"platform,omitempty"`
 	ResolveAge           *int64                  `json:"resolveAge,omitempty"`
+	ScrapeJavaScript     *bool                   `json:"scrapeJavaScript,omitempty"`
+	SecurityToken        *string                 `json:"securityToken,omitempty"`
+	SecurityTokenHeader  *string                 `json:"securityTokenHeader,omitempty"`
 	Slug                 *string                 `json:"slug,omitempty"`
+	VerifySSL            *bool                   `json:"verifySSL,omitempty"`
 }
 
 // ListProjectClientKeysParams defines parameters for ListProjectClientKeys.

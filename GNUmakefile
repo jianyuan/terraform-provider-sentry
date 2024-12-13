@@ -25,11 +25,11 @@ fmt:
 
 .PHONY: test
 test:
-	go test -v -cover -timeout=120s -parallel=10 ./...
+	go test ./... -v -cover -timeout=120s -parallel=10 $(TESTARGS)
 
 .PHONY: testacc
 testacc:
-	TF_ACC=1 go test -v -cover -timeout 120m ./...
+	TF_ACC=1 go test ./... -v -cover -timeout 120m $(TESTARGS)
 
 .PHONY: sweep
 sweep:
