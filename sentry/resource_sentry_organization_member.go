@@ -96,6 +96,9 @@ func resourceSentryOrganizationMemberRead(ctx context.Context, d *schema.Resourc
 	client := meta.(*providerdata.ProviderData).Client
 
 	org, memberID, err := splitSentryOrganizationMemberID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	tflog.Debug(ctx, "Reading organization member", map[string]interface{}{
 		"org":      org,

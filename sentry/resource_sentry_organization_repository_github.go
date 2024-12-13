@@ -86,7 +86,9 @@ func resourceSentryOrganizationRepositoryGithubCreate(ctx context.Context, d *sc
 	// You can connect multiple GitHub organizations to one Sentry organization, but you cannot connect a single GitHub organization to multiple Sentry organizations.
 	// https://docs.sentry.io/product/integrations/source-code-mgmt/github/
 	d.SetId(identifier)
-	d.Set("internal_id", orgRepo.ID)
+	if err := d.Set("internal_id", orgRepo.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceSentryOrganizationRepositoryGithubRead(ctx, d, meta)
 }
@@ -172,8 +174,13 @@ func importSentryOrganizationRepositoryGithub(ctx context.Context, d *schema.Res
 	}
 
 	d.SetId(id)
-	d.Set("identifier", id)
-	d.Set("organization", org)
+	if err := d.Set("identifier", id); err != nil {
+		return nil, err
+	}
+
+	if err := d.Set("organization", org); err != nil {
+		return nil, err
+	}
 
 	resourceSentryOrganizationRepositoryGithubRead(ctx, d, meta)
 

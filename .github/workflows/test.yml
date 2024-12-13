@@ -5,9 +5,13 @@ name: Tests
 # Optionally, you can turn it on using a schedule for regular testing.
 on:
   pull_request:
+    branches:
+      - main
     paths-ignore:
       - "README.md"
   push:
+    branches:
+      - main
     paths-ignore:
       - "README.md"
   # We test at a regular interval to ensure we are alerted to something breaking due
