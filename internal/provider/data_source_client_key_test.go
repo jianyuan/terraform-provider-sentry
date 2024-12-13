@@ -229,7 +229,11 @@ data "sentry_key" "test" {
 }
 
 func testAccClientKeyDataSourceConfig(teamName, projectName, keyName, extras string) string {
-	return testAccClientKeyResourceConfig(teamName, projectName, keyName, "") + fmt.Sprintf(`
+	return testAccClientKeyResourceConfig(testAccClientKeyResourceConfigData{
+		TeamName:    teamName,
+		ProjectName: projectName,
+		KeyName:     keyName,
+	}) + fmt.Sprintf(`
 data "sentry_key" "test" {
 	organization = sentry_project.test.organization
 	project      = sentry_project.test.id

@@ -7,11 +7,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/jianyuan/go-utils/maputils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
@@ -25,24 +32,46 @@ type ClientKeyJavascriptLoaderScriptResourceModel struct {
 	DebugEnabled                 types.Bool   `tfsdk:"debug_enabled"`
 }
 
+func (m ClientKeyJavascriptLoaderScriptResourceModel) AttributeTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"browser_sdk_version":            types.StringType,
+		"performance_monitoring_enabled": types.BoolType,
+		"session_replay_enabled":         types.BoolType,
+		"debug_enabled":                  types.BoolType,
+	}
+}
+
+func (m *ClientKeyJavascriptLoaderScriptResourceModel) Fill(ctx context.Context, key apiclient.ProjectKey) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	m.BrowserSdkVersion = types.StringValue(key.BrowserSdkVersion)
+	m.PerformanceMonitoringEnabled = types.BoolValue(key.DynamicSdkLoaderOptions.HasPerformance)
+	m.SessionReplayEnabled = types.BoolValue(key.DynamicSdkLoaderOptions.HasReplay)
+	m.DebugEnabled = types.BoolValue(key.DynamicSdkLoaderOptions.HasDebug)
+
+	return diags
+}
+
 type ClientKeyResourceModel struct {
-	Id                     types.String                                  `tfsdk:"id"`
-	Organization           types.String                                  `tfsdk:"organization"`
-	Project                types.String                                  `tfsdk:"project"`
-	ProjectId              types.String                                  `tfsdk:"project_id"`
-	Name                   types.String                                  `tfsdk:"name"`
-	RateLimitWindow        types.Int64                                   `tfsdk:"rate_limit_window"`
-	RateLimitCount         types.Int64                                   `tfsdk:"rate_limit_count"`
-	JavascriptLoaderScript *ClientKeyJavascriptLoaderScriptResourceModel `tfsdk:"javascript_loader_script"`
-	Public                 types.String                                  `tfsdk:"public"`
-	Secret                 types.String                                  `tfsdk:"secret"`
-	Dsn                    types.Map                                     `tfsdk:"dsn"`
-	DsnPublic              types.String                                  `tfsdk:"dsn_public"`
-	DsnSecret              types.String                                  `tfsdk:"dsn_secret"`
-	DsnCsp                 types.String                                  `tfsdk:"dsn_csp"`
+	Id                     types.String `tfsdk:"id"`
+	Organization           types.String `tfsdk:"organization"`
+	Project                types.String `tfsdk:"project"`
+	ProjectId              types.String `tfsdk:"project_id"`
+	Name                   types.String `tfsdk:"name"`
+	RateLimitWindow        types.Int64  `tfsdk:"rate_limit_window"`
+	RateLimitCount         types.Int64  `tfsdk:"rate_limit_count"`
+	JavascriptLoaderScript types.Object `tfsdk:"javascript_loader_script"`
+	Public                 types.String `tfsdk:"public"`
+	Secret                 types.String `tfsdk:"secret"`
+	Dsn                    types.Map    `tfsdk:"dsn"`
+	DsnPublic              types.String `tfsdk:"dsn_public"`
+	DsnSecret              types.String `tfsdk:"dsn_secret"`
+	DsnCsp                 types.String `tfsdk:"dsn_csp"`
 }
 
-func (m *ClientKeyResourceModel) Fill(key apiclient.ProjectKey) error {
+func (m *ClientKeyResourceModel) Fill(ctx context.Context, key apiclient.ProjectKey) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	m.Id = types.StringValue(key.Id)
 	m.ProjectId = types.StringValue(key.ProjectId.String())
 	m.Name = types.StringValue(key.Name)
@@ -55,23 +84,12 @@ func (m *ClientKeyResourceModel) Fill(key apiclient.ProjectKey) error {
 		m.RateLimitCount = types.Int64Value(key.RateLimit.Count)
 	}
 
-	if m.JavascriptLoaderScript != nil {
-		if !m.JavascriptLoaderScript.BrowserSdkVersion.IsNull() {
-			m.JavascriptLoaderScript.BrowserSdkVersion = types.StringValue(key.BrowserSdkVersion)
-		}
+	var javascriptLoaderScript ClientKeyJavascriptLoaderScriptResourceModel
+	diags.Append(javascriptLoaderScript.Fill(ctx, key)...)
 
-		if !m.JavascriptLoaderScript.PerformanceMonitoringEnabled.IsNull() {
-			m.JavascriptLoaderScript.PerformanceMonitoringEnabled = types.BoolValue(key.DynamicSdkLoaderOptions.HasPerformance)
-		}
-
-		if !m.JavascriptLoaderScript.SessionReplayEnabled.IsNull() {
-			m.JavascriptLoaderScript.SessionReplayEnabled = types.BoolValue(key.DynamicSdkLoaderOptions.HasReplay)
-		}
-
-		if !m.JavascriptLoaderScript.DebugEnabled.IsNull() {
-			m.JavascriptLoaderScript.DebugEnabled = types.BoolValue(key.DynamicSdkLoaderOptions.HasDebug)
-		}
-	}
+	var javascriptLoaderScriptDiags diag.Diagnostics
+	m.JavascriptLoaderScript, javascriptLoaderScriptDiags = types.ObjectValueFrom(ctx, javascriptLoaderScript.AttributeTypes(), javascriptLoaderScript)
+	diags.Append(javascriptLoaderScriptDiags...)
 
 	m.Public = types.StringValue(key.Public)
 	m.Secret = types.StringValue(key.Secret)
@@ -98,56 +116,7 @@ func (m *ClientKeyResourceModel) Fill(key apiclient.ProjectKey) error {
 		m.DsnCsp = types.StringNull()
 	}
 
-	return nil
-}
-
-func (m *ClientKeyResourceModel) FillAll(organization string, project string, key apiclient.ProjectKey) error {
-	m.Id = types.StringValue(key.Id)
-	m.Organization = types.StringValue(organization)
-	m.Project = types.StringValue(project)
-	m.ProjectId = types.StringValue(key.ProjectId.String())
-	m.Name = types.StringValue(key.Name)
-
-	if key.RateLimit == nil {
-		m.RateLimitWindow = types.Int64Null()
-		m.RateLimitCount = types.Int64Null()
-	} else {
-		m.RateLimitWindow = types.Int64Value(key.RateLimit.Window)
-		m.RateLimitCount = types.Int64Value(key.RateLimit.Count)
-	}
-
-	m.JavascriptLoaderScript = &ClientKeyJavascriptLoaderScriptResourceModel{
-		BrowserSdkVersion:            types.StringValue(key.BrowserSdkVersion),
-		PerformanceMonitoringEnabled: types.BoolValue(key.DynamicSdkLoaderOptions.HasPerformance),
-		SessionReplayEnabled:         types.BoolValue(key.DynamicSdkLoaderOptions.HasReplay),
-		DebugEnabled:                 types.BoolValue(key.DynamicSdkLoaderOptions.HasDebug),
-	}
-	m.Public = types.StringValue(key.Public)
-	m.Secret = types.StringValue(key.Secret)
-
-	m.Dsn = types.MapValueMust(types.StringType, maputils.MapValues(key.Dsn, func(v string) attr.Value {
-		return types.StringValue(v)
-	}))
-
-	if v, ok := key.Dsn["public"]; ok {
-		m.DsnPublic = types.StringValue(v)
-	} else {
-		m.DsnPublic = types.StringNull()
-	}
-
-	if v, ok := key.Dsn["secret"]; ok {
-		m.DsnSecret = types.StringValue(v)
-	} else {
-		m.DsnSecret = types.StringNull()
-	}
-
-	if v, ok := key.Dsn["csp"]; ok {
-		m.DsnCsp = types.StringValue(v)
-	} else {
-		m.DsnCsp = types.StringNull()
-	}
-
-	return nil
+	return diags
 }
 
 var _ resource.Resource = &ClientKeyResource{}
@@ -173,6 +142,11 @@ func (d *ClientKeyResource) ConfigValidators(ctx context.Context) []resource.Con
 			path.MatchRoot("rate_limit_window"),
 			path.MatchRoot("rate_limit_count"),
 		),
+		resourcevalidator.RequiredTogether(
+			path.MatchRoot("javascript_loader_script").AtName("performance_monitoring_enabled"),
+			path.MatchRoot("javascript_loader_script").AtName("session_replay_enabled"),
+			path.MatchRoot("javascript_loader_script").AtName("debug_enabled"),
+		),
 	}
 }
 
@@ -191,10 +165,63 @@ func (r *ClientKeyResource) Schema(ctx context.Context, req resource.SchemaReque
 			"rate_limit_window": schema.Int64Attribute{
 				MarkdownDescription: "Length of time in seconds that will be considered when checking the rate limit.",
 				Optional:            true,
+				Computed:            true,
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
 			},
 			"rate_limit_count": schema.Int64Attribute{
 				MarkdownDescription: "Number of events that can be reported within the rate limit window.",
 				Optional:            true,
+				Computed:            true,
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
+			"javascript_loader_script": schema.SingleNestedAttribute{
+				MarkdownDescription: "The JavaScript loader script configuration.",
+				Optional:            true,
+				Computed:            true,
+				Attributes: map[string]schema.Attribute{
+					"browser_sdk_version": schema.StringAttribute{
+						MarkdownDescription: "The version of the browser SDK to load. Valid values are `7.x` and `8.x`.",
+						Optional:            true,
+						Computed:            true,
+						Validators: []validator.String{
+							stringvalidator.OneOf("7.x", "8.x"),
+						},
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"performance_monitoring_enabled": schema.BoolAttribute{
+						MarkdownDescription: "Whether performance monitoring is enabled for this key.",
+						Optional:            true,
+						Computed:            true,
+						PlanModifiers: []planmodifier.Bool{
+							boolplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"session_replay_enabled": schema.BoolAttribute{
+						MarkdownDescription: "Whether session replay is enabled for this key.",
+						Optional:            true,
+						Computed:            true,
+						PlanModifiers: []planmodifier.Bool{
+							boolplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"debug_enabled": schema.BoolAttribute{
+						MarkdownDescription: "Whether debug bundles & logging are enabled for this key.",
+						Optional:            true,
+						Computed:            true,
+						PlanModifiers: []planmodifier.Bool{
+							boolplanmodifier.UseStateForUnknown(),
+						},
+					},
+				},
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"project_id": schema.StringAttribute{
 				MarkdownDescription: "The ID of the project that the key belongs to.",
@@ -210,8 +237,8 @@ func (r *ClientKeyResource) Schema(ctx context.Context, req resource.SchemaReque
 			},
 			"dsn": schema.MapAttribute{
 				MarkdownDescription: "This is a map of DSN values. The keys include `public`, `secret`, `csp`, `security`, `minidump`, `nel`, `unreal`, `cdn`, and `crons`.",
-				Computed:            true,
 				ElementType:         types.StringType,
+				Computed:            true,
 			},
 			"dsn_public": schema.StringAttribute{
 				MarkdownDescription: "The DSN tells the SDK where to send the events to. **Deprecated** Use `dsn[\"public\"]` instead.",
@@ -229,32 +256,6 @@ func (r *ClientKeyResource) Schema(ctx context.Context, req resource.SchemaReque
 				Computed:            true,
 			},
 		},
-		Blocks: map[string]schema.Block{
-			"javascript_loader_script": schema.SingleNestedBlock{
-				MarkdownDescription: "The JavaScript loader script configuration.",
-				Attributes: map[string]schema.Attribute{
-					"browser_sdk_version": schema.StringAttribute{
-						MarkdownDescription: "The version of the browser SDK to load. Valid values are `7.x` and `8.x`.",
-						Optional:            true,
-						Validators: []validator.String{
-							stringvalidator.OneOf("7.x", "8.x"),
-						},
-					},
-					"performance_monitoring_enabled": schema.BoolAttribute{
-						MarkdownDescription: "Whether performance monitoring is enabled for this key.",
-						Optional:            true,
-					},
-					"session_replay_enabled": schema.BoolAttribute{
-						MarkdownDescription: "Whether session replay is enabled for this key.",
-						Optional:            true,
-					},
-					"debug_enabled": schema.BoolAttribute{
-						MarkdownDescription: "Whether debug bundles & logging are enabled for this key.",
-						Optional:            true,
-					},
-				},
-			},
-		},
 	}
 }
 
@@ -270,7 +271,7 @@ func (r *ClientKeyResource) Create(ctx context.Context, req resource.CreateReque
 		Name: data.Name.ValueString(),
 	}
 
-	if !data.RateLimitWindow.IsNull() || !data.RateLimitCount.IsNull() {
+	if !data.RateLimitWindow.IsUnknown() || !data.RateLimitCount.IsUnknown() {
 		body.RateLimit = &struct {
 			Count  int64 `json:"count"`
 			Window int64 `json:"window"`
@@ -280,20 +281,28 @@ func (r *ClientKeyResource) Create(ctx context.Context, req resource.CreateReque
 		}
 	}
 
-	if data.JavascriptLoaderScript != nil {
-		body.BrowserSdkVersion = data.JavascriptLoaderScript.BrowserSdkVersion.ValueStringPointer()
+	if !data.JavascriptLoaderScript.IsUnknown() {
+		var javascriptLoaderScript ClientKeyJavascriptLoaderScriptResourceModel
+		resp.Diagnostics.Append(data.JavascriptLoaderScript.As(ctx, &javascriptLoaderScript, basetypes.ObjectAsOptions{})...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 
-		if !data.JavascriptLoaderScript.SessionReplayEnabled.IsNull() ||
-			!data.JavascriptLoaderScript.PerformanceMonitoringEnabled.IsNull() ||
-			!data.JavascriptLoaderScript.DebugEnabled.IsNull() {
+		if !javascriptLoaderScript.BrowserSdkVersion.IsUnknown() {
+			body.BrowserSdkVersion = javascriptLoaderScript.BrowserSdkVersion.ValueStringPointer()
+		}
+
+		if !javascriptLoaderScript.SessionReplayEnabled.IsUnknown() &&
+			!javascriptLoaderScript.PerformanceMonitoringEnabled.IsUnknown() &&
+			!javascriptLoaderScript.DebugEnabled.IsUnknown() {
 			body.DynamicSdkLoaderOptions = &struct {
 				HasDebug       *bool `json:"hasDebug,omitempty"`
 				HasPerformance *bool `json:"hasPerformance,omitempty"`
 				HasReplay      *bool `json:"hasReplay,omitempty"`
 			}{
-				HasReplay:      data.JavascriptLoaderScript.SessionReplayEnabled.ValueBoolPointer(),
-				HasDebug:       data.JavascriptLoaderScript.DebugEnabled.ValueBoolPointer(),
-				HasPerformance: data.JavascriptLoaderScript.PerformanceMonitoringEnabled.ValueBoolPointer(),
+				HasReplay:      javascriptLoaderScript.SessionReplayEnabled.ValueBoolPointer(),
+				HasDebug:       javascriptLoaderScript.DebugEnabled.ValueBoolPointer(),
+				HasPerformance: javascriptLoaderScript.PerformanceMonitoringEnabled.ValueBoolPointer(),
 			}
 		}
 	}
@@ -312,8 +321,8 @@ func (r *ClientKeyResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
-	if err := data.Fill(*httpResp.JSON201); err != nil {
-		resp.Diagnostics.Append(diagutils.NewFillError(err))
+	resp.Diagnostics.Append(data.Fill(ctx, *httpResp.JSON201)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -346,8 +355,8 @@ func (r *ClientKeyResource) Read(ctx context.Context, req resource.ReadRequest, 
 		return
 	}
 
-	if err := data.Fill(*httpResp.JSON200); err != nil {
-		resp.Diagnostics.Append(diagutils.NewFillError(err))
+	resp.Diagnostics.Append(data.Fill(ctx, *httpResp.JSON200)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -377,40 +386,28 @@ func (r *ClientKeyResource) Update(ctx context.Context, req resource.UpdateReque
 		}
 	}
 
-	if plan.JavascriptLoaderScript != nil {
-		if state.JavascriptLoaderScript == nil {
-			body.BrowserSdkVersion = plan.JavascriptLoaderScript.BrowserSdkVersion.ValueStringPointer()
+	if !plan.JavascriptLoaderScript.Equal(state.JavascriptLoaderScript) {
+		var javascriptLoaderScriptPlan, javascriptLoaderScriptState ClientKeyJavascriptLoaderScriptResourceModel
+		resp.Diagnostics.Append(plan.JavascriptLoaderScript.As(ctx, &javascriptLoaderScriptPlan, basetypes.ObjectAsOptions{})...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 
-			if !plan.JavascriptLoaderScript.SessionReplayEnabled.IsNull() ||
-				!plan.JavascriptLoaderScript.PerformanceMonitoringEnabled.IsNull() ||
-				!plan.JavascriptLoaderScript.DebugEnabled.IsNull() {
-				body.DynamicSdkLoaderOptions = &struct {
-					HasDebug       *bool `json:"hasDebug,omitempty"`
-					HasPerformance *bool `json:"hasPerformance,omitempty"`
-					HasReplay      *bool `json:"hasReplay,omitempty"`
-				}{
-					HasReplay:      plan.JavascriptLoaderScript.SessionReplayEnabled.ValueBoolPointer(),
-					HasDebug:       plan.JavascriptLoaderScript.DebugEnabled.ValueBoolPointer(),
-					HasPerformance: plan.JavascriptLoaderScript.PerformanceMonitoringEnabled.ValueBoolPointer(),
-				}
-			}
-		} else {
-			if !plan.JavascriptLoaderScript.BrowserSdkVersion.Equal(state.JavascriptLoaderScript.BrowserSdkVersion) {
-				body.BrowserSdkVersion = plan.JavascriptLoaderScript.BrowserSdkVersion.ValueStringPointer()
-			}
+		if !javascriptLoaderScriptPlan.BrowserSdkVersion.Equal(javascriptLoaderScriptState.BrowserSdkVersion) {
+			body.BrowserSdkVersion = javascriptLoaderScriptPlan.BrowserSdkVersion.ValueStringPointer()
+		}
 
-			if !plan.JavascriptLoaderScript.SessionReplayEnabled.Equal(state.JavascriptLoaderScript.SessionReplayEnabled) ||
-				!plan.JavascriptLoaderScript.PerformanceMonitoringEnabled.Equal(state.JavascriptLoaderScript.PerformanceMonitoringEnabled) ||
-				!plan.JavascriptLoaderScript.DebugEnabled.Equal(state.JavascriptLoaderScript.DebugEnabled) {
-				body.DynamicSdkLoaderOptions = &struct {
-					HasDebug       *bool `json:"hasDebug,omitempty"`
-					HasPerformance *bool `json:"hasPerformance,omitempty"`
-					HasReplay      *bool `json:"hasReplay,omitempty"`
-				}{
-					HasReplay:      plan.JavascriptLoaderScript.SessionReplayEnabled.ValueBoolPointer(),
-					HasDebug:       plan.JavascriptLoaderScript.DebugEnabled.ValueBoolPointer(),
-					HasPerformance: plan.JavascriptLoaderScript.PerformanceMonitoringEnabled.ValueBoolPointer(),
-				}
+		if !javascriptLoaderScriptPlan.SessionReplayEnabled.Equal(javascriptLoaderScriptState.SessionReplayEnabled) ||
+			!javascriptLoaderScriptPlan.PerformanceMonitoringEnabled.Equal(javascriptLoaderScriptState.PerformanceMonitoringEnabled) ||
+			!javascriptLoaderScriptPlan.DebugEnabled.Equal(javascriptLoaderScriptState.DebugEnabled) {
+			body.DynamicSdkLoaderOptions = &struct {
+				HasDebug       *bool `json:"hasDebug,omitempty"`
+				HasPerformance *bool `json:"hasPerformance,omitempty"`
+				HasReplay      *bool `json:"hasReplay,omitempty"`
+			}{
+				HasReplay:      javascriptLoaderScriptPlan.SessionReplayEnabled.ValueBoolPointer(),
+				HasDebug:       javascriptLoaderScriptPlan.DebugEnabled.ValueBoolPointer(),
+				HasPerformance: javascriptLoaderScriptPlan.PerformanceMonitoringEnabled.ValueBoolPointer(),
 			}
 		}
 	}
@@ -434,8 +431,8 @@ func (r *ClientKeyResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	if err := plan.Fill(*httpResp.JSON200); err != nil {
-		resp.Diagnostics.Append(diagutils.NewFillError(err))
+	resp.Diagnostics.Append(plan.Fill(ctx, *httpResp.JSON200)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 

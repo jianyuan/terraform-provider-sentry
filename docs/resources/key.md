@@ -33,7 +33,7 @@ resource "sentry_key" "default" {
 
 ### Optional
 
-- `javascript_loader_script` (Block, Optional) The JavaScript loader script configuration. (see [below for nested schema](#nestedblock--javascript_loader_script))
+- `javascript_loader_script` (Attributes) The JavaScript loader script configuration. (see [below for nested schema](#nestedatt--javascript_loader_script))
 - `rate_limit_count` (Number) Number of events that can be reported within the rate limit window.
 - `rate_limit_window` (Number) Length of time in seconds that will be considered when checking the rate limit.
 
@@ -48,7 +48,7 @@ resource "sentry_key" "default" {
 - `public` (String) The public key.
 - `secret` (String) The secret key.
 
-<a id="nestedblock--javascript_loader_script"></a>
+<a id="nestedatt--javascript_loader_script"></a>
 ### Nested Schema for `javascript_loader_script`
 
 Optional:
