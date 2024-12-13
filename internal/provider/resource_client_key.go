@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -16,7 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/jianyuan/go-utils/maputils"
@@ -184,12 +182,9 @@ func (r *ClientKeyResource) Schema(ctx context.Context, req resource.SchemaReque
 				Computed:            true,
 				Attributes: map[string]schema.Attribute{
 					"browser_sdk_version": schema.StringAttribute{
-						MarkdownDescription: "The version of the browser SDK to load. Valid values are `7.x` and `8.x`.",
+						MarkdownDescription: "The version of the browser SDK to load.",
 						Optional:            true,
 						Computed:            true,
-						Validators: []validator.String{
-							stringvalidator.OneOf("7.x", "8.x"),
-						},
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.UseStateForUnknown(),
 						},

@@ -53,7 +53,7 @@ resource "sentry_key" "default" {
 
 Optional:
 
-- `browser_sdk_version` (String) The version of the browser SDK to load. Valid values are `7.x` and `8.x`.
+- `browser_sdk_version` (String) The version of the browser SDK to load.
 - `debug_enabled` (Boolean) Whether debug bundles & logging are enabled for this key.
 - `performance_monitoring_enabled` (Boolean) Whether performance monitoring is enabled for this key.
 - `session_replay_enabled` (Boolean) Whether session replay is enabled for this key.

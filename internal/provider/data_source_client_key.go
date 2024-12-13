@@ -150,7 +150,7 @@ func (d *ClientKeyDataSource) Schema(ctx context.Context, req datasource.SchemaR
 				Computed:            true,
 				Attributes: map[string]schema.Attribute{
 					"browser_sdk_version": schema.StringAttribute{
-						MarkdownDescription: "The version of the browser SDK to load. Valid values are `7.x` and `8.x`.",
+						MarkdownDescription: "The version of the browser SDK to load.",
 						Computed:            true,
 					},
 					"performance_monitoring_enabled": schema.BoolAttribute{

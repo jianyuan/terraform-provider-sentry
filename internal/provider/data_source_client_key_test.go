@@ -84,7 +84,7 @@ func TestAccClientKeyDataSource_id(t *testing.T) {
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("rate_limit_window"), knownvalue.Null()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("rate_limit_count"), knownvalue.Null()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("javascript_loader_script"), knownvalue.MapExact(map[string]knownvalue.Check{
-			"browser_sdk_version":            knownvalue.StringExact("8.x"),
+			"browser_sdk_version":            knownvalue.NotNull(),
 			"performance_monitoring_enabled": knownvalue.Bool(true),
 			"session_replay_enabled":         knownvalue.Bool(true),
 			"debug_enabled":                  knownvalue.Bool(false),
@@ -134,7 +134,7 @@ func TestAccClientKeyDataSource_name(t *testing.T) {
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("rate_limit_window"), knownvalue.Null()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("rate_limit_count"), knownvalue.Null()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("javascript_loader_script"), knownvalue.MapExact(map[string]knownvalue.Check{
-			"browser_sdk_version":            knownvalue.StringExact("8.x"),
+			"browser_sdk_version":            knownvalue.NotNull(),
 			"performance_monitoring_enabled": knownvalue.Bool(true),
 			"session_replay_enabled":         knownvalue.Bool(true),
 			"debug_enabled":                  knownvalue.Bool(false),
@@ -184,7 +184,7 @@ func TestAccClientKeyDataSource_first(t *testing.T) {
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("rate_limit_window"), knownvalue.Null()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("rate_limit_count"), knownvalue.Null()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("javascript_loader_script"), knownvalue.MapExact(map[string]knownvalue.Check{
-			"browser_sdk_version":            knownvalue.StringExact("8.x"),
+			"browser_sdk_version":            knownvalue.NotNull(),
 			"performance_monitoring_enabled": knownvalue.Bool(true),
 			"session_replay_enabled":         knownvalue.Bool(true),
 			"debug_enabled":                  knownvalue.Bool(false),

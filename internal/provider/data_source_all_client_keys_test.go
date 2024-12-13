@@ -36,7 +36,7 @@ func TestAccAllClientKeysDataSource(t *testing.T) {
 							"rate_limit_window": knownvalue.Null(),
 							"rate_limit_count":  knownvalue.Null(),
 							"javascript_loader_script": knownvalue.MapExact(map[string]knownvalue.Check{
-								"browser_sdk_version":            knownvalue.StringExact("8.x"),
+								"browser_sdk_version":            knownvalue.NotNull(),
 								"performance_monitoring_enabled": knownvalue.NotNull(),
 								"session_replay_enabled":         knownvalue.NotNull(),
 								"debug_enabled":                  knownvalue.NotNull(),
