@@ -98,7 +98,7 @@ func TestAccOrganizationRepositoryResource_GitHub(t *testing.T) {
 				t.Skip("Skipping test due to missing SENTRY_TEST_GITHUB_REPOSITORY_IDENTIFIER environment variable")
 			}
 
-			testAccOrganizationRepositoryResourcePreCheck()
+			must.Do(testAccOrganizationRepositoryResourcePreCheck())
 		},
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -150,7 +150,7 @@ func TestAccOrganizationRepositoryResource_GitLab(t *testing.T) {
 				t.Skip("Skipping test due to missing SENTRY_TEST_GITLAB_REPOSITORY_IDENTIFIER environment variable")
 			}
 
-			testAccOrganizationRepositoryResourcePreCheck()
+			must.Do(testAccOrganizationRepositoryResourcePreCheck())
 		},
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -202,7 +202,7 @@ func TestAccOrganizationRepositoryResource_VSTS(t *testing.T) {
 				t.Skip("Skipping test due to missing SENTRY_TEST_VSTS_REPOSITORY_IDENTIFIER environment variable")
 			}
 
-			testAccOrganizationRepositoryResourcePreCheck()
+			must.Do(testAccOrganizationRepositoryResourcePreCheck())
 		},
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{

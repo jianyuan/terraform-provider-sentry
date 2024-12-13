@@ -93,7 +93,9 @@ func resourceSentryOrganizationCodeMappingCreate(ctx context.Context, d *schema.
 	}
 
 	d.SetId(orgCodeMapping.ID)
-	d.Set("internal_id", orgCodeMapping.ID)
+	if err := d.Set("internal_id", orgCodeMapping.ID); err != nil {
+		return diag.FromErr(err)
+	}
 	return resourceSentryOrganizationCodeMappingRead(ctx, d, meta)
 }
 
@@ -178,7 +180,9 @@ func resourceSentryOrganizationCodeMappingUpdate(ctx context.Context, d *schema.
 	}
 
 	d.SetId(orgCodeMapping.ID)
-	d.Set("internal_id", orgCodeMapping.ID)
+	if err := d.Set("internal_id", orgCodeMapping.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceSentryOrganizationCodeMappingRead(ctx, d, meta)
 }
@@ -204,7 +208,9 @@ func importSentryOrganizationCodeMapping(ctx context.Context, d *schema.Resource
 	}
 
 	d.SetId(id)
-	d.Set("organization", org)
+	if err := d.Set("organization", org); err != nil {
+		return nil, err
+	}
 
 	resourceSentryOrganizationCodeMappingRead(ctx, d, meta)
 

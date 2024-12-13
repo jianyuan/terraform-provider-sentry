@@ -124,7 +124,9 @@ func (m *ProjectResourceModel) Fill(project apiclient.Project) error {
 	m.ResolveAge = types.Int64Value(project.ResolveAge)
 
 	if m.Filters != nil {
-		m.Filters.Fill(project)
+		if err := m.Filters.Fill(project); err != nil {
+			return err
+		}
 	}
 
 	m.FingerprintingRules = sentrytypes.TrimmedStringValue(project.FingerprintingRules)

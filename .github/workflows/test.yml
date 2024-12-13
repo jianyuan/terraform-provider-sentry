@@ -1,7 +1,8 @@
-# This GitHub action runs your tests for each commit push and/or PR. Optionally
-# you can turn it on using a cron schedule for regular testing.
-#
+# Terraform Provider testing workflow.
 name: Tests
+
+# This GitHub action runs your tests for each pull request and push.
+# Optionally, you can turn it on using a schedule for regular testing.
 on:
   pull_request:
     branches:
@@ -17,48 +18,58 @@ on:
   # to an API change, even if the code did not change.
   schedule:
     - cron: "0 0 * * *"
+
+# Testing only needs permissions to read the repository contents.
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
 jobs:
-  # ensure the code builds...
+  # Ensure project builds before running testing matrix
   build:
     name: Build
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed # v5.1.0
         with:
           go-version-file: "go.mod"
           cache: true
-      - name: Get dependencies
-        run: |
-          go mod download
-      - name: Build
-        run: |
-          go build -v .
+      - run: go mod download
+      - run: go build -v .
+      - name: Run linters
+        uses: golangci/golangci-lint-action@971e284b6050e8a5849b72094c50ab08da042db8 # v6.1.1
+        with:
+          version: latest
 
   generate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed # v5.1.0
         with:
           go-version-file: "go.mod"
           cache: true
-      - run: go generate ./...
+      # We need the latest version of Terraform for our documentation generation to use
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        with:
+          terraform_wrapper: false
+      - run: make generate
       - name: git diff
         run: |
-          git diff --exit-code || \
-            (echo; echo "Unexpected difference in directories after code generation. Run 'go generate ./...' command and commit."; exit 1)
+          git diff --compact-summary --exit-code || \
+            (echo; echo "Unexpected difference in directories after code generation. Run 'make generate' command and commit."; exit 1)
 
-  # run acceptance tests in a matrix with Terraform core versions
+  # Run acceptance tests in a matrix with Terraform CLI versions
   test:
-    name: Matrix Test
+    name: Terraform Provider Acceptance Tests
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       max-parallel: 1
@@ -69,25 +80,36 @@ jobs:
           - "1.6.*"
           - "1.7.*"
           - "1.8.*"
+          - "1.9.*"
+          - "1.10.*"
+        is-pr:
+          - ${{ github.event_name == 'pull_request' }}
+        # Only run the latest version of Terraform on pull requests
+        exclude:
+          - terraform: "1.4.*"
+            is-pr: true
+          - terraform: "1.5.*"
+            is-pr: true
+          - terraform: "1.6.*"
+            is-pr: true
+          - terraform: "1.7.*"
+            is-pr: true
+          - terraform: "1.8.*"
+            is-pr: true
+          - terraform: "1.9.*"
+            is-pr: true
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed # v5.1.0
         with:
           go-version-file: "go.mod"
           cache: true
-
-      - uses: hashicorp/setup-terraform@v3
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
         with:
           terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
-
-      - name: Get dependencies
-        run: |
-          go mod download
-
-      - name: TF acceptance tests
-        timeout-minutes: 30
-        env:
+      - run: go mod download
+      - env:
           TF_ACC: "1"
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_TEST_GITHUB_INSTALLATION_ID: ${{ secrets.SENTRY_TEST_GITHUB_INSTALLATION_ID }}
@@ -100,5 +122,5 @@ jobs:
           SENTRY_TEST_PAGERDUTY_ORGANIZATION: ${{ secrets.SENTRY_TEST_PAGERDUTY_ORGANIZATION }}
           SENTRY_TEST_VSTS_INSTALLATION_ID: ${{ secrets.SENTRY_TEST_VSTS_INSTALLATION_ID }}
           SENTRY_TEST_VSTS_REPOSITORY_IDENTIFIER: ${{ secrets.SENTRY_TEST_VSTS_REPOSITORY_IDENTIFIER }}
-        run: |
-          go test -v -cover -timeout 30m ./...
+        run: go test -v -cover ./internal/provider/
+        timeout-minutes: 10
