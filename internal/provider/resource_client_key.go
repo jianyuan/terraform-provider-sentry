@@ -39,15 +39,13 @@ func (m ClientKeyJavascriptLoaderScriptResourceModel) AttributeTypes() map[strin
 	}
 }
 
-func (m *ClientKeyJavascriptLoaderScriptResourceModel) Fill(ctx context.Context, key apiclient.ProjectKey) diag.Diagnostics {
-	var diags diag.Diagnostics
-
+func (m *ClientKeyJavascriptLoaderScriptResourceModel) Fill(ctx context.Context, key apiclient.ProjectKey) (diags diag.Diagnostics) {
 	m.BrowserSdkVersion = types.StringValue(key.BrowserSdkVersion)
 	m.PerformanceMonitoringEnabled = types.BoolValue(key.DynamicSdkLoaderOptions.HasPerformance)
 	m.SessionReplayEnabled = types.BoolValue(key.DynamicSdkLoaderOptions.HasReplay)
 	m.DebugEnabled = types.BoolValue(key.DynamicSdkLoaderOptions.HasDebug)
 
-	return diags
+	return
 }
 
 type ClientKeyResourceModel struct {
@@ -67,9 +65,7 @@ type ClientKeyResourceModel struct {
 	DsnCsp                 types.String `tfsdk:"dsn_csp"`
 }
 
-func (m *ClientKeyResourceModel) Fill(ctx context.Context, key apiclient.ProjectKey) diag.Diagnostics {
-	var diags diag.Diagnostics
-
+func (m *ClientKeyResourceModel) Fill(ctx context.Context, key apiclient.ProjectKey) (diags diag.Diagnostics) {
 	m.Id = types.StringValue(key.Id)
 	m.ProjectId = types.StringValue(key.ProjectId.String())
 	m.Name = types.StringValue(key.Name)
@@ -114,7 +110,7 @@ func (m *ClientKeyResourceModel) Fill(ctx context.Context, key apiclient.Project
 		m.DsnCsp = types.StringNull()
 	}
 
-	return diags
+	return
 }
 
 var _ resource.Resource = &ClientKeyResource{}
@@ -384,6 +380,7 @@ func (r *ClientKeyResource) Update(ctx context.Context, req resource.UpdateReque
 	if !plan.JavascriptLoaderScript.Equal(state.JavascriptLoaderScript) {
 		var javascriptLoaderScriptPlan, javascriptLoaderScriptState ClientKeyJavascriptLoaderScriptResourceModel
 		resp.Diagnostics.Append(plan.JavascriptLoaderScript.As(ctx, &javascriptLoaderScriptPlan, basetypes.ObjectAsOptions{})...)
+		resp.Diagnostics.Append(state.JavascriptLoaderScript.As(ctx, &javascriptLoaderScriptState, basetypes.ObjectAsOptions{})...)
 		if resp.Diagnostics.HasError() {
 			return
 		}

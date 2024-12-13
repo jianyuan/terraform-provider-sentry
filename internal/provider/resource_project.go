@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
@@ -33,12 +34,13 @@ type ProjectFilterResourceModel struct {
 	ErrorMessages  types.Set `tfsdk:"error_messages"`
 }
 
-func (m *ProjectFilterResourceModel) Fill(project apiclient.Project) error {
+func (m *ProjectFilterResourceModel) Fill(ctx context.Context, project apiclient.Project) (diags diag.Diagnostics) {
 	if project.Options == nil {
 		m.BlacklistedIps = types.SetNull(types.StringType)
 		m.Releases = types.SetNull(types.StringType)
 		m.ErrorMessages = types.SetNull(types.StringType)
-		return nil
+
+		return
 	}
 
 	if values, ok := project.Options["filters:blacklisted_ips"].(string); ok {
@@ -50,7 +52,7 @@ func (m *ProjectFilterResourceModel) Fill(project apiclient.Project) error {
 			}, strings.Split(values, "\n")))
 		}
 	} else {
-		return fmt.Errorf("invalid type for filters:blacklisted_ips: %T", project.Options["filters:blacklisted_ips"])
+		diags.Append(diagutils.NewFillError(fmt.Errorf("invalid type for filters:blacklisted_ips: %T", project.Options["filters:blacklisted_ips"])))
 	}
 
 	if values, ok := project.Options["filters:releases"].(string); ok {
@@ -62,7 +64,7 @@ func (m *ProjectFilterResourceModel) Fill(project apiclient.Project) error {
 			}, strings.Split(values, "\n")))
 		}
 	} else {
-		return fmt.Errorf("invalid type for filters:releases: %T", project.Options["filters:releases"])
+		diags.Append(diagutils.NewFillError(fmt.Errorf("invalid type for filters:releases: %T", project.Options["filters:releases"])))
 	}
 
 	if values, ok := project.Options["filters:error_messages"].(string); ok {
@@ -74,10 +76,10 @@ func (m *ProjectFilterResourceModel) Fill(project apiclient.Project) error {
 			}, strings.Split(values, "\n")))
 		}
 	} else {
-		return fmt.Errorf("invalid type for filters:error_messages: %T", project.Options["filters:error_messages"])
+		diags.Append(diagutils.NewFillError(fmt.Errorf("invalid type for filters:error_messages: %T", project.Options["filters:error_messages"])))
 	}
 
-	return nil
+	return
 }
 
 type ProjectResourceModel struct {
@@ -99,7 +101,7 @@ type ProjectResourceModel struct {
 	GroupingEnhancements sentrytypes.TrimmedString   `tfsdk:"grouping_enhancements"`
 }
 
-func (m *ProjectResourceModel) Fill(project apiclient.Project) error {
+func (m *ProjectResourceModel) Fill(ctx context.Context, project apiclient.Project) (diags diag.Diagnostics) {
 	m.Id = types.StringValue(project.Slug)
 	m.Organization = types.StringValue(project.Organization.Slug)
 	m.Teams = types.SetValueMust(types.StringType, sliceutils.Map(func(v apiclient.Team) attr.Value {
@@ -124,15 +126,13 @@ func (m *ProjectResourceModel) Fill(project apiclient.Project) error {
 	m.ResolveAge = types.Int64Value(project.ResolveAge)
 
 	if m.Filters != nil {
-		if err := m.Filters.Fill(project); err != nil {
-			return err
-		}
+		diags.Append(m.Filters.Fill(ctx, project)...)
 	}
 
 	m.FingerprintingRules = sentrytypes.TrimmedStringValue(project.FingerprintingRules)
 	m.GroupingEnhancements = sentrytypes.TrimmedStringValue(project.GroupingEnhancements)
 
-	return nil
+	return
 }
 
 var _ resource.Resource = &ProjectResource{}
@@ -462,8 +462,8 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	if err := data.Fill(*httpRespRead.JSON200); err != nil {
-		resp.Diagnostics.Append(diagutils.NewFillError(err))
+	resp.Diagnostics.Append(data.Fill(ctx, *httpRespRead.JSON200)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -495,8 +495,8 @@ func (r *ProjectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	if err := data.Fill(*httpResp.JSON200); err != nil {
-		resp.Diagnostics.Append(diagutils.NewFillError(err))
+	resp.Diagnostics.Append(data.Fill(ctx, *httpResp.JSON200)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -678,8 +678,8 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	if err := plan.Fill(*httpRespRead.JSON200); err != nil {
-		resp.Diagnostics.Append(diagutils.NewFillError(err))
+	resp.Diagnostics.Append(plan.Fill(ctx, *httpRespRead.JSON200)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
