@@ -15,7 +15,222 @@ import (
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 )
 
-func TestAccIssueAlertResource(t *testing.T) {
+func TestAccIssueAlertResource_validation(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccIssueAlertConfig("value", "value", "value", `
+					actions = "[]"
+
+					conditions    = "[]"
+					conditions_v2 = [
+						{ first_seen_event = {} },
+					]
+				`),
+				ExpectError: acctest.ExpectLiteralError(`Attribute "conditions" cannot be specified when "conditions_v2" is specified`),
+			},
+			{
+				Config: testAccIssueAlertConfig("value", "value", "value", `
+					actions = "[]"
+
+					conditions_v2 = []
+				`),
+				ExpectError: acctest.ExpectLiteralError(`Attribute conditions_v2 list must contain at least 1 elements, got: 0`),
+			},
+			{
+				Config: testAccIssueAlertConfig("value", "value", "value", `
+					actions = "[]"
+
+					conditions_v2 = [
+						{ first_seen_event = {}, regression_event = {} },
+					]
+				`),
+				ExpectError: acctest.ExpectLiteralError(
+					`Attribute "conditions_v2[0].first_seen_event" cannot be specified when`,
+					`"conditions_v2[0].regression_event" is specified`,
+				),
+			},
+		},
+	})
+}
+
+func TestAccIssueAlertResource_basic(t *testing.T) {
+	rn := "sentry_issue_alert.test"
+	team := acctest.RandomWithPrefix("tf-team")
+	project := acctest.RandomWithPrefix("tf-project")
+	alert := acctest.RandomWithPrefix("tf-issue-alert")
+
+	checks := []statecheck.StateCheck{
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("project"), knownvalue.StringExact(project)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("action_match"), knownvalue.StringExact("any")),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filter_match"), knownvalue.StringExact("any")),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("frequency"), knownvalue.Int64Exact(30)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("environment"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("owner"), knownvalue.Null()),
+		// statecheck.ExpectKnownValue(rn, tfjsonpath.New("conditions"), knownvalue.NotNull()),
+		// statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.NotNull()),
+		// statecheck.ExpectKnownValue(rn, tfjsonpath.New("actions"), knownvalue.NotNull()),
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckIssueAlertDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccIssueAlertConfig(team, project, alert, `
+					actions = <<EOT
+						[{"id": "sentry.rules.actions.notify_event.NotifyEventAction"}]
+					EOT
+
+					conditions_v2 = [
+						{ first_seen_event = {} },
+						{ regression_event = {} },
+						{ reappeared_event = {} },
+						{ new_high_priority_issue = {} },
+						{ existing_high_priority_issue = {} },
+						{ event_frequency = { comparison_type = "count", value = 100, interval = "1h" } },
+						{ event_frequency = { comparison_type = "percent", comparison_interval = "1w", value = 100, interval = "1h" } },
+						{ event_unique_user_frequency = { comparison_type = "count", value = 100, interval = "1h" } },
+						{ event_unique_user_frequency = { comparison_type = "percent", comparison_interval = "1w", value = 100, interval = "1h" } },
+						{ event_frequency_percent = { comparison_type = "count", value = 100, interval = "1h" } },
+						{ event_frequency_percent = { comparison_type = "percent", comparison_interval = "1w", value = 100, interval = "1h" } }
+					]
+				`),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(alert)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("conditions_v2"), knownvalue.ListExact([]knownvalue.Check{
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"first_seen_event": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"name": knownvalue.StringExact("A new issue is created"),
+							}),
+						}),
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"regression_event": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"name": knownvalue.StringExact("The issue changes state from resolved to unresolved"),
+							}),
+						}),
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"reappeared_event": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"name": knownvalue.StringExact("The issue changes state from ignored to unresolved"),
+							}),
+						}),
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"new_high_priority_issue": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"name": knownvalue.StringExact("Sentry marks a new issue as high priority"),
+							}),
+						}),
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"existing_high_priority_issue": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"name": knownvalue.StringExact("Sentry marks an existing issue as high priority"),
+							}),
+						}),
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"event_frequency": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"name":                knownvalue.StringExact("The issue is seen more than 100 times in 1h"),
+								"comparison_type":     knownvalue.StringExact("count"),
+								"comparison_interval": knownvalue.Null(),
+								"value":               knownvalue.Int64Exact(100),
+								"interval":            knownvalue.StringExact("1h"),
+							}),
+						}),
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"event_frequency": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"name":                knownvalue.StringExact("The issue is seen more than 100 times in 1h"),
+								"comparison_type":     knownvalue.StringExact("percent"),
+								"comparison_interval": knownvalue.StringExact("1w"),
+								"value":               knownvalue.Int64Exact(100),
+								"interval":            knownvalue.StringExact("1h"),
+							}),
+						}),
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"event_unique_user_frequency": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"name":                knownvalue.StringExact("The issue is seen by more than 100 users in 1h"),
+								"comparison_type":     knownvalue.StringExact("count"),
+								"comparison_interval": knownvalue.Null(),
+								"value":               knownvalue.Int64Exact(100),
+								"interval":            knownvalue.StringExact("1h"),
+							}),
+						}),
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"event_unique_user_frequency": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"name":                knownvalue.StringExact("The issue is seen by more than 100 users in 1h"),
+								"comparison_type":     knownvalue.StringExact("percent"),
+								"comparison_interval": knownvalue.StringExact("1w"),
+								"value":               knownvalue.Int64Exact(100),
+								"interval":            knownvalue.StringExact("1h"),
+							}),
+						}),
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"event_frequency_percent": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"name":                knownvalue.StringExact("The issue affects more than 100.0 percent of sessions in 1h"),
+								"comparison_type":     knownvalue.StringExact("count"),
+								"comparison_interval": knownvalue.Null(),
+								"value":               knownvalue.Float64Exact(100),
+								"interval":            knownvalue.StringExact("1h"),
+							}),
+						}),
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"event_frequency_percent": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"name":                knownvalue.StringExact("The issue affects more than 100.0 percent of sessions in 1h"),
+								"comparison_type":     knownvalue.StringExact("percent"),
+								"comparison_interval": knownvalue.StringExact("1w"),
+								"value":               knownvalue.Float64Exact(100),
+								"interval":            knownvalue.StringExact("1h"),
+							}),
+						}),
+					})),
+				),
+			},
+			{
+				Config: testAccIssueAlertConfig(team, project, alert+"-updated", `
+					actions = <<EOT
+						[{"id": "sentry.rules.actions.notify_event.NotifyEventAction"}]
+					EOT
+
+					conditions_v2 = [
+						{ reappeared_event = {} },
+						{ new_high_priority_issue = {} },
+						{ existing_high_priority_issue = {} },
+					]
+				`),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(alert+"-updated")),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("conditions_v2"), knownvalue.ListExact([]knownvalue.Check{
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"reappeared_event": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"name": knownvalue.StringExact("The issue changes state from ignored to unresolved"),
+							}),
+						}),
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"new_high_priority_issue": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"name": knownvalue.StringExact("Sentry marks a new issue as high priority"),
+							}),
+						}),
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"existing_high_priority_issue": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"name": knownvalue.StringExact("Sentry marks an existing issue as high priority"),
+							}),
+						}),
+					})),
+				),
+			},
+			{
+				ResourceName:      rn,
+				ImportState:       true,
+				ImportStateIdFunc: acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
+			},
+		},
+	})
+}
+
+func TestAccIssueAlertResource_jsonValues(t *testing.T) {
 	rn := "sentry_issue_alert.test"
 	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")
@@ -31,15 +246,6 @@ func TestAccIssueAlertResource(t *testing.T) {
 				}
 				return nil
 			}),
-			resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
-			resource.TestCheckResourceAttr(rn, "project", project),
-			resource.TestCheckResourceAttr(rn, "name", alert),
-			resource.TestCheckResourceAttr(rn, "action_match", "any"),
-			resource.TestCheckResourceAttr(rn, "filter_match", "any"),
-			resource.TestCheckResourceAttr(rn, "frequency", "30"),
-			resource.TestCheckResourceAttrSet(rn, "conditions"),
-			resource.TestCheckResourceAttrSet(rn, "filters"),
-			resource.TestCheckResourceAttrSet(rn, "actions"),
 		)
 	}
 
@@ -47,11 +253,15 @@ func TestAccIssueAlertResource(t *testing.T) {
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("project"), knownvalue.StringExact(project)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(alert)),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("action_match"), knownvalue.StringExact("any")),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filter_match"), knownvalue.StringExact("any")),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("frequency"), knownvalue.Int64Exact(30)),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("environment"), knownvalue.Null()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("owner"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("conditions"), knownvalue.StringExact("[]")),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.StringExact("[]")),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("actions"), knownvalue.StringExact("[]")),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -60,7 +270,7 @@ func TestAccIssueAlertResource(t *testing.T) {
 		CheckDestroy:             testAccCheckIssueAlertDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccIssueAlertConfig(team, project, alert),
+				Config: testAccIssueAlertConfig_jsonValues(team, project, alert),
 				Check:  check(alert),
 				ConfigStateChecks: append(
 					checks,
@@ -68,7 +278,7 @@ func TestAccIssueAlertResource(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccIssueAlertConfig(team, project, alert+"-updated"),
+				Config: testAccIssueAlertConfig_jsonValues(team, project, alert+"-updated"),
 				Check:  check(alert + "-updated"),
 				ConfigStateChecks: append(
 					checks,
@@ -353,7 +563,7 @@ EOT
 `, teamName, projectName, alertName)
 }
 
-func testAccIssueAlertConfig(teamName string, projectName string, alertName string) string {
+func testAccIssueAlertConfig(team string, project string, alert string, extras string) string {
 	return testAccOrganizationDataSourceConfig + fmt.Sprintf(`
 resource "sentry_team" "test" {
 	organization = data.sentry_organization.test.id
@@ -377,6 +587,13 @@ resource "sentry_issue_alert" "test" {
 	filter_match = "any"
 	frequency    = 30
 
+	%[4]s
+}
+`, team, project, alert, extras)
+}
+
+func testAccIssueAlertConfig_jsonValues(team string, project string, alert string) string {
+	return testAccIssueAlertConfig(team, project, alert, `
 	conditions = <<EOT
 [
 	{
@@ -464,6 +681,5 @@ EOT
 	}
 ]
 EOT
-}
-`, teamName, projectName, alertName)
+`)
 }

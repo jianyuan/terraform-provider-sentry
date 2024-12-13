@@ -54,9 +54,99 @@ resource "sentry_issue_alert" "copy" {
 - `action_match` (String) Trigger actions when an event is captured by Sentry and `any` or `all` of the specified conditions happen.
 - `actions` (String) List of actions. In JSON string format.
 - `conditions` (String) List of conditions. In JSON string format.
+- `conditions_v2` (Attributes List) A list of triggers that determine when the rule fires. (see [below for nested schema](#nestedatt--conditions_v2))
 - `environment` (String) Perform issue alert in a specific environment.
 - `filter_match` (String) A string determining which filters need to be true before any actions take place. Required when a value is provided for `filters`.
 - `filters` (String) A list of filters that determine if a rule fires after the necessary conditions have been met. In JSON string format.
 - `frequency` (Number) Perform actions at most once every `X` minutes for this issue.
 - `name` (String) The issue alert name.
 - `owner` (String) The ID of the team or user that owns the rule.
+
+<a id="nestedatt--conditions_v2"></a>
+### Nested Schema for `conditions_v2`
+
+Read-Only:
+
+- `event_frequency` (Attributes) When the `comparison_type` is `count`, the number of events in an issue is more than `value` in `interval`. When the `comparison_type` is `percent`, the number of events in an issue is `value` % higher in `interval` compared to `comparison_interval` ago. (see [below for nested schema](#nestedatt--conditions_v2--event_frequency))
+- `event_frequency_percent` (Attributes) When the `comparison_type` is `count`, the percent of sessions affected by an issue is more than `value` in `interval`. When the `comparison_type` is `percent`, the percent of sessions affected by an issue is `value` % higher in `interval` compared to `comparison_interval` ago. (see [below for nested schema](#nestedatt--conditions_v2--event_frequency_percent))
+- `event_unique_user_frequency` (Attributes) When the `comparison_type` is `count`, the number of users affected by an issue is more than `value` in `interval`. When the `comparison_type` is `percent`, the number of users affected by an issue is `value` % higher in `interval` compared to `comparison_interval` ago. (see [below for nested schema](#nestedatt--conditions_v2--event_unique_user_frequency))
+- `existing_high_priority_issue` (Attributes) Sentry marks an existing issue as high priority. (see [below for nested schema](#nestedatt--conditions_v2--existing_high_priority_issue))
+- `first_seen_event` (Attributes) A new issue is created. (see [below for nested schema](#nestedatt--conditions_v2--first_seen_event))
+- `new_high_priority_issue` (Attributes) Sentry marks a new issue as high priority. (see [below for nested schema](#nestedatt--conditions_v2--new_high_priority_issue))
+- `reappeared_event` (Attributes) The issue changes state from ignored to unresolved. (see [below for nested schema](#nestedatt--conditions_v2--reappeared_event))
+- `regression_event` (Attributes) The issue changes state from resolved to unresolved. (see [below for nested schema](#nestedatt--conditions_v2--regression_event))
+
+<a id="nestedatt--conditions_v2--event_frequency"></a>
+### Nested Schema for `conditions_v2.event_frequency`
+
+Read-Only:
+
+- `comparison_interval` (String) Valid values are `5m`, `15m`, `1h`, `1d`, `1w` and `30d` (`m` for minutes, `h` for hours, `d` for days, and `w` for weeks).
+- `comparison_type` (String) Valid values are `count` and `percent`.
+- `interval` (String) Valid values are `1m`, `5m`, `15m`, `1h`, `1d`, `1w` and `30d` (`m` for minutes, `h` for hours, `d` for days, and `w` for weeks).
+- `name` (String)
+- `value` (Number)
+
+
+<a id="nestedatt--conditions_v2--event_frequency_percent"></a>
+### Nested Schema for `conditions_v2.event_frequency_percent`
+
+Read-Only:
+
+- `comparison_interval` (String) Valid values are `5m`, `15m`, `1h`, `1d`, `1w` and `30d` (`m` for minutes, `h` for hours, `d` for days, and `w` for weeks).
+- `comparison_type` (String) Valid values are `count` and `percent`.
+- `interval` (String) Valid values are `5m`, `10m`, `30m`, and `1h` (`m` for minutes, `h` for hours).
+- `name` (String)
+- `value` (Number)
+
+
+<a id="nestedatt--conditions_v2--event_unique_user_frequency"></a>
+### Nested Schema for `conditions_v2.event_unique_user_frequency`
+
+Read-Only:
+
+- `comparison_interval` (String) Valid values are `5m`, `15m`, `1h`, `1d`, `1w` and `30d` (`m` for minutes, `h` for hours, `d` for days, and `w` for weeks).
+- `comparison_type` (String) Valid values are `count` and `percent`.
+- `interval` (String) Valid values are `1m`, `5m`, `15m`, `1h`, `1d`, `1w` and `30d` (`m` for minutes, `h` for hours, `d` for days, and `w` for weeks).
+- `name` (String)
+- `value` (Number)
+
+
+<a id="nestedatt--conditions_v2--existing_high_priority_issue"></a>
+### Nested Schema for `conditions_v2.existing_high_priority_issue`
+
+Read-Only:
+
+- `name` (String)
+
+
+<a id="nestedatt--conditions_v2--first_seen_event"></a>
+### Nested Schema for `conditions_v2.first_seen_event`
+
+Read-Only:
+
+- `name` (String)
+
+
+<a id="nestedatt--conditions_v2--new_high_priority_issue"></a>
+### Nested Schema for `conditions_v2.new_high_priority_issue`
+
+Read-Only:
+
+- `name` (String)
+
+
+<a id="nestedatt--conditions_v2--reappeared_event"></a>
+### Nested Schema for `conditions_v2.reappeared_event`
+
+Read-Only:
+
+- `name` (String)
+
+
+<a id="nestedatt--conditions_v2--regression_event"></a>
+### Nested Schema for `conditions_v2.regression_event`
+
+Read-Only:
+
+- `name` (String)

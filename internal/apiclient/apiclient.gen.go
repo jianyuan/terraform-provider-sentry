@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -19,6 +20,46 @@ import (
 
 const (
 	BearerAuthScopes = "bearerAuth.Scopes"
+)
+
+// Defines values for ProjectRuleConditionEventFrequencyId.
+const (
+	SentryRulesConditionsEventFrequencyEventFrequencyCondition ProjectRuleConditionEventFrequencyId = "sentry.rules.conditions.event_frequency.EventFrequencyCondition"
+)
+
+// Defines values for ProjectRuleConditionEventFrequencyPercentId.
+const (
+	SentryRulesConditionsEventFrequencyEventFrequencyPercentCondition ProjectRuleConditionEventFrequencyPercentId = "sentry.rules.conditions.event_frequency.EventFrequencyPercentCondition"
+)
+
+// Defines values for ProjectRuleConditionEventUniqueUserFrequencyId.
+const (
+	SentryRulesConditionsEventFrequencyEventUniqueUserFrequencyCondition ProjectRuleConditionEventUniqueUserFrequencyId = "sentry.rules.conditions.event_frequency.EventUniqueUserFrequencyCondition"
+)
+
+// Defines values for ProjectRuleConditionExistingHighPriorityIssueId.
+const (
+	SentryRulesConditionsHighPriorityIssueExistingHighPriorityIssueCondition ProjectRuleConditionExistingHighPriorityIssueId = "sentry.rules.conditions.high_priority_issue.ExistingHighPriorityIssueCondition"
+)
+
+// Defines values for ProjectRuleConditionFirstSeenEventId.
+const (
+	SentryRulesConditionsFirstSeenEventFirstSeenEventCondition ProjectRuleConditionFirstSeenEventId = "sentry.rules.conditions.first_seen_event.FirstSeenEventCondition"
+)
+
+// Defines values for ProjectRuleConditionNewHighPriorityIssueId.
+const (
+	SentryRulesConditionsHighPriorityIssueNewHighPriorityIssueCondition ProjectRuleConditionNewHighPriorityIssueId = "sentry.rules.conditions.high_priority_issue.NewHighPriorityIssueCondition"
+)
+
+// Defines values for ProjectRuleConditionReappearedEventId.
+const (
+	SentryRulesConditionsReappearedEventReappearedEventCondition ProjectRuleConditionReappearedEventId = "sentry.rules.conditions.reappeared_event.ReappearedEventCondition"
+)
+
+// Defines values for ProjectRuleConditionRegressionEventId.
+const (
+	SentryRulesConditionsRegressionEventRegressionEventCondition ProjectRuleConditionRegressionEventId = "sentry.rules.conditions.regression_event.RegressionEventCondition"
 )
 
 // Defines values for ListProjectClientKeysParamsStatus.
@@ -86,7 +127,7 @@ type ProjectKey struct {
 type ProjectRule struct {
 	ActionMatch string                   `json:"actionMatch"`
 	Actions     []map[string]interface{} `json:"actions"`
-	Conditions  []map[string]interface{} `json:"conditions"`
+	Conditions  []ProjectRuleCondition   `json:"conditions"`
 	Environment *string                  `json:"environment"`
 	FilterMatch string                   `json:"filterMatch"`
 	Filters     []map[string]interface{} `json:"filters"`
@@ -96,6 +137,95 @@ type ProjectRule struct {
 	Owner       *string                  `json:"owner"`
 	Projects    []string                 `json:"projects"`
 }
+
+// ProjectRuleCondition defines model for ProjectRuleCondition.
+type ProjectRuleCondition struct {
+	union json.RawMessage
+}
+
+// ProjectRuleConditionEventFrequency defines model for ProjectRuleConditionEventFrequency.
+type ProjectRuleConditionEventFrequency struct {
+	ComparisonInterval *string                              `json:"comparisonInterval,omitempty"`
+	ComparisonType     string                               `json:"comparisonType"`
+	Id                 ProjectRuleConditionEventFrequencyId `json:"id"`
+	Interval           string                               `json:"interval"`
+	Name               *string                              `json:"name,omitempty"`
+	Value              int64                                `json:"value"`
+}
+
+// ProjectRuleConditionEventFrequencyId defines model for ProjectRuleConditionEventFrequency.Id.
+type ProjectRuleConditionEventFrequencyId string
+
+// ProjectRuleConditionEventFrequencyPercent defines model for ProjectRuleConditionEventFrequencyPercent.
+type ProjectRuleConditionEventFrequencyPercent struct {
+	ComparisonInterval *string                                     `json:"comparisonInterval,omitempty"`
+	ComparisonType     string                                      `json:"comparisonType"`
+	Id                 ProjectRuleConditionEventFrequencyPercentId `json:"id"`
+	Interval           string                                      `json:"interval"`
+	Name               *string                                     `json:"name,omitempty"`
+	Value              float64                                     `json:"value"`
+}
+
+// ProjectRuleConditionEventFrequencyPercentId defines model for ProjectRuleConditionEventFrequencyPercent.Id.
+type ProjectRuleConditionEventFrequencyPercentId string
+
+// ProjectRuleConditionEventUniqueUserFrequency defines model for ProjectRuleConditionEventUniqueUserFrequency.
+type ProjectRuleConditionEventUniqueUserFrequency struct {
+	ComparisonInterval *string                                        `json:"comparisonInterval,omitempty"`
+	ComparisonType     string                                         `json:"comparisonType"`
+	Id                 ProjectRuleConditionEventUniqueUserFrequencyId `json:"id"`
+	Interval           string                                         `json:"interval"`
+	Name               *string                                        `json:"name,omitempty"`
+	Value              int64                                          `json:"value"`
+}
+
+// ProjectRuleConditionEventUniqueUserFrequencyId defines model for ProjectRuleConditionEventUniqueUserFrequency.Id.
+type ProjectRuleConditionEventUniqueUserFrequencyId string
+
+// ProjectRuleConditionExistingHighPriorityIssue defines model for ProjectRuleConditionExistingHighPriorityIssue.
+type ProjectRuleConditionExistingHighPriorityIssue struct {
+	Id   ProjectRuleConditionExistingHighPriorityIssueId `json:"id"`
+	Name *string                                         `json:"name,omitempty"`
+}
+
+// ProjectRuleConditionExistingHighPriorityIssueId defines model for ProjectRuleConditionExistingHighPriorityIssue.Id.
+type ProjectRuleConditionExistingHighPriorityIssueId string
+
+// ProjectRuleConditionFirstSeenEvent defines model for ProjectRuleConditionFirstSeenEvent.
+type ProjectRuleConditionFirstSeenEvent struct {
+	Id   ProjectRuleConditionFirstSeenEventId `json:"id"`
+	Name *string                              `json:"name,omitempty"`
+}
+
+// ProjectRuleConditionFirstSeenEventId defines model for ProjectRuleConditionFirstSeenEvent.Id.
+type ProjectRuleConditionFirstSeenEventId string
+
+// ProjectRuleConditionNewHighPriorityIssue defines model for ProjectRuleConditionNewHighPriorityIssue.
+type ProjectRuleConditionNewHighPriorityIssue struct {
+	Id   ProjectRuleConditionNewHighPriorityIssueId `json:"id"`
+	Name *string                                    `json:"name,omitempty"`
+}
+
+// ProjectRuleConditionNewHighPriorityIssueId defines model for ProjectRuleConditionNewHighPriorityIssue.Id.
+type ProjectRuleConditionNewHighPriorityIssueId string
+
+// ProjectRuleConditionReappearedEvent defines model for ProjectRuleConditionReappearedEvent.
+type ProjectRuleConditionReappearedEvent struct {
+	Id   ProjectRuleConditionReappearedEventId `json:"id"`
+	Name *string                               `json:"name,omitempty"`
+}
+
+// ProjectRuleConditionReappearedEventId defines model for ProjectRuleConditionReappearedEvent.Id.
+type ProjectRuleConditionReappearedEventId string
+
+// ProjectRuleConditionRegressionEvent defines model for ProjectRuleConditionRegressionEvent.
+type ProjectRuleConditionRegressionEvent struct {
+	Id   ProjectRuleConditionRegressionEventId `json:"id"`
+	Name *string                               `json:"name,omitempty"`
+}
+
+// ProjectRuleConditionRegressionEventId defines model for ProjectRuleConditionRegressionEvent.Id.
+type ProjectRuleConditionRegressionEventId string
 
 // Team defines model for Team.
 type Team struct {
@@ -175,38 +305,30 @@ type UpdateProjectClientKeyJSONBody struct {
 
 // CreateProjectRuleJSONBody defines parameters for CreateProjectRule.
 type CreateProjectRuleJSONBody struct {
-	Actions *[]struct {
-		Category string    `json:"category"`
-		Id       string    `json:"id"`
-		Type     string    `json:"type"`
-		Values   *[]string `json:"values,omitempty"`
-	} `json:"actions,omitempty"`
-	Conditions *[]struct {
-		Category string    `json:"category"`
-		Id       string    `json:"id"`
-		Type     string    `json:"type"`
-		Values   *[]string `json:"values,omitempty"`
-	} `json:"conditions,omitempty"`
-	Environment *string `json:"environment,omitempty"`
-	Name        string  `json:"name"`
+	ActionMatch string                   `json:"actionMatch"`
+	Actions     []map[string]interface{} `json:"actions"`
+	Conditions  []ProjectRuleCondition   `json:"conditions"`
+	Environment *string                  `json:"environment,omitempty"`
+	FilterMatch string                   `json:"filterMatch"`
+	Filters     []map[string]interface{} `json:"filters"`
+	Frequency   int64                    `json:"frequency"`
+	Name        string                   `json:"name"`
+	Owner       *string                  `json:"owner,omitempty"`
+	Projects    []string                 `json:"projects"`
 }
 
 // UpdateProjectRuleJSONBody defines parameters for UpdateProjectRule.
 type UpdateProjectRuleJSONBody struct {
-	Actions *[]struct {
-		Category string    `json:"category"`
-		Id       string    `json:"id"`
-		Type     string    `json:"type"`
-		Values   *[]string `json:"values,omitempty"`
-	} `json:"actions,omitempty"`
-	Conditions *[]struct {
-		Category string    `json:"category"`
-		Id       string    `json:"id"`
-		Type     string    `json:"type"`
-		Values   *[]string `json:"values,omitempty"`
-	} `json:"conditions,omitempty"`
-	Environment *string `json:"environment,omitempty"`
-	Name        *string `json:"name,omitempty"`
+	ActionMatch string                   `json:"actionMatch"`
+	Actions     []map[string]interface{} `json:"actions"`
+	Conditions  []ProjectRuleCondition   `json:"conditions"`
+	Environment *string                  `json:"environment,omitempty"`
+	FilterMatch string                   `json:"filterMatch"`
+	Filters     []map[string]interface{} `json:"filters"`
+	Frequency   int64                    `json:"frequency"`
+	Name        string                   `json:"name"`
+	Owner       *string                  `json:"owner,omitempty"`
+	Projects    []string                 `json:"projects"`
 }
 
 // CreateOrganizationTeamProjectJSONBody defines parameters for CreateOrganizationTeamProject.
@@ -234,6 +356,275 @@ type UpdateProjectRuleJSONRequestBody UpdateProjectRuleJSONBody
 
 // CreateOrganizationTeamProjectJSONRequestBody defines body for CreateOrganizationTeamProject for application/json ContentType.
 type CreateOrganizationTeamProjectJSONRequestBody CreateOrganizationTeamProjectJSONBody
+
+// AsProjectRuleConditionFirstSeenEvent returns the union data inside the ProjectRuleCondition as a ProjectRuleConditionFirstSeenEvent
+func (t ProjectRuleCondition) AsProjectRuleConditionFirstSeenEvent() (ProjectRuleConditionFirstSeenEvent, error) {
+	var body ProjectRuleConditionFirstSeenEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectRuleConditionFirstSeenEvent overwrites any union data inside the ProjectRuleCondition as the provided ProjectRuleConditionFirstSeenEvent
+func (t *ProjectRuleCondition) FromProjectRuleConditionFirstSeenEvent(v ProjectRuleConditionFirstSeenEvent) error {
+	v.Id = "sentry.rules.conditions.first_seen_event.FirstSeenEventCondition"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectRuleConditionFirstSeenEvent performs a merge with any union data inside the ProjectRuleCondition, using the provided ProjectRuleConditionFirstSeenEvent
+func (t *ProjectRuleCondition) MergeProjectRuleConditionFirstSeenEvent(v ProjectRuleConditionFirstSeenEvent) error {
+	v.Id = "sentry.rules.conditions.first_seen_event.FirstSeenEventCondition"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectRuleConditionRegressionEvent returns the union data inside the ProjectRuleCondition as a ProjectRuleConditionRegressionEvent
+func (t ProjectRuleCondition) AsProjectRuleConditionRegressionEvent() (ProjectRuleConditionRegressionEvent, error) {
+	var body ProjectRuleConditionRegressionEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectRuleConditionRegressionEvent overwrites any union data inside the ProjectRuleCondition as the provided ProjectRuleConditionRegressionEvent
+func (t *ProjectRuleCondition) FromProjectRuleConditionRegressionEvent(v ProjectRuleConditionRegressionEvent) error {
+	v.Id = "sentry.rules.conditions.regression_event.RegressionEventCondition"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectRuleConditionRegressionEvent performs a merge with any union data inside the ProjectRuleCondition, using the provided ProjectRuleConditionRegressionEvent
+func (t *ProjectRuleCondition) MergeProjectRuleConditionRegressionEvent(v ProjectRuleConditionRegressionEvent) error {
+	v.Id = "sentry.rules.conditions.regression_event.RegressionEventCondition"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectRuleConditionReappearedEvent returns the union data inside the ProjectRuleCondition as a ProjectRuleConditionReappearedEvent
+func (t ProjectRuleCondition) AsProjectRuleConditionReappearedEvent() (ProjectRuleConditionReappearedEvent, error) {
+	var body ProjectRuleConditionReappearedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectRuleConditionReappearedEvent overwrites any union data inside the ProjectRuleCondition as the provided ProjectRuleConditionReappearedEvent
+func (t *ProjectRuleCondition) FromProjectRuleConditionReappearedEvent(v ProjectRuleConditionReappearedEvent) error {
+	v.Id = "sentry.rules.conditions.reappeared_event.ReappearedEventCondition"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectRuleConditionReappearedEvent performs a merge with any union data inside the ProjectRuleCondition, using the provided ProjectRuleConditionReappearedEvent
+func (t *ProjectRuleCondition) MergeProjectRuleConditionReappearedEvent(v ProjectRuleConditionReappearedEvent) error {
+	v.Id = "sentry.rules.conditions.reappeared_event.ReappearedEventCondition"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectRuleConditionNewHighPriorityIssue returns the union data inside the ProjectRuleCondition as a ProjectRuleConditionNewHighPriorityIssue
+func (t ProjectRuleCondition) AsProjectRuleConditionNewHighPriorityIssue() (ProjectRuleConditionNewHighPriorityIssue, error) {
+	var body ProjectRuleConditionNewHighPriorityIssue
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectRuleConditionNewHighPriorityIssue overwrites any union data inside the ProjectRuleCondition as the provided ProjectRuleConditionNewHighPriorityIssue
+func (t *ProjectRuleCondition) FromProjectRuleConditionNewHighPriorityIssue(v ProjectRuleConditionNewHighPriorityIssue) error {
+	v.Id = "sentry.rules.conditions.high_priority_issue.NewHighPriorityIssueCondition"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectRuleConditionNewHighPriorityIssue performs a merge with any union data inside the ProjectRuleCondition, using the provided ProjectRuleConditionNewHighPriorityIssue
+func (t *ProjectRuleCondition) MergeProjectRuleConditionNewHighPriorityIssue(v ProjectRuleConditionNewHighPriorityIssue) error {
+	v.Id = "sentry.rules.conditions.high_priority_issue.NewHighPriorityIssueCondition"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectRuleConditionExistingHighPriorityIssue returns the union data inside the ProjectRuleCondition as a ProjectRuleConditionExistingHighPriorityIssue
+func (t ProjectRuleCondition) AsProjectRuleConditionExistingHighPriorityIssue() (ProjectRuleConditionExistingHighPriorityIssue, error) {
+	var body ProjectRuleConditionExistingHighPriorityIssue
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectRuleConditionExistingHighPriorityIssue overwrites any union data inside the ProjectRuleCondition as the provided ProjectRuleConditionExistingHighPriorityIssue
+func (t *ProjectRuleCondition) FromProjectRuleConditionExistingHighPriorityIssue(v ProjectRuleConditionExistingHighPriorityIssue) error {
+	v.Id = "sentry.rules.conditions.high_priority_issue.ExistingHighPriorityIssueCondition"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectRuleConditionExistingHighPriorityIssue performs a merge with any union data inside the ProjectRuleCondition, using the provided ProjectRuleConditionExistingHighPriorityIssue
+func (t *ProjectRuleCondition) MergeProjectRuleConditionExistingHighPriorityIssue(v ProjectRuleConditionExistingHighPriorityIssue) error {
+	v.Id = "sentry.rules.conditions.high_priority_issue.ExistingHighPriorityIssueCondition"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectRuleConditionEventFrequency returns the union data inside the ProjectRuleCondition as a ProjectRuleConditionEventFrequency
+func (t ProjectRuleCondition) AsProjectRuleConditionEventFrequency() (ProjectRuleConditionEventFrequency, error) {
+	var body ProjectRuleConditionEventFrequency
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectRuleConditionEventFrequency overwrites any union data inside the ProjectRuleCondition as the provided ProjectRuleConditionEventFrequency
+func (t *ProjectRuleCondition) FromProjectRuleConditionEventFrequency(v ProjectRuleConditionEventFrequency) error {
+	v.Id = "sentry.rules.conditions.event_frequency.EventFrequencyCondition"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectRuleConditionEventFrequency performs a merge with any union data inside the ProjectRuleCondition, using the provided ProjectRuleConditionEventFrequency
+func (t *ProjectRuleCondition) MergeProjectRuleConditionEventFrequency(v ProjectRuleConditionEventFrequency) error {
+	v.Id = "sentry.rules.conditions.event_frequency.EventFrequencyCondition"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectRuleConditionEventUniqueUserFrequency returns the union data inside the ProjectRuleCondition as a ProjectRuleConditionEventUniqueUserFrequency
+func (t ProjectRuleCondition) AsProjectRuleConditionEventUniqueUserFrequency() (ProjectRuleConditionEventUniqueUserFrequency, error) {
+	var body ProjectRuleConditionEventUniqueUserFrequency
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectRuleConditionEventUniqueUserFrequency overwrites any union data inside the ProjectRuleCondition as the provided ProjectRuleConditionEventUniqueUserFrequency
+func (t *ProjectRuleCondition) FromProjectRuleConditionEventUniqueUserFrequency(v ProjectRuleConditionEventUniqueUserFrequency) error {
+	v.Id = "sentry.rules.conditions.event_frequency.EventUniqueUserFrequencyCondition"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectRuleConditionEventUniqueUserFrequency performs a merge with any union data inside the ProjectRuleCondition, using the provided ProjectRuleConditionEventUniqueUserFrequency
+func (t *ProjectRuleCondition) MergeProjectRuleConditionEventUniqueUserFrequency(v ProjectRuleConditionEventUniqueUserFrequency) error {
+	v.Id = "sentry.rules.conditions.event_frequency.EventUniqueUserFrequencyCondition"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectRuleConditionEventFrequencyPercent returns the union data inside the ProjectRuleCondition as a ProjectRuleConditionEventFrequencyPercent
+func (t ProjectRuleCondition) AsProjectRuleConditionEventFrequencyPercent() (ProjectRuleConditionEventFrequencyPercent, error) {
+	var body ProjectRuleConditionEventFrequencyPercent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectRuleConditionEventFrequencyPercent overwrites any union data inside the ProjectRuleCondition as the provided ProjectRuleConditionEventFrequencyPercent
+func (t *ProjectRuleCondition) FromProjectRuleConditionEventFrequencyPercent(v ProjectRuleConditionEventFrequencyPercent) error {
+	v.Id = "sentry.rules.conditions.event_frequency.EventFrequencyPercentCondition"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectRuleConditionEventFrequencyPercent performs a merge with any union data inside the ProjectRuleCondition, using the provided ProjectRuleConditionEventFrequencyPercent
+func (t *ProjectRuleCondition) MergeProjectRuleConditionEventFrequencyPercent(v ProjectRuleConditionEventFrequencyPercent) error {
+	v.Id = "sentry.rules.conditions.event_frequency.EventFrequencyPercentCondition"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ProjectRuleCondition) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"id"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t ProjectRuleCondition) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "sentry.rules.conditions.event_frequency.EventFrequencyCondition":
+		return t.AsProjectRuleConditionEventFrequency()
+	case "sentry.rules.conditions.event_frequency.EventFrequencyPercentCondition":
+		return t.AsProjectRuleConditionEventFrequencyPercent()
+	case "sentry.rules.conditions.event_frequency.EventUniqueUserFrequencyCondition":
+		return t.AsProjectRuleConditionEventUniqueUserFrequency()
+	case "sentry.rules.conditions.first_seen_event.FirstSeenEventCondition":
+		return t.AsProjectRuleConditionFirstSeenEvent()
+	case "sentry.rules.conditions.high_priority_issue.ExistingHighPriorityIssueCondition":
+		return t.AsProjectRuleConditionExistingHighPriorityIssue()
+	case "sentry.rules.conditions.high_priority_issue.NewHighPriorityIssueCondition":
+		return t.AsProjectRuleConditionNewHighPriorityIssue()
+	case "sentry.rules.conditions.reappeared_event.ReappearedEventCondition":
+		return t.AsProjectRuleConditionReappearedEvent()
+	case "sentry.rules.conditions.regression_event.RegressionEventCondition":
+		return t.AsProjectRuleConditionRegressionEvent()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t ProjectRuleCondition) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ProjectRuleCondition) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -1757,7 +2148,7 @@ func (r UpdateProjectClientKeyResponse) StatusCode() int {
 type CreateProjectRuleResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON201      *ProjectRule
+	JSON200      *ProjectRule
 	JSON202      *struct {
 		Uuid string `json:"uuid"`
 	}
@@ -2330,12 +2721,12 @@ func ParseCreateProjectRuleResponse(rsp *http.Response) (*CreateProjectRuleRespo
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest ProjectRule
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON201 = &dest
+		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 202:
 		var dest struct {

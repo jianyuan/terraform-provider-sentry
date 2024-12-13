@@ -6,126 +6,20 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/go-utils/must"
+	"github.com/jianyuan/go-utils/sliceutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
-
-type IssueAlertResourceModel struct {
-	Id           types.String          `tfsdk:"id"`
-	Organization types.String          `tfsdk:"organization"`
-	Project      types.String          `tfsdk:"project"`
-	Name         types.String          `tfsdk:"name"`
-	Conditions   sentrytypes.LossyJson `tfsdk:"conditions"`
-	Filters      sentrytypes.LossyJson `tfsdk:"filters"`
-	Actions      sentrytypes.LossyJson `tfsdk:"actions"`
-	ActionMatch  types.String          `tfsdk:"action_match"`
-	FilterMatch  types.String          `tfsdk:"filter_match"`
-	Frequency    types.Int64           `tfsdk:"frequency"`
-	Environment  types.String          `tfsdk:"environment"`
-	Owner        types.String          `tfsdk:"owner"`
-}
-
-func (m IssueAlertResourceModel) Fill(ctx context.Context, alert apiclient.ProjectRule) (diags diag.Diagnostics) {
-	m.Id = types.StringValue(alert.Id)
-
-	if len(alert.Projects) != 1 {
-		diags.AddError("Invalid project count", fmt.Sprintf("Expected 1 project, got %d", len(alert.Projects)))
-	}
-	m.Project = types.StringValue(alert.Projects[0])
-	m.Name = types.StringValue(alert.Name)
-	m.ActionMatch = types.StringValue(alert.ActionMatch)
-	m.FilterMatch = types.StringValue(alert.FilterMatch)
-	m.Frequency = types.Int64Value(alert.Frequency)
-	m.Environment = types.StringPointerValue(alert.Environment)
-	m.Owner = types.StringPointerValue(alert.Owner)
-
-	m.Conditions = sentrytypes.NewLossyJsonValue("[]")
-	if len(alert.Conditions) > 0 {
-		if conditions, err := json.Marshal(alert.Conditions); err == nil {
-			m.Conditions = sentrytypes.NewLossyJsonValue(string(conditions))
-		} else {
-			diags.AddError("Invalid conditions", err.Error())
-		}
-	}
-
-	m.Filters = sentrytypes.NewLossyJsonNull()
-	if len(alert.Filters) > 0 {
-		if filters, err := json.Marshal(alert.Filters); err == nil {
-			m.Filters = sentrytypes.NewLossyJsonValue(string(filters))
-		} else {
-			diags.AddError("Invalid filters", err.Error())
-		}
-	}
-
-	m.Actions = sentrytypes.NewLossyJsonNull()
-	if len(alert.Actions) > 0 {
-		if actions, err := json.Marshal(alert.Actions); err == nil && len(actions) > 0 {
-			m.Actions = sentrytypes.NewLossyJsonValue(string(actions))
-		} else {
-			diags.AddError("Invalid actions", err.Error())
-		}
-	}
-
-	return
-}
-
-func (m *IssueAlertResourceModel) FillOld(organization string, alert sentry.IssueAlert) error {
-	m.Id = types.StringPointerValue(alert.ID)
-	m.Organization = types.StringValue(organization)
-	m.Project = types.StringValue(alert.Projects[0])
-	m.Name = types.StringPointerValue(alert.Name)
-	m.ActionMatch = types.StringPointerValue(alert.ActionMatch)
-	m.FilterMatch = types.StringPointerValue(alert.FilterMatch)
-	m.Owner = types.StringPointerValue(alert.Owner)
-
-	m.Conditions = sentrytypes.NewLossyJsonValue("[]")
-	if len(alert.Conditions) > 0 {
-		if conditions, err := json.Marshal(alert.Conditions); err == nil {
-			m.Conditions = sentrytypes.NewLossyJsonValue(string(conditions))
-		} else {
-			return err
-		}
-	}
-
-	m.Filters = sentrytypes.NewLossyJsonNull()
-	if len(alert.Filters) > 0 {
-		if filters, err := json.Marshal(alert.Filters); err == nil {
-			m.Filters = sentrytypes.NewLossyJsonValue(string(filters))
-		} else {
-			return err
-		}
-	}
-
-	m.Actions = sentrytypes.NewLossyJsonNull()
-	if len(alert.Actions) > 0 {
-		if actions, err := json.Marshal(alert.Actions); err == nil && len(actions) > 0 {
-			m.Actions = sentrytypes.NewLossyJsonValue(string(actions))
-		} else {
-			return err
-		}
-	}
-
-	frequency, err := alert.Frequency.Int64()
-	if err != nil {
-		return err
-	}
-	m.Frequency = types.Int64Value(frequency)
-
-	m.Environment = types.StringPointerValue(alert.Environment)
-	m.Owner = types.StringPointerValue(alert.Owner)
-
-	return nil
-}
 
 var _ resource.Resource = &IssueAlertResource{}
 var _ resource.ResourceWithConfigure = &IssueAlertResource{}
@@ -145,8 +39,38 @@ func (r *IssueAlertResource) Metadata(ctx context.Context, req resource.Metadata
 }
 
 func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+	// idStringAttribute := schema.StringAttribute{
+	// 	Computed: true,
+	// }
+	nameStringAttribute := schema.StringAttribute{
+		Computed: true,
+	}
+	intervalStringAttribute := schema.StringAttribute{
+		MarkdownDescription: "Valid values are `1m`, `5m`, `15m`, `1h`, `1d`, `1w` and `30d` (`m` for minutes, `h` for hours, `d` for days, and `w` for weeks).",
+		Optional:            true,
+		Validators: []validator.String{
+			stringvalidator.OneOf("1m", "5m", "15m", "1h", "1d", "1w", "30d"),
+		},
+	}
+	conditionComparisonTypeStringAttribute := schema.StringAttribute{
+		MarkdownDescription: "Valid values are `count` and `percent`.",
+		Required:            true,
+		Validators: []validator.String{
+			stringvalidator.OneOf("count", "percent"),
+		},
+	}
+	conditionComparisonIntervalStringAttribute := schema.StringAttribute{
+		MarkdownDescription: "Valid values are `5m`, `15m`, `1h`, `1d`, `1w` and `30d` (`m` for minutes, `h` for hours, `d` for days, and `w` for weeks).",
+		Optional:            true,
+		Validators: []validator.String{
+			stringvalidator.OneOf("5m", "15m", "1h", "1d", "1w", "30d"),
+		},
+	}
+
 	resp.Schema = schema.Schema{
 		MarkdownDescription: `Create an Issue Alert Rule for a Project. See the [Sentry Documentation](https://docs.sentry.io/api/alerts/create-an-issue-alert-rule-for-a-project/) for more information.
+
+TODO
 
 Please note the following changes since v0.12.0:
 - The attributes ` + "`conditions`" + `, ` + "`filters`" + `, and ` + "`actions`" + ` are in JSON string format. The types must match the Sentry API, otherwise Terraform will incorrectly detect a drift. Use ` + "`parseint(\"string\", 10)`" + ` to convert a string to an integer. Avoid using ` + "`jsonencode()`" + ` as it is unable to distinguish between an integer and a float.
@@ -168,10 +92,107 @@ Please note the following changes since v0.12.0:
 				},
 			},
 			"conditions": schema.StringAttribute{
-				MarkdownDescription: "List of conditions. In JSON string format.",
-				Required:            true,
+				MarkdownDescription: "**Deprecated** in favor of `condition`. A list of triggers that determine when the rule fires. In JSON string format.",
+				DeprecationMessage:  "Use `condition` instead.",
+				Optional:            true,
+				Computed:            true,
 				CustomType: sentrytypes.LossyJsonType{
 					IgnoreKeys: []string{"name"},
+				},
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.MatchRoot("conditions_v2")),
+				},
+			},
+			"conditions_v2": schema.ListNestedAttribute{
+				MarkdownDescription: "A list of triggers that determine when the rule fires.",
+				Optional:            true,
+				Validators: []validator.List{
+					listvalidator.ConflictsWith(path.MatchRoot("conditions")),
+					listvalidator.SizeAtLeast(1),
+				},
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: tfutils.WithMutuallyExclusiveValidator(map[string]schema.SingleNestedAttribute{
+						"first_seen_event": {
+							MarkdownDescription: "A new issue is created.",
+							Optional:            true,
+							Attributes: map[string]schema.Attribute{
+								"name": nameStringAttribute,
+							},
+						},
+						"regression_event": {
+							MarkdownDescription: "The issue changes state from resolved to unresolved.",
+							Optional:            true,
+							Attributes: map[string]schema.Attribute{
+								"name": nameStringAttribute,
+							},
+						},
+						"reappeared_event": {
+							MarkdownDescription: "The issue changes state from ignored to unresolved.",
+							Optional:            true,
+							Attributes: map[string]schema.Attribute{
+								"name": nameStringAttribute,
+							},
+						},
+						"new_high_priority_issue": {
+							MarkdownDescription: "Sentry marks a new issue as high priority.",
+							Optional:            true,
+							Attributes: map[string]schema.Attribute{
+								"name": nameStringAttribute,
+							},
+						},
+						"existing_high_priority_issue": {
+							MarkdownDescription: "Sentry marks an existing issue as high priority.",
+							Optional:            true,
+							Attributes: map[string]schema.Attribute{
+								"name": nameStringAttribute,
+							},
+						},
+						"event_frequency": {
+							MarkdownDescription: "When the `comparison_type` is `count`, the number of events in an issue is more than `value` in `interval`. When the `comparison_type` is `percent`, the number of events in an issue is `value` % higher in `interval` compared to `comparison_interval` ago.",
+							Optional:            true,
+							Attributes: map[string]schema.Attribute{
+								"name":                nameStringAttribute,
+								"comparison_type":     conditionComparisonTypeStringAttribute,
+								"comparison_interval": conditionComparisonIntervalStringAttribute,
+								"value": schema.Int64Attribute{
+									Required: true,
+								},
+								"interval": intervalStringAttribute,
+							},
+						},
+						"event_unique_user_frequency": {
+							MarkdownDescription: "When the `comparison_type` is `count`, the number of users affected by an issue is more than `value` in `interval`. When the `comparison_type` is `percent`, the number of users affected by an issue is `value` % higher in `interval` compared to `comparison_interval` ago.",
+							Optional:            true,
+							Attributes: map[string]schema.Attribute{
+								"name":                nameStringAttribute,
+								"comparison_type":     conditionComparisonTypeStringAttribute,
+								"comparison_interval": conditionComparisonIntervalStringAttribute,
+								"value": schema.Int64Attribute{
+									Required: true,
+								},
+								"interval": intervalStringAttribute,
+							},
+						},
+						"event_frequency_percent": {
+							MarkdownDescription: "When the `comparison_type` is `count`, the percent of sessions affected by an issue is more than `value` in `interval`. When the `comparison_type` is `percent`, the percent of sessions affected by an issue is `value` % higher in `interval` compared to `comparison_interval` ago.",
+							Optional:            true,
+							Attributes: map[string]schema.Attribute{
+								"name":                nameStringAttribute,
+								"comparison_type":     conditionComparisonTypeStringAttribute,
+								"comparison_interval": conditionComparisonIntervalStringAttribute,
+								"value": schema.Float64Attribute{
+									Required: true,
+								},
+								"interval": schema.StringAttribute{
+									MarkdownDescription: "Valid values are `5m`, `10m`, `30m`, and `1h` (`m` for minutes, `h` for hours).",
+									Required:            true,
+									Validators: []validator.String{
+										stringvalidator.OneOf("5m", "10m", "30m", "1h"),
+									},
+								},
+							},
+						},
+					}),
 				},
 			},
 			"filters": schema.StringAttribute{
@@ -215,52 +236,62 @@ Please note the following changes since v0.12.0:
 }
 
 func (r *IssueAlertResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data IssueAlertResourceModel
+	var data IssueAlertModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	params := &sentry.IssueAlert{
-		Name:        data.Name.ValueStringPointer(),
-		ActionMatch: data.ActionMatch.ValueStringPointer(),
-		FilterMatch: data.FilterMatch.ValueStringPointer(),
-		Frequency:   sentry.JsonNumber(json.Number(data.Frequency.String())),
+	body := apiclient.CreateProjectRuleJSONRequestBody{
+		Name:        data.Name.ValueString(),
+		ActionMatch: data.ActionMatch.ValueString(),
+		FilterMatch: data.FilterMatch.ValueString(),
+		Frequency:   data.Frequency.ValueInt64(),
 		Owner:       data.Owner.ValueStringPointer(),
 		Environment: data.Environment.ValueStringPointer(),
-		Projects:    []string{data.Project.String()},
+		Projects:    []string{data.Project.ValueString()},
 	}
+
 	if !data.Conditions.IsNull() {
-		resp.Diagnostics.Append(data.Conditions.Unmarshal(&params.Conditions)...)
+		resp.Diagnostics.Append(data.Conditions.Unmarshal(&body.Conditions)...)
+	} else {
+		body.Conditions = sliceutils.Map(func(item IssueAlertConditionModel) apiclient.ProjectRuleCondition {
+			return item.ToApi()
+		}, data.ConditionsV2)
 	}
+
 	if !data.Filters.IsNull() {
-		resp.Diagnostics.Append(data.Filters.Unmarshal(&params.Filters)...)
+		resp.Diagnostics.Append(data.Filters.Unmarshal(&body.Filters)...)
+	} else {
+		body.Filters = []map[string]interface{}{}
 	}
+
 	if !data.Actions.IsNull() {
-		resp.Diagnostics.Append(data.Actions.Unmarshal(&params.Actions)...)
+		resp.Diagnostics.Append(data.Actions.Unmarshal(&body.Actions)...)
+	} else {
+		body.Actions = []map[string]interface{}{}
 	}
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	action, _, err := r.client.IssueAlerts.Create(
+	httpResp, err := r.apiClient.CreateProjectRuleWithResponse(
 		ctx,
 		data.Organization.ValueString(),
 		data.Project.ValueString(),
-		params,
+		body,
 	)
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("create", err))
 		return
-	}
-
-	if err := data.FillOld(data.Organization.ValueString(), *action); err != nil {
-		resp.Diagnostics.Append(diagutils.NewFillError(err))
+	} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("create", httpResp.StatusCode(), httpResp.Body))
 		return
 	}
 
+	resp.Diagnostics.Append(data.Fill(ctx, *httpResp.JSON200)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -269,7 +300,7 @@ func (r *IssueAlertResource) Create(ctx context.Context, req resource.CreateRequ
 }
 
 func (r *IssueAlertResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data IssueAlertResourceModel
+	var data IssueAlertModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -303,55 +334,68 @@ func (r *IssueAlertResource) Read(ctx context.Context, req resource.ReadRequest,
 }
 
 func (r *IssueAlertResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data IssueAlertResourceModel
+	var data IssueAlertModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	params := &sentry.IssueAlert{
-		Name:        data.Name.ValueStringPointer(),
-		ActionMatch: data.ActionMatch.ValueStringPointer(),
-		FilterMatch: data.FilterMatch.ValueStringPointer(),
-		Frequency:   sentry.JsonNumber(json.Number(data.Frequency.String())),
+	body := apiclient.UpdateProjectRuleJSONRequestBody{
+		Name:        data.Name.ValueString(),
+		ActionMatch: data.ActionMatch.ValueString(),
+		FilterMatch: data.FilterMatch.ValueString(),
+		Frequency:   data.Frequency.ValueInt64(),
 		Owner:       data.Owner.ValueStringPointer(),
 		Environment: data.Environment.ValueStringPointer(),
-		Projects:    []string{data.Project.String()},
+		Projects:    []string{data.Project.ValueString()},
 	}
+
 	if !data.Conditions.IsNull() {
-		resp.Diagnostics.Append(data.Conditions.Unmarshal(&params.Conditions)...)
+		resp.Diagnostics.Append(data.Conditions.Unmarshal(&body.Conditions)...)
+	} else {
+		body.Conditions = sliceutils.Map(func(item IssueAlertConditionModel) apiclient.ProjectRuleCondition {
+			return item.ToApi()
+		}, data.ConditionsV2)
 	}
+
 	if !data.Filters.IsNull() {
-		resp.Diagnostics.Append(data.Filters.Unmarshal(&params.Filters)...)
+		resp.Diagnostics.Append(data.Filters.Unmarshal(&body.Filters)...)
+	} else {
+		body.Filters = []map[string]interface{}{}
 	}
+
 	if !data.Actions.IsNull() {
-		resp.Diagnostics.Append(data.Actions.Unmarshal(&params.Actions)...)
+		resp.Diagnostics.Append(data.Actions.Unmarshal(&body.Actions)...)
+	} else {
+		body.Actions = []map[string]interface{}{}
 	}
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	action, apiResp, err := r.client.IssueAlerts.Update(
+	httpResp, err := r.apiClient.UpdateProjectRuleWithResponse(
 		ctx,
 		data.Organization.ValueString(),
 		data.Project.ValueString(),
 		data.Id.ValueString(),
-		params,
+		body,
 	)
-	if apiResp.StatusCode == http.StatusNotFound {
-		resp.Diagnostics.Append(diagutils.NewNotFoundError("issue alert"))
-		resp.State.RemoveResource(ctx)
-		return
-	}
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("update", err))
 		return
+	} else if httpResp.StatusCode() == http.StatusNotFound {
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("issue alert"))
+		resp.State.RemoveResource(ctx)
+		return
+	} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("update", httpResp.StatusCode(), httpResp.Body))
+		return
 	}
 
-	if err := data.FillOld(data.Organization.ValueString(), *action); err != nil {
-		resp.Diagnostics.Append(diagutils.NewFillError(err))
+	resp.Diagnostics.Append(data.Fill(ctx, *httpResp.JSON200)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -359,24 +403,26 @@ func (r *IssueAlertResource) Update(ctx context.Context, req resource.UpdateRequ
 }
 
 func (r *IssueAlertResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data IssueAlertResourceModel
+	var data IssueAlertModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	apiResp, err := r.client.IssueAlerts.Delete(
+	httpResp, err := r.apiClient.DeleteProjectRuleWithResponse(
 		ctx,
 		data.Organization.ValueString(),
 		data.Project.ValueString(),
 		data.Id.ValueString(),
 	)
-	if apiResp.StatusCode == http.StatusNotFound {
-		return
-	}
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("delete", err))
+		return
+	} else if httpResp.StatusCode() == http.StatusNotFound {
+		return
+	} else if httpResp.StatusCode() != http.StatusAccepted {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("delete", httpResp.StatusCode(), httpResp.Body))
 		return
 	}
 }
@@ -467,7 +513,7 @@ func (r *IssueAlertResource) UpgradeState(ctx context.Context) map[int64]resourc
 					return
 				}
 
-				upgradedStateData := IssueAlertResourceModel{
+				upgradedStateData := IssueAlertModel{
 					Id:           types.StringValue(actionId),
 					Organization: types.StringValue(organization),
 					Project:      types.StringValue(project),

@@ -369,52 +369,46 @@ paths:
               type: object
               required:
                 - name
+                - actionMatch
+                - filterMatch
+                - frequency
+                - projects
+                - conditions
+                - filters
+                - actions
               properties:
                 name:
                   type: string
+                actionMatch:
+                  type: string
+                filterMatch:
+                  type: string
+                frequency:
+                  type: integer
+                  format: int64
+                owner:
+                  type: string
                 environment:
                   type: string
+                projects:
+                  type: array
+                  items:
+                    type: string
                 conditions:
                   type: array
                   items:
+                    $ref: "#/components/schemas/ProjectRuleCondition"
+                filters:
+                  type: array
+                  items:
                     type: object
-                    required:
-                      - id
-                      - category
-                      - type
-                    properties:
-                      id:
-                        type: string
-                      category:
-                        type: string
-                      type:
-                        type: string
-                      values:
-                        type: array
-                        items:
-                          type: string
                 actions:
                   type: array
                   items:
                     type: object
-                    required:
-                      - id
-                      - category
-                      - type
-                    properties:
-                      id:
-                        type: string
-                      category:
-                        type: string
-                      type:
-                        type: string
-                      values:
-                        type: array
-                        items:
-                          type: string
       responses:
-        "201":
-          description: Created
+        "200":
+          description: OK
           content:
             application/json:
               schema:
@@ -470,49 +464,45 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - name
+                - actionMatch
+                - filterMatch
+                - frequency
+                - projects
+                - conditions
+                - filters
+                - actions
               properties:
                 name:
                   type: string
+                actionMatch:
+                  type: string
+                filterMatch:
+                  type: string
+                frequency:
+                  type: integer
+                  format: int64
+                owner:
+                  type: string
                 environment:
                   type: string
+                projects:
+                  type: array
+                  items:
+                    type: string
                 conditions:
                   type: array
                   items:
+                    $ref: "#/components/schemas/ProjectRuleCondition"
+                filters:
+                  type: array
+                  items:
                     type: object
-                    required:
-                      - id
-                      - category
-                      - type
-                    properties:
-                      id:
-                        type: string
-                      category:
-                        type: string
-                      type:
-                        type: string
-                      values:
-                        type: array
-                        items:
-                          type: string
                 actions:
                   type: array
                   items:
                     type: object
-                    required:
-                      - id
-                      - category
-                      - type
-                    properties:
-                      id:
-                        type: string
-                      category:
-                        type: string
-                      type:
-                        type: string
-                      values:
-                        type: array
-                        items:
-                          type: string
       responses:
         "200":
           description: OK
@@ -530,8 +520,8 @@ paths:
       summary: Delete a Rule
       operationId: deleteProjectRule
       responses:
-        "204":
-          description: No Content
+        "202":
+          description: Accepted
         "401":
           description: Unauthorized
         "403":
@@ -768,7 +758,7 @@ components:
         conditions:
           type: array
           items:
-            type: object
+            $ref: "#/components/schemas/ProjectRuleCondition"
         filters:
           type: array
           items:
@@ -777,6 +767,151 @@ components:
           type: array
           items:
             type: object
+    ProjectRuleCondition:
+      oneOf:
+        - $ref: "#/components/schemas/ProjectRuleConditionFirstSeenEvent"
+        - $ref: "#/components/schemas/ProjectRuleConditionRegressionEvent"
+        - $ref: "#/components/schemas/ProjectRuleConditionReappearedEvent"
+        - $ref: "#/components/schemas/ProjectRuleConditionNewHighPriorityIssue"
+        - $ref: "#/components/schemas/ProjectRuleConditionExistingHighPriorityIssue"
+        - $ref: "#/components/schemas/ProjectRuleConditionEventFrequency"
+        - $ref: "#/components/schemas/ProjectRuleConditionEventUniqueUserFrequency"
+        - $ref: "#/components/schemas/ProjectRuleConditionEventFrequencyPercent"
+      discriminator:
+        propertyName: id
+        mapping:
+          "sentry.rules.conditions.first_seen_event.FirstSeenEventCondition": "#/components/schemas/ProjectRuleConditionFirstSeenEvent"
+          "sentry.rules.conditions.regression_event.RegressionEventCondition": "#/components/schemas/ProjectRuleConditionRegressionEvent"
+          "sentry.rules.conditions.reappeared_event.ReappearedEventCondition": "#/components/schemas/ProjectRuleConditionReappearedEvent"
+          "sentry.rules.conditions.high_priority_issue.NewHighPriorityIssueCondition": "#/components/schemas/ProjectRuleConditionNewHighPriorityIssue"
+          "sentry.rules.conditions.high_priority_issue.ExistingHighPriorityIssueCondition": "#/components/schemas/ProjectRuleConditionExistingHighPriorityIssue"
+          "sentry.rules.conditions.event_frequency.EventFrequencyCondition": "#/components/schemas/ProjectRuleConditionEventFrequency"
+          "sentry.rules.conditions.event_frequency.EventUniqueUserFrequencyCondition": "#/components/schemas/ProjectRuleConditionEventUniqueUserFrequency"
+          "sentry.rules.conditions.event_frequency.EventFrequencyPercentCondition": "#/components/schemas/ProjectRuleConditionEventFrequencyPercent"
+    ProjectRuleConditionFirstSeenEvent:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.conditions.first_seen_event.FirstSeenEventCondition"
+        name:
+          type: string
+    ProjectRuleConditionRegressionEvent:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.conditions.regression_event.RegressionEventCondition"
+        name:
+          type: string
+    ProjectRuleConditionReappearedEvent:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.conditions.reappeared_event.ReappearedEventCondition"
+        name:
+          type: string
+    ProjectRuleConditionNewHighPriorityIssue:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.conditions.high_priority_issue.NewHighPriorityIssueCondition"
+        name:
+          type: string
+    ProjectRuleConditionExistingHighPriorityIssue:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.conditions.high_priority_issue.ExistingHighPriorityIssueCondition"
+        name:
+          type: string
+    ProjectRuleConditionEventFrequency:
+      type: object
+      required:
+        - id
+        - comparisonType
+        - value
+        - interval
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.conditions.event_frequency.EventFrequencyCondition"
+        name:
+          type: string
+        comparisonType:
+          type: string
+        comparisonInterval:
+          type: string
+        value:
+          type: integer
+          format: int64
+        interval:
+          type: string
+    ProjectRuleConditionEventUniqueUserFrequency:
+      type: object
+      required:
+        - id
+        - comparisonType
+        - value
+        - interval
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.conditions.event_frequency.EventUniqueUserFrequencyCondition"
+        name:
+          type: string
+        comparisonType:
+          type: string
+        comparisonInterval:
+          type: string
+        value:
+          type: integer
+          format: int64
+        interval:
+          type: string
+    ProjectRuleConditionEventFrequencyPercent:
+      type: object
+      required:
+        - id
+        - comparisonType
+        - value
+        - interval
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.conditions.event_frequency.EventFrequencyPercentCondition"
+        name:
+          type: string
+        comparisonType:
+          type: string
+        comparisonInterval:
+          type: string
+        value:
+          type: number
+          format: double
+        interval:
+          type: string
     Team:
       type: object
       required:

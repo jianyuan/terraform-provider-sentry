@@ -2,79 +2,15 @@ package provider
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
 )
-
-type IssueAlertDataSourceModel struct {
-	Id           types.String          `tfsdk:"id"`
-	Organization types.String          `tfsdk:"organization"`
-	Project      types.String          `tfsdk:"project"`
-	Name         types.String          `tfsdk:"name"`
-	Conditions   sentrytypes.LossyJson `tfsdk:"conditions"`
-	Filters      sentrytypes.LossyJson `tfsdk:"filters"`
-	Actions      sentrytypes.LossyJson `tfsdk:"actions"`
-	ActionMatch  types.String          `tfsdk:"action_match"`
-	FilterMatch  types.String          `tfsdk:"filter_match"`
-	Frequency    types.Int64           `tfsdk:"frequency"`
-	Environment  types.String          `tfsdk:"environment"`
-	Owner        types.String          `tfsdk:"owner"`
-}
-
-func (m *IssueAlertDataSourceModel) Fill(organization string, alert sentry.IssueAlert) error {
-	m.Id = types.StringPointerValue(alert.ID)
-	m.Organization = types.StringValue(organization)
-	m.Project = types.StringValue(alert.Projects[0])
-	m.Name = types.StringPointerValue(alert.Name)
-	m.ActionMatch = types.StringPointerValue(alert.ActionMatch)
-	m.FilterMatch = types.StringPointerValue(alert.FilterMatch)
-	m.Owner = types.StringPointerValue(alert.Owner)
-
-	m.Conditions = sentrytypes.NewLossyJsonNull()
-	if len(alert.Conditions) > 0 {
-		if conditions, err := json.Marshal(alert.Conditions); err == nil {
-			m.Conditions = sentrytypes.NewLossyJsonValue(string(conditions))
-		} else {
-			return err
-		}
-	}
-
-	m.Filters = sentrytypes.NewLossyJsonNull()
-	if len(alert.Filters) > 0 {
-		if filters, err := json.Marshal(alert.Filters); err == nil {
-			m.Filters = sentrytypes.NewLossyJsonValue(string(filters))
-		} else {
-			return err
-		}
-	}
-
-	m.Actions = sentrytypes.NewLossyJsonNull()
-	if len(alert.Actions) > 0 {
-		if actions, err := json.Marshal(alert.Actions); err == nil && len(actions) > 0 {
-			m.Actions = sentrytypes.NewLossyJsonValue(string(actions))
-		} else {
-			return err
-		}
-	}
-
-	frequency, err := alert.Frequency.Int64()
-	if err != nil {
-		return err
-	}
-	m.Frequency = types.Int64Value(frequency)
-
-	m.Environment = types.StringPointerValue(alert.Environment)
-	m.Owner = types.StringPointerValue(alert.Owner)
-
-	return nil
-}
 
 var _ datasource.DataSource = &IssueAlertDataSource{}
 var _ datasource.DataSourceWithConfigure = &IssueAlertDataSource{}
@@ -92,6 +28,22 @@ func (d *IssueAlertDataSource) Metadata(ctx context.Context, req datasource.Meta
 }
 
 func (d *IssueAlertDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	nameStringAttribute := schema.StringAttribute{
+		Computed: true,
+	}
+	intervalStringAttribute := schema.StringAttribute{
+		MarkdownDescription: "Valid values are `1m`, `5m`, `15m`, `1h`, `1d`, `1w` and `30d` (`m` for minutes, `h` for hours, `d` for days, and `w` for weeks).",
+		Computed:            true,
+	}
+	conditionComparisonTypeStringAttribute := schema.StringAttribute{
+		MarkdownDescription: "Valid values are `count` and `percent`.",
+		Computed:            true,
+	}
+	conditionComparisonIntervalStringAttribute := schema.StringAttribute{
+		MarkdownDescription: "Valid values are `5m`, `15m`, `1h`, `1d`, `1w` and `30d` (`m` for minutes, `h` for hours, `d` for days, and `w` for weeks).",
+		Computed:            true,
+	}
+
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Sentry Issue Alert data source. See the [Sentry documentation](https://docs.sentry.io/api/alerts/retrieve-an-issue-alert-rule-for-a-project/) for more information.",
 
@@ -110,6 +62,94 @@ func (d *IssueAlertDataSource) Schema(ctx context.Context, req datasource.Schema
 				MarkdownDescription: "List of conditions. In JSON string format.",
 				Computed:            true,
 				CustomType:          sentrytypes.LossyJsonType{},
+			},
+			"conditions_v2": schema.ListNestedAttribute{
+				MarkdownDescription: "A list of triggers that determine when the rule fires.",
+				Computed:            true,
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"first_seen_event": schema.SingleNestedAttribute{
+							MarkdownDescription: "A new issue is created.",
+							Computed:            true,
+							Attributes: map[string]schema.Attribute{
+								"name": nameStringAttribute,
+							},
+						},
+						"regression_event": schema.SingleNestedAttribute{
+							MarkdownDescription: "The issue changes state from resolved to unresolved.",
+							Computed:            true,
+							Attributes: map[string]schema.Attribute{
+								"name": nameStringAttribute,
+							},
+						},
+						"reappeared_event": schema.SingleNestedAttribute{
+							MarkdownDescription: "The issue changes state from ignored to unresolved.",
+							Computed:            true,
+							Attributes: map[string]schema.Attribute{
+								"name": nameStringAttribute,
+							},
+						},
+						"new_high_priority_issue": schema.SingleNestedAttribute{
+							MarkdownDescription: "Sentry marks a new issue as high priority.",
+							Computed:            true,
+							Attributes: map[string]schema.Attribute{
+								"name": nameStringAttribute,
+							},
+						},
+						"existing_high_priority_issue": schema.SingleNestedAttribute{
+							MarkdownDescription: "Sentry marks an existing issue as high priority.",
+							Computed:            true,
+							Attributes: map[string]schema.Attribute{
+								"name": nameStringAttribute,
+							},
+						},
+						"event_frequency": schema.SingleNestedAttribute{
+							MarkdownDescription: "When the `comparison_type` is `count`, the number of events in an issue is more than `value` in `interval`. When the `comparison_type` is `percent`, the number of events in an issue is `value` % higher in `interval` compared to `comparison_interval` ago.",
+							Computed:            true,
+							Attributes: map[string]schema.Attribute{
+								"name":                nameStringAttribute,
+								"comparison_type":     conditionComparisonTypeStringAttribute,
+								"comparison_interval": conditionComparisonIntervalStringAttribute,
+								"value": schema.Int64Attribute{
+									Computed: true,
+								},
+								"interval": intervalStringAttribute,
+							},
+						},
+						"event_unique_user_frequency": schema.SingleNestedAttribute{
+							MarkdownDescription: "When the `comparison_type` is `count`, the number of users affected by an issue is more than `value` in `interval`. When the `comparison_type` is `percent`, the number of users affected by an issue is `value` % higher in `interval` compared to `comparison_interval` ago.",
+							Computed:            true,
+							Attributes: map[string]schema.Attribute{
+								"name":                nameStringAttribute,
+								"comparison_type":     conditionComparisonTypeStringAttribute,
+								"comparison_interval": conditionComparisonIntervalStringAttribute,
+								"value": schema.Int64Attribute{
+									Computed: true,
+								},
+								"interval": intervalStringAttribute,
+							},
+						},
+						"event_frequency_percent": schema.SingleNestedAttribute{
+							MarkdownDescription: "When the `comparison_type` is `count`, the percent of sessions affected by an issue is more than `value` in `interval`. When the `comparison_type` is `percent`, the percent of sessions affected by an issue is `value` % higher in `interval` compared to `comparison_interval` ago.",
+							Computed:            true,
+							Attributes: map[string]schema.Attribute{
+								"name":                nameStringAttribute,
+								"comparison_type":     conditionComparisonTypeStringAttribute,
+								"comparison_interval": conditionComparisonIntervalStringAttribute,
+								"value": schema.Float64Attribute{
+									Computed: true,
+								},
+								"interval": schema.StringAttribute{
+									MarkdownDescription: "Valid values are `5m`, `10m`, `30m`, and `1h` (`m` for minutes, `h` for hours).",
+									Computed:            true,
+									Validators: []validator.String{
+										stringvalidator.OneOf("5m", "10m", "30m", "1h"),
+									},
+								},
+							},
+						},
+					},
+				},
 			},
 			"filters": schema.StringAttribute{
 				MarkdownDescription: "A list of filters that determine if a rule fires after the necessary conditions have been met. In JSON string format.",
@@ -146,31 +186,33 @@ func (d *IssueAlertDataSource) Schema(ctx context.Context, req datasource.Schema
 }
 
 func (d *IssueAlertDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data IssueAlertDataSourceModel
+	var data IssueAlertModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	action, apiResp, err := d.client.IssueAlerts.Get(
+	httpResp, err := d.apiClient.GetProjectRuleWithResponse(
 		ctx,
 		data.Organization.ValueString(),
 		data.Project.ValueString(),
 		data.Id.ValueString(),
 	)
-	if apiResp.StatusCode == http.StatusNotFound {
-		resp.Diagnostics.Append(diagutils.NewNotFoundError("issue alert"))
-		resp.State.RemoveResource(ctx)
-		return
-	}
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 		return
+	} else if httpResp.StatusCode() == http.StatusNotFound {
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("issue alert"))
+		resp.State.RemoveResource(ctx)
+		return
+	} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("read", httpResp.StatusCode(), httpResp.Body))
+		return
 	}
 
-	if err := data.Fill(data.Organization.ValueString(), *action); err != nil {
-		resp.Diagnostics.Append(diagutils.NewFillError(err))
+	resp.Diagnostics.Append(data.Fill(ctx, *httpResp.JSON200)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
