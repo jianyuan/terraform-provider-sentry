@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
@@ -21,19 +22,15 @@ type AllClientKeysDataSourceModel struct {
 	Keys         []ClientKeyResourceModel `tfsdk:"keys"`
 }
 
-func (m *AllClientKeysDataSourceModel) Fill(keys []apiclient.ProjectKey) error {
+func (m *AllClientKeysDataSourceModel) Fill(ctx context.Context, keys []apiclient.ProjectKey) (diags diag.Diagnostics) {
 	m.Keys = make([]ClientKeyResourceModel, len(keys))
 	for i, key := range keys {
-		if err := m.Keys[i].FillAll(
-			m.Organization.ValueString(),
-			m.Project.ValueString(),
-			key,
-		); err != nil {
-			return err
-		}
+		m.Keys[i].Organization = types.StringValue(m.Organization.ValueString())
+		m.Keys[i].Project = types.StringValue(m.Project.ValueString())
+		diags.Append(m.Keys[i].Fill(ctx, key)...)
 	}
 
-	return nil
+	return
 }
 
 var _ datasource.DataSource = &AllClientKeysDataSource{}
@@ -194,8 +191,8 @@ func (d *AllClientKeysDataSource) Read(ctx context.Context, req datasource.ReadR
 		}
 	}
 
-	if err := data.Fill(allKeys); err != nil {
-		resp.Diagnostics.Append(diagutils.NewFillError(err))
+	resp.Diagnostics.Append(data.Fill(ctx, allKeys)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
