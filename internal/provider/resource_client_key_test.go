@@ -248,7 +248,7 @@ func TestAccClientKeyResource(t *testing.T) {
 					RateLimitCount:  ptr.Ptr(2),
 					Extras: `
 						javascript_loader_script = {
-							browser_sdk_version            = "7.x"
+							browser_sdk_version = "7.x"
 						}
 					`,
 				}),
