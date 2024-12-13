@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-utils/must"
+	"github.com/jianyuan/go-utils/ptr"
 	"github.com/jianyuan/go-utils/sliceutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
@@ -258,19 +259,19 @@ func (m *IssueAlertConditionModel) FromApi(ctx context.Context, condition apicli
 }
 
 type IssueAlertModel struct {
-	Id           types.String               `tfsdk:"id"`
-	Organization types.String               `tfsdk:"organization"`
-	Project      types.String               `tfsdk:"project"`
-	Name         types.String               `tfsdk:"name"`
-	Conditions   sentrytypes.LossyJson      `tfsdk:"conditions"`
-	Filters      sentrytypes.LossyJson      `tfsdk:"filters"`
-	Actions      sentrytypes.LossyJson      `tfsdk:"actions"`
-	ActionMatch  types.String               `tfsdk:"action_match"`
-	FilterMatch  types.String               `tfsdk:"filter_match"`
-	Frequency    types.Int64                `tfsdk:"frequency"`
-	Environment  types.String               `tfsdk:"environment"`
-	Owner        types.String               `tfsdk:"owner"`
-	ConditionsV2 []IssueAlertConditionModel `tfsdk:"conditions_v2"`
+	Id           types.String                `tfsdk:"id"`
+	Organization types.String                `tfsdk:"organization"`
+	Project      types.String                `tfsdk:"project"`
+	Name         types.String                `tfsdk:"name"`
+	Conditions   sentrytypes.LossyJson       `tfsdk:"conditions"`
+	Filters      sentrytypes.LossyJson       `tfsdk:"filters"`
+	Actions      sentrytypes.LossyJson       `tfsdk:"actions"`
+	ActionMatch  types.String                `tfsdk:"action_match"`
+	FilterMatch  types.String                `tfsdk:"filter_match"`
+	Frequency    types.Int64                 `tfsdk:"frequency"`
+	Environment  types.String                `tfsdk:"environment"`
+	Owner        types.String                `tfsdk:"owner"`
+	ConditionsV2 *[]IssueAlertConditionModel `tfsdk:"conditions_v2"`
 }
 
 func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule) (diags diag.Diagnostics) {
@@ -289,7 +290,7 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 	m.Owner = types.StringPointerValue(alert.Owner)
 
 	if !m.Conditions.IsNull() {
-		m.Conditions = sentrytypes.NewLossyJsonValue("[]")
+		m.Conditions = sentrytypes.NewLossyJsonNull()
 		if len(alert.Conditions) > 0 {
 			if conditions, err := json.Marshal(alert.Conditions); err == nil {
 				m.Conditions = sentrytypes.NewLossyJsonValue(string(conditions))
@@ -298,13 +299,12 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 				return
 			}
 		}
-	} else {
-		m.Conditions = sentrytypes.NewLossyJsonNull()
-		m.ConditionsV2 = sliceutils.Map(func(condition apiclient.ProjectRuleCondition) IssueAlertConditionModel {
+	} else if m.ConditionsV2 != nil {
+		m.ConditionsV2 = ptr.Ptr(sliceutils.Map(func(condition apiclient.ProjectRuleCondition) IssueAlertConditionModel {
 			var conditionModel IssueAlertConditionModel
 			diags.Append(conditionModel.FromApi(ctx, condition)...)
 			return conditionModel
-		}, alert.Conditions)
+		}, alert.Conditions))
 
 		if diags.HasError() {
 			return

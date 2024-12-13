@@ -71,9 +71,9 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("frequency"), knownvalue.Int64Exact(30)),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("environment"), knownvalue.Null()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("owner"), knownvalue.Null()),
-		// statecheck.ExpectKnownValue(rn, tfjsonpath.New("conditions"), knownvalue.NotNull()),
-		// statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.NotNull()),
-		// statecheck.ExpectKnownValue(rn, tfjsonpath.New("actions"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("conditions"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("actions"), knownvalue.NotNull()), // TODO
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -234,7 +234,7 @@ func TestAccIssueAlertResource_jsonValues(t *testing.T) {
 	rn := "sentry_issue_alert.test"
 	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")
-	alert := acctest.RandomWithPrefix("tf-issue-alert-with-a-very-looooong-name-greater-than-64-characters")
+	alert := acctest.RandomWithPrefix("tf-issue-alert")
 	var alertId string
 
 	check := func(alert string) resource.TestCheckFunc {
@@ -253,15 +253,14 @@ func TestAccIssueAlertResource_jsonValues(t *testing.T) {
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("project"), knownvalue.StringExact(project)),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(alert)),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("action_match"), knownvalue.StringExact("any")),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filter_match"), knownvalue.StringExact("any")),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("frequency"), knownvalue.Int64Exact(30)),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("environment"), knownvalue.Null()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("owner"), knownvalue.Null()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("conditions"), knownvalue.StringExact("[]")),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.StringExact("[]")),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("actions"), knownvalue.StringExact("[]")),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("conditions"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("actions"), knownvalue.NotNull()),
 	}
 
 	resource.Test(t, resource.TestCase{

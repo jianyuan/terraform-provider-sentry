@@ -95,7 +95,6 @@ Please note the following changes since v0.12.0:
 				MarkdownDescription: "**Deprecated** in favor of `condition`. A list of triggers that determine when the rule fires. In JSON string format.",
 				DeprecationMessage:  "Use `condition` instead.",
 				Optional:            true,
-				Computed:            true,
 				CustomType: sentrytypes.LossyJsonType{
 					IgnoreKeys: []string{"name"},
 				},
@@ -255,10 +254,12 @@ func (r *IssueAlertResource) Create(ctx context.Context, req resource.CreateRequ
 
 	if !data.Conditions.IsNull() {
 		resp.Diagnostics.Append(data.Conditions.Unmarshal(&body.Conditions)...)
-	} else {
+	} else if data.ConditionsV2 != nil {
 		body.Conditions = sliceutils.Map(func(item IssueAlertConditionModel) apiclient.ProjectRuleCondition {
 			return item.ToApi()
-		}, data.ConditionsV2)
+		}, *data.ConditionsV2)
+	} else {
+		panic("provider error: conditions is required")
 	}
 
 	if !data.Filters.IsNull() {
@@ -353,10 +354,12 @@ func (r *IssueAlertResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	if !data.Conditions.IsNull() {
 		resp.Diagnostics.Append(data.Conditions.Unmarshal(&body.Conditions)...)
-	} else {
+	} else if data.ConditionsV2 != nil {
 		body.Conditions = sliceutils.Map(func(item IssueAlertConditionModel) apiclient.ProjectRuleCondition {
 			return item.ToApi()
-		}, data.ConditionsV2)
+		}, *data.ConditionsV2)
+	} else {
+		panic("provider error: conditions is required")
 	}
 
 	if !data.Filters.IsNull() {
