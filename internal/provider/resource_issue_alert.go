@@ -97,6 +97,7 @@ Please note the following changes since v0.12.0:
 				MarkdownDescription: "**Deprecated** in favor of `condition`. A list of triggers that determine when the rule fires. In JSON string format.",
 				DeprecationMessage:  "Use `condition` instead.",
 				Optional:            true,
+				Computed:            true,
 				CustomType: sentrytypes.LossyJsonType{
 					IgnoreKeys: []string{"name"},
 				},
@@ -107,6 +108,7 @@ Please note the following changes since v0.12.0:
 			"conditions_v2": schema.ListNestedAttribute{
 				MarkdownDescription: "A list of triggers that determine when the rule fires.",
 				Optional:            true,
+				Computed:            true,
 				Validators: []validator.List{
 					listvalidator.ConflictsWith(path.MatchRoot("conditions")),
 				},
@@ -441,16 +443,29 @@ func (r *IssueAlertResource) Create(ctx context.Context, req resource.CreateRequ
 		Projects:    []string{data.Project.ValueString()},
 	}
 
-	if !data.Conditions.IsNull() {
+	if !data.Conditions.IsUnknown() {
 		resp.Diagnostics.Append(data.Conditions.Unmarshal(&body.Conditions)...)
-	} else if data.ConditionsV2 != nil {
-		body.Conditions = sliceutils.Map(func(item IssueAlertConditionModel) apiclient.ProjectRuleCondition {
-			return item.ToApi()
-		}, *data.ConditionsV2)
+	} else if !data.ConditionsV2.IsUnknown() {
+		var conditions []IssueAlertConditionModel
+		resp.Diagnostics.Append(data.ConditionsV2.ElementsAs(ctx, &conditions, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		for _, condition := range conditions {
+			v, itemDiags := condition.ToApi(ctx)
+			resp.Diagnostics.Append(itemDiags...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+
+			body.Conditions = append(body.Conditions, *v)
+		}
 	} else {
 		body.Conditions = []apiclient.ProjectRuleCondition{}
 	}
 
+	// TODO
 	if !data.Filters.IsNull() {
 		resp.Diagnostics.Append(data.Filters.Unmarshal(&body.Filters)...)
 	} else if data.FiltersV2 != nil {
@@ -461,6 +476,7 @@ func (r *IssueAlertResource) Create(ctx context.Context, req resource.CreateRequ
 		body.Filters = []apiclient.ProjectRuleFilter{}
 	}
 
+	// TODO
 	if !data.Actions.IsNull() {
 		resp.Diagnostics.Append(data.Actions.Unmarshal(&body.Actions)...)
 	} else {
@@ -546,14 +562,24 @@ func (r *IssueAlertResource) Update(ctx context.Context, req resource.UpdateRequ
 		Projects:    []string{data.Project.ValueString()},
 	}
 
-	if !data.Conditions.IsNull() {
+	if !data.Conditions.IsUnknown() {
 		resp.Diagnostics.Append(data.Conditions.Unmarshal(&body.Conditions)...)
-	} else if data.ConditionsV2 != nil {
-		body.Conditions = sliceutils.Map(func(item IssueAlertConditionModel) apiclient.ProjectRuleCondition {
-			return item.ToApi()
-		}, *data.ConditionsV2)
-	} else {
-		body.Conditions = []apiclient.ProjectRuleCondition{}
+	} else if !data.ConditionsV2.IsUnknown() {
+		var conditions []IssueAlertConditionModel
+		resp.Diagnostics.Append(data.ConditionsV2.ElementsAs(ctx, &conditions, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		for _, condition := range conditions {
+			v, itemDiags := condition.ToApi(ctx)
+			resp.Diagnostics.Append(itemDiags...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+
+			body.Conditions = append(body.Conditions, *v)
+		}
 	}
 
 	if !data.Filters.IsNull() {
