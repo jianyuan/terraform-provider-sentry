@@ -58,6 +58,7 @@ resource "sentry_issue_alert" "copy" {
 - `environment` (String) Perform issue alert in a specific environment.
 - `filter_match` (String) A string determining which filters need to be true before any actions take place. Required when a value is provided for `filters`.
 - `filters` (String) A list of filters that determine if a rule fires after the necessary conditions have been met. In JSON string format.
+- `filters_v2` (Attributes List) A list of filters that determine if a rule fires after the necessary conditions have been met. (see [below for nested schema](#nestedatt--filters_v2))
 - `frequency` (Number) Perform actions at most once every `X` minutes for this issue.
 - `name` (String) The issue alert name.
 - `owner` (String) The ID of the team or user that owns the rule.
@@ -150,3 +151,109 @@ Read-Only:
 Read-Only:
 
 - `name` (String)
+
+
+
+<a id="nestedatt--filters_v2"></a>
+### Nested Schema for `filters_v2`
+
+Read-Only:
+
+- `age_comparison` (Attributes) The issue is older or newer than `value` `time`. (see [below for nested schema](#nestedatt--filters_v2--age_comparison))
+- `assigned_to` (Attributes) The issue is assigned to no one, team, or member. (see [below for nested schema](#nestedatt--filters_v2--assigned_to))
+- `event_attribute` (Attributes) The event's `attribute` value `match` `value`. (see [below for nested schema](#nestedatt--filters_v2--event_attribute))
+- `issue_category` (Attributes) The issue's category is equal to `value`. (see [below for nested schema](#nestedatt--filters_v2--issue_category))
+- `issue_occurrences` (Attributes) The issue has happened at least `value` times (Note: this is approximate). (see [below for nested schema](#nestedatt--filters_v2--issue_occurrences))
+- `latest_adopted_release` (Attributes) The {oldest_or_newest} adopted release associated with the event's issue is {older_or_newer} than the latest adopted release in {environment}. (see [below for nested schema](#nestedatt--filters_v2--latest_adopted_release))
+- `latest_release` (Attributes) The event is from the latest release. (see [below for nested schema](#nestedatt--filters_v2--latest_release))
+- `level` (Attributes) The event's level is `match` `level`. (see [below for nested schema](#nestedatt--filters_v2--level))
+- `tagged_event` (Attributes) The event's tags match `key` `match` `value`. (see [below for nested schema](#nestedatt--filters_v2--tagged_event))
+
+<a id="nestedatt--filters_v2--age_comparison"></a>
+### Nested Schema for `filters_v2.age_comparison`
+
+Read-Only:
+
+- `comparison_type` (String) Valid values are `older` and `newer`.
+- `name` (String)
+- `time` (String) Valid values are `minute`, `hour`, `day`, and `week`.
+- `value` (Number)
+
+
+<a id="nestedatt--filters_v2--assigned_to"></a>
+### Nested Schema for `filters_v2.assigned_to`
+
+Read-Only:
+
+- `name` (String)
+- `target_identifier` (String) Only required when `target_type` is `Team` or `Member`.
+- `target_type` (String) Valid values are `Unassigned`, `Team`, and `Member`.
+
+
+<a id="nestedatt--filters_v2--event_attribute"></a>
+### Nested Schema for `filters_v2.event_attribute`
+
+Read-Only:
+
+- `attribute` (String) Valid values are: `message`, `platform`, `environment`, `type`, `error.handled`, `error.unhandled`, `error.main_thread`, `exception.type`, `exception.value`, `user.id`, `user.email`, `user.username`, `user.ip_address`, `http.method`, `http.url`, `http.status_code`, `sdk.name`, `stacktrace.code`, `stacktrace.module`, `stacktrace.filename`, `stacktrace.abs_path`, `stacktrace.package`, `unreal.crashtype`, `app.in_foreground`, `os.distribution_name`, `os.distribution_version`.
+- `match` (String) Valid values are: `CONTAINS`, `ENDS_WITH`, `EQUAL`, `GREATER_OR_EQUAL`, `GREATER`, `IS_SET`, `IS_IN`, `LESS_OR_EQUAL`, `LESS`, `NOT_CONTAINS`, `NOT_ENDS_WITH`, `NOT_EQUAL`, `NOT_SET`, `NOT_STARTS_WITH`, `NOT_IN`, `STARTS_WITH`.
+- `name` (String)
+- `value` (String)
+
+
+<a id="nestedatt--filters_v2--issue_category"></a>
+### Nested Schema for `filters_v2.issue_category`
+
+Read-Only:
+
+- `name` (String)
+- `value` (String) Valid values are: `Error`, `Performance`, `Profile`, `Cron`, `Replay`, `Feedback`, `Uptime`, `Metric_Alert`.
+
+
+<a id="nestedatt--filters_v2--issue_occurrences"></a>
+### Nested Schema for `filters_v2.issue_occurrences`
+
+Read-Only:
+
+- `name` (String)
+- `value` (Number)
+
+
+<a id="nestedatt--filters_v2--latest_adopted_release"></a>
+### Nested Schema for `filters_v2.latest_adopted_release`
+
+Read-Only:
+
+- `environment` (String)
+- `name` (String)
+- `older_or_newer` (String) Valid values are `older` and `newer`.
+- `oldest_or_newest` (String) Valid values are `oldest` and `newest`.
+
+
+<a id="nestedatt--filters_v2--latest_release"></a>
+### Nested Schema for `filters_v2.latest_release`
+
+Read-Only:
+
+- `name` (String)
+
+
+<a id="nestedatt--filters_v2--level"></a>
+### Nested Schema for `filters_v2.level`
+
+Read-Only:
+
+- `level` (String) Valid values are: `sample`, `debug`, `info`, `warning`, `error`, `fatal`.
+- `match` (String) Valid values are: `EQUAL`, `GREATER_OR_EQUAL`, `LESS_OR_EQUAL`.
+- `name` (String)
+
+
+<a id="nestedatt--filters_v2--tagged_event"></a>
+### Nested Schema for `filters_v2.tagged_event`
+
+Read-Only:
+
+- `key` (String)
+- `match` (String) Valid values are: `CONTAINS`, `ENDS_WITH`, `EQUAL`, `GREATER_OR_EQUAL`, `GREATER`, `IS_SET`, `IS_IN`, `LESS_OR_EQUAL`, `LESS`, `NOT_CONTAINS`, `NOT_ENDS_WITH`, `NOT_EQUAL`, `NOT_SET`, `NOT_STARTS_WITH`, `NOT_IN`, `STARTS_WITH`.
+- `name` (String)
+- `value` (String)

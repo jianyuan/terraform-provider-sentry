@@ -401,7 +401,7 @@ paths:
                 filters:
                   type: array
                   items:
-                    type: object
+                    $ref: "#/components/schemas/ProjectRuleFilter"
                 actions:
                   type: array
                   items:
@@ -498,7 +498,7 @@ paths:
                 filters:
                   type: array
                   items:
-                    type: object
+                    $ref: "#/components/schemas/ProjectRuleFilter"
                 actions:
                   type: array
                   items:
@@ -762,7 +762,7 @@ components:
         filters:
           type: array
           items:
-            type: object
+            $ref: "#/components/schemas/ProjectRuleFilter"
         actions:
           type: array
           items:
@@ -911,6 +911,184 @@ components:
           type: number
           format: double
         interval:
+          type: string
+    ProjectRuleFilter:
+      oneOf:
+        - $ref: "#/components/schemas/ProjectRuleFilterAgeComparison"
+        - $ref: "#/components/schemas/ProjectRuleFilterIssueOccurrences"
+        - $ref: "#/components/schemas/ProjectRuleFilterAssignedTo"
+        - $ref: "#/components/schemas/ProjectRuleFilterLatestAdoptedRelease"
+        - $ref: "#/components/schemas/ProjectRuleFilterLatestRelease"
+        - $ref: "#/components/schemas/ProjectRuleFilterIssueCategory"
+        - $ref: "#/components/schemas/ProjectRuleFilterEventAttribute"
+        - $ref: "#/components/schemas/ProjectRuleFilterTaggedEvent"
+        - $ref: "#/components/schemas/ProjectRuleFilterLevel"
+      discriminator:
+        propertyName: id
+        mapping:
+          "sentry.rules.filters.age_comparison.AgeComparisonFilter": "#/components/schemas/ProjectRuleFilterAgeComparison"
+          "sentry.rules.filters.issue_occurrences.IssueOccurrencesFilter": "#/components/schemas/ProjectRuleFilterIssueOccurrences"
+          "sentry.rules.filters.assigned_to.AssignedToFilter": "#/components/schemas/ProjectRuleFilterAssignedTo"
+          "sentry.rules.filters.latest_adopted_release_filter.LatestAdoptedReleaseFilter": "#/components/schemas/ProjectRuleFilterLatestAdoptedRelease"
+          "sentry.rules.filters.latest_release.LatestReleaseFilter": "#/components/schemas/ProjectRuleFilterLatestRelease"
+          "sentry.rules.filters.issue_category.IssueCategoryFilter": "#/components/schemas/ProjectRuleFilterIssueCategory"
+          "sentry.rules.filters.event_attribute.EventAttributeFilter": "#/components/schemas/ProjectRuleFilterEventAttribute"
+          "sentry.rules.filters.tagged_event.TaggedEventFilter": "#/components/schemas/ProjectRuleFilterTaggedEvent"
+          "sentry.rules.filters.level.LevelFilter": "#/components/schemas/ProjectRuleFilterLevel"
+    ProjectRuleFilterAgeComparison:
+      type: object
+      required:
+        - id
+        - comparison_type
+        - value
+        - time
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.filters.age_comparison.AgeComparisonFilter"
+        name:
+          type: string
+        comparison_type:
+          type: string
+        value:
+          type: integer
+          format: int64
+        time:
+          type: string
+    ProjectRuleFilterIssueOccurrences:
+      type: object
+      required:
+        - id
+        - value
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.filters.issue_occurrences.IssueOccurrencesFilter"
+        name:
+          type: string
+        value:
+          type: integer
+          format: int64
+    ProjectRuleFilterAssignedTo:
+      type: object
+      required:
+        - id
+        - targetType
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.filters.assigned_to.AssignedToFilter"
+        name:
+          type: string
+        targetType:
+          type: string
+        targetIdentifier:
+          oneOf:
+            - type: string
+            - type: integer
+              x-go-type: json.Number
+    ProjectRuleFilterLatestAdoptedRelease:
+      type: object
+      required:
+        - id
+        - oldest_or_newest
+        - older_or_newer
+        - environment
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.filters.latest_adopted_release_filter.LatestAdoptedReleaseFilter"
+        name:
+          type: string
+        oldest_or_newest:
+          type: string
+        older_or_newer:
+          type: string
+        environment:
+          type: string
+    ProjectRuleFilterLatestRelease:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.filters.latest_release.LatestReleaseFilter"
+        name:
+          type: string
+    ProjectRuleFilterIssueCategory:
+      type: object
+      required:
+        - id
+        - value
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.filters.issue_category.IssueCategoryFilter"
+        name:
+          type: string
+        value:
+          type: string
+    ProjectRuleFilterEventAttribute:
+      type: object
+      required:
+        - id
+        - attribute
+        - match
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.filters.event_attribute.EventAttributeFilter"
+        name:
+          type: string
+        attribute:
+          type: string
+        match:
+          type: string
+        value:
+          type: string
+    ProjectRuleFilterTaggedEvent:
+      type: object
+      required:
+        - id
+        - key
+        - match
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.filters.tagged_event.TaggedEventFilter"
+        name:
+          type: string
+        key:
+          type: string
+        match:
+          type: string
+        value:
+          type: string
+    ProjectRuleFilterLevel:
+      type: object
+      required:
+        - id
+        - level
+        - match
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.filters.level.LevelFilter"
+        name:
+          type: string
+        level:
+          type: string
+        match:
           type: string
     Team:
       type: object

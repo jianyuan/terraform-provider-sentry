@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -17,6 +18,7 @@ import (
 	"github.com/jianyuan/go-utils/sliceutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
@@ -107,7 +109,6 @@ Please note the following changes since v0.12.0:
 				Optional:            true,
 				Validators: []validator.List{
 					listvalidator.ConflictsWith(path.MatchRoot("conditions")),
-					listvalidator.SizeAtLeast(1),
 				},
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: tfutils.WithMutuallyExclusiveValidator(map[string]schema.SingleNestedAttribute{
@@ -195,9 +196,197 @@ Please note the following changes since v0.12.0:
 				},
 			},
 			"filters": schema.StringAttribute{
-				MarkdownDescription: "A list of filters that determine if a rule fires after the necessary conditions have been met. In JSON string format.",
+				MarkdownDescription: "**Deprecated** in favor of `filter`. A list of filters that determine if a rule fires after the necessary conditions have been met. In JSON string format.",
 				Optional:            true,
 				CustomType:          sentrytypes.LossyJsonType{},
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.MatchRoot("filters_v2")),
+				},
+			},
+			"filters_v2": schema.ListNestedAttribute{
+				MarkdownDescription: "A list of filters that determine if a rule fires after the necessary conditions have been met.",
+				Optional:            true,
+				Validators: []validator.List{
+					listvalidator.ConflictsWith(path.MatchRoot("filters")),
+				},
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: tfutils.WithMutuallyExclusiveValidator(map[string]schema.SingleNestedAttribute{
+						"age_comparison": {
+							MarkdownDescription: "The issue is older or newer than `value` `time`.",
+							Optional:            true,
+							Attributes: map[string]schema.Attribute{
+								"name": nameStringAttribute,
+								"comparison_type": schema.StringAttribute{
+									MarkdownDescription: "Valid values are `older` and `newer`.",
+									Required:            true,
+									Validators: []validator.String{
+										stringvalidator.OneOf("older", "newer"),
+									},
+								},
+								"value": schema.Int64Attribute{
+									Required: true,
+								},
+								"time": schema.StringAttribute{
+									MarkdownDescription: "Valid values are `minute`, `hour`, `day`, and `week`.",
+									Required:            true,
+									Validators: []validator.String{
+										stringvalidator.OneOf("minute", "hour", "day", "week"),
+									},
+								},
+							},
+						},
+						"issue_occurrences": {
+							MarkdownDescription: "The issue has happened at least `value` times (Note: this is approximate).",
+							Optional:            true,
+							Attributes: map[string]schema.Attribute{
+								"name": nameStringAttribute,
+								"value": schema.Int64Attribute{
+									Required: true,
+								},
+							},
+						},
+						"assigned_to": {
+							MarkdownDescription: "The issue is assigned to no one, team, or member.",
+							Optional:            true,
+							Attributes: map[string]schema.Attribute{
+								"name": nameStringAttribute,
+								"target_type": schema.StringAttribute{
+									MarkdownDescription: "Valid values are `Unassigned`, `Team`, and `Member`.",
+									Required:            true,
+									Validators: []validator.String{
+										stringvalidator.OneOf("Unassigned", "Team", "Member"),
+									},
+								},
+								"target_identifier": schema.StringAttribute{
+									MarkdownDescription: "Only required when `target_type` is `Team` or `Member`.",
+									Optional:            true,
+								},
+							},
+						},
+						"latest_adopted_release": {
+							MarkdownDescription: "The {oldest_or_newest} adopted release associated with the event's issue is {older_or_newer} than the latest adopted release in {environment}.",
+							Optional:            true,
+							Attributes: map[string]schema.Attribute{
+								"name": nameStringAttribute,
+								"oldest_or_newest": schema.StringAttribute{
+									MarkdownDescription: "Valid values are `oldest` and `newest`.",
+									Required:            true,
+									Validators: []validator.String{
+										stringvalidator.OneOf("oldest", "newest"),
+									},
+								},
+								"older_or_newer": schema.StringAttribute{
+									MarkdownDescription: "Valid values are `older` and `newer`.",
+									Required:            true,
+									Validators: []validator.String{
+										stringvalidator.OneOf("older", "newer"),
+									},
+								},
+								"environment": schema.StringAttribute{
+									Required: true,
+								},
+							},
+						},
+						"latest_release": {
+							MarkdownDescription: "The event is from the latest release.",
+							Optional:            true,
+							Attributes: map[string]schema.Attribute{
+								"name": nameStringAttribute,
+							},
+						},
+						"issue_category": {
+							MarkdownDescription: "The issue's category is equal to `value`.",
+							Optional:            true,
+							Attributes: map[string]schema.Attribute{
+								"name": nameStringAttribute,
+								"value": schema.StringAttribute{
+									MarkdownDescription: "Valid values are: " + strings.Join(sliceutils.Map(func(v string) string {
+										return fmt.Sprintf("`%s`", v)
+									}, sentrydata.IssueGroupCategories), ", ") + ".",
+									Required: true,
+									Validators: []validator.String{
+										stringvalidator.OneOf(sentrydata.IssueGroupCategories...),
+									},
+								},
+							},
+						},
+						"event_attribute": {
+							MarkdownDescription: "The event's `attribute` value `match` `value`.",
+							Optional:            true,
+							Attributes: map[string]schema.Attribute{
+								"name": nameStringAttribute,
+								"attribute": schema.StringAttribute{
+									MarkdownDescription: "Valid values are: " + strings.Join(sliceutils.Map(func(v string) string {
+										return fmt.Sprintf("`%s`", v)
+									}, sentrydata.EventAttributes), ", ") + ".",
+									Required: true,
+									Validators: []validator.String{
+										stringvalidator.OneOf(sentrydata.EventAttributes...),
+									},
+								},
+								"match": schema.StringAttribute{
+									MarkdownDescription: "Valid values are: " + strings.Join(sliceutils.Map(func(v string) string {
+										return fmt.Sprintf("`%s`", v)
+									}, sentrydata.MatchTypes), ", ") + ".",
+									Required: true,
+									Validators: []validator.String{
+										stringvalidator.OneOf(sentrydata.MatchTypes...),
+									},
+								},
+								"value": schema.StringAttribute{
+									Optional: true,
+								},
+							},
+						},
+						"tagged_event": {
+							MarkdownDescription: "The event's tags match `key` `match` `value`.",
+							Optional:            true,
+							Attributes: map[string]schema.Attribute{
+								"name": nameStringAttribute,
+								"key": schema.StringAttribute{
+									Required: true,
+								},
+								"match": schema.StringAttribute{
+									MarkdownDescription: "Valid values are: " + strings.Join(sliceutils.Map(func(v string) string {
+										return fmt.Sprintf("`%s`", v)
+									}, sentrydata.MatchTypes), ", ") + ".",
+									Required: true,
+									Validators: []validator.String{
+										stringvalidator.OneOf(sentrydata.MatchTypes...),
+									},
+								},
+								"value": schema.StringAttribute{
+									Optional: true,
+								},
+							},
+						},
+						"level": {
+							MarkdownDescription: "The event's level is `match` `level`.",
+							Optional:            true,
+							Attributes: map[string]schema.Attribute{
+								"name": nameStringAttribute,
+								"match": schema.StringAttribute{
+									MarkdownDescription: "Valid values are: " + strings.Join(sliceutils.Map(func(v string) string {
+										return fmt.Sprintf("`%s`", v)
+									}, sentrydata.LevelMatchTypes), ", ") + ".",
+									Required: true,
+									Validators: []validator.String{
+										stringvalidator.OneOf(sentrydata.LevelMatchTypes...),
+									},
+								},
+								"level": schema.StringAttribute{
+									MarkdownDescription: "Valid values are: " + strings.Join(sliceutils.Map(func(v string) string {
+										return fmt.Sprintf("`%s`", v)
+									}, sentrydata.LogLevels), ", ") + ".",
+									Required: true,
+									Validators: []validator.String{
+										stringvalidator.OneOf(sentrydata.LogLevels...),
+									},
+								},
+							},
+						},
+					}),
+				},
 			},
 			"actions": schema.StringAttribute{
 				MarkdownDescription: "List of actions. In JSON string format.",
@@ -259,13 +448,17 @@ func (r *IssueAlertResource) Create(ctx context.Context, req resource.CreateRequ
 			return item.ToApi()
 		}, *data.ConditionsV2)
 	} else {
-		panic("provider error: conditions is required")
+		body.Conditions = []apiclient.ProjectRuleCondition{}
 	}
 
 	if !data.Filters.IsNull() {
 		resp.Diagnostics.Append(data.Filters.Unmarshal(&body.Filters)...)
+	} else if data.FiltersV2 != nil {
+		body.Filters = sliceutils.Map(func(item IssueAlertFilterModel) apiclient.ProjectRuleFilter {
+			return item.ToApi()
+		}, *data.FiltersV2)
 	} else {
-		body.Filters = []map[string]interface{}{}
+		body.Filters = []apiclient.ProjectRuleFilter{}
 	}
 
 	if !data.Actions.IsNull() {
@@ -273,6 +466,7 @@ func (r *IssueAlertResource) Create(ctx context.Context, req resource.CreateRequ
 	} else {
 		body.Actions = []map[string]interface{}{}
 	}
+	// TODO: Action is required
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -359,13 +553,17 @@ func (r *IssueAlertResource) Update(ctx context.Context, req resource.UpdateRequ
 			return item.ToApi()
 		}, *data.ConditionsV2)
 	} else {
-		panic("provider error: conditions is required")
+		body.Conditions = []apiclient.ProjectRuleCondition{}
 	}
 
 	if !data.Filters.IsNull() {
 		resp.Diagnostics.Append(data.Filters.Unmarshal(&body.Filters)...)
+	} else if data.FiltersV2 != nil {
+		body.Filters = sliceutils.Map(func(item IssueAlertFilterModel) apiclient.ProjectRuleFilter {
+			return item.ToApi()
+		}, *data.FiltersV2)
 	} else {
-		body.Filters = []map[string]interface{}{}
+		body.Filters = []apiclient.ProjectRuleFilter{}
 	}
 
 	if !data.Actions.IsNull() {

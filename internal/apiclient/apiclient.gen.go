@@ -62,6 +62,51 @@ const (
 	SentryRulesConditionsRegressionEventRegressionEventCondition ProjectRuleConditionRegressionEventId = "sentry.rules.conditions.regression_event.RegressionEventCondition"
 )
 
+// Defines values for ProjectRuleFilterAgeComparisonId.
+const (
+	SentryRulesFiltersAgeComparisonAgeComparisonFilter ProjectRuleFilterAgeComparisonId = "sentry.rules.filters.age_comparison.AgeComparisonFilter"
+)
+
+// Defines values for ProjectRuleFilterAssignedToId.
+const (
+	SentryRulesFiltersAssignedToAssignedToFilter ProjectRuleFilterAssignedToId = "sentry.rules.filters.assigned_to.AssignedToFilter"
+)
+
+// Defines values for ProjectRuleFilterEventAttributeId.
+const (
+	SentryRulesFiltersEventAttributeEventAttributeFilter ProjectRuleFilterEventAttributeId = "sentry.rules.filters.event_attribute.EventAttributeFilter"
+)
+
+// Defines values for ProjectRuleFilterIssueCategoryId.
+const (
+	SentryRulesFiltersIssueCategoryIssueCategoryFilter ProjectRuleFilterIssueCategoryId = "sentry.rules.filters.issue_category.IssueCategoryFilter"
+)
+
+// Defines values for ProjectRuleFilterIssueOccurrencesId.
+const (
+	SentryRulesFiltersIssueOccurrencesIssueOccurrencesFilter ProjectRuleFilterIssueOccurrencesId = "sentry.rules.filters.issue_occurrences.IssueOccurrencesFilter"
+)
+
+// Defines values for ProjectRuleFilterLatestAdoptedReleaseId.
+const (
+	SentryRulesFiltersLatestAdoptedReleaseFilterLatestAdoptedReleaseFilter ProjectRuleFilterLatestAdoptedReleaseId = "sentry.rules.filters.latest_adopted_release_filter.LatestAdoptedReleaseFilter"
+)
+
+// Defines values for ProjectRuleFilterLatestReleaseId.
+const (
+	SentryRulesFiltersLatestReleaseLatestReleaseFilter ProjectRuleFilterLatestReleaseId = "sentry.rules.filters.latest_release.LatestReleaseFilter"
+)
+
+// Defines values for ProjectRuleFilterLevelId.
+const (
+	SentryRulesFiltersLevelLevelFilter ProjectRuleFilterLevelId = "sentry.rules.filters.level.LevelFilter"
+)
+
+// Defines values for ProjectRuleFilterTaggedEventId.
+const (
+	SentryRulesFiltersTaggedEventTaggedEventFilter ProjectRuleFilterTaggedEventId = "sentry.rules.filters.tagged_event.TaggedEventFilter"
+)
+
 // Defines values for ListProjectClientKeysParamsStatus.
 const (
 	Active   ListProjectClientKeysParamsStatus = "active"
@@ -130,7 +175,7 @@ type ProjectRule struct {
 	Conditions  []ProjectRuleCondition   `json:"conditions"`
 	Environment *string                  `json:"environment"`
 	FilterMatch string                   `json:"filterMatch"`
-	Filters     []map[string]interface{} `json:"filters"`
+	Filters     []ProjectRuleFilter      `json:"filters"`
 	Frequency   int64                    `json:"frequency"`
 	Id          string                   `json:"id"`
 	Name        string                   `json:"name"`
@@ -227,6 +272,121 @@ type ProjectRuleConditionRegressionEvent struct {
 // ProjectRuleConditionRegressionEventId defines model for ProjectRuleConditionRegressionEvent.Id.
 type ProjectRuleConditionRegressionEventId string
 
+// ProjectRuleFilter defines model for ProjectRuleFilter.
+type ProjectRuleFilter struct {
+	union json.RawMessage
+}
+
+// ProjectRuleFilterAgeComparison defines model for ProjectRuleFilterAgeComparison.
+type ProjectRuleFilterAgeComparison struct {
+	ComparisonType string                           `json:"comparison_type"`
+	Id             ProjectRuleFilterAgeComparisonId `json:"id"`
+	Name           *string                          `json:"name,omitempty"`
+	Time           string                           `json:"time"`
+	Value          int64                            `json:"value"`
+}
+
+// ProjectRuleFilterAgeComparisonId defines model for ProjectRuleFilterAgeComparison.Id.
+type ProjectRuleFilterAgeComparisonId string
+
+// ProjectRuleFilterAssignedTo defines model for ProjectRuleFilterAssignedTo.
+type ProjectRuleFilterAssignedTo struct {
+	Id               ProjectRuleFilterAssignedToId                 `json:"id"`
+	Name             *string                                       `json:"name,omitempty"`
+	TargetIdentifier *ProjectRuleFilterAssignedTo_TargetIdentifier `json:"targetIdentifier,omitempty"`
+	TargetType       string                                        `json:"targetType"`
+}
+
+// ProjectRuleFilterAssignedToId defines model for ProjectRuleFilterAssignedTo.Id.
+type ProjectRuleFilterAssignedToId string
+
+// ProjectRuleFilterAssignedToTargetIdentifier0 defines model for .
+type ProjectRuleFilterAssignedToTargetIdentifier0 = string
+
+// ProjectRuleFilterAssignedToTargetIdentifier1 defines model for .
+type ProjectRuleFilterAssignedToTargetIdentifier1 = json.Number
+
+// ProjectRuleFilterAssignedTo_TargetIdentifier defines model for ProjectRuleFilterAssignedTo.TargetIdentifier.
+type ProjectRuleFilterAssignedTo_TargetIdentifier struct {
+	union json.RawMessage
+}
+
+// ProjectRuleFilterEventAttribute defines model for ProjectRuleFilterEventAttribute.
+type ProjectRuleFilterEventAttribute struct {
+	Attribute string                            `json:"attribute"`
+	Id        ProjectRuleFilterEventAttributeId `json:"id"`
+	Match     string                            `json:"match"`
+	Name      *string                           `json:"name,omitempty"`
+	Value     *string                           `json:"value,omitempty"`
+}
+
+// ProjectRuleFilterEventAttributeId defines model for ProjectRuleFilterEventAttribute.Id.
+type ProjectRuleFilterEventAttributeId string
+
+// ProjectRuleFilterIssueCategory defines model for ProjectRuleFilterIssueCategory.
+type ProjectRuleFilterIssueCategory struct {
+	Id    ProjectRuleFilterIssueCategoryId `json:"id"`
+	Name  *string                          `json:"name,omitempty"`
+	Value string                           `json:"value"`
+}
+
+// ProjectRuleFilterIssueCategoryId defines model for ProjectRuleFilterIssueCategory.Id.
+type ProjectRuleFilterIssueCategoryId string
+
+// ProjectRuleFilterIssueOccurrences defines model for ProjectRuleFilterIssueOccurrences.
+type ProjectRuleFilterIssueOccurrences struct {
+	Id    ProjectRuleFilterIssueOccurrencesId `json:"id"`
+	Name  *string                             `json:"name,omitempty"`
+	Value int64                               `json:"value"`
+}
+
+// ProjectRuleFilterIssueOccurrencesId defines model for ProjectRuleFilterIssueOccurrences.Id.
+type ProjectRuleFilterIssueOccurrencesId string
+
+// ProjectRuleFilterLatestAdoptedRelease defines model for ProjectRuleFilterLatestAdoptedRelease.
+type ProjectRuleFilterLatestAdoptedRelease struct {
+	Environment    string                                  `json:"environment"`
+	Id             ProjectRuleFilterLatestAdoptedReleaseId `json:"id"`
+	Name           *string                                 `json:"name,omitempty"`
+	OlderOrNewer   string                                  `json:"older_or_newer"`
+	OldestOrNewest string                                  `json:"oldest_or_newest"`
+}
+
+// ProjectRuleFilterLatestAdoptedReleaseId defines model for ProjectRuleFilterLatestAdoptedRelease.Id.
+type ProjectRuleFilterLatestAdoptedReleaseId string
+
+// ProjectRuleFilterLatestRelease defines model for ProjectRuleFilterLatestRelease.
+type ProjectRuleFilterLatestRelease struct {
+	Id   ProjectRuleFilterLatestReleaseId `json:"id"`
+	Name *string                          `json:"name,omitempty"`
+}
+
+// ProjectRuleFilterLatestReleaseId defines model for ProjectRuleFilterLatestRelease.Id.
+type ProjectRuleFilterLatestReleaseId string
+
+// ProjectRuleFilterLevel defines model for ProjectRuleFilterLevel.
+type ProjectRuleFilterLevel struct {
+	Id    ProjectRuleFilterLevelId `json:"id"`
+	Level string                   `json:"level"`
+	Match string                   `json:"match"`
+	Name  *string                  `json:"name,omitempty"`
+}
+
+// ProjectRuleFilterLevelId defines model for ProjectRuleFilterLevel.Id.
+type ProjectRuleFilterLevelId string
+
+// ProjectRuleFilterTaggedEvent defines model for ProjectRuleFilterTaggedEvent.
+type ProjectRuleFilterTaggedEvent struct {
+	Id    ProjectRuleFilterTaggedEventId `json:"id"`
+	Key   string                         `json:"key"`
+	Match string                         `json:"match"`
+	Name  *string                        `json:"name,omitempty"`
+	Value *string                        `json:"value,omitempty"`
+}
+
+// ProjectRuleFilterTaggedEventId defines model for ProjectRuleFilterTaggedEvent.Id.
+type ProjectRuleFilterTaggedEventId string
+
 // Team defines model for Team.
 type Team struct {
 	Id   string `json:"id"`
@@ -310,7 +470,7 @@ type CreateProjectRuleJSONBody struct {
 	Conditions  []ProjectRuleCondition   `json:"conditions"`
 	Environment *string                  `json:"environment,omitempty"`
 	FilterMatch string                   `json:"filterMatch"`
-	Filters     []map[string]interface{} `json:"filters"`
+	Filters     []ProjectRuleFilter      `json:"filters"`
 	Frequency   int64                    `json:"frequency"`
 	Name        string                   `json:"name"`
 	Owner       *string                  `json:"owner,omitempty"`
@@ -324,7 +484,7 @@ type UpdateProjectRuleJSONBody struct {
 	Conditions  []ProjectRuleCondition   `json:"conditions"`
 	Environment *string                  `json:"environment,omitempty"`
 	FilterMatch string                   `json:"filterMatch"`
-	Filters     []map[string]interface{} `json:"filters"`
+	Filters     []ProjectRuleFilter      `json:"filters"`
 	Frequency   int64                    `json:"frequency"`
 	Name        string                   `json:"name"`
 	Owner       *string                  `json:"owner,omitempty"`
@@ -622,6 +782,367 @@ func (t ProjectRuleCondition) MarshalJSON() ([]byte, error) {
 }
 
 func (t *ProjectRuleCondition) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsProjectRuleFilterAgeComparison returns the union data inside the ProjectRuleFilter as a ProjectRuleFilterAgeComparison
+func (t ProjectRuleFilter) AsProjectRuleFilterAgeComparison() (ProjectRuleFilterAgeComparison, error) {
+	var body ProjectRuleFilterAgeComparison
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectRuleFilterAgeComparison overwrites any union data inside the ProjectRuleFilter as the provided ProjectRuleFilterAgeComparison
+func (t *ProjectRuleFilter) FromProjectRuleFilterAgeComparison(v ProjectRuleFilterAgeComparison) error {
+	v.Id = "sentry.rules.filters.age_comparison.AgeComparisonFilter"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectRuleFilterAgeComparison performs a merge with any union data inside the ProjectRuleFilter, using the provided ProjectRuleFilterAgeComparison
+func (t *ProjectRuleFilter) MergeProjectRuleFilterAgeComparison(v ProjectRuleFilterAgeComparison) error {
+	v.Id = "sentry.rules.filters.age_comparison.AgeComparisonFilter"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectRuleFilterIssueOccurrences returns the union data inside the ProjectRuleFilter as a ProjectRuleFilterIssueOccurrences
+func (t ProjectRuleFilter) AsProjectRuleFilterIssueOccurrences() (ProjectRuleFilterIssueOccurrences, error) {
+	var body ProjectRuleFilterIssueOccurrences
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectRuleFilterIssueOccurrences overwrites any union data inside the ProjectRuleFilter as the provided ProjectRuleFilterIssueOccurrences
+func (t *ProjectRuleFilter) FromProjectRuleFilterIssueOccurrences(v ProjectRuleFilterIssueOccurrences) error {
+	v.Id = "sentry.rules.filters.issue_occurrences.IssueOccurrencesFilter"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectRuleFilterIssueOccurrences performs a merge with any union data inside the ProjectRuleFilter, using the provided ProjectRuleFilterIssueOccurrences
+func (t *ProjectRuleFilter) MergeProjectRuleFilterIssueOccurrences(v ProjectRuleFilterIssueOccurrences) error {
+	v.Id = "sentry.rules.filters.issue_occurrences.IssueOccurrencesFilter"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectRuleFilterAssignedTo returns the union data inside the ProjectRuleFilter as a ProjectRuleFilterAssignedTo
+func (t ProjectRuleFilter) AsProjectRuleFilterAssignedTo() (ProjectRuleFilterAssignedTo, error) {
+	var body ProjectRuleFilterAssignedTo
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectRuleFilterAssignedTo overwrites any union data inside the ProjectRuleFilter as the provided ProjectRuleFilterAssignedTo
+func (t *ProjectRuleFilter) FromProjectRuleFilterAssignedTo(v ProjectRuleFilterAssignedTo) error {
+	v.Id = "sentry.rules.filters.assigned_to.AssignedToFilter"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectRuleFilterAssignedTo performs a merge with any union data inside the ProjectRuleFilter, using the provided ProjectRuleFilterAssignedTo
+func (t *ProjectRuleFilter) MergeProjectRuleFilterAssignedTo(v ProjectRuleFilterAssignedTo) error {
+	v.Id = "sentry.rules.filters.assigned_to.AssignedToFilter"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectRuleFilterLatestAdoptedRelease returns the union data inside the ProjectRuleFilter as a ProjectRuleFilterLatestAdoptedRelease
+func (t ProjectRuleFilter) AsProjectRuleFilterLatestAdoptedRelease() (ProjectRuleFilterLatestAdoptedRelease, error) {
+	var body ProjectRuleFilterLatestAdoptedRelease
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectRuleFilterLatestAdoptedRelease overwrites any union data inside the ProjectRuleFilter as the provided ProjectRuleFilterLatestAdoptedRelease
+func (t *ProjectRuleFilter) FromProjectRuleFilterLatestAdoptedRelease(v ProjectRuleFilterLatestAdoptedRelease) error {
+	v.Id = "sentry.rules.filters.latest_adopted_release_filter.LatestAdoptedReleaseFilter"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectRuleFilterLatestAdoptedRelease performs a merge with any union data inside the ProjectRuleFilter, using the provided ProjectRuleFilterLatestAdoptedRelease
+func (t *ProjectRuleFilter) MergeProjectRuleFilterLatestAdoptedRelease(v ProjectRuleFilterLatestAdoptedRelease) error {
+	v.Id = "sentry.rules.filters.latest_adopted_release_filter.LatestAdoptedReleaseFilter"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectRuleFilterLatestRelease returns the union data inside the ProjectRuleFilter as a ProjectRuleFilterLatestRelease
+func (t ProjectRuleFilter) AsProjectRuleFilterLatestRelease() (ProjectRuleFilterLatestRelease, error) {
+	var body ProjectRuleFilterLatestRelease
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectRuleFilterLatestRelease overwrites any union data inside the ProjectRuleFilter as the provided ProjectRuleFilterLatestRelease
+func (t *ProjectRuleFilter) FromProjectRuleFilterLatestRelease(v ProjectRuleFilterLatestRelease) error {
+	v.Id = "sentry.rules.filters.latest_release.LatestReleaseFilter"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectRuleFilterLatestRelease performs a merge with any union data inside the ProjectRuleFilter, using the provided ProjectRuleFilterLatestRelease
+func (t *ProjectRuleFilter) MergeProjectRuleFilterLatestRelease(v ProjectRuleFilterLatestRelease) error {
+	v.Id = "sentry.rules.filters.latest_release.LatestReleaseFilter"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectRuleFilterIssueCategory returns the union data inside the ProjectRuleFilter as a ProjectRuleFilterIssueCategory
+func (t ProjectRuleFilter) AsProjectRuleFilterIssueCategory() (ProjectRuleFilterIssueCategory, error) {
+	var body ProjectRuleFilterIssueCategory
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectRuleFilterIssueCategory overwrites any union data inside the ProjectRuleFilter as the provided ProjectRuleFilterIssueCategory
+func (t *ProjectRuleFilter) FromProjectRuleFilterIssueCategory(v ProjectRuleFilterIssueCategory) error {
+	v.Id = "sentry.rules.filters.issue_category.IssueCategoryFilter"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectRuleFilterIssueCategory performs a merge with any union data inside the ProjectRuleFilter, using the provided ProjectRuleFilterIssueCategory
+func (t *ProjectRuleFilter) MergeProjectRuleFilterIssueCategory(v ProjectRuleFilterIssueCategory) error {
+	v.Id = "sentry.rules.filters.issue_category.IssueCategoryFilter"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectRuleFilterEventAttribute returns the union data inside the ProjectRuleFilter as a ProjectRuleFilterEventAttribute
+func (t ProjectRuleFilter) AsProjectRuleFilterEventAttribute() (ProjectRuleFilterEventAttribute, error) {
+	var body ProjectRuleFilterEventAttribute
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectRuleFilterEventAttribute overwrites any union data inside the ProjectRuleFilter as the provided ProjectRuleFilterEventAttribute
+func (t *ProjectRuleFilter) FromProjectRuleFilterEventAttribute(v ProjectRuleFilterEventAttribute) error {
+	v.Id = "sentry.rules.filters.event_attribute.EventAttributeFilter"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectRuleFilterEventAttribute performs a merge with any union data inside the ProjectRuleFilter, using the provided ProjectRuleFilterEventAttribute
+func (t *ProjectRuleFilter) MergeProjectRuleFilterEventAttribute(v ProjectRuleFilterEventAttribute) error {
+	v.Id = "sentry.rules.filters.event_attribute.EventAttributeFilter"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectRuleFilterTaggedEvent returns the union data inside the ProjectRuleFilter as a ProjectRuleFilterTaggedEvent
+func (t ProjectRuleFilter) AsProjectRuleFilterTaggedEvent() (ProjectRuleFilterTaggedEvent, error) {
+	var body ProjectRuleFilterTaggedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectRuleFilterTaggedEvent overwrites any union data inside the ProjectRuleFilter as the provided ProjectRuleFilterTaggedEvent
+func (t *ProjectRuleFilter) FromProjectRuleFilterTaggedEvent(v ProjectRuleFilterTaggedEvent) error {
+	v.Id = "sentry.rules.filters.tagged_event.TaggedEventFilter"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectRuleFilterTaggedEvent performs a merge with any union data inside the ProjectRuleFilter, using the provided ProjectRuleFilterTaggedEvent
+func (t *ProjectRuleFilter) MergeProjectRuleFilterTaggedEvent(v ProjectRuleFilterTaggedEvent) error {
+	v.Id = "sentry.rules.filters.tagged_event.TaggedEventFilter"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectRuleFilterLevel returns the union data inside the ProjectRuleFilter as a ProjectRuleFilterLevel
+func (t ProjectRuleFilter) AsProjectRuleFilterLevel() (ProjectRuleFilterLevel, error) {
+	var body ProjectRuleFilterLevel
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectRuleFilterLevel overwrites any union data inside the ProjectRuleFilter as the provided ProjectRuleFilterLevel
+func (t *ProjectRuleFilter) FromProjectRuleFilterLevel(v ProjectRuleFilterLevel) error {
+	v.Id = "sentry.rules.filters.level.LevelFilter"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectRuleFilterLevel performs a merge with any union data inside the ProjectRuleFilter, using the provided ProjectRuleFilterLevel
+func (t *ProjectRuleFilter) MergeProjectRuleFilterLevel(v ProjectRuleFilterLevel) error {
+	v.Id = "sentry.rules.filters.level.LevelFilter"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ProjectRuleFilter) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"id"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t ProjectRuleFilter) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "sentry.rules.filters.age_comparison.AgeComparisonFilter":
+		return t.AsProjectRuleFilterAgeComparison()
+	case "sentry.rules.filters.assigned_to.AssignedToFilter":
+		return t.AsProjectRuleFilterAssignedTo()
+	case "sentry.rules.filters.event_attribute.EventAttributeFilter":
+		return t.AsProjectRuleFilterEventAttribute()
+	case "sentry.rules.filters.issue_category.IssueCategoryFilter":
+		return t.AsProjectRuleFilterIssueCategory()
+	case "sentry.rules.filters.issue_occurrences.IssueOccurrencesFilter":
+		return t.AsProjectRuleFilterIssueOccurrences()
+	case "sentry.rules.filters.latest_adopted_release_filter.LatestAdoptedReleaseFilter":
+		return t.AsProjectRuleFilterLatestAdoptedRelease()
+	case "sentry.rules.filters.latest_release.LatestReleaseFilter":
+		return t.AsProjectRuleFilterLatestRelease()
+	case "sentry.rules.filters.level.LevelFilter":
+		return t.AsProjectRuleFilterLevel()
+	case "sentry.rules.filters.tagged_event.TaggedEventFilter":
+		return t.AsProjectRuleFilterTaggedEvent()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t ProjectRuleFilter) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ProjectRuleFilter) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsProjectRuleFilterAssignedToTargetIdentifier0 returns the union data inside the ProjectRuleFilterAssignedTo_TargetIdentifier as a ProjectRuleFilterAssignedToTargetIdentifier0
+func (t ProjectRuleFilterAssignedTo_TargetIdentifier) AsProjectRuleFilterAssignedToTargetIdentifier0() (ProjectRuleFilterAssignedToTargetIdentifier0, error) {
+	var body ProjectRuleFilterAssignedToTargetIdentifier0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectRuleFilterAssignedToTargetIdentifier0 overwrites any union data inside the ProjectRuleFilterAssignedTo_TargetIdentifier as the provided ProjectRuleFilterAssignedToTargetIdentifier0
+func (t *ProjectRuleFilterAssignedTo_TargetIdentifier) FromProjectRuleFilterAssignedToTargetIdentifier0(v ProjectRuleFilterAssignedToTargetIdentifier0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectRuleFilterAssignedToTargetIdentifier0 performs a merge with any union data inside the ProjectRuleFilterAssignedTo_TargetIdentifier, using the provided ProjectRuleFilterAssignedToTargetIdentifier0
+func (t *ProjectRuleFilterAssignedTo_TargetIdentifier) MergeProjectRuleFilterAssignedToTargetIdentifier0(v ProjectRuleFilterAssignedToTargetIdentifier0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectRuleFilterAssignedToTargetIdentifier1 returns the union data inside the ProjectRuleFilterAssignedTo_TargetIdentifier as a ProjectRuleFilterAssignedToTargetIdentifier1
+func (t ProjectRuleFilterAssignedTo_TargetIdentifier) AsProjectRuleFilterAssignedToTargetIdentifier1() (ProjectRuleFilterAssignedToTargetIdentifier1, error) {
+	var body ProjectRuleFilterAssignedToTargetIdentifier1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectRuleFilterAssignedToTargetIdentifier1 overwrites any union data inside the ProjectRuleFilterAssignedTo_TargetIdentifier as the provided ProjectRuleFilterAssignedToTargetIdentifier1
+func (t *ProjectRuleFilterAssignedTo_TargetIdentifier) FromProjectRuleFilterAssignedToTargetIdentifier1(v ProjectRuleFilterAssignedToTargetIdentifier1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectRuleFilterAssignedToTargetIdentifier1 performs a merge with any union data inside the ProjectRuleFilterAssignedTo_TargetIdentifier, using the provided ProjectRuleFilterAssignedToTargetIdentifier1
+func (t *ProjectRuleFilterAssignedTo_TargetIdentifier) MergeProjectRuleFilterAssignedToTargetIdentifier1(v ProjectRuleFilterAssignedToTargetIdentifier1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ProjectRuleFilterAssignedTo_TargetIdentifier) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ProjectRuleFilterAssignedTo_TargetIdentifier) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
