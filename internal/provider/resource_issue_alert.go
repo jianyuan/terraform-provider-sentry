@@ -40,7 +40,7 @@ func (r *IssueAlertResource) Metadata(ctx context.Context, req resource.Metadata
 }
 
 func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	idStringAttribute := schema.StringAttribute{
+	uuidStringAttribute := schema.StringAttribute{
 		Computed: true,
 	}
 	nameStringAttribute := schema.StringAttribute{
@@ -340,17 +340,142 @@ Please note the following changes since v0.12.0:
 							MarkdownDescription: "Send a notification to `target_type` and if none can be found then send a notification to `fallthrough_type`.",
 							Optional:            true,
 							Attributes: map[string]schema.Attribute{
-								"id":   idStringAttribute,
+								"uuid": uuidStringAttribute,
 								"name": nameStringAttribute,
 								"target_type": tfutils.WithEnumStringAttribute(schema.StringAttribute{
 									Required: true,
-								}, []string{"older", "newer"}),
-								"value": schema.Int64Attribute{
+								}, []string{"IssueOwners", "Team", "Member"}),
+								"target_identifier": schema.StringAttribute{
+									MarkdownDescription: "Only required when `target_type` is `Team` or `Member`.",
+									Optional:            true,
+								},
+								"fallthrough_type": tfutils.WithEnumStringAttribute(schema.StringAttribute{
+									Optional: true,
+								}, []string{"AllMembers", "ActiveMembers", "NoOne"}),
+							},
+						},
+						"notify_event": {
+							MarkdownDescription: "Send a notification to all legacy integrations.",
+							Optional:            true,
+							Attributes: map[string]schema.Attribute{
+								"uuid": uuidStringAttribute,
+								"name": nameStringAttribute,
+							},
+						},
+						"opsgenie_notify_team": {
+							MarkdownDescription: "Send a notification to Opsgenie account `account` and team `team` with `priority` priority.",
+							Optional:            true,
+							Attributes: map[string]schema.Attribute{
+								"uuid": uuidStringAttribute,
+								"name": nameStringAttribute,
+								"account": schema.StringAttribute{
 									Required: true,
 								},
-								"time": tfutils.WithEnumStringAttribute(schema.StringAttribute{
+								"team": schema.StringAttribute{
 									Required: true,
-								}, []string{"minute", "hour", "day", "week"}),
+								},
+								"priority": schema.StringAttribute{
+									Required: true,
+								},
+							},
+						},
+						"pagerduty_notify_service": {
+							MarkdownDescription: "Send a notification to PagerDuty account `account` and service `service` with `severity` severity.",
+							Optional:            true,
+							Attributes: map[string]schema.Attribute{
+								"uuid": uuidStringAttribute,
+								"name": nameStringAttribute,
+								"account": schema.StringAttribute{
+									Required: true,
+								},
+								"service": schema.StringAttribute{
+									Required: true,
+								},
+								"severity": schema.StringAttribute{
+									Required: true,
+								},
+							},
+						},
+						"slack_notify_service": {
+							MarkdownDescription: "Send a notification to the `workspace` Slack workspace to `channel` (optionally, an ID: `channel_id`) and show tags `tags` and notes `notes` in notification.",
+							Optional:            true,
+							Attributes: map[string]schema.Attribute{
+								"uuid": uuidStringAttribute,
+								"name": nameStringAttribute,
+								"workspace": schema.StringAttribute{
+									Required: true,
+								},
+								"channel": schema.StringAttribute{
+									Required: true,
+								},
+								"channel_id": schema.StringAttribute{
+									Computed: true,
+								},
+								"tags": schema.StringAttribute{
+									Optional: true,
+								},
+								"notes": schema.StringAttribute{
+									Optional: true,
+								},
+							},
+						},
+						"github_create_ticket": {
+							MarkdownDescription: "Create a GitHub issue in `integration`.",
+							Optional:            true,
+							Attributes: map[string]schema.Attribute{
+								"uuid": uuidStringAttribute,
+								"name": nameStringAttribute,
+								"integration": schema.StringAttribute{
+									Required: true,
+								},
+								"repo": schema.StringAttribute{
+									Required: true,
+								},
+								"assignee": schema.StringAttribute{
+									Optional: true,
+								},
+								"labels": schema.SetAttribute{
+									Optional:    true,
+									ElementType: types.StringType,
+								},
+							},
+						},
+						"github_enterprise_create_ticket": {
+							MarkdownDescription: "Create a GitHub Enterprise issue in `integration`.",
+							Optional:            true,
+							Attributes: map[string]schema.Attribute{
+								"uuid": uuidStringAttribute,
+								"name": nameStringAttribute,
+								"integration": schema.StringAttribute{
+									Required: true,
+								},
+								"repo": schema.StringAttribute{
+									Required: true,
+								},
+								"assignee": schema.StringAttribute{
+									Optional: true,
+								},
+								"labels": schema.SetAttribute{
+									Optional:    true,
+									ElementType: types.StringType,
+								},
+							},
+						},
+						"azure_devops_create_ticket": {
+							MarkdownDescription: "Create an Azure DevOps work item in `integration`.",
+							Optional:            true,
+							Attributes: map[string]schema.Attribute{
+								"uuid": uuidStringAttribute,
+								"name": nameStringAttribute,
+								"integration": schema.StringAttribute{
+									Required: true,
+								},
+								"project": schema.StringAttribute{
+									Required: true,
+								},
+								"work_item_type": schema.StringAttribute{
+									Required: true,
+								},
 							},
 						},
 					}),
@@ -420,10 +545,13 @@ func (r *IssueAlertResource) Create(ctx context.Context, req resource.CreateRequ
 
 	if !data.Actions.IsNull() {
 		resp.Diagnostics.Append(data.Actions.Unmarshal(&body.Actions)...)
+	} else if data.ActionsV2 != nil {
+		body.Actions = sliceutils.Map(func(item IssueAlertActionModel) apiclient.ProjectRuleAction {
+			return item.ToApi()
+		}, *data.ActionsV2)
 	} else {
-		body.Actions = []map[string]interface{}{}
+		body.Actions = []apiclient.ProjectRuleAction{}
 	}
-	// TODO: Action is required
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -525,8 +653,12 @@ func (r *IssueAlertResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	if !data.Actions.IsNull() {
 		resp.Diagnostics.Append(data.Actions.Unmarshal(&body.Actions)...)
+	} else if data.ActionsV2 != nil {
+		body.Actions = sliceutils.Map(func(item IssueAlertActionModel) apiclient.ProjectRuleAction {
+			return item.ToApi()
+		}, *data.ActionsV2)
 	} else {
-		body.Actions = []map[string]interface{}{}
+		body.Actions = []apiclient.ProjectRuleAction{}
 	}
 
 	if resp.Diagnostics.HasError() {

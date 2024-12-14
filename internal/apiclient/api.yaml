@@ -405,7 +405,7 @@ paths:
                 actions:
                   type: array
                   items:
-                    type: object
+                    $ref: "#/components/schemas/ProjectRuleAction"
       responses:
         "200":
           description: OK
@@ -502,7 +502,7 @@ paths:
                 actions:
                   type: array
                   items:
-                    type: object
+                    $ref: "#/components/schemas/ProjectRuleAction"
       responses:
         "200":
           description: OK
@@ -766,7 +766,7 @@ components:
         actions:
           type: array
           items:
-            type: object
+            $ref: "#/components/schemas/ProjectRuleAction"
     ProjectRuleCondition:
       oneOf:
         - $ref: "#/components/schemas/ProjectRuleConditionFirstSeenEvent"
@@ -1093,17 +1093,29 @@ components:
     ProjectRuleAction:
       oneOf:
         - $ref: "#/components/schemas/ProjectRuleActionNotifyEmail"
+        - $ref: "#/components/schemas/ProjectRuleActionNotifyEvent"
+        - $ref: "#/components/schemas/ProjectRuleActionOpsgenieNotifyTeam"
+        - $ref: "#/components/schemas/ProjectRuleActionPagerDutyNotifyService"
+        - $ref: "#/components/schemas/ProjectRuleActionSlackNotifyService"
+        - $ref: "#/components/schemas/ProjectRuleActionGitHubCreateTicket"
+        - $ref: "#/components/schemas/ProjectRuleActionGitHubEnterpriseCreateTicket"
+        - $ref: "#/components/schemas/ProjectRuleActionAzureDevopsCreateTicket"
       discriminator:
         propertyName: id
         mapping:
           "sentry.mail.actions.NotifyEmailAction": "#/components/schemas/ProjectRuleActionNotifyEmail"
+          "sentry.rules.actions.notify_event.NotifyEventAction": "#/components/schemas/ProjectRuleActionNotifyEvent"
+          "sentry.integrations.opsgenie.notify_action.OpsgenieNotifyTeamAction": "#/components/schemas/ProjectRuleActionOpsgenieNotifyTeam"
+          "sentry.integrations.pagerduty.notify_action.PagerDutyNotifyServiceAction": "#/components/schemas/ProjectRuleActionPagerDutyNotifyService"
+          "sentry.integrations.slack.notify_action.SlackNotifyServiceAction": "#/components/schemas/ProjectRuleActionSlackNotifyService"
+          "sentry.integrations.github.notify_action.GitHubCreateTicketAction": "#/components/schemas/ProjectRuleActionGitHubCreateTicket"
+          "sentry.integrations.github_enterprise.notify_action.GitHubEnterpriseCreateTicketAction": "#/components/schemas/ProjectRuleActionGitHubEnterpriseCreateTicket"
+          "sentry.integrations.vsts.notify_action.AzureDevopsCreateTicketAction": "#/components/schemas/ProjectRuleActionAzureDevopsCreateTicket"
     ProjectRuleActionNotifyEmail:
       type: object
       required:
         - id
         - targetType
-        - targetIdentifier
-        - fallthroughType
       properties:
         id:
           type: string
@@ -1116,9 +1128,181 @@ components:
         targetType:
           type: string
         targetIdentifier:
-          type: string
+          oneOf:
+            - type: string
+            - type: integer
+              x-go-type: json.Number
         fallthroughType:
           type: string
+    ProjectRuleActionNotifyEvent:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.actions.notify_event.NotifyEventAction"
+        uuid:
+          type: string
+        name:
+          type: string
+    ProjectRuleActionOpsgenieNotifyTeam:
+      type: object
+      required:
+        - id
+        - account
+        - team
+        - priority
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.integrations.opsgenie.notify_action.OpsgenieNotifyTeamAction"
+        uuid:
+          type: string
+        name:
+          type: string
+        account:
+          type: string
+        team:
+          type: string
+        priority:
+          type: string
+    ProjectRuleActionPagerDutyNotifyService:
+      type: object
+      required:
+        - id
+        - account
+        - service
+        - severity
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.integrations.pagerduty.notify_action.PagerDutyNotifyServiceAction"
+        uuid:
+          type: string
+        name:
+          type: string
+        account:
+          type: string
+        service:
+          type: string
+        severity:
+          type: string
+    ProjectRuleActionSlackNotifyService:
+      type: object
+      required:
+        - id
+        - workspace
+        - channel
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.integrations.slack.notify_action.SlackNotifyServiceAction"
+        uuid:
+          type: string
+        name:
+          type: string
+        workspace:
+          type: string
+        channel:
+          type: string
+        channel_id:
+          type: string
+        tags:
+          type: string
+        notes:
+          type: string
+    ProjectRuleActionGitHubCreateTicket:
+      type: object
+      required:
+        - id
+        - integration
+        - repo
+        - dynamic_form_fields
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.integrations.github.notify_action.GitHubCreateTicketAction"
+        uuid:
+          type: string
+        name:
+          type: string
+        integration:
+          type: string
+        repo:
+          type: string
+        assignee:
+          type: string
+        labels:
+          type: array
+          items:
+            type: string
+        dynamic_form_fields:
+          type: array
+          items:
+            type: object
+    ProjectRuleActionGitHubEnterpriseCreateTicket:
+      type: object
+      required:
+        - id
+        - integration
+        - repo
+        - dynamic_form_fields
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.integrations.github_enterprise.notify_action.GitHubEnterpriseCreateTicketAction"
+        uuid:
+          type: string
+        name:
+          type: string
+        integration:
+          type: string
+        repo:
+          type: string
+        assignee:
+          type: string
+        labels:
+          type: array
+          items:
+            type: string
+        dynamic_form_fields:
+          type: array
+          items:
+            type: object
+    ProjectRuleActionAzureDevopsCreateTicket:
+      type: object
+      required:
+        - id
+        - integration
+        - project
+        - work_item_type
+        - dynamic_form_fields
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.integrations.vsts.notify_action.AzureDevopsCreateTicketAction"
+        uuid:
+          type: string
+        name:
+          type: string
+        integration:
+          type: string
+        project:
+          type: string
+        work_item_type:
+          type: string
+        dynamic_form_fields:
+          type: array
+          items:
+            type: object
     Team:
       type: object
       required:

@@ -483,21 +483,143 @@ EOT
 
 Optional:
 
+- `azure_devops_create_ticket` (Attributes) Create an Azure DevOps work item in `integration`. (see [below for nested schema](#nestedatt--actions_v2--azure_devops_create_ticket))
+- `github_create_ticket` (Attributes) Create a GitHub issue in `integration`. (see [below for nested schema](#nestedatt--actions_v2--github_create_ticket))
+- `github_enterprise_create_ticket` (Attributes) Create a GitHub Enterprise issue in `integration`. (see [below for nested schema](#nestedatt--actions_v2--github_enterprise_create_ticket))
 - `notify_email` (Attributes) Send a notification to `target_type` and if none can be found then send a notification to `fallthrough_type`. (see [below for nested schema](#nestedatt--actions_v2--notify_email))
+- `notify_event` (Attributes) Send a notification to all legacy integrations. (see [below for nested schema](#nestedatt--actions_v2--notify_event))
+- `opsgenie_notify_team` (Attributes) Send a notification to Opsgenie account `account` and team `team` with `priority` priority. (see [below for nested schema](#nestedatt--actions_v2--opsgenie_notify_team))
+- `pagerduty_notify_service` (Attributes) Send a notification to PagerDuty account `account` and service `service` with `severity` severity. (see [below for nested schema](#nestedatt--actions_v2--pagerduty_notify_service))
+- `slack_notify_service` (Attributes) Send a notification to the `workspace` Slack workspace to `channel` (optionally, an ID: `channel_id`) and show tags `tags` and notes `notes` in notification. (see [below for nested schema](#nestedatt--actions_v2--slack_notify_service))
+
+<a id="nestedatt--actions_v2--azure_devops_create_ticket"></a>
+### Nested Schema for `actions_v2.azure_devops_create_ticket`
+
+Required:
+
+- `integration` (String)
+- `project` (String)
+- `work_item_type` (String)
+
+Read-Only:
+
+- `name` (String)
+- `uuid` (String)
+
+
+<a id="nestedatt--actions_v2--github_create_ticket"></a>
+### Nested Schema for `actions_v2.github_create_ticket`
+
+Required:
+
+- `integration` (String)
+- `repo` (String)
+
+Optional:
+
+- `assignee` (String)
+- `labels` (Set of String)
+
+Read-Only:
+
+- `name` (String)
+- `uuid` (String)
+
+
+<a id="nestedatt--actions_v2--github_enterprise_create_ticket"></a>
+### Nested Schema for `actions_v2.github_enterprise_create_ticket`
+
+Required:
+
+- `integration` (String)
+- `repo` (String)
+
+Optional:
+
+- `assignee` (String)
+- `labels` (Set of String)
+
+Read-Only:
+
+- `name` (String)
+- `uuid` (String)
+
 
 <a id="nestedatt--actions_v2--notify_email"></a>
 ### Nested Schema for `actions_v2.notify_email`
 
 Required:
 
-- `target_type` (String) Valid values are: `older`, and `newer`.
-- `time` (String) Valid values are: `minute`, `hour`, `day`, and `week`.
-- `value` (Number)
+- `target_type` (String) Valid values are: `IssueOwners`, `Team`, and `Member`.
+
+Optional:
+
+- `fallthrough_type` (String) Valid values are: `AllMembers`, `ActiveMembers`, and `NoOne`.
+- `target_identifier` (String) Only required when `target_type` is `Team` or `Member`.
 
 Read-Only:
 
-- `id` (String)
 - `name` (String)
+- `uuid` (String)
+
+
+<a id="nestedatt--actions_v2--notify_event"></a>
+### Nested Schema for `actions_v2.notify_event`
+
+Read-Only:
+
+- `name` (String)
+- `uuid` (String)
+
+
+<a id="nestedatt--actions_v2--opsgenie_notify_team"></a>
+### Nested Schema for `actions_v2.opsgenie_notify_team`
+
+Required:
+
+- `account` (String)
+- `priority` (String)
+- `team` (String)
+
+Read-Only:
+
+- `name` (String)
+- `uuid` (String)
+
+
+<a id="nestedatt--actions_v2--pagerduty_notify_service"></a>
+### Nested Schema for `actions_v2.pagerduty_notify_service`
+
+Required:
+
+- `account` (String)
+- `service` (String)
+- `severity` (String)
+
+Read-Only:
+
+- `name` (String)
+- `uuid` (String)
+
+
+<a id="nestedatt--actions_v2--slack_notify_service"></a>
+### Nested Schema for `actions_v2.slack_notify_service`
+
+Required:
+
+- `channel` (String)
+- `workspace` (String)
+
+Optional:
+
+- `notes` (String)
+- `tags` (String)
+
+Read-Only:
+
+- `channel_id` (String)
+- `name` (String)
+- `uuid` (String)
 
 
 

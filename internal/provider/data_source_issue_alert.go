@@ -2,17 +2,12 @@ package provider
 
 import (
 	"context"
-	"fmt"
 	"net/http"
-	"strings"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/jianyuan/go-utils/sliceutils"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
-	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
 )
 
@@ -32,20 +27,11 @@ func (d *IssueAlertDataSource) Metadata(ctx context.Context, req datasource.Meta
 }
 
 func (d *IssueAlertDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	nameStringAttribute := schema.StringAttribute{
+	stringAttribute := schema.StringAttribute{
 		Computed: true,
 	}
-	intervalStringAttribute := schema.StringAttribute{
-		MarkdownDescription: "Valid values are `1m`, `5m`, `15m`, `1h`, `1d`, `1w` and `30d` (`m` for minutes, `h` for hours, `d` for days, and `w` for weeks).",
-		Computed:            true,
-	}
-	conditionComparisonTypeStringAttribute := schema.StringAttribute{
-		MarkdownDescription: "Valid values are `count` and `percent`.",
-		Computed:            true,
-	}
-	conditionComparisonIntervalStringAttribute := schema.StringAttribute{
-		MarkdownDescription: "Valid values are `5m`, `15m`, `1h`, `1d`, `1w` and `30d` (`m` for minutes, `h` for hours, `d` for days, and `w` for weeks).",
-		Computed:            true,
+	int64Attribute := schema.Int64Attribute{
+		Computed: true,
 	}
 
 	resp.Schema = schema.Schema{
@@ -76,80 +62,70 @@ func (d *IssueAlertDataSource) Schema(ctx context.Context, req datasource.Schema
 							MarkdownDescription: "A new issue is created.",
 							Computed:            true,
 							Attributes: map[string]schema.Attribute{
-								"name": nameStringAttribute,
+								"name": stringAttribute,
 							},
 						},
 						"regression_event": schema.SingleNestedAttribute{
 							MarkdownDescription: "The issue changes state from resolved to unresolved.",
 							Computed:            true,
 							Attributes: map[string]schema.Attribute{
-								"name": nameStringAttribute,
+								"name": stringAttribute,
 							},
 						},
 						"reappeared_event": schema.SingleNestedAttribute{
 							MarkdownDescription: "The issue changes state from ignored to unresolved.",
 							Computed:            true,
 							Attributes: map[string]schema.Attribute{
-								"name": nameStringAttribute,
+								"name": stringAttribute,
 							},
 						},
 						"new_high_priority_issue": schema.SingleNestedAttribute{
 							MarkdownDescription: "Sentry marks a new issue as high priority.",
 							Computed:            true,
 							Attributes: map[string]schema.Attribute{
-								"name": nameStringAttribute,
+								"name": stringAttribute,
 							},
 						},
 						"existing_high_priority_issue": schema.SingleNestedAttribute{
 							MarkdownDescription: "Sentry marks an existing issue as high priority.",
 							Computed:            true,
 							Attributes: map[string]schema.Attribute{
-								"name": nameStringAttribute,
+								"name": stringAttribute,
 							},
 						},
 						"event_frequency": schema.SingleNestedAttribute{
 							MarkdownDescription: "When the `comparison_type` is `count`, the number of events in an issue is more than `value` in `interval`. When the `comparison_type` is `percent`, the number of events in an issue is `value` % higher in `interval` compared to `comparison_interval` ago.",
 							Computed:            true,
 							Attributes: map[string]schema.Attribute{
-								"name":                nameStringAttribute,
-								"comparison_type":     conditionComparisonTypeStringAttribute,
-								"comparison_interval": conditionComparisonIntervalStringAttribute,
-								"value": schema.Int64Attribute{
-									Computed: true,
-								},
-								"interval": intervalStringAttribute,
+								"name":                stringAttribute,
+								"comparison_type":     stringAttribute,
+								"comparison_interval": stringAttribute,
+								"value":               int64Attribute,
+								"interval":            stringAttribute,
 							},
 						},
 						"event_unique_user_frequency": schema.SingleNestedAttribute{
 							MarkdownDescription: "When the `comparison_type` is `count`, the number of users affected by an issue is more than `value` in `interval`. When the `comparison_type` is `percent`, the number of users affected by an issue is `value` % higher in `interval` compared to `comparison_interval` ago.",
 							Computed:            true,
 							Attributes: map[string]schema.Attribute{
-								"name":                nameStringAttribute,
-								"comparison_type":     conditionComparisonTypeStringAttribute,
-								"comparison_interval": conditionComparisonIntervalStringAttribute,
-								"value": schema.Int64Attribute{
-									Computed: true,
-								},
-								"interval": intervalStringAttribute,
+								"name":                stringAttribute,
+								"comparison_type":     stringAttribute,
+								"comparison_interval": stringAttribute,
+								"value":               int64Attribute,
+								"interval":            stringAttribute,
 							},
 						},
 						"event_frequency_percent": schema.SingleNestedAttribute{
 							MarkdownDescription: "When the `comparison_type` is `count`, the percent of sessions affected by an issue is more than `value` in `interval`. When the `comparison_type` is `percent`, the percent of sessions affected by an issue is `value` % higher in `interval` compared to `comparison_interval` ago.",
 							Computed:            true,
 							Attributes: map[string]schema.Attribute{
-								"name":                nameStringAttribute,
-								"comparison_type":     conditionComparisonTypeStringAttribute,
-								"comparison_interval": conditionComparisonIntervalStringAttribute,
+								"name":                stringAttribute,
+								"comparison_type":     stringAttribute,
+								"comparison_interval": stringAttribute,
 								"value": schema.Float64Attribute{
 									Computed: true,
 								},
-								"interval": schema.StringAttribute{
-									MarkdownDescription: "Valid values are `5m`, `10m`, `30m`, and `1h` (`m` for minutes, `h` for hours).",
-									Computed:            true,
-									Validators: []validator.String{
-										stringvalidator.OneOf("5m", "10m", "30m", "1h"),
-									},
-								},
+								"interval": stringAttribute,
 							},
 						},
 					},
@@ -169,141 +145,81 @@ func (d *IssueAlertDataSource) Schema(ctx context.Context, req datasource.Schema
 							MarkdownDescription: "The issue is older or newer than `value` `time`.",
 							Computed:            true,
 							Attributes: map[string]schema.Attribute{
-								"name": nameStringAttribute,
-								"comparison_type": schema.StringAttribute{
-									MarkdownDescription: "Valid values are `older` and `newer`.",
-									Computed:            true,
-								},
-								"value": schema.Int64Attribute{
-									Computed: true,
-								},
-								"time": schema.StringAttribute{
-									MarkdownDescription: "Valid values are `minute`, `hour`, `day`, and `week`.",
-									Computed:            true,
-								},
+								"name":            stringAttribute,
+								"comparison_type": stringAttribute,
+								"value":           int64Attribute,
+								"time":            stringAttribute,
 							},
 						},
 						"issue_occurrences": schema.SingleNestedAttribute{
 							MarkdownDescription: "The issue has happened at least `value` times (Note: this is approximate).",
 							Computed:            true,
 							Attributes: map[string]schema.Attribute{
-								"name": nameStringAttribute,
-								"value": schema.Int64Attribute{
-									Computed: true,
-								},
+								"name":  stringAttribute,
+								"value": int64Attribute,
 							},
 						},
 						"assigned_to": schema.SingleNestedAttribute{
 							MarkdownDescription: "The issue is assigned to no one, team, or member.",
 							Computed:            true,
 							Attributes: map[string]schema.Attribute{
-								"name": nameStringAttribute,
-								"target_type": schema.StringAttribute{
-									MarkdownDescription: "Valid values are `Unassigned`, `Team`, and `Member`.",
-									Computed:            true,
-								},
-								"target_identifier": schema.StringAttribute{
-									MarkdownDescription: "Only required when `target_type` is `Team` or `Member`.",
-									Computed:            true,
-								},
+								"name":              stringAttribute,
+								"target_type":       int64Attribute,
+								"target_identifier": int64Attribute,
 							},
 						},
 						"latest_adopted_release": schema.SingleNestedAttribute{
 							MarkdownDescription: "The {oldest_or_newest} adopted release associated with the event's issue is {older_or_newer} than the latest adopted release in {environment}.",
 							Computed:            true,
 							Attributes: map[string]schema.Attribute{
-								"name": nameStringAttribute,
-								"oldest_or_newest": schema.StringAttribute{
-									MarkdownDescription: "Valid values are `oldest` and `newest`.",
-									Computed:            true,
-								},
-								"older_or_newer": schema.StringAttribute{
-									MarkdownDescription: "Valid values are `older` and `newer`.",
-									Computed:            true,
-								},
-								"environment": schema.StringAttribute{
-									Computed: true,
-								},
+								"name":             stringAttribute,
+								"oldest_or_newest": int64Attribute,
+								"older_or_newer":   int64Attribute,
+								"environment":      int64Attribute,
 							},
 						},
 						"latest_release": schema.SingleNestedAttribute{
 							MarkdownDescription: "The event is from the latest release.",
 							Computed:            true,
 							Attributes: map[string]schema.Attribute{
-								"name": nameStringAttribute,
+								"name": stringAttribute,
 							},
 						},
 						"issue_category": schema.SingleNestedAttribute{
 							MarkdownDescription: "The issue's category is equal to `value`.",
 							Computed:            true,
 							Attributes: map[string]schema.Attribute{
-								"name": nameStringAttribute,
-								"value": schema.StringAttribute{
-									MarkdownDescription: "Valid values are: " + strings.Join(sliceutils.Map(func(v string) string {
-										return fmt.Sprintf("`%s`", v)
-									}, sentrydata.IssueGroupCategories), ", ") + ".",
-									Computed: true,
-								},
+								"name":  stringAttribute,
+								"value": stringAttribute,
 							},
 						},
 						"event_attribute": schema.SingleNestedAttribute{
 							MarkdownDescription: "The event's `attribute` value `match` `value`.",
 							Computed:            true,
 							Attributes: map[string]schema.Attribute{
-								"name": nameStringAttribute,
-								"attribute": schema.StringAttribute{
-									MarkdownDescription: "Valid values are: " + strings.Join(sliceutils.Map(func(v string) string {
-										return fmt.Sprintf("`%s`", v)
-									}, sentrydata.EventAttributes), ", ") + ".",
-									Computed: true,
-								},
-								"match": schema.StringAttribute{
-									MarkdownDescription: "Valid values are: " + strings.Join(sliceutils.Map(func(v string) string {
-										return fmt.Sprintf("`%s`", v)
-									}, sentrydata.MatchTypes), ", ") + ".",
-									Computed: true,
-								},
-								"value": schema.StringAttribute{
-									Computed: true,
-								},
+								"name":      stringAttribute,
+								"attribute": stringAttribute,
+								"match":     stringAttribute,
+								"value":     stringAttribute,
 							},
 						},
 						"tagged_event": schema.SingleNestedAttribute{
 							MarkdownDescription: "The event's tags match `key` `match` `value`.",
 							Computed:            true,
 							Attributes: map[string]schema.Attribute{
-								"name": nameStringAttribute,
-								"key": schema.StringAttribute{
-									Computed: true,
-								},
-								"match": schema.StringAttribute{
-									MarkdownDescription: "Valid values are: " + strings.Join(sliceutils.Map(func(v string) string {
-										return fmt.Sprintf("`%s`", v)
-									}, sentrydata.MatchTypes), ", ") + ".",
-									Computed: true,
-								},
-								"value": schema.StringAttribute{
-									Computed: true,
-								},
+								"name":  stringAttribute,
+								"key":   stringAttribute,
+								"match": stringAttribute,
+								"value": stringAttribute,
 							},
 						},
 						"level": schema.SingleNestedAttribute{
 							MarkdownDescription: "The event's level is `match` `level`.",
 							Computed:            true,
 							Attributes: map[string]schema.Attribute{
-								"name": nameStringAttribute,
-								"match": schema.StringAttribute{
-									MarkdownDescription: "Valid values are: " + strings.Join(sliceutils.Map(func(v string) string {
-										return fmt.Sprintf("`%s`", v)
-									}, sentrydata.LevelMatchTypes), ", ") + ".",
-									Computed: true,
-								},
-								"level": schema.StringAttribute{
-									MarkdownDescription: "Valid values are: " + strings.Join(sliceutils.Map(func(v string) string {
-										return fmt.Sprintf("`%s`", v)
-									}, sentrydata.LogLevels), ", ") + ".",
-									Computed: true,
-								},
+								"name":  stringAttribute,
+								"match": stringAttribute,
+								"level": stringAttribute,
 							},
 						},
 					},
@@ -313,6 +229,108 @@ func (d *IssueAlertDataSource) Schema(ctx context.Context, req datasource.Schema
 				MarkdownDescription: "List of actions. In JSON string format.",
 				Computed:            true,
 				CustomType:          sentrytypes.LossyJsonType{},
+			},
+			"actions_v2": schema.ListNestedAttribute{
+				MarkdownDescription: "A list of actions that take place when all required conditions and filters for the rule are met.",
+				Computed:            true,
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"notify_email": schema.SingleNestedAttribute{
+							MarkdownDescription: "Send a notification to `target_type` and if none can be found then send a notification to `fallthrough_type`.",
+							Computed:            true,
+							Attributes: map[string]schema.Attribute{
+								"uuid":              stringAttribute,
+								"name":              stringAttribute,
+								"target_type":       stringAttribute,
+								"target_identifier": stringAttribute,
+								"fallthrough_type":  stringAttribute,
+							},
+						},
+						"notify_event": schema.SingleNestedAttribute{
+							MarkdownDescription: "Send a notification to all legacy integrations.",
+							Computed:            true,
+							Attributes: map[string]schema.Attribute{
+								"uuid": stringAttribute,
+								"name": stringAttribute,
+							},
+						},
+						"opsgenie_notify_team": schema.SingleNestedAttribute{
+							MarkdownDescription: "Send a notification to Opsgenie account `account` and team `team` with `priority` priority.",
+							Computed:            true,
+							Attributes: map[string]schema.Attribute{
+								"uuid":     stringAttribute,
+								"name":     stringAttribute,
+								"account":  stringAttribute,
+								"team":     stringAttribute,
+								"priority": stringAttribute,
+							},
+						},
+						"pagerduty_notify_service": schema.SingleNestedAttribute{
+							MarkdownDescription: "Send a notification to PagerDuty account `account` and service `service` with `severity` severity.",
+							Computed:            true,
+							Attributes: map[string]schema.Attribute{
+								"uuid":     stringAttribute,
+								"name":     stringAttribute,
+								"account":  stringAttribute,
+								"service":  stringAttribute,
+								"severity": stringAttribute,
+							},
+						},
+						"slack_notify_service": schema.SingleNestedAttribute{
+							MarkdownDescription: "Send a notification to the `workspace` Slack workspace to `channel` (optionally, an ID: `channel_id`) and show tags `tags` and notes `notes` in notification.",
+							Computed:            true,
+							Attributes: map[string]schema.Attribute{
+								"uuid":       stringAttribute,
+								"name":       stringAttribute,
+								"workspace":  stringAttribute,
+								"channel":    stringAttribute,
+								"channel_id": stringAttribute,
+								"tags":       stringAttribute,
+								"notes":      stringAttribute,
+							},
+						},
+						"github_create_ticket": schema.SingleNestedAttribute{
+							MarkdownDescription: "Create a GitHub issue in `integration`.",
+							Computed:            true,
+							Attributes: map[string]schema.Attribute{
+								"uuid":        stringAttribute,
+								"name":        stringAttribute,
+								"integration": stringAttribute,
+								"repo":        stringAttribute,
+								"assignee":    stringAttribute,
+								"labels": schema.SetAttribute{
+									Computed:    true,
+									ElementType: types.StringType,
+								},
+							},
+						},
+						"github_enterprise_create_ticket": schema.SingleNestedAttribute{
+							MarkdownDescription: "Create a GitHub Enterprise issue in `integration`.",
+							Computed:            true,
+							Attributes: map[string]schema.Attribute{
+								"uuid":        stringAttribute,
+								"name":        stringAttribute,
+								"integration": stringAttribute,
+								"repo":        stringAttribute,
+								"assignee":    stringAttribute,
+								"labels": schema.SetAttribute{
+									Computed:    true,
+									ElementType: types.StringType,
+								},
+							},
+						},
+						"azure_devops_create_ticket": schema.SingleNestedAttribute{
+							MarkdownDescription: "Create an Azure DevOps work item in `integration`.",
+							Computed:            true,
+							Attributes: map[string]schema.Attribute{
+								"uuid":           stringAttribute,
+								"name":           stringAttribute,
+								"integration":    stringAttribute,
+								"work_item_type": stringAttribute,
+							},
+						},
+					},
+				},
 			},
 			"action_match": schema.StringAttribute{
 				MarkdownDescription: "Trigger actions when an event is captured by Sentry and `any` or `all` of the specified conditions happen.",

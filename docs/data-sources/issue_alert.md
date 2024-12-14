@@ -53,6 +53,7 @@ resource "sentry_issue_alert" "copy" {
 
 - `action_match` (String) Trigger actions when an event is captured by Sentry and `any` or `all` of the specified conditions happen.
 - `actions` (String) List of actions. In JSON string format.
+- `actions_v2` (Attributes List) A list of actions that take place when all required conditions and filters for the rule are met. (see [below for nested schema](#nestedatt--actions_v2))
 - `conditions` (String) List of conditions. In JSON string format.
 - `conditions_v2` (Attributes List) A list of triggers that determine when the rule fires. (see [below for nested schema](#nestedatt--conditions_v2))
 - `environment` (String) Perform issue alert in a specific environment.
@@ -62,6 +63,117 @@ resource "sentry_issue_alert" "copy" {
 - `frequency` (Number) Perform actions at most once every `X` minutes for this issue.
 - `name` (String) The issue alert name.
 - `owner` (String) The ID of the team or user that owns the rule.
+
+<a id="nestedatt--actions_v2"></a>
+### Nested Schema for `actions_v2`
+
+Read-Only:
+
+- `azure_devops_create_ticket` (Attributes) Create an Azure DevOps work item in `integration`. (see [below for nested schema](#nestedatt--actions_v2--azure_devops_create_ticket))
+- `github_create_ticket` (Attributes) Create a GitHub issue in `integration`. (see [below for nested schema](#nestedatt--actions_v2--github_create_ticket))
+- `github_enterprise_create_ticket` (Attributes) Create a GitHub Enterprise issue in `integration`. (see [below for nested schema](#nestedatt--actions_v2--github_enterprise_create_ticket))
+- `notify_email` (Attributes) Send a notification to `target_type` and if none can be found then send a notification to `fallthrough_type`. (see [below for nested schema](#nestedatt--actions_v2--notify_email))
+- `notify_event` (Attributes) Send a notification to all legacy integrations. (see [below for nested schema](#nestedatt--actions_v2--notify_event))
+- `opsgenie_notify_team` (Attributes) Send a notification to Opsgenie account `account` and team `team` with `priority` priority. (see [below for nested schema](#nestedatt--actions_v2--opsgenie_notify_team))
+- `pagerduty_notify_service` (Attributes) Send a notification to PagerDuty account `account` and service `service` with `severity` severity. (see [below for nested schema](#nestedatt--actions_v2--pagerduty_notify_service))
+- `slack_notify_service` (Attributes) Send a notification to the `workspace` Slack workspace to `channel` (optionally, an ID: `channel_id`) and show tags `tags` and notes `notes` in notification. (see [below for nested schema](#nestedatt--actions_v2--slack_notify_service))
+
+<a id="nestedatt--actions_v2--azure_devops_create_ticket"></a>
+### Nested Schema for `actions_v2.azure_devops_create_ticket`
+
+Read-Only:
+
+- `integration` (String)
+- `name` (String)
+- `uuid` (String)
+- `work_item_type` (String)
+
+
+<a id="nestedatt--actions_v2--github_create_ticket"></a>
+### Nested Schema for `actions_v2.github_create_ticket`
+
+Read-Only:
+
+- `assignee` (String)
+- `integration` (String)
+- `labels` (Set of String)
+- `name` (String)
+- `repo` (String)
+- `uuid` (String)
+
+
+<a id="nestedatt--actions_v2--github_enterprise_create_ticket"></a>
+### Nested Schema for `actions_v2.github_enterprise_create_ticket`
+
+Read-Only:
+
+- `assignee` (String)
+- `integration` (String)
+- `labels` (Set of String)
+- `name` (String)
+- `repo` (String)
+- `uuid` (String)
+
+
+<a id="nestedatt--actions_v2--notify_email"></a>
+### Nested Schema for `actions_v2.notify_email`
+
+Read-Only:
+
+- `fallthrough_type` (String)
+- `name` (String)
+- `target_identifier` (String)
+- `target_type` (String)
+- `uuid` (String)
+
+
+<a id="nestedatt--actions_v2--notify_event"></a>
+### Nested Schema for `actions_v2.notify_event`
+
+Read-Only:
+
+- `name` (String)
+- `uuid` (String)
+
+
+<a id="nestedatt--actions_v2--opsgenie_notify_team"></a>
+### Nested Schema for `actions_v2.opsgenie_notify_team`
+
+Read-Only:
+
+- `account` (String)
+- `name` (String)
+- `priority` (String)
+- `team` (String)
+- `uuid` (String)
+
+
+<a id="nestedatt--actions_v2--pagerduty_notify_service"></a>
+### Nested Schema for `actions_v2.pagerduty_notify_service`
+
+Read-Only:
+
+- `account` (String)
+- `name` (String)
+- `service` (String)
+- `severity` (String)
+- `uuid` (String)
+
+
+<a id="nestedatt--actions_v2--slack_notify_service"></a>
+### Nested Schema for `actions_v2.slack_notify_service`
+
+Read-Only:
+
+- `channel` (String)
+- `channel_id` (String)
+- `name` (String)
+- `notes` (String)
+- `tags` (String)
+- `uuid` (String)
+- `workspace` (String)
+
+
 
 <a id="nestedatt--conditions_v2"></a>
 ### Nested Schema for `conditions_v2`
@@ -82,9 +194,9 @@ Read-Only:
 
 Read-Only:
 
-- `comparison_interval` (String) Valid values are `5m`, `15m`, `1h`, `1d`, `1w` and `30d` (`m` for minutes, `h` for hours, `d` for days, and `w` for weeks).
-- `comparison_type` (String) Valid values are `count` and `percent`.
-- `interval` (String) Valid values are `1m`, `5m`, `15m`, `1h`, `1d`, `1w` and `30d` (`m` for minutes, `h` for hours, `d` for days, and `w` for weeks).
+- `comparison_interval` (String)
+- `comparison_type` (String)
+- `interval` (String)
 - `name` (String)
 - `value` (Number)
 
@@ -94,9 +206,9 @@ Read-Only:
 
 Read-Only:
 
-- `comparison_interval` (String) Valid values are `5m`, `15m`, `1h`, `1d`, `1w` and `30d` (`m` for minutes, `h` for hours, `d` for days, and `w` for weeks).
-- `comparison_type` (String) Valid values are `count` and `percent`.
-- `interval` (String) Valid values are `5m`, `10m`, `30m`, and `1h` (`m` for minutes, `h` for hours).
+- `comparison_interval` (String)
+- `comparison_type` (String)
+- `interval` (String)
 - `name` (String)
 - `value` (Number)
 
@@ -106,9 +218,9 @@ Read-Only:
 
 Read-Only:
 
-- `comparison_interval` (String) Valid values are `5m`, `15m`, `1h`, `1d`, `1w` and `30d` (`m` for minutes, `h` for hours, `d` for days, and `w` for weeks).
-- `comparison_type` (String) Valid values are `count` and `percent`.
-- `interval` (String) Valid values are `1m`, `5m`, `15m`, `1h`, `1d`, `1w` and `30d` (`m` for minutes, `h` for hours, `d` for days, and `w` for weeks).
+- `comparison_interval` (String)
+- `comparison_type` (String)
+- `interval` (String)
 - `name` (String)
 - `value` (Number)
 
@@ -174,9 +286,9 @@ Read-Only:
 
 Read-Only:
 
-- `comparison_type` (String) Valid values are `older` and `newer`.
+- `comparison_type` (String)
 - `name` (String)
-- `time` (String) Valid values are `minute`, `hour`, `day`, and `week`.
+- `time` (String)
 - `value` (Number)
 
 
@@ -186,8 +298,8 @@ Read-Only:
 Read-Only:
 
 - `name` (String)
-- `target_identifier` (String) Only required when `target_type` is `Team` or `Member`.
-- `target_type` (String) Valid values are `Unassigned`, `Team`, and `Member`.
+- `target_identifier` (Number)
+- `target_type` (Number)
 
 
 <a id="nestedatt--filters_v2--event_attribute"></a>
@@ -195,8 +307,8 @@ Read-Only:
 
 Read-Only:
 
-- `attribute` (String) Valid values are: `message`, `platform`, `environment`, `type`, `error.handled`, `error.unhandled`, `error.main_thread`, `exception.type`, `exception.value`, `user.id`, `user.email`, `user.username`, `user.ip_address`, `http.method`, `http.url`, `http.status_code`, `sdk.name`, `stacktrace.code`, `stacktrace.module`, `stacktrace.filename`, `stacktrace.abs_path`, `stacktrace.package`, `unreal.crashtype`, `app.in_foreground`, `os.distribution_name`, `os.distribution_version`.
-- `match` (String) Valid values are: `CONTAINS`, `ENDS_WITH`, `EQUAL`, `GREATER_OR_EQUAL`, `GREATER`, `IS_SET`, `IS_IN`, `LESS_OR_EQUAL`, `LESS`, `NOT_CONTAINS`, `NOT_ENDS_WITH`, `NOT_EQUAL`, `NOT_SET`, `NOT_STARTS_WITH`, `NOT_IN`, `STARTS_WITH`.
+- `attribute` (String)
+- `match` (String)
 - `name` (String)
 - `value` (String)
 
@@ -207,7 +319,7 @@ Read-Only:
 Read-Only:
 
 - `name` (String)
-- `value` (String) Valid values are: `Error`, `Performance`, `Profile`, `Cron`, `Replay`, `Feedback`, `Uptime`, `Metric_Alert`.
+- `value` (String)
 
 
 <a id="nestedatt--filters_v2--issue_occurrences"></a>
@@ -224,10 +336,10 @@ Read-Only:
 
 Read-Only:
 
-- `environment` (String)
+- `environment` (Number)
 - `name` (String)
-- `older_or_newer` (String) Valid values are `older` and `newer`.
-- `oldest_or_newest` (String) Valid values are `oldest` and `newest`.
+- `older_or_newer` (Number)
+- `oldest_or_newest` (Number)
 
 
 <a id="nestedatt--filters_v2--latest_release"></a>
@@ -243,8 +355,8 @@ Read-Only:
 
 Read-Only:
 
-- `level` (String) Valid values are: `sample`, `debug`, `info`, `warning`, `error`, `fatal`.
-- `match` (String) Valid values are: `EQUAL`, `GREATER_OR_EQUAL`, `LESS_OR_EQUAL`.
+- `level` (String)
+- `match` (String)
 - `name` (String)
 
 
@@ -254,6 +366,6 @@ Read-Only:
 Read-Only:
 
 - `key` (String)
-- `match` (String) Valid values are: `CONTAINS`, `ENDS_WITH`, `EQUAL`, `GREATER_OR_EQUAL`, `GREATER`, `IS_SET`, `IS_IN`, `LESS_OR_EQUAL`, `LESS`, `NOT_CONTAINS`, `NOT_ENDS_WITH`, `NOT_EQUAL`, `NOT_SET`, `NOT_STARTS_WITH`, `NOT_IN`, `STARTS_WITH`.
+- `match` (String)
 - `name` (String)
 - `value` (String)

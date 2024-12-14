@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-utils/must"
@@ -608,6 +609,375 @@ func (m *IssueAlertFilterModel) FromApi(ctx context.Context, filter apiclient.Pr
 	return
 }
 
+// Actions
+
+type IssueAlertActionNotifyEmailModel struct {
+	Uuid             types.String `tfsdk:"uuid"`
+	Name             types.String `tfsdk:"name"`
+	TargetType       types.String `tfsdk:"target_type"`
+	TargetIdentifier types.String `tfsdk:"target_identifier"`
+	FallthroughType  types.String `tfsdk:"fallthrough_type"`
+}
+
+func (m *IssueAlertActionNotifyEmailModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionNotifyEmail) (diags diag.Diagnostics) {
+	m.Uuid = types.StringPointerValue(action.Uuid)
+	m.Name = types.StringPointerValue(action.Name)
+	m.TargetType = types.StringValue(action.TargetType)
+
+	if action.TargetIdentifier == nil {
+		m.TargetIdentifier = types.StringNull()
+	} else if v, err := action.TargetIdentifier.AsProjectRuleActionNotifyEmailTargetIdentifier0(); err == nil {
+		if v == "" {
+			m.TargetIdentifier = types.StringNull()
+		} else {
+			m.TargetIdentifier = types.StringValue(v)
+		}
+	} else if v, err := action.TargetIdentifier.AsProjectRuleActionNotifyEmailTargetIdentifier1(); err == nil {
+		m.TargetIdentifier = types.StringValue(v.String())
+	}
+
+	// Only set FallthroughType for IssueOwners
+	if action.TargetType == "IssueOwners" {
+		m.FallthroughType = types.StringPointerValue(action.FallthroughType)
+	} else {
+		m.FallthroughType = types.StringNull()
+	}
+
+	return
+}
+
+func (m IssueAlertActionNotifyEmailModel) ToApi() apiclient.ProjectRuleAction {
+	var targetIdentifier *apiclient.ProjectRuleActionNotifyEmail_TargetIdentifier
+
+	if !m.TargetIdentifier.IsNull() {
+		targetIdentifier = &apiclient.ProjectRuleActionNotifyEmail_TargetIdentifier{}
+		must.Do(targetIdentifier.FromProjectRuleActionNotifyEmailTargetIdentifier0(m.TargetIdentifier.ValueString()))
+	}
+
+	var v apiclient.ProjectRuleAction
+	must.Do(v.FromProjectRuleActionNotifyEmail(apiclient.ProjectRuleActionNotifyEmail{
+		Uuid:             m.Uuid.ValueStringPointer(),
+		Name:             m.Name.ValueStringPointer(),
+		TargetType:       m.TargetType.ValueString(),
+		TargetIdentifier: targetIdentifier,
+		FallthroughType:  m.FallthroughType.ValueStringPointer(),
+	}))
+	return v
+}
+
+type IssueAlertActionNotifyEventModel struct {
+	Uuid types.String `tfsdk:"uuid"`
+	Name types.String `tfsdk:"name"`
+}
+
+func (m *IssueAlertActionNotifyEventModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionNotifyEvent) (diags diag.Diagnostics) {
+	m.Uuid = types.StringPointerValue(action.Uuid)
+	m.Name = types.StringPointerValue(action.Name)
+	return
+}
+
+func (m IssueAlertActionNotifyEventModel) ToApi() apiclient.ProjectRuleAction {
+	var v apiclient.ProjectRuleAction
+	must.Do(v.FromProjectRuleActionNotifyEvent(apiclient.ProjectRuleActionNotifyEvent{
+		Uuid: m.Uuid.ValueStringPointer(),
+		Name: m.Name.ValueStringPointer(),
+	}))
+	return v
+}
+
+type IssueAlertActionOpsgenieNotifyTeam struct {
+	Uuid     types.String `tfsdk:"uuid"`
+	Name     types.String `tfsdk:"name"`
+	Account  types.String `tfsdk:"account"`
+	Team     types.String `tfsdk:"team"`
+	Priority types.String `tfsdk:"priority"`
+}
+
+func (m *IssueAlertActionOpsgenieNotifyTeam) Fill(ctx context.Context, action apiclient.ProjectRuleActionOpsgenieNotifyTeam) (diags diag.Diagnostics) {
+	m.Uuid = types.StringPointerValue(action.Uuid)
+	m.Name = types.StringPointerValue(action.Name)
+	m.Account = types.StringValue(action.Account)
+	m.Team = types.StringValue(action.Team)
+	m.Priority = types.StringValue(action.Priority)
+	return
+}
+
+func (m IssueAlertActionOpsgenieNotifyTeam) ToApi() apiclient.ProjectRuleAction {
+	var v apiclient.ProjectRuleAction
+	must.Do(v.FromProjectRuleActionOpsgenieNotifyTeam(apiclient.ProjectRuleActionOpsgenieNotifyTeam{
+		Uuid:     m.Uuid.ValueStringPointer(),
+		Name:     m.Name.ValueStringPointer(),
+		Account:  m.Account.ValueString(),
+		Team:     m.Team.ValueString(),
+		Priority: m.Priority.ValueString(),
+	}))
+	return v
+}
+
+type IssueAlertActionPagerDutyNotifyServiceModel struct {
+	Uuid     types.String `tfsdk:"uuid"`
+	Name     types.String `tfsdk:"name"`
+	Account  types.String `tfsdk:"account"`
+	Service  types.String `tfsdk:"service"`
+	Severity types.String `tfsdk:"severity"`
+}
+
+func (m *IssueAlertActionPagerDutyNotifyServiceModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionPagerDutyNotifyService) (diags diag.Diagnostics) {
+	m.Uuid = types.StringPointerValue(action.Uuid)
+	m.Name = types.StringPointerValue(action.Name)
+	m.Account = types.StringValue(action.Account)
+	m.Service = types.StringValue(action.Service)
+	m.Severity = types.StringValue(action.Severity)
+	return
+}
+
+func (m IssueAlertActionPagerDutyNotifyServiceModel) ToApi() apiclient.ProjectRuleAction {
+	var v apiclient.ProjectRuleAction
+	must.Do(v.FromProjectRuleActionPagerDutyNotifyService(apiclient.ProjectRuleActionPagerDutyNotifyService{
+		Uuid:     m.Uuid.ValueStringPointer(),
+		Name:     m.Name.ValueStringPointer(),
+		Account:  m.Account.ValueString(),
+		Service:  m.Service.ValueString(),
+		Severity: m.Severity.ValueString(),
+	}))
+	return v
+}
+
+type IssueAlertActionSlackNotifyServiceModel struct {
+	Uuid      types.String `tfsdk:"uuid"`
+	Name      types.String `tfsdk:"name"`
+	Workspace types.String `tfsdk:"workspace"`
+	Channel   types.String `tfsdk:"channel"`
+	ChannelId types.String `tfsdk:"channel_id"`
+	Tags      types.String `tfsdk:"tags"`
+	Notes     types.String `tfsdk:"notes"`
+}
+
+func (m *IssueAlertActionSlackNotifyServiceModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionSlackNotifyService) (diags diag.Diagnostics) {
+	m.Uuid = types.StringPointerValue(action.Uuid)
+	m.Name = types.StringPointerValue(action.Name)
+	m.Workspace = types.StringValue(action.Workspace)
+	m.Channel = types.StringValue(action.Channel)
+	m.ChannelId = types.StringPointerValue(action.ChannelId)
+	m.Tags = types.StringPointerValue(action.Tags)
+	m.Notes = types.StringPointerValue(action.Notes)
+	return
+}
+
+func (m IssueAlertActionSlackNotifyServiceModel) ToApi() apiclient.ProjectRuleAction {
+	var v apiclient.ProjectRuleAction
+	must.Do(v.FromProjectRuleActionSlackNotifyService(apiclient.ProjectRuleActionSlackNotifyService{
+		Uuid:      m.Uuid.ValueStringPointer(),
+		Name:      m.Name.ValueStringPointer(),
+		Workspace: m.Workspace.ValueString(),
+		Channel:   m.Channel.ValueString(),
+		ChannelId: m.ChannelId.ValueStringPointer(),
+		Tags:      m.Tags.ValueStringPointer(),
+		Notes:     m.Notes.ValueStringPointer(),
+	}))
+	return v
+}
+
+type IssueAlertActionGitHubCreateTicketModel struct {
+	Uuid        types.String `tfsdk:"uuid"`
+	Name        types.String `tfsdk:"name"`
+	Integration types.String `tfsdk:"integration"`
+	Repo        types.String `tfsdk:"repo"`
+	Assignee    types.String `tfsdk:"assignee"`
+	Labels      types.Set    `tfsdk:"labels"`
+}
+
+func (m *IssueAlertActionGitHubCreateTicketModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionGitHubCreateTicket) (diags diag.Diagnostics) {
+	m.Uuid = types.StringPointerValue(action.Uuid)
+	m.Name = types.StringPointerValue(action.Name)
+	m.Integration = types.StringValue(action.Integration)
+	m.Repo = types.StringValue(action.Repo)
+	m.Assignee = types.StringPointerValue(action.Assignee)
+
+	if action.Labels == nil {
+		m.Labels = types.SetNull(types.StringType)
+	} else {
+		m.Labels = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
+			return types.StringValue(v)
+		}, *action.Labels))
+	}
+	return
+}
+
+func (m IssueAlertActionGitHubCreateTicketModel) ToApi() apiclient.ProjectRuleAction {
+	body := apiclient.ProjectRuleActionGitHubCreateTicket{
+		Uuid:              m.Uuid.ValueStringPointer(),
+		Name:              m.Name.ValueStringPointer(),
+		Integration:       m.Integration.ValueString(),
+		Repo:              m.Repo.ValueString(),
+		Assignee:          m.Assignee.ValueStringPointer(),
+		DynamicFormFields: []map[string]interface{}{{"dummy": "dummy"}},
+	}
+
+	if !m.Labels.IsNull() {
+		var labels []string
+		// TODO: Handle diagnostics
+		m.Labels.ElementsAs(context.Background(), &labels, false)
+
+		body.Labels = &labels
+	}
+
+	var v apiclient.ProjectRuleAction
+	must.Do(v.FromProjectRuleActionGitHubCreateTicket(body))
+	return v
+}
+
+type IssueAlertActionGitHubEnterpriseCreateTicketModel struct {
+	Uuid        types.String `tfsdk:"uuid"`
+	Name        types.String `tfsdk:"name"`
+	Integration types.String `tfsdk:"integration"`
+	Repo        types.String `tfsdk:"repo"`
+	Assignee    types.String `tfsdk:"assignee"`
+	Labels      types.Set    `tfsdk:"labels"`
+}
+
+func (m *IssueAlertActionGitHubEnterpriseCreateTicketModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionGitHubEnterpriseCreateTicket) (diags diag.Diagnostics) {
+	m.Uuid = types.StringPointerValue(action.Uuid)
+	m.Name = types.StringPointerValue(action.Name)
+	m.Integration = types.StringValue(action.Integration)
+	m.Repo = types.StringValue(action.Repo)
+	m.Assignee = types.StringPointerValue(action.Assignee)
+
+	if action.Labels == nil {
+		m.Labels = types.SetNull(types.StringType)
+	} else {
+		m.Labels = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
+			return types.StringValue(v)
+		}, *action.Labels))
+	}
+	return
+}
+
+func (m IssueAlertActionGitHubEnterpriseCreateTicketModel) ToApi() apiclient.ProjectRuleAction {
+	body := apiclient.ProjectRuleActionGitHubEnterpriseCreateTicket{
+		Uuid:              m.Uuid.ValueStringPointer(),
+		Name:              m.Name.ValueStringPointer(),
+		Integration:       m.Integration.ValueString(),
+		Repo:              m.Repo.ValueString(),
+		Assignee:          m.Assignee.ValueStringPointer(),
+		DynamicFormFields: []map[string]interface{}{{"dummy": "dummy"}},
+	}
+
+	if !m.Labels.IsNull() {
+		var labels []string
+		// TODO: Handle diagnostics
+		m.Labels.ElementsAs(context.Background(), &labels, false)
+
+		body.Labels = &labels
+	}
+
+	var v apiclient.ProjectRuleAction
+	must.Do(v.FromProjectRuleActionGitHubEnterpriseCreateTicket(body))
+	return v
+}
+
+type IssueAlertActionAzureDevopsCreateTicketModel struct {
+	Uuid         types.String `tfsdk:"uuid"`
+	Name         types.String `tfsdk:"name"`
+	Integration  types.String `tfsdk:"integration"`
+	Project      types.String `tfsdk:"project"`
+	WorkItemType types.String `tfsdk:"work_item_type"`
+}
+
+func (m *IssueAlertActionAzureDevopsCreateTicketModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionAzureDevopsCreateTicket) (diags diag.Diagnostics) {
+	m.Uuid = types.StringPointerValue(action.Uuid)
+	m.Name = types.StringPointerValue(action.Name)
+	m.Integration = types.StringValue(action.Integration)
+	m.Project = types.StringValue(action.Project)
+	m.WorkItemType = types.StringValue(action.WorkItemType)
+	return
+}
+
+func (m IssueAlertActionAzureDevopsCreateTicketModel) ToApi() apiclient.ProjectRuleAction {
+	var v apiclient.ProjectRuleAction
+	must.Do(v.FromProjectRuleActionAzureDevopsCreateTicket(apiclient.ProjectRuleActionAzureDevopsCreateTicket{
+		Uuid:              m.Uuid.ValueStringPointer(),
+		Name:              m.Name.ValueStringPointer(),
+		Integration:       m.Integration.ValueString(),
+		Project:           m.Project.ValueString(),
+		WorkItemType:      m.WorkItemType.ValueString(),
+		DynamicFormFields: []map[string]interface{}{{"dummy": "dummy"}},
+	}))
+	return v
+}
+
+type IssueAlertActionModel struct {
+	NotifyEmail                  *IssueAlertActionNotifyEmailModel                  `tfsdk:"notify_email"`
+	NotifyEvent                  *IssueAlertActionNotifyEventModel                  `tfsdk:"notify_event"`
+	OpsgenieNotifyTeam           *IssueAlertActionOpsgenieNotifyTeam                `tfsdk:"opsgenie_notify_team"`
+	PagerDutyNotifyService       *IssueAlertActionPagerDutyNotifyServiceModel       `tfsdk:"pagerduty_notify_service"`
+	SlackNotifyService           *IssueAlertActionSlackNotifyServiceModel           `tfsdk:"slack_notify_service"`
+	GitHubCreateTicket           *IssueAlertActionGitHubCreateTicketModel           `tfsdk:"github_create_ticket"`
+	GitHubEnterpriseCreateTicket *IssueAlertActionGitHubEnterpriseCreateTicketModel `tfsdk:"github_enterprise_create_ticket"`
+	AzureDevopsCreateTicket      *IssueAlertActionAzureDevopsCreateTicketModel      `tfsdk:"azure_devops_create_ticket"`
+}
+
+func (m IssueAlertActionModel) ToApi() apiclient.ProjectRuleAction {
+	if m.NotifyEmail != nil {
+		return m.NotifyEmail.ToApi()
+	} else if m.NotifyEvent != nil {
+		return m.NotifyEvent.ToApi()
+	} else if m.OpsgenieNotifyTeam != nil {
+		return m.OpsgenieNotifyTeam.ToApi()
+	} else if m.PagerDutyNotifyService != nil {
+		return m.PagerDutyNotifyService.ToApi()
+	} else if m.SlackNotifyService != nil {
+		return m.SlackNotifyService.ToApi()
+	} else if m.GitHubCreateTicket != nil {
+		return m.GitHubCreateTicket.ToApi()
+	} else if m.GitHubEnterpriseCreateTicket != nil {
+		return m.GitHubEnterpriseCreateTicket.ToApi()
+	} else if m.AzureDevopsCreateTicket != nil {
+		return m.AzureDevopsCreateTicket.ToApi()
+	}
+
+	panic("provider error: unsupported action")
+}
+
+func (m *IssueAlertActionModel) FromApi(ctx context.Context, action apiclient.ProjectRuleAction) (diags diag.Diagnostics) {
+	actionValue, err := action.ValueByDiscriminator()
+	if err != nil {
+		diags.AddError("Invalid action", err.Error())
+		return
+	}
+
+	switch actionValue := actionValue.(type) {
+	case apiclient.ProjectRuleActionNotifyEmail:
+		m.NotifyEmail = &IssueAlertActionNotifyEmailModel{}
+		diags.Append(m.NotifyEmail.Fill(ctx, actionValue)...)
+	case apiclient.ProjectRuleActionNotifyEvent:
+		m.NotifyEvent = &IssueAlertActionNotifyEventModel{}
+		diags.Append(m.NotifyEvent.Fill(ctx, actionValue)...)
+	case apiclient.ProjectRuleActionOpsgenieNotifyTeam:
+		m.OpsgenieNotifyTeam = &IssueAlertActionOpsgenieNotifyTeam{}
+		diags.Append(m.OpsgenieNotifyTeam.Fill(ctx, actionValue)...)
+	case apiclient.ProjectRuleActionPagerDutyNotifyService:
+		m.PagerDutyNotifyService = &IssueAlertActionPagerDutyNotifyServiceModel{}
+		diags.Append(m.PagerDutyNotifyService.Fill(ctx, actionValue)...)
+	case apiclient.ProjectRuleActionSlackNotifyService:
+		m.SlackNotifyService = &IssueAlertActionSlackNotifyServiceModel{}
+		diags.Append(m.SlackNotifyService.Fill(ctx, actionValue)...)
+	case apiclient.ProjectRuleActionGitHubCreateTicket:
+		m.GitHubCreateTicket = &IssueAlertActionGitHubCreateTicketModel{}
+		diags.Append(m.GitHubCreateTicket.Fill(ctx, actionValue)...)
+	case apiclient.ProjectRuleActionGitHubEnterpriseCreateTicket:
+		m.GitHubEnterpriseCreateTicket = &IssueAlertActionGitHubEnterpriseCreateTicketModel{}
+		diags.Append(m.GitHubEnterpriseCreateTicket.Fill(ctx, actionValue)...)
+	case apiclient.ProjectRuleActionAzureDevopsCreateTicket:
+		m.AzureDevopsCreateTicket = &IssueAlertActionAzureDevopsCreateTicketModel{}
+		diags.Append(m.AzureDevopsCreateTicket.Fill(ctx, actionValue)...)
+	default:
+		diags.AddError("Unsupported action", fmt.Sprintf("Unsupported action type %T", actionValue))
+	}
+
+	return
+}
+
 // Model
 
 type IssueAlertModel struct {
@@ -625,6 +995,7 @@ type IssueAlertModel struct {
 	Owner        types.String                `tfsdk:"owner"`
 	ConditionsV2 *[]IssueAlertConditionModel `tfsdk:"conditions_v2"`
 	FiltersV2    *[]IssueAlertFilterModel    `tfsdk:"filters_v2"`
+	ActionsV2    *[]IssueAlertActionModel    `tfsdk:"actions_v2"`
 }
 
 func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule) (diags diag.Diagnostics) {
@@ -684,6 +1055,16 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 			m.Actions = sentrytypes.NewLossyJsonValue(string(actions))
 		} else {
 			diags.AddError("Invalid actions", err.Error())
+		}
+	} else if m.ActionsV2 != nil {
+		m.ActionsV2 = ptr.Ptr(sliceutils.Map(func(action apiclient.ProjectRuleAction) IssueAlertActionModel {
+			var actionModel IssueAlertActionModel
+			diags.Append(actionModel.FromApi(ctx, action)...)
+			return actionModel
+		}, alert.Actions))
+
+		if diags.HasError() {
+			return
 		}
 	}
 

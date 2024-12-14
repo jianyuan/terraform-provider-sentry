@@ -74,20 +74,17 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("owner"), knownvalue.Null()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("conditions"), knownvalue.Null()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.Null()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("actions"), knownvalue.NotNull()), // TODO
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("actions"), knownvalue.Null()),
 	}
 
 	resource.Test(t, resource.TestCase{
+		// TODO: Precheck acctest.TestOpsgenieIntegrationKey
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccCheckIssueAlertDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccIssueAlertConfig(team, project, alert, `
-					actions = <<EOT
-						[{"id": "sentry.rules.actions.notify_event.NotifyEventAction"}]
-					EOT
-
 					conditions_v2 = [
 						{ first_seen_event = {} },
 						{ regression_event = {} },
@@ -116,7 +113,94 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 						{ tagged_event = { key = "key", match = "NOT_SET" } },
 						{ level = { match = "EQUAL", level = "error" } },
 					]
-				`),
+
+					actions_v2 = [
+						{ notify_email = { target_type = "IssueOwners", fallthrough_type = "ActiveMembers" } },
+						{ notify_email = { target_type = "Team", target_identifier = sentry_team.test.internal_id } },
+						{ notify_event = { } },
+						{
+							opsgenie_notify_team = {
+								account  = sentry_integration_opsgenie.opsgenie.integration_id
+								team     = sentry_integration_opsgenie.opsgenie.id
+								priority = "P1"
+							}
+						},
+						{
+							pagerduty_notify_service = {
+								account  = sentry_integration_pagerduty.pagerduty.integration_id
+								service  = sentry_integration_pagerduty.pagerduty.id
+								severity = "default"
+							}
+						},
+						{
+							slack_notify_service = {
+								workspace = data.sentry_organization_integration.slack.id
+								channel   = "#general"
+								tags      = "environment,level"
+								notes     = "Please <http://example.com|click here> for triage information"
+							}
+						},
+						{
+							github_create_ticket = {
+								integration = data.sentry_organization_integration.github.id
+								repo        = "terraform-provider-sentry"
+								assignee    = "jianyuan"
+								labels      = ["bug", "enhancement"]
+							}
+						},
+						{
+							azure_devops_create_ticket = {
+								integration    = data.sentry_organization_integration.vsts.id
+								project        = "123"
+								work_item_type = "Microsoft.VSTS.WorkItemTypes.Task"
+							}
+						}
+					]
+				`) + fmt.Sprintf(`
+					data "sentry_organization_integration" "opsgenie" {
+						organization = sentry_project.test.organization
+						provider_key = "opsgenie"
+						name         = "terraform-provider-sentry"
+					}
+
+					resource "sentry_integration_opsgenie" "opsgenie" {
+						organization    = data.sentry_organization_integration.opsgenie.organization
+						integration_id  = data.sentry_organization_integration.opsgenie.id
+						team            = "issue-alert-team"
+						integration_key = "%[1]s"
+					}
+
+					data "sentry_organization_integration" "pagerduty" {
+						organization = sentry_project.test.organization
+						provider_key = "pagerduty"
+						name         = "terraform-provider-sentry"
+					}
+
+					resource "sentry_integration_pagerduty" "pagerduty" {
+						organization    = data.sentry_organization_integration.pagerduty.organization
+						integration_id  = data.sentry_organization_integration.pagerduty.id
+						service         = "issue-alert-service"
+						integration_key = "issue-alert-integration-key"
+					}
+
+					data "sentry_organization_integration" "slack" {
+						organization = sentry_project.test.organization
+						provider_key = "slack"
+						name         = "A2 Marketing"  # TODO: Use a real integration name
+					}
+
+					data "sentry_organization_integration" "github" {
+						organization = sentry_project.test.organization
+						provider_key = "github"
+						name         = "jianyuan"
+					}
+
+					data "sentry_organization_integration" "vsts" {
+						organization = sentry_project.test.organization
+						provider_key = "vsts"
+						name         = "jianyuanlee"
+					}
+				`, acctest.TestOpsgenieIntegrationKey),
 				ConfigStateChecks: append(
 					checks,
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(alert)),
@@ -289,20 +373,96 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 							}),
 						}),
 					})),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("actions_v2"), knownvalue.ListExact([]knownvalue.Check{
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"notify_email": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"uuid":              knownvalue.NotNull(),
+								"name":              knownvalue.StringExact("Send a notification to IssueOwners and if none can be found then send a notification to ActiveMembers"),
+								"target_type":       knownvalue.StringExact("IssueOwners"),
+								"target_identifier": knownvalue.Null(),
+								"fallthrough_type":  knownvalue.StringExact("ActiveMembers"),
+							}),
+						}),
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"notify_email": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"uuid":              knownvalue.NotNull(),
+								"name":              knownvalue.StringExact("Send a notification to Team and if none can be found then send a notification to ActiveMembers"),
+								"target_type":       knownvalue.StringExact("Team"),
+								"target_identifier": knownvalue.NotNull(),
+								"fallthrough_type":  knownvalue.Null(),
+							}),
+						}),
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"notify_event": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"uuid": knownvalue.NotNull(),
+								"name": knownvalue.StringExact("Send a notification (for all legacy integrations)"),
+							}),
+						}),
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"opsgenie_notify_team": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"uuid":     knownvalue.NotNull(),
+								"name":     knownvalue.StringRegexp(regexp.MustCompile(`^Send a notification to Opsgenie account .+ and team .+ with P1 priority$`)),
+								"account":  knownvalue.NotNull(),
+								"team":     knownvalue.NotNull(),
+								"priority": knownvalue.StringExact("P1"),
+							}),
+						}),
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"pagerduty_notify_service": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"uuid":     knownvalue.NotNull(),
+								"name":     knownvalue.StringRegexp(regexp.MustCompile(`^Send a notification to PagerDuty account .+ and service .+ with .+ severity$`)),
+								"account":  knownvalue.NotNull(),
+								"service":  knownvalue.NotNull(),
+								"severity": knownvalue.StringExact("default"),
+							}),
+						}),
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"slack_notify_service": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"uuid":       knownvalue.NotNull(),
+								"name":       knownvalue.StringRegexp(regexp.MustCompile(`^Send a notification to the .+ Slack workspace to .+ and show tags .+ and notes .+ in notification$`)),
+								"workspace":  knownvalue.NotNull(),
+								"channel":    knownvalue.StringExact("#general"),
+								"channel_id": knownvalue.NotNull(),
+								"tags":       knownvalue.StringExact("environment,level"),
+								"notes":      knownvalue.StringExact("Please <http://example.com|click here> for triage information"),
+							}),
+						}),
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"github_create_ticket": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"uuid":        knownvalue.NotNull(),
+								"name":        knownvalue.StringRegexp(regexp.MustCompile(`^Create a GitHub issue in .+ with these $`)),
+								"integration": knownvalue.NotNull(),
+								"repo":        knownvalue.StringExact("terraform-provider-sentry"),
+								"assignee":    knownvalue.StringExact("jianyuan"),
+								"labels": knownvalue.SetExact([]knownvalue.Check{
+									knownvalue.StringExact("bug"),
+									knownvalue.StringExact("enhancement"),
+								}),
+							}),
+						}),
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"azure_devops_create_ticket": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"uuid":           knownvalue.NotNull(),
+								"name":           knownvalue.StringRegexp(regexp.MustCompile(`^Create an Azure DevOps work item in .+ with these $`)),
+								"integration":    knownvalue.NotNull(),
+								"project":        knownvalue.StringExact("123"),
+								"work_item_type": knownvalue.StringExact("Microsoft.VSTS.WorkItemTypes.Task"),
+							}),
+						}),
+					})),
 				),
 			},
 			{
 				Config: testAccIssueAlertConfig(team, project, alert+"-updated", `
-					actions = <<EOT
-						[{"id": "sentry.rules.actions.notify_event.NotifyEventAction"}]
-					EOT
-
 					conditions_v2 = [
 						{ reappeared_event = {} },
 						{ new_high_priority_issue = {} },
 						{ existing_high_priority_issue = {} },
 					]
 					filters_v2 = []
+					actions_v2 = [
+						{ notify_email = { target_type = "IssueOwners", fallthrough_type = "NoOne" } },
+					]
 				`),
 				ConfigStateChecks: append(
 					checks,
@@ -325,6 +485,17 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 						}),
 					})),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters_v2"), knownvalue.ListExact([]knownvalue.Check{})),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("actions_v2"), knownvalue.ListExact([]knownvalue.Check{
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"notify_email": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"uuid":              knownvalue.NotNull(),
+								"name":              knownvalue.StringExact("Send a notification to IssueOwners and if none can be found then send a notification to NoOne"),
+								"target_type":       knownvalue.StringExact("IssueOwners"),
+								"target_identifier": knownvalue.Null(),
+								"fallthrough_type":  knownvalue.StringExact("NoOne"),
+							}),
+						}),
+					})),
 				),
 			},
 			{
