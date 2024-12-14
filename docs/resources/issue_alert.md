@@ -456,8 +456,7 @@ EOT
 
 ### Required
 
-- `action_match` (String) Trigger actions when an event is captured by Sentry and `any` or `all` of the specified conditions happen.
-- `actions` (String) List of actions. In JSON string format.
+- `action_match` (String) Trigger actions when an event is captured by Sentry and `any` or `all` of the specified conditions happen. Valid values are: `all`, and `any`.
 - `frequency` (Number) Perform actions at most once every `X` minutes for this issue.
 - `name` (String) The issue alert name.
 - `organization` (String) The organization of this resource.
@@ -465,17 +464,42 @@ EOT
 
 ### Optional
 
-- `conditions` (String, Deprecated) **Deprecated** in favor of `condition`. A list of triggers that determine when the rule fires. In JSON string format.
+- `actions` (String, Deprecated) **Deprecated** in favor of `actions_v2`. A list of actions that take place when all required conditions and filters for the rule are met. In JSON string format.
+- `actions_v2` (Attributes List) A list of actions that take place when all required conditions and filters for the rule are met. (see [below for nested schema](#nestedatt--actions_v2))
+- `conditions` (String, Deprecated) **Deprecated** in favor of `conditions_v2`. A list of triggers that determine when the rule fires. In JSON string format.
 - `conditions_v2` (Attributes List) A list of triggers that determine when the rule fires. (see [below for nested schema](#nestedatt--conditions_v2))
 - `environment` (String) Perform issue alert in a specific environment.
-- `filter_match` (String) A string determining which filters need to be true before any actions take place. Required when a value is provided for `filters`.
-- `filters` (String) **Deprecated** in favor of `filter`. A list of filters that determine if a rule fires after the necessary conditions have been met. In JSON string format.
+- `filter_match` (String) A string determining which filters need to be true before any actions take place. Required when a value is provided for `filters`. Valid values are: `all`, `any`, and `none`.
+- `filters` (String, Deprecated) **Deprecated** in favor of `filters_v2`. A list of filters that determine if a rule fires after the necessary conditions have been met. In JSON string format.
 - `filters_v2` (Attributes List) A list of filters that determine if a rule fires after the necessary conditions have been met. (see [below for nested schema](#nestedatt--filters_v2))
 - `owner` (String) The ID of the team or user that owns the rule.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+<a id="nestedatt--actions_v2"></a>
+### Nested Schema for `actions_v2`
+
+Optional:
+
+- `notify_email` (Attributes) Send a notification to `target_type` and if none can be found then send a notification to `fallthrough_type`. (see [below for nested schema](#nestedatt--actions_v2--notify_email))
+
+<a id="nestedatt--actions_v2--notify_email"></a>
+### Nested Schema for `actions_v2.notify_email`
+
+Required:
+
+- `target_type` (String) Valid values are: `older`, and `newer`.
+- `time` (String) Valid values are: `minute`, `hour`, `day`, and `week`.
+- `value` (Number)
+
+Read-Only:
+
+- `id` (String)
+- `name` (String)
+
+
 
 <a id="nestedatt--conditions_v2"></a>
 ### Nested Schema for `conditions_v2`
@@ -496,13 +520,13 @@ Optional:
 
 Required:
 
-- `comparison_type` (String) Valid values are `count` and `percent`.
+- `comparison_type` (String) Valid values are: `count`, and `percent`.
 - `value` (Number)
 
 Optional:
 
-- `comparison_interval` (String) Valid values are `5m`, `15m`, `1h`, `1d`, `1w` and `30d` (`m` for minutes, `h` for hours, `d` for days, and `w` for weeks).
-- `interval` (String) Valid values are `1m`, `5m`, `15m`, `1h`, `1d`, `1w` and `30d` (`m` for minutes, `h` for hours, `d` for days, and `w` for weeks).
+- `comparison_interval` (String) `m` for minutes, `h` for hours, `d` for days, and `w` for weeks. Valid values are: `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
+- `interval` (String) `m` for minutes, `h` for hours, `d` for days, and `w` for weeks. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
 
 Read-Only:
 
@@ -514,13 +538,13 @@ Read-Only:
 
 Required:
 
-- `comparison_type` (String) Valid values are `count` and `percent`.
-- `interval` (String) Valid values are `5m`, `10m`, `30m`, and `1h` (`m` for minutes, `h` for hours).
+- `comparison_type` (String) Valid values are: `count`, and `percent`.
+- `interval` (String) `m` for minutes, `h` for hours. Valid values are: `5m`, `10m`, `30m`, and `1h`.
 - `value` (Number)
 
 Optional:
 
-- `comparison_interval` (String) Valid values are `5m`, `15m`, `1h`, `1d`, `1w` and `30d` (`m` for minutes, `h` for hours, `d` for days, and `w` for weeks).
+- `comparison_interval` (String) `m` for minutes, `h` for hours, `d` for days, and `w` for weeks. Valid values are: `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
 
 Read-Only:
 
@@ -532,13 +556,13 @@ Read-Only:
 
 Required:
 
-- `comparison_type` (String) Valid values are `count` and `percent`.
+- `comparison_type` (String) Valid values are: `count`, and `percent`.
 - `value` (Number)
 
 Optional:
 
-- `comparison_interval` (String) Valid values are `5m`, `15m`, `1h`, `1d`, `1w` and `30d` (`m` for minutes, `h` for hours, `d` for days, and `w` for weeks).
-- `interval` (String) Valid values are `1m`, `5m`, `15m`, `1h`, `1d`, `1w` and `30d` (`m` for minutes, `h` for hours, `d` for days, and `w` for weeks).
+- `comparison_interval` (String) `m` for minutes, `h` for hours, `d` for days, and `w` for weeks. Valid values are: `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
+- `interval` (String) `m` for minutes, `h` for hours, `d` for days, and `w` for weeks. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
 
 Read-Only:
 
@@ -606,8 +630,8 @@ Optional:
 
 Required:
 
-- `comparison_type` (String) Valid values are `older` and `newer`.
-- `time` (String) Valid values are `minute`, `hour`, `day`, and `week`.
+- `comparison_type` (String) Valid values are: `older`, and `newer`.
+- `time` (String) Valid values are: `minute`, `hour`, `day`, and `week`.
 - `value` (Number)
 
 Read-Only:
@@ -620,7 +644,7 @@ Read-Only:
 
 Required:
 
-- `target_type` (String) Valid values are `Unassigned`, `Team`, and `Member`.
+- `target_type` (String) Valid values are: `Unassigned`, `Team`, and `Member`.
 
 Optional:
 
@@ -636,8 +660,8 @@ Read-Only:
 
 Required:
 
-- `attribute` (String) Valid values are: `message`, `platform`, `environment`, `type`, `error.handled`, `error.unhandled`, `error.main_thread`, `exception.type`, `exception.value`, `user.id`, `user.email`, `user.username`, `user.ip_address`, `http.method`, `http.url`, `http.status_code`, `sdk.name`, `stacktrace.code`, `stacktrace.module`, `stacktrace.filename`, `stacktrace.abs_path`, `stacktrace.package`, `unreal.crashtype`, `app.in_foreground`, `os.distribution_name`, `os.distribution_version`.
-- `match` (String) Valid values are: `CONTAINS`, `ENDS_WITH`, `EQUAL`, `GREATER_OR_EQUAL`, `GREATER`, `IS_SET`, `IS_IN`, `LESS_OR_EQUAL`, `LESS`, `NOT_CONTAINS`, `NOT_ENDS_WITH`, `NOT_EQUAL`, `NOT_SET`, `NOT_STARTS_WITH`, `NOT_IN`, `STARTS_WITH`.
+- `attribute` (String) Valid values are: `message`, `platform`, `environment`, `type`, `error.handled`, `error.unhandled`, `error.main_thread`, `exception.type`, `exception.value`, `user.id`, `user.email`, `user.username`, `user.ip_address`, `http.method`, `http.url`, `http.status_code`, `sdk.name`, `stacktrace.code`, `stacktrace.module`, `stacktrace.filename`, `stacktrace.abs_path`, `stacktrace.package`, `unreal.crashtype`, `app.in_foreground`, `os.distribution_name`, and `os.distribution_version`.
+- `match` (String) Valid values are: `CONTAINS`, `ENDS_WITH`, `EQUAL`, `GREATER_OR_EQUAL`, `GREATER`, `IS_SET`, `IS_IN`, `LESS_OR_EQUAL`, `LESS`, `NOT_CONTAINS`, `NOT_ENDS_WITH`, `NOT_EQUAL`, `NOT_SET`, `NOT_STARTS_WITH`, `NOT_IN`, and `STARTS_WITH`.
 
 Optional:
 
@@ -653,7 +677,7 @@ Read-Only:
 
 Required:
 
-- `value` (String) Valid values are: `Error`, `Performance`, `Profile`, `Cron`, `Replay`, `Feedback`, `Uptime`, `Metric_Alert`.
+- `value` (String) Valid values are: `Error`, `Performance`, `Profile`, `Cron`, `Replay`, `Feedback`, `Uptime`, and `Metric_Alert`.
 
 Read-Only:
 
@@ -678,8 +702,8 @@ Read-Only:
 Required:
 
 - `environment` (String)
-- `older_or_newer` (String) Valid values are `older` and `newer`.
-- `oldest_or_newest` (String) Valid values are `oldest` and `newest`.
+- `older_or_newer` (String) Valid values are: `older`, and `newer`.
+- `oldest_or_newest` (String) Valid values are: `oldest`, and `newest`.
 
 Read-Only:
 
@@ -699,8 +723,8 @@ Read-Only:
 
 Required:
 
-- `level` (String) Valid values are: `sample`, `debug`, `info`, `warning`, `error`, `fatal`.
-- `match` (String) Valid values are: `EQUAL`, `GREATER_OR_EQUAL`, `LESS_OR_EQUAL`.
+- `level` (String) Valid values are: `sample`, `debug`, `info`, `warning`, `error`, and `fatal`.
+- `match` (String) Valid values are: `EQUAL`, `GREATER_OR_EQUAL`, and `LESS_OR_EQUAL`.
 
 Read-Only:
 
@@ -713,7 +737,7 @@ Read-Only:
 Required:
 
 - `key` (String)
-- `match` (String) Valid values are: `CONTAINS`, `ENDS_WITH`, `EQUAL`, `GREATER_OR_EQUAL`, `GREATER`, `IS_SET`, `IS_IN`, `LESS_OR_EQUAL`, `LESS`, `NOT_CONTAINS`, `NOT_ENDS_WITH`, `NOT_EQUAL`, `NOT_SET`, `NOT_STARTS_WITH`, `NOT_IN`, `STARTS_WITH`.
+- `match` (String) Valid values are: `CONTAINS`, `ENDS_WITH`, `EQUAL`, `GREATER_OR_EQUAL`, `GREATER`, `IS_SET`, `IS_IN`, `LESS_OR_EQUAL`, `LESS`, `NOT_CONTAINS`, `NOT_ENDS_WITH`, `NOT_EQUAL`, `NOT_SET`, `NOT_STARTS_WITH`, `NOT_IN`, and `STARTS_WITH`.
 
 Optional:
 

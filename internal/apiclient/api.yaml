@@ -1090,6 +1090,35 @@ components:
           type: string
         match:
           type: string
+    ProjectRuleAction:
+      oneOf:
+        - $ref: "#/components/schemas/ProjectRuleActionNotifyEmail"
+      discriminator:
+        propertyName: id
+        mapping:
+          "sentry.mail.actions.NotifyEmailAction": "#/components/schemas/ProjectRuleActionNotifyEmail"
+    ProjectRuleActionNotifyEmail:
+      type: object
+      required:
+        - id
+        - targetType
+        - targetIdentifier
+        - fallthroughType
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.mail.actions.NotifyEmailAction"
+        uuid:
+          type: string
+        name:
+          type: string
+        targetType:
+          type: string
+        targetIdentifier:
+          type: string
+        fallthroughType:
+          type: string
     Team:
       type: object
       required:

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -41,33 +40,23 @@ func (r *IssueAlertResource) Metadata(ctx context.Context, req resource.Metadata
 }
 
 func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	// idStringAttribute := schema.StringAttribute{
-	// 	Computed: true,
-	// }
+	idStringAttribute := schema.StringAttribute{
+		Computed: true,
+	}
 	nameStringAttribute := schema.StringAttribute{
 		Computed: true,
 	}
-	intervalStringAttribute := schema.StringAttribute{
-		MarkdownDescription: "Valid values are `1m`, `5m`, `15m`, `1h`, `1d`, `1w` and `30d` (`m` for minutes, `h` for hours, `d` for days, and `w` for weeks).",
+	intervalStringAttribute := tfutils.WithEnumStringAttribute(schema.StringAttribute{
+		MarkdownDescription: "`m` for minutes, `h` for hours, `d` for days, and `w` for weeks.",
 		Optional:            true,
-		Validators: []validator.String{
-			stringvalidator.OneOf("1m", "5m", "15m", "1h", "1d", "1w", "30d"),
-		},
-	}
-	conditionComparisonTypeStringAttribute := schema.StringAttribute{
-		MarkdownDescription: "Valid values are `count` and `percent`.",
-		Required:            true,
-		Validators: []validator.String{
-			stringvalidator.OneOf("count", "percent"),
-		},
-	}
-	conditionComparisonIntervalStringAttribute := schema.StringAttribute{
-		MarkdownDescription: "Valid values are `5m`, `15m`, `1h`, `1d`, `1w` and `30d` (`m` for minutes, `h` for hours, `d` for days, and `w` for weeks).",
+	}, []string{"1m", "5m", "15m", "1h", "1d", "1w", "30d"})
+	conditionComparisonTypeStringAttribute := tfutils.WithEnumStringAttribute(schema.StringAttribute{
+		Required: true,
+	}, []string{"count", "percent"})
+	conditionComparisonIntervalStringAttribute := tfutils.WithEnumStringAttribute(schema.StringAttribute{
+		MarkdownDescription: "`m` for minutes, `h` for hours, `d` for days, and `w` for weeks.",
 		Optional:            true,
-		Validators: []validator.String{
-			stringvalidator.OneOf("5m", "15m", "1h", "1d", "1w", "30d"),
-		},
-	}
+	}, []string{"5m", "15m", "1h", "1d", "1w", "30d"})
 
 	resp.Schema = schema.Schema{
 		MarkdownDescription: `Create an Issue Alert Rule for a Project. See the [Sentry Documentation](https://docs.sentry.io/api/alerts/create-an-issue-alert-rule-for-a-project/) for more information.
@@ -94,8 +83,8 @@ Please note the following changes since v0.12.0:
 				},
 			},
 			"conditions": schema.StringAttribute{
-				MarkdownDescription: "**Deprecated** in favor of `condition`. A list of triggers that determine when the rule fires. In JSON string format.",
-				DeprecationMessage:  "Use `condition` instead.",
+				MarkdownDescription: "**Deprecated** in favor of `conditions_v2`. A list of triggers that determine when the rule fires. In JSON string format.",
+				DeprecationMessage:  "Use `conditions_v2` instead.",
 				Optional:            true,
 				CustomType: sentrytypes.LossyJsonType{
 					IgnoreKeys: []string{"name"},
@@ -183,20 +172,18 @@ Please note the following changes since v0.12.0:
 								"value": schema.Float64Attribute{
 									Required: true,
 								},
-								"interval": schema.StringAttribute{
-									MarkdownDescription: "Valid values are `5m`, `10m`, `30m`, and `1h` (`m` for minutes, `h` for hours).",
+								"interval": tfutils.WithEnumStringAttribute(schema.StringAttribute{
+									MarkdownDescription: "`m` for minutes, `h` for hours.",
 									Required:            true,
-									Validators: []validator.String{
-										stringvalidator.OneOf("5m", "10m", "30m", "1h"),
-									},
-								},
+								}, []string{"5m", "10m", "30m", "1h"}),
 							},
 						},
 					}),
 				},
 			},
 			"filters": schema.StringAttribute{
-				MarkdownDescription: "**Deprecated** in favor of `filter`. A list of filters that determine if a rule fires after the necessary conditions have been met. In JSON string format.",
+				MarkdownDescription: "**Deprecated** in favor of `filters_v2`. A list of filters that determine if a rule fires after the necessary conditions have been met. In JSON string format.",
+				DeprecationMessage:  "Use `filters_v2` instead.",
 				Optional:            true,
 				CustomType:          sentrytypes.LossyJsonType{},
 				Validators: []validator.String{
@@ -216,23 +203,15 @@ Please note the following changes since v0.12.0:
 							Optional:            true,
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
-								"comparison_type": schema.StringAttribute{
-									MarkdownDescription: "Valid values are `older` and `newer`.",
-									Required:            true,
-									Validators: []validator.String{
-										stringvalidator.OneOf("older", "newer"),
-									},
-								},
+								"comparison_type": tfutils.WithEnumStringAttribute(schema.StringAttribute{
+									Required: true,
+								}, []string{"older", "newer"}),
 								"value": schema.Int64Attribute{
 									Required: true,
 								},
-								"time": schema.StringAttribute{
-									MarkdownDescription: "Valid values are `minute`, `hour`, `day`, and `week`.",
-									Required:            true,
-									Validators: []validator.String{
-										stringvalidator.OneOf("minute", "hour", "day", "week"),
-									},
-								},
+								"time": tfutils.WithEnumStringAttribute(schema.StringAttribute{
+									Required: true,
+								}, []string{"minute", "hour", "day", "week"}),
 							},
 						},
 						"issue_occurrences": {
@@ -250,13 +229,9 @@ Please note the following changes since v0.12.0:
 							Optional:            true,
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
-								"target_type": schema.StringAttribute{
-									MarkdownDescription: "Valid values are `Unassigned`, `Team`, and `Member`.",
-									Required:            true,
-									Validators: []validator.String{
-										stringvalidator.OneOf("Unassigned", "Team", "Member"),
-									},
-								},
+								"target_type": tfutils.WithEnumStringAttribute(schema.StringAttribute{
+									Required: true,
+								}, []string{"Unassigned", "Team", "Member"}),
 								"target_identifier": schema.StringAttribute{
 									MarkdownDescription: "Only required when `target_type` is `Team` or `Member`.",
 									Optional:            true,
@@ -268,20 +243,12 @@ Please note the following changes since v0.12.0:
 							Optional:            true,
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
-								"oldest_or_newest": schema.StringAttribute{
-									MarkdownDescription: "Valid values are `oldest` and `newest`.",
-									Required:            true,
-									Validators: []validator.String{
-										stringvalidator.OneOf("oldest", "newest"),
-									},
-								},
-								"older_or_newer": schema.StringAttribute{
-									MarkdownDescription: "Valid values are `older` and `newer`.",
-									Required:            true,
-									Validators: []validator.String{
-										stringvalidator.OneOf("older", "newer"),
-									},
-								},
+								"oldest_or_newest": tfutils.WithEnumStringAttribute(schema.StringAttribute{
+									Required: true,
+								}, []string{"oldest", "newest"}),
+								"older_or_newer": tfutils.WithEnumStringAttribute(schema.StringAttribute{
+									Required: true,
+								}, []string{"older", "newer"}),
 								"environment": schema.StringAttribute{
 									Required: true,
 								},
@@ -299,15 +266,9 @@ Please note the following changes since v0.12.0:
 							Optional:            true,
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
-								"value": schema.StringAttribute{
-									MarkdownDescription: "Valid values are: " + strings.Join(sliceutils.Map(func(v string) string {
-										return fmt.Sprintf("`%s`", v)
-									}, sentrydata.IssueGroupCategories), ", ") + ".",
+								"value": tfutils.WithEnumStringAttribute(schema.StringAttribute{
 									Required: true,
-									Validators: []validator.String{
-										stringvalidator.OneOf(sentrydata.IssueGroupCategories...),
-									},
-								},
+								}, sentrydata.IssueGroupCategories),
 							},
 						},
 						"event_attribute": {
@@ -315,24 +276,12 @@ Please note the following changes since v0.12.0:
 							Optional:            true,
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
-								"attribute": schema.StringAttribute{
-									MarkdownDescription: "Valid values are: " + strings.Join(sliceutils.Map(func(v string) string {
-										return fmt.Sprintf("`%s`", v)
-									}, sentrydata.EventAttributes), ", ") + ".",
+								"attribute": tfutils.WithEnumStringAttribute(schema.StringAttribute{
 									Required: true,
-									Validators: []validator.String{
-										stringvalidator.OneOf(sentrydata.EventAttributes...),
-									},
-								},
-								"match": schema.StringAttribute{
-									MarkdownDescription: "Valid values are: " + strings.Join(sliceutils.Map(func(v string) string {
-										return fmt.Sprintf("`%s`", v)
-									}, sentrydata.MatchTypes), ", ") + ".",
+								}, sentrydata.EventAttributes),
+								"match": tfutils.WithEnumStringAttribute(schema.StringAttribute{
 									Required: true,
-									Validators: []validator.String{
-										stringvalidator.OneOf(sentrydata.MatchTypes...),
-									},
-								},
+								}, sentrydata.MatchTypes),
 								"value": schema.StringAttribute{
 									Optional: true,
 								},
@@ -346,15 +295,9 @@ Please note the following changes since v0.12.0:
 								"key": schema.StringAttribute{
 									Required: true,
 								},
-								"match": schema.StringAttribute{
-									MarkdownDescription: "Valid values are: " + strings.Join(sliceutils.Map(func(v string) string {
-										return fmt.Sprintf("`%s`", v)
-									}, sentrydata.MatchTypes), ", ") + ".",
+								"match": tfutils.WithEnumStringAttribute(schema.StringAttribute{
 									Required: true,
-									Validators: []validator.String{
-										stringvalidator.OneOf(sentrydata.MatchTypes...),
-									},
-								},
+								}, sentrydata.MatchTypes),
 								"value": schema.StringAttribute{
 									Optional: true,
 								},
@@ -365,48 +308,62 @@ Please note the following changes since v0.12.0:
 							Optional:            true,
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
-								"match": schema.StringAttribute{
-									MarkdownDescription: "Valid values are: " + strings.Join(sliceutils.Map(func(v string) string {
-										return fmt.Sprintf("`%s`", v)
-									}, sentrydata.LevelMatchTypes), ", ") + ".",
+								"match": tfutils.WithEnumStringAttribute(schema.StringAttribute{
 									Required: true,
-									Validators: []validator.String{
-										stringvalidator.OneOf(sentrydata.LevelMatchTypes...),
-									},
-								},
-								"level": schema.StringAttribute{
-									MarkdownDescription: "Valid values are: " + strings.Join(sliceutils.Map(func(v string) string {
-										return fmt.Sprintf("`%s`", v)
-									}, sentrydata.LogLevels), ", ") + ".",
+								}, sentrydata.LevelMatchTypes),
+								"level": tfutils.WithEnumStringAttribute(schema.StringAttribute{
 									Required: true,
-									Validators: []validator.String{
-										stringvalidator.OneOf(sentrydata.LogLevels...),
-									},
-								},
+								}, sentrydata.LogLevels),
 							},
 						},
 					}),
 				},
 			},
 			"actions": schema.StringAttribute{
-				MarkdownDescription: "List of actions. In JSON string format.",
-				Required:            true,
+				MarkdownDescription: "**Deprecated** in favor of `actions_v2`. A list of actions that take place when all required conditions and filters for the rule are met. In JSON string format.",
+				DeprecationMessage:  "Use `actions_v2` instead.",
+				Optional:            true,
 				CustomType:          sentrytypes.LossyJsonType{},
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.MatchRoot("actions_v2")),
+				},
 			},
-			"action_match": schema.StringAttribute{
+			"actions_v2": schema.ListNestedAttribute{
+				MarkdownDescription: "A list of actions that take place when all required conditions and filters for the rule are met.",
+				Optional:            true,
+				Validators: []validator.List{
+					listvalidator.ConflictsWith(path.MatchRoot("actions")),
+				},
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: tfutils.WithMutuallyExclusiveValidator(map[string]schema.SingleNestedAttribute{
+						"notify_email": {
+							MarkdownDescription: "Send a notification to `target_type` and if none can be found then send a notification to `fallthrough_type`.",
+							Optional:            true,
+							Attributes: map[string]schema.Attribute{
+								"id":   idStringAttribute,
+								"name": nameStringAttribute,
+								"target_type": tfutils.WithEnumStringAttribute(schema.StringAttribute{
+									Required: true,
+								}, []string{"older", "newer"}),
+								"value": schema.Int64Attribute{
+									Required: true,
+								},
+								"time": tfutils.WithEnumStringAttribute(schema.StringAttribute{
+									Required: true,
+								}, []string{"minute", "hour", "day", "week"}),
+							},
+						},
+					}),
+				},
+			},
+			"action_match": tfutils.WithEnumStringAttribute(schema.StringAttribute{
 				MarkdownDescription: "Trigger actions when an event is captured by Sentry and `any` or `all` of the specified conditions happen.",
 				Required:            true,
-				Validators: []validator.String{
-					stringvalidator.OneOf("all", "any"),
-				},
-			},
-			"filter_match": schema.StringAttribute{
+			}, []string{"all", "any"}),
+			"filter_match": tfutils.WithEnumStringAttribute(schema.StringAttribute{
 				MarkdownDescription: "A string determining which filters need to be true before any actions take place. Required when a value is provided for `filters`.",
 				Optional:            true,
-				Validators: []validator.String{
-					stringvalidator.OneOf("all", "any", "none"),
-				},
-			},
+			}, []string{"all", "any", "none"}),
 			"frequency": schema.Int64Attribute{
 				MarkdownDescription: "Perform actions at most once every `X` minutes for this issue.",
 				Required:            true,
