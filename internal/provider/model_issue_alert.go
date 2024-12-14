@@ -5,10 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/jianyuan/go-utils/must"
 	"github.com/jianyuan/go-utils/ptr"
 	"github.com/jianyuan/go-utils/sliceutils"
@@ -19,18 +17,8 @@ import (
 
 // Conditions
 
-type issueAlertConditionModel struct {
-	Name types.String `tfsdk:"name"`
-}
-
-func (m issueAlertConditionModel) AttributeTypes() map[string]attr.Type {
-	return map[string]attr.Type{
-		"name": types.StringType,
-	}
-}
-
 type IssueAlertConditionFirstSeenEventModel struct {
-	issueAlertConditionModel
+	Name types.String `tfsdk:"name"`
 }
 
 func (m *IssueAlertConditionFirstSeenEventModel) Fill(ctx context.Context, condition apiclient.ProjectRuleConditionFirstSeenEvent) (diags diag.Diagnostics) {
@@ -47,7 +35,7 @@ func (m IssueAlertConditionFirstSeenEventModel) ToApi() apiclient.ProjectRuleCon
 }
 
 type IssueAlertConditionRegressionEventModel struct {
-	issueAlertConditionModel
+	Name types.String `tfsdk:"name"`
 }
 
 func (m *IssueAlertConditionRegressionEventModel) Fill(ctx context.Context, condition apiclient.ProjectRuleConditionRegressionEvent) (diags diag.Diagnostics) {
@@ -64,7 +52,7 @@ func (m IssueAlertConditionRegressionEventModel) ToApi() apiclient.ProjectRuleCo
 }
 
 type IssueAlertConditionReappearedEventModel struct {
-	issueAlertConditionModel
+	Name types.String `tfsdk:"name"`
 }
 
 func (m *IssueAlertConditionReappearedEventModel) Fill(ctx context.Context, condition apiclient.ProjectRuleConditionReappearedEvent) (diags diag.Diagnostics) {
@@ -81,7 +69,7 @@ func (m IssueAlertConditionReappearedEventModel) ToApi() apiclient.ProjectRuleCo
 }
 
 type IssueAlertConditionNewHighPriorityIssueModel struct {
-	issueAlertConditionModel
+	Name types.String `tfsdk:"name"`
 }
 
 func (m *IssueAlertConditionNewHighPriorityIssueModel) Fill(ctx context.Context, condition apiclient.ProjectRuleConditionNewHighPriorityIssue) (diags diag.Diagnostics) {
@@ -98,7 +86,7 @@ func (m IssueAlertConditionNewHighPriorityIssueModel) ToApi() apiclient.ProjectR
 }
 
 type IssueAlertCondtionExistingHighPriorityIssueModel struct {
-	issueAlertConditionModel
+	Name types.String `tfsdk:"name"`
 }
 
 func (m *IssueAlertCondtionExistingHighPriorityIssueModel) Fill(ctx context.Context, condition apiclient.ProjectRuleConditionExistingHighPriorityIssue) (diags diag.Diagnostics) {
@@ -115,21 +103,11 @@ func (m IssueAlertCondtionExistingHighPriorityIssueModel) ToApi() apiclient.Proj
 }
 
 type IssueAlertConditionEventFrequencyModel struct {
-	issueAlertConditionModel
+	Name               types.String `tfsdk:"name"`
 	ComparisonType     types.String `tfsdk:"comparison_type"`
 	ComparisonInterval types.String `tfsdk:"comparison_interval"`
 	Value              types.Int64  `tfsdk:"value"`
 	Interval           types.String `tfsdk:"interval"`
-}
-
-func (m IssueAlertConditionEventFrequencyModel) AttributeTypes() map[string]attr.Type {
-	return map[string]attr.Type{
-		"name":                types.StringType,
-		"comparison_type":     types.StringType,
-		"comparison_interval": types.StringType,
-		"value":               types.Int64Type,
-		"interval":            types.StringType,
-	}
 }
 
 func (m *IssueAlertConditionEventFrequencyModel) Fill(ctx context.Context, condition apiclient.ProjectRuleConditionEventFrequency) (diags diag.Diagnostics) {
@@ -154,21 +132,11 @@ func (m IssueAlertConditionEventFrequencyModel) ToApi() apiclient.ProjectRuleCon
 }
 
 type IssueAlertConditionEventUniqueUserFrequencyModel struct {
-	issueAlertConditionModel
+	Name               types.String `tfsdk:"name"`
 	ComparisonType     types.String `tfsdk:"comparison_type"`
 	ComparisonInterval types.String `tfsdk:"comparison_interval"`
 	Value              types.Int64  `tfsdk:"value"`
 	Interval           types.String `tfsdk:"interval"`
-}
-
-func (m IssueAlertConditionEventUniqueUserFrequencyModel) AttributeTypes() map[string]attr.Type {
-	return map[string]attr.Type{
-		"name":                types.StringType,
-		"comparison_type":     types.StringType,
-		"comparison_interval": types.StringType,
-		"value":               types.Int64Type,
-		"interval":            types.StringType,
-	}
 }
 
 func (m *IssueAlertConditionEventUniqueUserFrequencyModel) Fill(ctx context.Context, condition apiclient.ProjectRuleConditionEventUniqueUserFrequency) (diags diag.Diagnostics) {
@@ -193,21 +161,11 @@ func (m IssueAlertConditionEventUniqueUserFrequencyModel) ToApi() apiclient.Proj
 }
 
 type IssueAlertConditionEventFrequencyPercentModel struct {
-	issueAlertConditionModel
+	Name               types.String  `tfsdk:"name"`
 	ComparisonType     types.String  `tfsdk:"comparison_type"`
 	ComparisonInterval types.String  `tfsdk:"comparison_interval"`
 	Value              types.Float64 `tfsdk:"value"`
 	Interval           types.String  `tfsdk:"interval"`
-}
-
-func (m IssueAlertConditionEventFrequencyPercentModel) AttributeTypes() map[string]attr.Type {
-	return map[string]attr.Type{
-		"name":                types.StringType,
-		"comparison_type":     types.StringType,
-		"comparison_interval": types.StringType,
-		"value":               types.Float64Type,
-		"interval":            types.StringType,
-	}
 }
 
 func (m *IssueAlertConditionEventFrequencyPercentModel) Fill(ctx context.Context, condition apiclient.ProjectRuleConditionEventFrequencyPercent) (diags diag.Diagnostics) {
@@ -232,111 +190,36 @@ func (m IssueAlertConditionEventFrequencyPercentModel) ToApi() apiclient.Project
 }
 
 type IssueAlertConditionModel struct {
-	FirstSeenEvent            types.Object `tfsdk:"first_seen_event"`
-	RegressionEvent           types.Object `tfsdk:"regression_event"`
-	ReappearedEvent           types.Object `tfsdk:"reappeared_event"`
-	NewHighPriorityIssue      types.Object `tfsdk:"new_high_priority_issue"`
-	ExistingHighPriorityIssue types.Object `tfsdk:"existing_high_priority_issue"`
-	EventFrequency            types.Object `tfsdk:"event_frequency"`
-	EventUniqueUserFrequency  types.Object `tfsdk:"event_unique_user_frequency"`
-	EventFrequencyPercent     types.Object `tfsdk:"event_frequency_percent"`
+	FirstSeenEvent            *IssueAlertConditionFirstSeenEventModel           `tfsdk:"first_seen_event"`
+	RegressionEvent           *IssueAlertConditionRegressionEventModel          `tfsdk:"regression_event"`
+	ReappearedEvent           *IssueAlertConditionReappearedEventModel          `tfsdk:"reappeared_event"`
+	NewHighPriorityIssue      *IssueAlertConditionNewHighPriorityIssueModel     `tfsdk:"new_high_priority_issue"`
+	ExistingHighPriorityIssue *IssueAlertCondtionExistingHighPriorityIssueModel `tfsdk:"existing_high_priority_issue"`
+	EventFrequency            *IssueAlertConditionEventFrequencyModel           `tfsdk:"event_frequency"`
+	EventUniqueUserFrequency  *IssueAlertConditionEventUniqueUserFrequencyModel `tfsdk:"event_unique_user_frequency"`
+	EventFrequencyPercent     *IssueAlertConditionEventFrequencyPercentModel    `tfsdk:"event_frequency_percent"`
 }
 
-func (m IssueAlertConditionModel) AttributeTypes() map[string]attr.Type {
-	return map[string]attr.Type{
-		"first_seen_event": types.ObjectType{
-			AttrTypes: IssueAlertConditionFirstSeenEventModel{}.AttributeTypes(),
-		},
-		"regression_event": types.ObjectType{
-			AttrTypes: IssueAlertConditionRegressionEventModel{}.AttributeTypes(),
-		},
-		"reappeared_event": types.ObjectType{
-			AttrTypes: IssueAlertConditionReappearedEventModel{}.AttributeTypes(),
-		},
-		"new_high_priority_issue": types.ObjectType{
-			AttrTypes: IssueAlertConditionNewHighPriorityIssueModel{}.AttributeTypes(),
-		},
-		"existing_high_priority_issue": types.ObjectType{
-			AttrTypes: IssueAlertCondtionExistingHighPriorityIssueModel{}.AttributeTypes(),
-		},
-		"event_frequency": types.ObjectType{
-			AttrTypes: IssueAlertConditionEventFrequencyModel{}.AttributeTypes(),
-		},
-		"event_unique_user_frequency": types.ObjectType{
-			AttrTypes: IssueAlertConditionEventUniqueUserFrequencyModel{}.AttributeTypes(),
-		},
-		"event_frequency_percent": types.ObjectType{
-			AttrTypes: IssueAlertConditionEventFrequencyPercentModel{}.AttributeTypes(),
-		},
-	}
-}
-
-func (m IssueAlertConditionModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleCondition, diag.Diagnostics) {
-	var diags diag.Diagnostics
-	var v apiclient.ProjectRuleCondition
-
-	if !m.FirstSeenEvent.IsNull() {
-		var em IssueAlertConditionFirstSeenEventModel
-		diags.Append(m.FirstSeenEvent.As(ctx, &em, basetypes.ObjectAsOptions{})...)
-		if diags.HasError() {
-			return nil, diags
-		}
-		v = em.ToApi()
-	} else if !m.RegressionEvent.IsNull() {
-		var em IssueAlertConditionRegressionEventModel
-		diags.Append(m.RegressionEvent.As(ctx, &em, basetypes.ObjectAsOptions{})...)
-		if diags.HasError() {
-			return nil, diags
-		}
-		v = em.ToApi()
-	} else if !m.ReappearedEvent.IsNull() {
-		var em IssueAlertConditionReappearedEventModel
-		diags.Append(m.ReappearedEvent.As(ctx, &em, basetypes.ObjectAsOptions{})...)
-		if diags.HasError() {
-			return nil, diags
-		}
-		v = em.ToApi()
-	} else if !m.NewHighPriorityIssue.IsNull() {
-		var em IssueAlertConditionNewHighPriorityIssueModel
-		diags.Append(m.NewHighPriorityIssue.As(ctx, &em, basetypes.ObjectAsOptions{})...)
-		if diags.HasError() {
-			return nil, diags
-		}
-		v = em.ToApi()
-	} else if !m.ExistingHighPriorityIssue.IsNull() {
-		var em IssueAlertCondtionExistingHighPriorityIssueModel
-		diags.Append(m.ExistingHighPriorityIssue.As(ctx, &em, basetypes.ObjectAsOptions{})...)
-		if diags.HasError() {
-			return nil, diags
-		}
-		v = em.ToApi()
-	} else if !m.EventFrequency.IsNull() {
-		var em IssueAlertConditionEventFrequencyModel
-		diags.Append(m.EventFrequency.As(ctx, &em, basetypes.ObjectAsOptions{})...)
-		if diags.HasError() {
-			return nil, diags
-		}
-		v = em.ToApi()
-	} else if !m.EventUniqueUserFrequency.IsNull() {
-		var em IssueAlertConditionEventUniqueUserFrequencyModel
-		diags.Append(m.EventUniqueUserFrequency.As(ctx, &em, basetypes.ObjectAsOptions{})...)
-		if diags.HasError() {
-			return nil, diags
-		}
-		v = em.ToApi()
-	} else if !m.EventFrequencyPercent.IsNull() {
-		var em IssueAlertConditionEventFrequencyPercentModel
-		diags.Append(m.EventFrequencyPercent.As(ctx, &em, basetypes.ObjectAsOptions{})...)
-		if diags.HasError() {
-			return nil, diags
-		}
-		v = em.ToApi()
-	} else {
-		diags.AddError("Invalid condition", "No condition specified. Please report this to the provider developers.")
-		return nil, diags
+func (m IssueAlertConditionModel) ToApi() apiclient.ProjectRuleCondition {
+	if m.FirstSeenEvent != nil {
+		return m.FirstSeenEvent.ToApi()
+	} else if m.RegressionEvent != nil {
+		return m.RegressionEvent.ToApi()
+	} else if m.ReappearedEvent != nil {
+		return m.ReappearedEvent.ToApi()
+	} else if m.NewHighPriorityIssue != nil {
+		return m.NewHighPriorityIssue.ToApi()
+	} else if m.ExistingHighPriorityIssue != nil {
+		return m.ExistingHighPriorityIssue.ToApi()
+	} else if m.EventFrequency != nil {
+		return m.EventFrequency.ToApi()
+	} else if m.EventUniqueUserFrequency != nil {
+		return m.EventUniqueUserFrequency.ToApi()
+	} else if m.EventFrequencyPercent != nil {
+		return m.EventFrequencyPercent.ToApi()
 	}
 
-	return &v, diags
+	panic("provider error: unsupported condition")
 }
 
 func (m *IssueAlertConditionModel) FromApi(ctx context.Context, condition apiclient.ProjectRuleCondition) (diags diag.Diagnostics) {
@@ -346,55 +229,34 @@ func (m *IssueAlertConditionModel) FromApi(ctx context.Context, condition apicli
 		return
 	}
 
-	m.FirstSeenEvent = types.ObjectNull(IssueAlertConditionFirstSeenEventModel{}.AttributeTypes())
-	m.RegressionEvent = types.ObjectNull(IssueAlertConditionRegressionEventModel{}.AttributeTypes())
-	m.ReappearedEvent = types.ObjectNull(IssueAlertConditionReappearedEventModel{}.AttributeTypes())
-	m.NewHighPriorityIssue = types.ObjectNull(IssueAlertConditionNewHighPriorityIssueModel{}.AttributeTypes())
-	m.ExistingHighPriorityIssue = types.ObjectNull(IssueAlertCondtionExistingHighPriorityIssueModel{}.AttributeTypes())
-	m.EventFrequency = types.ObjectNull(IssueAlertConditionEventFrequencyModel{}.AttributeTypes())
-	m.EventUniqueUserFrequency = types.ObjectNull(IssueAlertConditionEventUniqueUserFrequencyModel{}.AttributeTypes())
-	m.EventFrequencyPercent = types.ObjectNull(IssueAlertConditionEventFrequencyPercentModel{}.AttributeTypes())
-
-	var objectDiags diag.Diagnostics
-
 	switch conditionValue := conditionValue.(type) {
 	case apiclient.ProjectRuleConditionFirstSeenEvent:
-		var v IssueAlertConditionFirstSeenEventModel
-		diags.Append(v.Fill(ctx, conditionValue)...)
-		m.FirstSeenEvent, objectDiags = types.ObjectValueFrom(ctx, v.AttributeTypes(), v)
+		m.FirstSeenEvent = &IssueAlertConditionFirstSeenEventModel{}
+		diags.Append(m.FirstSeenEvent.Fill(ctx, conditionValue)...)
 	case apiclient.ProjectRuleConditionRegressionEvent:
-		var v IssueAlertConditionRegressionEventModel
-		diags.Append(v.Fill(ctx, conditionValue)...)
-		m.RegressionEvent, objectDiags = types.ObjectValueFrom(ctx, v.AttributeTypes(), v)
+		m.RegressionEvent = &IssueAlertConditionRegressionEventModel{}
+		diags.Append(m.RegressionEvent.Fill(ctx, conditionValue)...)
 	case apiclient.ProjectRuleConditionReappearedEvent:
-		var v IssueAlertConditionReappearedEventModel
-		diags.Append(v.Fill(ctx, conditionValue)...)
-		m.ReappearedEvent, objectDiags = types.ObjectValueFrom(ctx, v.AttributeTypes(), v)
+		m.ReappearedEvent = &IssueAlertConditionReappearedEventModel{}
+		diags.Append(m.ReappearedEvent.Fill(ctx, conditionValue)...)
 	case apiclient.ProjectRuleConditionNewHighPriorityIssue:
-		var v IssueAlertConditionNewHighPriorityIssueModel
-		diags.Append(v.Fill(ctx, conditionValue)...)
-		m.NewHighPriorityIssue, objectDiags = types.ObjectValueFrom(ctx, v.AttributeTypes(), v)
+		m.NewHighPriorityIssue = &IssueAlertConditionNewHighPriorityIssueModel{}
+		diags.Append(m.NewHighPriorityIssue.Fill(ctx, conditionValue)...)
 	case apiclient.ProjectRuleConditionExistingHighPriorityIssue:
-		var v IssueAlertCondtionExistingHighPriorityIssueModel
-		diags.Append(v.Fill(ctx, conditionValue)...)
-		m.ExistingHighPriorityIssue, objectDiags = types.ObjectValueFrom(ctx, v.AttributeTypes(), v)
+		m.ExistingHighPriorityIssue = &IssueAlertCondtionExistingHighPriorityIssueModel{}
+		diags.Append(m.ExistingHighPriorityIssue.Fill(ctx, conditionValue)...)
 	case apiclient.ProjectRuleConditionEventFrequency:
-		var v IssueAlertConditionEventFrequencyModel
-		diags.Append(v.Fill(ctx, conditionValue)...)
-		m.EventFrequency, objectDiags = types.ObjectValueFrom(ctx, v.AttributeTypes(), v)
+		m.EventFrequency = &IssueAlertConditionEventFrequencyModel{}
+		diags.Append(m.EventFrequency.Fill(ctx, conditionValue)...)
 	case apiclient.ProjectRuleConditionEventUniqueUserFrequency:
-		var v IssueAlertConditionEventUniqueUserFrequencyModel
-		diags.Append(v.Fill(ctx, conditionValue)...)
-		m.EventUniqueUserFrequency, objectDiags = types.ObjectValueFrom(ctx, v.AttributeTypes(), v)
+		m.EventUniqueUserFrequency = &IssueAlertConditionEventUniqueUserFrequencyModel{}
+		diags.Append(m.EventUniqueUserFrequency.Fill(ctx, conditionValue)...)
 	case apiclient.ProjectRuleConditionEventFrequencyPercent:
-		var v IssueAlertConditionEventFrequencyPercentModel
-		diags.Append(v.Fill(ctx, conditionValue)...)
-		m.EventFrequencyPercent, objectDiags = types.ObjectValueFrom(ctx, v.AttributeTypes(), v)
+		m.EventFrequencyPercent = &IssueAlertConditionEventFrequencyPercentModel{}
+		diags.Append(m.EventFrequencyPercent.Fill(ctx, conditionValue)...)
 	default:
 		diags.AddError("Unsupported condition", fmt.Sprintf("Unsupported condition type %T", conditionValue))
 	}
-
-	diags.Append(objectDiags...)
 
 	return
 }
@@ -749,20 +611,20 @@ func (m *IssueAlertFilterModel) FromApi(ctx context.Context, filter apiclient.Pr
 // Model
 
 type IssueAlertModel struct {
-	Id           types.String             `tfsdk:"id"`
-	Organization types.String             `tfsdk:"organization"`
-	Project      types.String             `tfsdk:"project"`
-	Name         types.String             `tfsdk:"name"`
-	Conditions   sentrytypes.LossyJson    `tfsdk:"conditions"`
-	Filters      sentrytypes.LossyJson    `tfsdk:"filters"`
-	Actions      sentrytypes.LossyJson    `tfsdk:"actions"`
-	ActionMatch  types.String             `tfsdk:"action_match"`
-	FilterMatch  types.String             `tfsdk:"filter_match"`
-	Frequency    types.Int64              `tfsdk:"frequency"`
-	Environment  types.String             `tfsdk:"environment"`
-	Owner        types.String             `tfsdk:"owner"`
-	ConditionsV2 types.List               `tfsdk:"conditions_v2"`
-	FiltersV2    *[]IssueAlertFilterModel `tfsdk:"filters_v2"`
+	Id           types.String                `tfsdk:"id"`
+	Organization types.String                `tfsdk:"organization"`
+	Project      types.String                `tfsdk:"project"`
+	Name         types.String                `tfsdk:"name"`
+	Conditions   sentrytypes.LossyJson       `tfsdk:"conditions"`
+	Filters      sentrytypes.LossyJson       `tfsdk:"filters"`
+	Actions      sentrytypes.LossyJson       `tfsdk:"actions"`
+	ActionMatch  types.String                `tfsdk:"action_match"`
+	FilterMatch  types.String                `tfsdk:"filter_match"`
+	Frequency    types.Int64                 `tfsdk:"frequency"`
+	Environment  types.String                `tfsdk:"environment"`
+	Owner        types.String                `tfsdk:"owner"`
+	ConditionsV2 *[]IssueAlertConditionModel `tfsdk:"conditions_v2"`
+	FiltersV2    *[]IssueAlertFilterModel    `tfsdk:"filters_v2"`
 }
 
 func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule) (diags diag.Diagnostics) {
@@ -780,28 +642,26 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 	m.Environment = types.StringPointerValue(alert.Environment)
 	m.Owner = types.StringPointerValue(alert.Owner)
 
-	if len(alert.Conditions) == 0 {
+	if !m.Conditions.IsNull() {
 		m.Conditions = sentrytypes.NewLossyJsonNull()
-	} else {
-		if conditions, err := json.Marshal(alert.Conditions); err == nil {
-			m.Conditions = sentrytypes.NewLossyJsonValue(string(conditions))
-		} else {
-			diags.AddError("Invalid conditions", err.Error())
+		if len(alert.Conditions) > 0 {
+			if conditions, err := json.Marshal(alert.Conditions); err == nil {
+				m.Conditions = sentrytypes.NewLossyJsonValue(string(conditions))
+			} else {
+				diags.AddError("Invalid conditions", err.Error())
+				return
+			}
+		}
+	} else if m.ConditionsV2 != nil {
+		m.ConditionsV2 = ptr.Ptr(sliceutils.Map(func(condition apiclient.ProjectRuleCondition) IssueAlertConditionModel {
+			var conditionModel IssueAlertConditionModel
+			diags.Append(conditionModel.FromApi(ctx, condition)...)
+			return conditionModel
+		}, alert.Conditions))
+
+		if diags.HasError() {
 			return
 		}
-	}
-
-	conditionsV2 := sliceutils.Map(func(condition apiclient.ProjectRuleCondition) IssueAlertConditionModel {
-		var conditionModel IssueAlertConditionModel
-		diags.Append(conditionModel.FromApi(ctx, condition)...)
-		return conditionModel
-	}, alert.Conditions)
-	m.ConditionsV2, diags = types.ListValueFrom(ctx, types.ObjectType{
-		AttrTypes: IssueAlertConditionModel{}.AttributeTypes(),
-	}, conditionsV2)
-
-	if diags.HasError() {
-		return
 	}
 
 	if !m.Filters.IsNull() {

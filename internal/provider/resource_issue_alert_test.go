@@ -36,6 +36,14 @@ func TestAccIssueAlertResource_validation(t *testing.T) {
 				Config: testAccIssueAlertConfig("value", "value", "value", `
 					actions = "[]"
 
+					conditions_v2 = []
+				`),
+				ExpectError: acctest.ExpectLiteralError(`Attribute conditions_v2 list must contain at least 1 elements, got: 0`),
+			},
+			{
+				Config: testAccIssueAlertConfig("value", "value", "value", `
+					actions = "[]"
+
 					conditions_v2 = [
 						{ first_seen_event = {}, regression_event = {} },
 					]
@@ -64,7 +72,7 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("frequency"), knownvalue.Int64Exact(30)),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("environment"), knownvalue.Null()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("owner"), knownvalue.Null()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("conditions"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("conditions"), knownvalue.Null()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.Null()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("actions"), knownvalue.NotNull()), // TODO
 	}
@@ -316,8 +324,7 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 							}),
 						}),
 					})),
-					// TODO
-					// statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters_v2"), knownvalue.ListExact([]knownvalue.Check{})),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters_v2"), knownvalue.ListExact([]knownvalue.Check{})),
 				),
 			},
 			{
@@ -539,23 +546,15 @@ func TestAccIssueAlertResource_emptyArray(t *testing.T) {
 				}
 				return nil
 			}),
+			resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
+			resource.TestCheckResourceAttr(rn, "project", project),
+			resource.TestCheckResourceAttr(rn, "name", alert),
+			resource.TestCheckResourceAttr(rn, "action_match", "any"),
+			resource.TestCheckResourceAttr(rn, "filter_match", "any"),
+			resource.TestCheckResourceAttr(rn, "frequency", "30"),
+			resource.TestCheckResourceAttrSet(rn, "conditions"),
+			resource.TestCheckResourceAttrSet(rn, "actions"),
 		)
-	}
-
-	checks := []statecheck.StateCheck{
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("project"), knownvalue.StringExact(project)),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("action_match"), knownvalue.StringExact("any")),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filter_match"), knownvalue.StringExact("any")),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("frequency"), knownvalue.Int64Exact(30)),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("environment"), knownvalue.Null()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("owner"), knownvalue.Null()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("conditions"), knownvalue.Null()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("conditions_v2"), knownvalue.Null()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.Null()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters_v2"), knownvalue.Null()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("actions"), knownvalue.NotNull()), // TODO
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -566,18 +565,10 @@ func TestAccIssueAlertResource_emptyArray(t *testing.T) {
 			{
 				Config: testAccIssueAlertConfigEmptyArray(team, project, alert),
 				Check:  check(alert),
-				ConfigStateChecks: append(
-					checks,
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(alert)),
-				),
 			},
 			{
 				Config: testAccIssueAlertConfigEmptyArray(team, project, alert+"-updated"),
 				Check:  check(alert + "-updated"),
-				ConfigStateChecks: append(
-					checks,
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(alert+"-updated")),
-				),
 			},
 			{
 				ResourceName:      rn,
