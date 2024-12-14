@@ -336,6 +336,93 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 	})
 }
 
+func TestAccIssueAlertResource_emptyArray(t *testing.T) {
+	rn := "sentry_issue_alert.test"
+	team := acctest.RandomWithPrefix("tf-team")
+	project := acctest.RandomWithPrefix("tf-project")
+	alert := acctest.RandomWithPrefix("tf-issue-alert")
+	var alertId string
+
+	check := func(alert string) resource.TestCheckFunc {
+		return resource.ComposeTestCheckFunc(
+			testAccCheckIssueAlertExists(rn, &alertId),
+			resource.TestCheckResourceAttrWith(rn, "id", func(value string) error {
+				if alertId != value {
+					return fmt.Errorf("expected %s, got %s", alertId, value)
+				}
+				return nil
+			}),
+		)
+	}
+
+	checks := []statecheck.StateCheck{
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("project"), knownvalue.StringExact(project)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("action_match"), knownvalue.StringExact("any")),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filter_match"), knownvalue.StringExact("any")),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("frequency"), knownvalue.Int64Exact(30)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("environment"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("owner"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("conditions"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("actions"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("conditions_v2"), knownvalue.ListSizeExact(0)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters_v2"), knownvalue.Null()),
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckIssueAlertDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccIssueAlertConfig(team, project, alert, `
+					conditions_v2 = []
+
+					actions = <<EOT
+					[
+						{
+							"id": "sentry.mail.actions.NotifyEmailAction",
+							"targetType": "IssueOwners"
+						}
+					]
+					EOT
+				`),
+				Check: check(alert),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(alert)),
+				),
+			},
+			{
+				Config: testAccIssueAlertConfig(team, project, alert+`updated`, `
+					conditions_v2 = []
+
+					actions = <<EOT
+					[
+						{
+							"id": "sentry.mail.actions.NotifyEmailAction",
+							"targetType": "IssueOwners"
+						}
+					]
+					EOT
+				`),
+				Check: check(alert + "-updated"),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(alert+"updated")),
+				),
+			},
+			{
+				ResourceName:      rn,
+				ImportState:       true,
+				ImportStateIdFunc: acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
+			},
+		},
+	})
+}
+
 func TestAccIssueAlertResource_jsonValues(t *testing.T) {
 	rn := "sentry_issue_alert.test"
 	team := acctest.RandomWithPrefix("tf-team")
@@ -388,6 +475,93 @@ func TestAccIssueAlertResource_jsonValues(t *testing.T) {
 				ConfigStateChecks: append(
 					checks,
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(alert+"-updated")),
+				),
+			},
+			{
+				ResourceName:      rn,
+				ImportState:       true,
+				ImportStateIdFunc: acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
+			},
+		},
+	})
+}
+
+func TestAccIssueAlertResource_jsonValues_emptyArray(t *testing.T) {
+	rn := "sentry_issue_alert.test"
+	team := acctest.RandomWithPrefix("tf-team")
+	project := acctest.RandomWithPrefix("tf-project")
+	alert := acctest.RandomWithPrefix("tf-issue-alert")
+	var alertId string
+
+	check := func(alert string) resource.TestCheckFunc {
+		return resource.ComposeTestCheckFunc(
+			testAccCheckIssueAlertExists(rn, &alertId),
+			resource.TestCheckResourceAttrWith(rn, "id", func(value string) error {
+				if alertId != value {
+					return fmt.Errorf("expected %s, got %s", alertId, value)
+				}
+				return nil
+			}),
+		)
+	}
+
+	checks := []statecheck.StateCheck{
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("project"), knownvalue.StringExact(project)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("action_match"), knownvalue.StringExact("any")),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filter_match"), knownvalue.StringExact("any")),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("frequency"), knownvalue.Int64Exact(30)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("environment"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("owner"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("conditions"), knownvalue.StringExact(`[]`)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("actions"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("conditions_v2"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters_v2"), knownvalue.Null()),
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckIssueAlertDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccIssueAlertConfig(team, project, alert, `
+					conditions = "[]"
+
+					actions = <<EOT
+					[
+						{
+							"id": "sentry.mail.actions.NotifyEmailAction",
+							"targetType": "IssueOwners"
+						}
+					]
+					EOT
+				`),
+				Check: check(alert),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(alert)),
+				),
+			},
+			{
+				Config: testAccIssueAlertConfig(team, project, alert+`updated`, `
+					conditions = "[]"
+
+					actions = <<EOT
+					[
+						{
+							"id": "sentry.mail.actions.NotifyEmailAction",
+							"targetType": "IssueOwners"
+						}
+					]
+					EOT
+				`),
+				Check: check(alert + "-updated"),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(alert+"updated")),
 				),
 			},
 			{
@@ -530,55 +704,6 @@ resource "sentry_issue_alert" "test" {
 	})
 }
 
-func TestAccIssueAlertResource_emptyArray(t *testing.T) {
-	rn := "sentry_issue_alert.test"
-	team := acctest.RandomWithPrefix("tf-team")
-	project := acctest.RandomWithPrefix("tf-project")
-	alert := acctest.RandomWithPrefix("tf-issue-alert")
-	var alertId string
-
-	check := func(alert string) resource.TestCheckFunc {
-		return resource.ComposeTestCheckFunc(
-			testAccCheckIssueAlertExists(rn, &alertId),
-			resource.TestCheckResourceAttrWith(rn, "id", func(value string) error {
-				if alertId != value {
-					return fmt.Errorf("expected %s, got %s", alertId, value)
-				}
-				return nil
-			}),
-			resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
-			resource.TestCheckResourceAttr(rn, "project", project),
-			resource.TestCheckResourceAttr(rn, "name", alert),
-			resource.TestCheckResourceAttr(rn, "action_match", "any"),
-			resource.TestCheckResourceAttr(rn, "filter_match", "any"),
-			resource.TestCheckResourceAttr(rn, "frequency", "30"),
-			resource.TestCheckResourceAttrSet(rn, "conditions"),
-			resource.TestCheckResourceAttrSet(rn, "actions"),
-		)
-	}
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckIssueAlertDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccIssueAlertConfigEmptyArray(team, project, alert),
-				Check:  check(alert),
-			},
-			{
-				Config: testAccIssueAlertConfigEmptyArray(team, project, alert+"-updated"),
-				Check:  check(alert + "-updated"),
-			},
-			{
-				ResourceName:      rn,
-				ImportState:       true,
-				ImportStateIdFunc: acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
-			},
-		},
-	})
-}
-
 func testAccCheckIssueAlertDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "sentry_issue_alert" {
@@ -628,44 +753,6 @@ func testAccCheckIssueAlertExists(n string, alertId *string) resource.TestCheckF
 		*alertId = sentry.StringValue(gotAlert.ID)
 		return nil
 	}
-}
-
-func testAccIssueAlertConfigEmptyArray(teamName string, projectName string, alertName string) string {
-	return testAccOrganizationDataSourceConfig + fmt.Sprintf(`
-resource "sentry_team" "test" {
-	organization = data.sentry_organization.test.id
-	name         = "%[1]s"
-	slug         = "%[1]s"
-}
-
-resource "sentry_project" "test" {
-	organization = sentry_team.test.organization
-	teams        = [sentry_team.test.id]
-	name         = "%[2]s"
-	platform     = "go"
-}
-
-resource "sentry_issue_alert" "test" {
-	organization = sentry_project.test.organization
-	project      = sentry_project.test.id
-	name         = "%[3]s"
-
-	action_match = "any"
-	filter_match = "any"
-	frequency    = 30
-
-	conditions = "[]"
-
-	actions = <<EOT
-[
-	{
-		"id": "sentry.mail.actions.NotifyEmailAction",
-		"targetType": "IssueOwners"
-	}
-]
-EOT
-}
-`, teamName, projectName, alertName)
 }
 
 func testAccIssueAlertConfig(team string, project string, alert string, extras string) string {

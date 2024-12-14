@@ -643,14 +643,11 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 	m.Owner = types.StringPointerValue(alert.Owner)
 
 	if !m.Conditions.IsNull() {
-		m.Conditions = sentrytypes.NewLossyJsonNull()
-		if len(alert.Conditions) > 0 {
-			if conditions, err := json.Marshal(alert.Conditions); err == nil {
-				m.Conditions = sentrytypes.NewLossyJsonValue(string(conditions))
-			} else {
-				diags.AddError("Invalid conditions", err.Error())
-				return
-			}
+		if conditions, err := json.Marshal(alert.Conditions); err == nil {
+			m.Conditions = sentrytypes.NewLossyJsonValue(string(conditions))
+		} else {
+			diags.AddError("Invalid conditions", err.Error())
+			return
 		}
 	} else if m.ConditionsV2 != nil {
 		m.ConditionsV2 = ptr.Ptr(sliceutils.Map(func(condition apiclient.ProjectRuleCondition) IssueAlertConditionModel {
@@ -665,13 +662,10 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 	}
 
 	if !m.Filters.IsNull() {
-		m.Filters = sentrytypes.NewLossyJsonNull()
-		if len(alert.Filters) > 0 {
-			if filters, err := json.Marshal(alert.Filters); err == nil {
-				m.Filters = sentrytypes.NewLossyJsonValue(string(filters))
-			} else {
-				diags.AddError("Invalid filters", err.Error())
-			}
+		if filters, err := json.Marshal(alert.Filters); err == nil {
+			m.Filters = sentrytypes.NewLossyJsonValue(string(filters))
+		} else {
+			diags.AddError("Invalid filters", err.Error())
 		}
 	} else if m.FiltersV2 != nil {
 		m.FiltersV2 = ptr.Ptr(sliceutils.Map(func(filter apiclient.ProjectRuleFilter) IssueAlertFilterModel {
@@ -685,8 +679,7 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 		}
 	}
 
-	m.Actions = sentrytypes.NewLossyJsonNull()
-	if len(alert.Actions) > 0 {
+	if !m.Actions.IsNull() {
 		if actions, err := json.Marshal(alert.Actions); err == nil && len(actions) > 0 {
 			m.Actions = sentrytypes.NewLossyJsonValue(string(actions))
 		} else {
