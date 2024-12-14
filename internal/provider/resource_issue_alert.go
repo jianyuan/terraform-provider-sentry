@@ -12,9 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-utils/must"
@@ -106,9 +103,6 @@ Please note the following changes since v0.12.0:
 				},
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.MatchRoot("conditions_v2")),
-				},
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"conditions_v2": schema.ListNestedAttribute{
@@ -202,26 +196,18 @@ Please note the following changes since v0.12.0:
 						},
 					}),
 				},
-				PlanModifiers: []planmodifier.List{
-					listplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"filters": schema.StringAttribute{
 				MarkdownDescription: "**Deprecated** in favor of `filter`. A list of filters that determine if a rule fires after the necessary conditions have been met. In JSON string format.",
 				Optional:            true,
-				Computed:            true,
 				CustomType:          sentrytypes.LossyJsonType{},
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.MatchRoot("filters_v2")),
-				},
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"filters_v2": schema.ListNestedAttribute{
 				MarkdownDescription: "A list of filters that determine if a rule fires after the necessary conditions have been met.",
 				Optional:            true,
-				Computed:            true,
 				Validators: []validator.List{
 					listvalidator.ConflictsWith(path.MatchRoot("filters")),
 				},
@@ -403,9 +389,6 @@ Please note the following changes since v0.12.0:
 						},
 					}),
 				},
-				PlanModifiers: []planmodifier.List{
-					listplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"actions": schema.StringAttribute{
 				MarkdownDescription: "List of actions. In JSON string format.",
@@ -482,24 +465,13 @@ func (r *IssueAlertResource) Create(ctx context.Context, req resource.CreateRequ
 		body.Conditions = []apiclient.ProjectRuleCondition{}
 	}
 
-	if !data.Filters.IsUnknown() {
+	// TODO
+	if !data.Filters.IsNull() {
 		resp.Diagnostics.Append(data.Filters.Unmarshal(&body.Filters)...)
-	} else if !data.FiltersV2.IsUnknown() {
-		var filters []IssueAlertFilterModel
-		resp.Diagnostics.Append(data.FiltersV2.ElementsAs(ctx, &filters, false)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-
-		for _, filter := range filters {
-			v, itemDiags := filter.ToApi(ctx)
-			resp.Diagnostics.Append(itemDiags...)
-			if resp.Diagnostics.HasError() {
-				return
-			}
-
-			body.Filters = append(body.Filters, *v)
-		}
+	} else if data.FiltersV2 != nil {
+		body.Filters = sliceutils.Map(func(item IssueAlertFilterModel) apiclient.ProjectRuleFilter {
+			return item.ToApi()
+		}, *data.FiltersV2)
 	} else {
 		body.Filters = []apiclient.ProjectRuleFilter{}
 	}
@@ -590,7 +562,6 @@ func (r *IssueAlertResource) Update(ctx context.Context, req resource.UpdateRequ
 		Projects:    []string{data.Project.ValueString()},
 	}
 
-	body.Conditions = []apiclient.ProjectRuleCondition{}
 	if !data.Conditions.IsUnknown() {
 		resp.Diagnostics.Append(data.Conditions.Unmarshal(&body.Conditions)...)
 	} else if !data.ConditionsV2.IsUnknown() {
@@ -606,28 +577,19 @@ func (r *IssueAlertResource) Update(ctx context.Context, req resource.UpdateRequ
 			if resp.Diagnostics.HasError() {
 				return
 			}
+
 			body.Conditions = append(body.Conditions, *v)
 		}
 	}
 
-	body.Filters = []apiclient.ProjectRuleFilter{}
-	if !data.Filters.IsUnknown() {
+	if !data.Filters.IsNull() {
 		resp.Diagnostics.Append(data.Filters.Unmarshal(&body.Filters)...)
-	} else if !data.FiltersV2.IsUnknown() {
-		var filters []IssueAlertFilterModel
-		resp.Diagnostics.Append(data.FiltersV2.ElementsAs(ctx, &filters, false)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-
-		for _, filter := range filters {
-			v, itemDiags := filter.ToApi(ctx)
-			resp.Diagnostics.Append(itemDiags...)
-			if resp.Diagnostics.HasError() {
-				return
-			}
-			body.Filters = append(body.Filters, *v)
-		}
+	} else if data.FiltersV2 != nil {
+		body.Filters = sliceutils.Map(func(item IssueAlertFilterModel) apiclient.ProjectRuleFilter {
+			return item.ToApi()
+		}, *data.FiltersV2)
+	} else {
+		body.Filters = []apiclient.ProjectRuleFilter{}
 	}
 
 	if !data.Actions.IsNull() {

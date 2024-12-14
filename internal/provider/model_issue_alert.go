@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/jianyuan/go-utils/must"
+	"github.com/jianyuan/go-utils/ptr"
 	"github.com/jianyuan/go-utils/sliceutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
@@ -243,14 +244,30 @@ type IssueAlertConditionModel struct {
 
 func (m IssueAlertConditionModel) AttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
-		"first_seen_event":             types.ObjectType{AttrTypes: IssueAlertConditionFirstSeenEventModel{}.AttributeTypes()},
-		"regression_event":             types.ObjectType{AttrTypes: IssueAlertConditionRegressionEventModel{}.AttributeTypes()},
-		"reappeared_event":             types.ObjectType{AttrTypes: IssueAlertConditionReappearedEventModel{}.AttributeTypes()},
-		"new_high_priority_issue":      types.ObjectType{AttrTypes: IssueAlertConditionNewHighPriorityIssueModel{}.AttributeTypes()},
-		"existing_high_priority_issue": types.ObjectType{AttrTypes: IssueAlertCondtionExistingHighPriorityIssueModel{}.AttributeTypes()},
-		"event_frequency":              types.ObjectType{AttrTypes: IssueAlertConditionEventFrequencyModel{}.AttributeTypes()},
-		"event_unique_user_frequency":  types.ObjectType{AttrTypes: IssueAlertConditionEventUniqueUserFrequencyModel{}.AttributeTypes()},
-		"event_frequency_percent":      types.ObjectType{AttrTypes: IssueAlertConditionEventFrequencyPercentModel{}.AttributeTypes()},
+		"first_seen_event": types.ObjectType{
+			AttrTypes: IssueAlertConditionFirstSeenEventModel{}.AttributeTypes(),
+		},
+		"regression_event": types.ObjectType{
+			AttrTypes: IssueAlertConditionRegressionEventModel{}.AttributeTypes(),
+		},
+		"reappeared_event": types.ObjectType{
+			AttrTypes: IssueAlertConditionReappearedEventModel{}.AttributeTypes(),
+		},
+		"new_high_priority_issue": types.ObjectType{
+			AttrTypes: IssueAlertConditionNewHighPriorityIssueModel{}.AttributeTypes(),
+		},
+		"existing_high_priority_issue": types.ObjectType{
+			AttrTypes: IssueAlertCondtionExistingHighPriorityIssueModel{}.AttributeTypes(),
+		},
+		"event_frequency": types.ObjectType{
+			AttrTypes: IssueAlertConditionEventFrequencyModel{}.AttributeTypes(),
+		},
+		"event_unique_user_frequency": types.ObjectType{
+			AttrTypes: IssueAlertConditionEventUniqueUserFrequencyModel{}.AttributeTypes(),
+		},
+		"event_frequency_percent": types.ObjectType{
+			AttrTypes: IssueAlertConditionEventFrequencyPercentModel{}.AttributeTypes(),
+		},
 	}
 }
 
@@ -384,30 +401,11 @@ func (m *IssueAlertConditionModel) FromApi(ctx context.Context, condition apicli
 
 // Filters
 
-type issueAlertFilterModel struct {
-	Name types.String `tfsdk:"name"`
-}
-
-func (m issueAlertFilterModel) AttributeTypes() map[string]attr.Type {
-	return map[string]attr.Type{
-		"name": types.StringType,
-	}
-}
-
 type IssueAlertFilterAgeComparisonModel struct {
-	issueAlertFilterModel
+	Name           types.String `tfsdk:"name"`
 	ComparisonType types.String `tfsdk:"comparison_type"`
 	Value          types.Int64  `tfsdk:"value"`
 	Time           types.String `tfsdk:"time"`
-}
-
-func (m IssueAlertFilterAgeComparisonModel) AttributeTypes() map[string]attr.Type {
-	return map[string]attr.Type{
-		"name":            types.StringType,
-		"comparison_type": types.StringType,
-		"value":           types.Int64Type,
-		"time":            types.StringType,
-	}
 }
 
 func (m *IssueAlertFilterAgeComparisonModel) Fill(ctx context.Context, filter apiclient.ProjectRuleFilterAgeComparison) (diags diag.Diagnostics) {
@@ -430,15 +428,8 @@ func (m IssueAlertFilterAgeComparisonModel) ToApi() apiclient.ProjectRuleFilter 
 }
 
 type IssueAlertFilterIssueOccurrencesModel struct {
-	issueAlertFilterModel
-	Value types.Int64 `tfsdk:"value"`
-}
-
-func (m IssueAlertFilterIssueOccurrencesModel) AttributeTypes() map[string]attr.Type {
-	return map[string]attr.Type{
-		"name":  types.StringType,
-		"value": types.Int64Type,
-	}
+	Name  types.String `tfsdk:"name"`
+	Value types.Int64  `tfsdk:"value"`
 }
 
 func (m *IssueAlertFilterIssueOccurrencesModel) Fill(ctx context.Context, filter apiclient.ProjectRuleFilterIssueOccurrences) (diags diag.Diagnostics) {
@@ -457,17 +448,9 @@ func (m IssueAlertFilterIssueOccurrencesModel) ToApi() apiclient.ProjectRuleFilt
 }
 
 type IssueAlertFilterAssignedToModel struct {
-	issueAlertFilterModel
+	Name             types.String `tfsdk:"name"`
 	TargetType       types.String `tfsdk:"target_type"`
 	TargetIdentifier types.String `tfsdk:"target_identifier"`
-}
-
-func (m IssueAlertFilterAssignedToModel) AttributeTypes() map[string]attr.Type {
-	return map[string]attr.Type{
-		"name":              types.StringType,
-		"target_type":       types.StringType,
-		"target_identifier": types.StringType,
-	}
 }
 
 func (m *IssueAlertFilterAssignedToModel) Fill(ctx context.Context, filter apiclient.ProjectRuleFilterAssignedTo) (diags diag.Diagnostics) {
@@ -507,19 +490,10 @@ func (m IssueAlertFilterAssignedToModel) ToApi() apiclient.ProjectRuleFilter {
 }
 
 type IssueAlertFilterLatestAdoptedReleaseModel struct {
-	issueAlertFilterModel
+	Name           types.String `tfsdk:"name"`
 	OldestOrNewest types.String `tfsdk:"oldest_or_newest"`
 	OlderOrNewer   types.String `tfsdk:"older_or_newer"`
 	Environment    types.String `tfsdk:"environment"`
-}
-
-func (m IssueAlertFilterLatestAdoptedReleaseModel) AttributeTypes() map[string]attr.Type {
-	return map[string]attr.Type{
-		"name":             types.StringType,
-		"oldest_or_newest": types.StringType,
-		"older_or_newer":   types.StringType,
-		"environment":      types.StringType,
-	}
 }
 
 func (m *IssueAlertFilterLatestAdoptedReleaseModel) Fill(ctx context.Context, filter apiclient.ProjectRuleFilterLatestAdoptedRelease) (diags diag.Diagnostics) {
@@ -542,7 +516,7 @@ func (m IssueAlertFilterLatestAdoptedReleaseModel) ToApi() apiclient.ProjectRule
 }
 
 type IssueAlertFilterLatestReleaseModel struct {
-	issueAlertFilterModel
+	Name types.String `tfsdk:"name"`
 }
 
 func (m *IssueAlertFilterLatestReleaseModel) Fill(ctx context.Context, filter apiclient.ProjectRuleFilterLatestRelease) (diags diag.Diagnostics) {
@@ -559,15 +533,8 @@ func (m IssueAlertFilterLatestReleaseModel) ToApi() apiclient.ProjectRuleFilter 
 }
 
 type IssueAlertFilterIssueCategoryModel struct {
-	issueAlertFilterModel
+	Name  types.String `tfsdk:"name"`
 	Value types.String `tfsdk:"value"`
-}
-
-func (m IssueAlertFilterIssueCategoryModel) AttributeTypes() map[string]attr.Type {
-	return map[string]attr.Type{
-		"name":  types.StringType,
-		"value": types.StringType,
-	}
 }
 
 func (m *IssueAlertFilterIssueCategoryModel) Fill(ctx context.Context, filter apiclient.ProjectRuleFilterIssueCategory) (diags diag.Diagnostics) {
@@ -593,19 +560,10 @@ func (m IssueAlertFilterIssueCategoryModel) ToApi() apiclient.ProjectRuleFilter 
 }
 
 type IssueAlertFilterEventAttributeModel struct {
-	issueAlertFilterModel
+	Name      types.String `tfsdk:"name"`
 	Attribute types.String `tfsdk:"attribute"`
 	Match     types.String `tfsdk:"match"`
 	Value     types.String `tfsdk:"value"`
-}
-
-func (m IssueAlertFilterEventAttributeModel) AttributeTypes() map[string]attr.Type {
-	return map[string]attr.Type{
-		"name":      types.StringType,
-		"attribute": types.StringType,
-		"match":     types.StringType,
-		"value":     types.StringType,
-	}
 }
 
 func (m *IssueAlertFilterEventAttributeModel) Fill(ctx context.Context, filter apiclient.ProjectRuleFilterEventAttribute) (diags diag.Diagnostics) {
@@ -639,19 +597,10 @@ func (m IssueAlertFilterEventAttributeModel) ToApi() apiclient.ProjectRuleFilter
 }
 
 type IssueAlertFilterTaggedEventModel struct {
-	issueAlertFilterModel
+	Name  types.String `tfsdk:"name"`
 	Key   types.String `tfsdk:"key"`
 	Match types.String `tfsdk:"match"`
 	Value types.String `tfsdk:"value"`
-}
-
-func (m IssueAlertFilterTaggedEventModel) AttributeTypes() map[string]attr.Type {
-	return map[string]attr.Type{
-		"name":  types.StringType,
-		"key":   types.StringType,
-		"match": types.StringType,
-		"value": types.StringType,
-	}
 }
 
 func (m *IssueAlertFilterTaggedEventModel) Fill(ctx context.Context, filter apiclient.ProjectRuleFilterTaggedEvent) (diags diag.Diagnostics) {
@@ -685,17 +634,9 @@ func (m IssueAlertFilterTaggedEventModel) ToApi() apiclient.ProjectRuleFilter {
 }
 
 type IssueAlertFilterLevelModel struct {
-	issueAlertFilterModel
+	Name  types.String `tfsdk:"name"`
 	Match types.String `tfsdk:"match"`
 	Level types.String `tfsdk:"level"`
-}
-
-func (m IssueAlertFilterLevelModel) AttributeTypes() map[string]attr.Type {
-	return map[string]attr.Type{
-		"name":  types.StringType,
-		"match": types.StringType,
-		"level": types.StringType,
-	}
 }
 
 func (m *IssueAlertFilterLevelModel) Fill(ctx context.Context, filter apiclient.ProjectRuleFilterLevel) (diags diag.Diagnostics) {
@@ -728,104 +669,39 @@ func (m IssueAlertFilterLevelModel) ToApi() apiclient.ProjectRuleFilter {
 }
 
 type IssueAlertFilterModel struct {
-	AgeComparison        types.Object `tfsdk:"age_comparison"`
-	IssueOccurrences     types.Object `tfsdk:"issue_occurrences"`
-	AssignedTo           types.Object `tfsdk:"assigned_to"`
-	LatestAdoptedRelease types.Object `tfsdk:"latest_adopted_release"`
-	LatestRelease        types.Object `tfsdk:"latest_release"`
-	IssueCategory        types.Object `tfsdk:"issue_category"`
-	EventAttribute       types.Object `tfsdk:"event_attribute"`
-	TaggedEvent          types.Object `tfsdk:"tagged_event"`
-	Level                types.Object `tfsdk:"level"`
+	AgeComparison        *IssueAlertFilterAgeComparisonModel        `tfsdk:"age_comparison"`
+	IssueOccurrences     *IssueAlertFilterIssueOccurrencesModel     `tfsdk:"issue_occurrences"`
+	AssignedTo           *IssueAlertFilterAssignedToModel           `tfsdk:"assigned_to"`
+	LatestAdoptedRelease *IssueAlertFilterLatestAdoptedReleaseModel `tfsdk:"latest_adopted_release"`
+	LatestRelease        *IssueAlertFilterLatestReleaseModel        `tfsdk:"latest_release"`
+	IssueCategory        *IssueAlertFilterIssueCategoryModel        `tfsdk:"issue_category"`
+	EventAttribute       *IssueAlertFilterEventAttributeModel       `tfsdk:"event_attribute"`
+	TaggedEvent          *IssueAlertFilterTaggedEventModel          `tfsdk:"tagged_event"`
+	Level                *IssueAlertFilterLevelModel                `tfsdk:"level"`
 }
 
-func (m IssueAlertFilterModel) AttributeTypes() map[string]attr.Type {
-	return map[string]attr.Type{
-		"age_comparison":         types.ObjectType{AttrTypes: IssueAlertFilterAgeComparisonModel{}.AttributeTypes()},
-		"issue_occurrences":      types.ObjectType{AttrTypes: IssueAlertFilterIssueOccurrencesModel{}.AttributeTypes()},
-		"assigned_to":            types.ObjectType{AttrTypes: IssueAlertFilterAssignedToModel{}.AttributeTypes()},
-		"latest_adopted_release": types.ObjectType{AttrTypes: IssueAlertFilterLatestAdoptedReleaseModel{}.AttributeTypes()},
-		"latest_release":         types.ObjectType{AttrTypes: IssueAlertFilterLatestReleaseModel{}.AttributeTypes()},
-		"issue_category":         types.ObjectType{AttrTypes: IssueAlertFilterIssueCategoryModel{}.AttributeTypes()},
-		"event_attribute":        types.ObjectType{AttrTypes: IssueAlertFilterEventAttributeModel{}.AttributeTypes()},
-		"tagged_event":           types.ObjectType{AttrTypes: IssueAlertFilterTaggedEventModel{}.AttributeTypes()},
-		"level":                  types.ObjectType{AttrTypes: IssueAlertFilterLevelModel{}.AttributeTypes()},
-	}
-}
-
-func (m IssueAlertFilterModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleFilter, diag.Diagnostics) {
-	var diags diag.Diagnostics
-	var v apiclient.ProjectRuleFilter
-
-	if !m.AgeComparison.IsNull() {
-		var fm IssueAlertFilterAgeComparisonModel
-		diags.Append(m.AgeComparison.As(ctx, &fm, basetypes.ObjectAsOptions{})...)
-		if diags.HasError() {
-			return nil, diags
-		}
-		v = fm.ToApi()
-	} else if !m.IssueOccurrences.IsNull() {
-		var fm IssueAlertFilterIssueOccurrencesModel
-		diags.Append(m.IssueOccurrences.As(ctx, &fm, basetypes.ObjectAsOptions{})...)
-		if diags.HasError() {
-			return nil, diags
-		}
-		v = fm.ToApi()
-	} else if !m.AssignedTo.IsNull() {
-		var fm IssueAlertFilterAssignedToModel
-		diags.Append(m.AssignedTo.As(ctx, &fm, basetypes.ObjectAsOptions{})...)
-		if diags.HasError() {
-			return nil, diags
-		}
-		v = fm.ToApi()
-	} else if !m.LatestAdoptedRelease.IsNull() {
-		var fm IssueAlertFilterLatestAdoptedReleaseModel
-		diags.Append(m.LatestAdoptedRelease.As(ctx, &fm, basetypes.ObjectAsOptions{})...)
-		if diags.HasError() {
-			return nil, diags
-		}
-		v = fm.ToApi()
-	} else if !m.LatestRelease.IsNull() {
-		var fm IssueAlertFilterLatestReleaseModel
-		diags.Append(m.LatestRelease.As(ctx, &fm, basetypes.ObjectAsOptions{})...)
-		if diags.HasError() {
-			return nil, diags
-		}
-		v = fm.ToApi()
-	} else if !m.IssueCategory.IsNull() {
-		var fm IssueAlertFilterIssueCategoryModel
-		diags.Append(m.IssueCategory.As(ctx, &fm, basetypes.ObjectAsOptions{})...)
-		if diags.HasError() {
-			return nil, diags
-		}
-		v = fm.ToApi()
-	} else if !m.EventAttribute.IsNull() {
-		var fm IssueAlertFilterEventAttributeModel
-		diags.Append(m.EventAttribute.As(ctx, &fm, basetypes.ObjectAsOptions{})...)
-		if diags.HasError() {
-			return nil, diags
-		}
-		v = fm.ToApi()
-	} else if !m.TaggedEvent.IsNull() {
-		var fm IssueAlertFilterTaggedEventModel
-		diags.Append(m.TaggedEvent.As(ctx, &fm, basetypes.ObjectAsOptions{})...)
-		if diags.HasError() {
-			return nil, diags
-		}
-		v = fm.ToApi()
-	} else if !m.Level.IsNull() {
-		var fm IssueAlertFilterLevelModel
-		diags.Append(m.Level.As(ctx, &fm, basetypes.ObjectAsOptions{})...)
-		if diags.HasError() {
-			return nil, diags
-		}
-		v = fm.ToApi()
-	} else {
-		diags.AddError("Invalid filter", "No filter specified. Please report this to the provider developers.")
-		return nil, diags
+func (m IssueAlertFilterModel) ToApi() apiclient.ProjectRuleFilter {
+	if m.AgeComparison != nil {
+		return m.AgeComparison.ToApi()
+	} else if m.IssueOccurrences != nil {
+		return m.IssueOccurrences.ToApi()
+	} else if m.AssignedTo != nil {
+		return m.AssignedTo.ToApi()
+	} else if m.LatestAdoptedRelease != nil {
+		return m.LatestAdoptedRelease.ToApi()
+	} else if m.LatestRelease != nil {
+		return m.LatestRelease.ToApi()
+	} else if m.IssueCategory != nil {
+		return m.IssueCategory.ToApi()
+	} else if m.EventAttribute != nil {
+		return m.EventAttribute.ToApi()
+	} else if m.TaggedEvent != nil {
+		return m.TaggedEvent.ToApi()
+	} else if m.Level != nil {
+		return m.Level.ToApi()
 	}
 
-	return &v, diags
+	panic("provider error: unsupported filter")
 }
 
 func (m *IssueAlertFilterModel) FromApi(ctx context.Context, filter apiclient.ProjectRuleFilter) (diags diag.Diagnostics) {
@@ -835,80 +711,58 @@ func (m *IssueAlertFilterModel) FromApi(ctx context.Context, filter apiclient.Pr
 		return
 	}
 
-	m.AgeComparison = types.ObjectNull(IssueAlertFilterAgeComparisonModel{}.AttributeTypes())
-	m.IssueOccurrences = types.ObjectNull(IssueAlertFilterIssueOccurrencesModel{}.AttributeTypes())
-	m.AssignedTo = types.ObjectNull(IssueAlertFilterAssignedToModel{}.AttributeTypes())
-	m.LatestAdoptedRelease = types.ObjectNull(IssueAlertFilterLatestAdoptedReleaseModel{}.AttributeTypes())
-	m.LatestRelease = types.ObjectNull(IssueAlertFilterLatestReleaseModel{}.AttributeTypes())
-	m.IssueCategory = types.ObjectNull(IssueAlertFilterIssueCategoryModel{}.AttributeTypes())
-	m.EventAttribute = types.ObjectNull(IssueAlertFilterEventAttributeModel{}.AttributeTypes())
-	m.TaggedEvent = types.ObjectNull(IssueAlertFilterTaggedEventModel{}.AttributeTypes())
-	m.Level = types.ObjectNull(IssueAlertFilterLevelModel{}.AttributeTypes())
-
-	var objectDiags diag.Diagnostics
-
 	switch filterValue := filterValue.(type) {
 	case apiclient.ProjectRuleFilterAgeComparison:
-		var v IssueAlertFilterAgeComparisonModel
-		diags.Append(v.Fill(ctx, filterValue)...)
-		m.AgeComparison, objectDiags = types.ObjectValueFrom(ctx, v.AttributeTypes(), v)
+		m.AgeComparison = &IssueAlertFilterAgeComparisonModel{}
+		diags.Append(m.AgeComparison.Fill(ctx, filterValue)...)
 	case apiclient.ProjectRuleFilterIssueOccurrences:
-		var v IssueAlertFilterIssueOccurrencesModel
-		diags.Append(v.Fill(ctx, filterValue)...)
-		m.IssueOccurrences, objectDiags = types.ObjectValueFrom(ctx, v.AttributeTypes(), v)
+		m.IssueOccurrences = &IssueAlertFilterIssueOccurrencesModel{}
+		diags.Append(m.IssueOccurrences.Fill(ctx, filterValue)...)
 	case apiclient.ProjectRuleFilterAssignedTo:
-		var v IssueAlertFilterAssignedToModel
-		diags.Append(v.Fill(ctx, filterValue)...)
-		m.AssignedTo, objectDiags = types.ObjectValueFrom(ctx, v.AttributeTypes(), v)
+		m.AssignedTo = &IssueAlertFilterAssignedToModel{}
+		diags.Append(m.AssignedTo.Fill(ctx, filterValue)...)
 	case apiclient.ProjectRuleFilterLatestAdoptedRelease:
-		var v IssueAlertFilterLatestAdoptedReleaseModel
-		diags.Append(v.Fill(ctx, filterValue)...)
-		m.LatestAdoptedRelease, objectDiags = types.ObjectValueFrom(ctx, v.AttributeTypes(), v)
+		m.LatestAdoptedRelease = &IssueAlertFilterLatestAdoptedReleaseModel{}
+		diags.Append(m.LatestAdoptedRelease.Fill(ctx, filterValue)...)
 	case apiclient.ProjectRuleFilterLatestRelease:
-		var v IssueAlertFilterLatestReleaseModel
-		diags.Append(v.Fill(ctx, filterValue)...)
-		m.LatestRelease, objectDiags = types.ObjectValueFrom(ctx, v.AttributeTypes(), v)
+		m.LatestRelease = &IssueAlertFilterLatestReleaseModel{}
+		diags.Append(m.LatestRelease.Fill(ctx, filterValue)...)
 	case apiclient.ProjectRuleFilterIssueCategory:
-		var v IssueAlertFilterIssueCategoryModel
-		diags.Append(v.Fill(ctx, filterValue)...)
-		m.IssueCategory, objectDiags = types.ObjectValueFrom(ctx, v.AttributeTypes(), v)
+		m.IssueCategory = &IssueAlertFilterIssueCategoryModel{}
+		diags.Append(m.IssueCategory.Fill(ctx, filterValue)...)
 	case apiclient.ProjectRuleFilterEventAttribute:
-		var v IssueAlertFilterEventAttributeModel
-		diags.Append(v.Fill(ctx, filterValue)...)
-		m.EventAttribute, objectDiags = types.ObjectValueFrom(ctx, v.AttributeTypes(), v)
+		m.EventAttribute = &IssueAlertFilterEventAttributeModel{}
+		diags.Append(m.EventAttribute.Fill(ctx, filterValue)...)
 	case apiclient.ProjectRuleFilterTaggedEvent:
-		var v IssueAlertFilterTaggedEventModel
-		diags.Append(v.Fill(ctx, filterValue)...)
-		m.TaggedEvent, objectDiags = types.ObjectValueFrom(ctx, v.AttributeTypes(), v)
+		m.TaggedEvent = &IssueAlertFilterTaggedEventModel{}
+		diags.Append(m.TaggedEvent.Fill(ctx, filterValue)...)
 	case apiclient.ProjectRuleFilterLevel:
-		var v IssueAlertFilterLevelModel
-		diags.Append(v.Fill(ctx, filterValue)...)
-		m.Level, objectDiags = types.ObjectValueFrom(ctx, v.AttributeTypes(), v)
+		m.Level = &IssueAlertFilterLevelModel{}
+		diags.Append(m.Level.Fill(ctx, filterValue)...)
 	default:
 		diags.AddError("Unsupported filter", fmt.Sprintf("Unsupported filter type %T", filterValue))
 	}
 
-	diags.Append(objectDiags...)
 	return
 }
 
 // Model
 
 type IssueAlertModel struct {
-	Id           types.String          `tfsdk:"id"`
-	Organization types.String          `tfsdk:"organization"`
-	Project      types.String          `tfsdk:"project"`
-	Name         types.String          `tfsdk:"name"`
-	Conditions   sentrytypes.LossyJson `tfsdk:"conditions"`
-	Filters      sentrytypes.LossyJson `tfsdk:"filters"`
-	Actions      sentrytypes.LossyJson `tfsdk:"actions"`
-	ActionMatch  types.String          `tfsdk:"action_match"`
-	FilterMatch  types.String          `tfsdk:"filter_match"`
-	Frequency    types.Int64           `tfsdk:"frequency"`
-	Environment  types.String          `tfsdk:"environment"`
-	Owner        types.String          `tfsdk:"owner"`
-	ConditionsV2 types.List            `tfsdk:"conditions_v2"`
-	FiltersV2    types.List            `tfsdk:"filters_v2"`
+	Id           types.String             `tfsdk:"id"`
+	Organization types.String             `tfsdk:"organization"`
+	Project      types.String             `tfsdk:"project"`
+	Name         types.String             `tfsdk:"name"`
+	Conditions   sentrytypes.LossyJson    `tfsdk:"conditions"`
+	Filters      sentrytypes.LossyJson    `tfsdk:"filters"`
+	Actions      sentrytypes.LossyJson    `tfsdk:"actions"`
+	ActionMatch  types.String             `tfsdk:"action_match"`
+	FilterMatch  types.String             `tfsdk:"filter_match"`
+	Frequency    types.Int64              `tfsdk:"frequency"`
+	Environment  types.String             `tfsdk:"environment"`
+	Owner        types.String             `tfsdk:"owner"`
+	ConditionsV2 types.List               `tfsdk:"conditions_v2"`
+	FiltersV2    *[]IssueAlertFilterModel `tfsdk:"filters_v2"`
 }
 
 func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule) (diags diag.Diagnostics) {
@@ -926,10 +780,8 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 	m.Environment = types.StringPointerValue(alert.Environment)
 	m.Owner = types.StringPointerValue(alert.Owner)
 
-	// Conditions
-
 	if len(alert.Conditions) == 0 {
-		m.Conditions = sentrytypes.NewLossyJsonValue(`[]`)
+		m.Conditions = sentrytypes.NewLossyJsonNull()
 	} else {
 		if conditions, err := json.Marshal(alert.Conditions); err == nil {
 			m.Conditions = sentrytypes.NewLossyJsonValue(string(conditions))
@@ -944,39 +796,33 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 		diags.Append(conditionModel.FromApi(ctx, condition)...)
 		return conditionModel
 	}, alert.Conditions)
-	var conditionsDiags diag.Diagnostics
-	m.ConditionsV2, conditionsDiags = types.ListValueFrom(ctx, types.ObjectType{
+	m.ConditionsV2, diags = types.ListValueFrom(ctx, types.ObjectType{
 		AttrTypes: IssueAlertConditionModel{}.AttributeTypes(),
 	}, conditionsV2)
-	diags.Append(conditionsDiags...)
+
 	if diags.HasError() {
 		return
 	}
 
-	// Filters
-
-	if len(alert.Filters) == 0 {
-		m.Filters = sentrytypes.NewLossyJsonValue(`[]`)
-	} else {
-		if filters, err := json.Marshal(alert.Filters); err == nil {
-			m.Filters = sentrytypes.NewLossyJsonValue(string(filters))
-		} else {
-			diags.AddError("Invalid filters", err.Error())
+	if !m.Filters.IsNull() {
+		m.Filters = sentrytypes.NewLossyJsonNull()
+		if len(alert.Filters) > 0 {
+			if filters, err := json.Marshal(alert.Filters); err == nil {
+				m.Filters = sentrytypes.NewLossyJsonValue(string(filters))
+			} else {
+				diags.AddError("Invalid filters", err.Error())
+			}
 		}
-	}
+	} else if m.FiltersV2 != nil {
+		m.FiltersV2 = ptr.Ptr(sliceutils.Map(func(filter apiclient.ProjectRuleFilter) IssueAlertFilterModel {
+			var filterModel IssueAlertFilterModel
+			diags.Append(filterModel.FromApi(ctx, filter)...)
+			return filterModel
+		}, alert.Filters))
 
-	filtersV2 := sliceutils.Map(func(filter apiclient.ProjectRuleFilter) IssueAlertFilterModel {
-		var filterModel IssueAlertFilterModel
-		diags.Append(filterModel.FromApi(ctx, filter)...)
-		return filterModel
-	}, alert.Filters)
-	var filtersDiags diag.Diagnostics
-	m.FiltersV2, filtersDiags = types.ListValueFrom(ctx, types.ObjectType{
-		AttrTypes: IssueAlertFilterModel{}.AttributeTypes(),
-	}, filtersV2)
-	diags.Append(filtersDiags...)
-	if diags.HasError() {
-		return
+		if diags.HasError() {
+			return
+		}
 	}
 
 	m.Actions = sentrytypes.NewLossyJsonNull()

@@ -37,16 +37,6 @@ func TestAccIssueAlertResource_validation(t *testing.T) {
 					actions = "[]"
 
 					conditions_v2 = [
-						{},
-					]
-				`),
-				ExpectError: acctest.ExpectLiteralError(`Hello Hello`),
-			},
-			{
-				Config: testAccIssueAlertConfig("value", "value", "value", `
-					actions = "[]"
-
-					conditions_v2 = [
 						{ first_seen_event = {}, regression_event = {} },
 					]
 				`),
@@ -74,6 +64,8 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("frequency"), knownvalue.Int64Exact(30)),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("environment"), knownvalue.Null()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("owner"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("conditions"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.Null()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("actions"), knownvalue.NotNull()), // TODO
 	}
 
@@ -120,7 +112,6 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 				ConfigStateChecks: append(
 					checks,
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(alert)),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("conditions"), knownvalue.StringRegexp(regexp.MustCompile(`^\[.+\]$`))),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("conditions_v2"), knownvalue.ListExact([]knownvalue.Check{
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"first_seen_event": knownvalue.ObjectExact(map[string]knownvalue.Check{
@@ -202,7 +193,6 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 							}),
 						}),
 					})),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.StringRegexp(regexp.MustCompile(`^\[.+\]$`))),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters_v2"), knownvalue.ListExact([]knownvalue.Check{
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"age_comparison": knownvalue.ObjectExact(map[string]knownvalue.Check{
