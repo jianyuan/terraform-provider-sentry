@@ -239,7 +239,6 @@ func (d *IssueAlertDataSource) Schema(ctx context.Context, req datasource.Schema
 							MarkdownDescription: "Send a notification to `target_type` and if none can be found then send a notification to `fallthrough_type`.",
 							Computed:            true,
 							Attributes: map[string]schema.Attribute{
-								"uuid":              stringAttribute,
 								"name":              stringAttribute,
 								"target_type":       stringAttribute,
 								"target_identifier": stringAttribute,
@@ -250,7 +249,6 @@ func (d *IssueAlertDataSource) Schema(ctx context.Context, req datasource.Schema
 							MarkdownDescription: "Send a notification to all legacy integrations.",
 							Computed:            true,
 							Attributes: map[string]schema.Attribute{
-								"uuid": stringAttribute,
 								"name": stringAttribute,
 							},
 						},
@@ -258,7 +256,6 @@ func (d *IssueAlertDataSource) Schema(ctx context.Context, req datasource.Schema
 							MarkdownDescription: "Send a notification to Opsgenie account `account` and team `team` with `priority` priority.",
 							Computed:            true,
 							Attributes: map[string]schema.Attribute{
-								"uuid":     stringAttribute,
 								"name":     stringAttribute,
 								"account":  stringAttribute,
 								"team":     stringAttribute,
@@ -269,7 +266,6 @@ func (d *IssueAlertDataSource) Schema(ctx context.Context, req datasource.Schema
 							MarkdownDescription: "Send a notification to PagerDuty account `account` and service `service` with `severity` severity.",
 							Computed:            true,
 							Attributes: map[string]schema.Attribute{
-								"uuid":     stringAttribute,
 								"name":     stringAttribute,
 								"account":  stringAttribute,
 								"service":  stringAttribute,
@@ -280,7 +276,6 @@ func (d *IssueAlertDataSource) Schema(ctx context.Context, req datasource.Schema
 							MarkdownDescription: "Send a notification to the `workspace` Slack workspace to `channel` (optionally, an ID: `channel_id`) and show tags `tags` and notes `notes` in notification.",
 							Computed:            true,
 							Attributes: map[string]schema.Attribute{
-								"uuid":       stringAttribute,
 								"name":       stringAttribute,
 								"workspace":  stringAttribute,
 								"channel":    stringAttribute,
@@ -293,7 +288,6 @@ func (d *IssueAlertDataSource) Schema(ctx context.Context, req datasource.Schema
 							MarkdownDescription: "Create a GitHub issue in `integration`.",
 							Computed:            true,
 							Attributes: map[string]schema.Attribute{
-								"uuid":        stringAttribute,
 								"name":        stringAttribute,
 								"integration": stringAttribute,
 								"repo":        stringAttribute,
@@ -308,7 +302,6 @@ func (d *IssueAlertDataSource) Schema(ctx context.Context, req datasource.Schema
 							MarkdownDescription: "Create a GitHub Enterprise issue in `integration`.",
 							Computed:            true,
 							Attributes: map[string]schema.Attribute{
-								"uuid":        stringAttribute,
 								"name":        stringAttribute,
 								"integration": stringAttribute,
 								"repo":        stringAttribute,
@@ -323,7 +316,6 @@ func (d *IssueAlertDataSource) Schema(ctx context.Context, req datasource.Schema
 							MarkdownDescription: "Create an Azure DevOps work item in `integration`.",
 							Computed:            true,
 							Attributes: map[string]schema.Attribute{
-								"uuid":           stringAttribute,
 								"name":           stringAttribute,
 								"integration":    stringAttribute,
 								"work_item_type": stringAttribute,

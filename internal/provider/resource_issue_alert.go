@@ -42,9 +42,6 @@ func (r *IssueAlertResource) Metadata(ctx context.Context, req resource.Metadata
 }
 
 func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	uuidStringAttribute := schema.StringAttribute{
-		Computed: true,
-	}
 	nameStringAttribute := schema.StringAttribute{
 		Computed: true,
 	}
@@ -343,7 +340,6 @@ Please note the following changes since v0.12.0:
 							MarkdownDescription: "Send a notification to `target_type` and if none can be found then send a notification to `fallthrough_type`.",
 							Optional:            true,
 							Attributes: map[string]schema.Attribute{
-								"uuid": uuidStringAttribute,
 								"name": nameStringAttribute,
 								"target_type": tfutils.WithEnumStringAttribute(schema.StringAttribute{
 									Required: true,
@@ -361,7 +357,6 @@ Please note the following changes since v0.12.0:
 							MarkdownDescription: "Send a notification to all legacy integrations.",
 							Optional:            true,
 							Attributes: map[string]schema.Attribute{
-								"uuid": uuidStringAttribute,
 								"name": nameStringAttribute,
 							},
 						},
@@ -369,7 +364,6 @@ Please note the following changes since v0.12.0:
 							MarkdownDescription: "Send a notification to Opsgenie account `account` and team `team` with `priority` priority.",
 							Optional:            true,
 							Attributes: map[string]schema.Attribute{
-								"uuid": uuidStringAttribute,
 								"name": nameStringAttribute,
 								"account": schema.StringAttribute{
 									Required: true,
@@ -386,7 +380,6 @@ Please note the following changes since v0.12.0:
 							MarkdownDescription: "Send a notification to PagerDuty account `account` and service `service` with `severity` severity.",
 							Optional:            true,
 							Attributes: map[string]schema.Attribute{
-								"uuid": uuidStringAttribute,
 								"name": nameStringAttribute,
 								"account": schema.StringAttribute{
 									Required: true,
@@ -403,7 +396,6 @@ Please note the following changes since v0.12.0:
 							MarkdownDescription: "Send a notification to the `workspace` Slack workspace to `channel` (optionally, an ID: `channel_id`) and show tags `tags` and notes `notes` in notification.",
 							Optional:            true,
 							Attributes: map[string]schema.Attribute{
-								"uuid": uuidStringAttribute,
 								"name": nameStringAttribute,
 								"workspace": schema.StringAttribute{
 									Required: true,
@@ -426,7 +418,6 @@ Please note the following changes since v0.12.0:
 							MarkdownDescription: "Create a GitHub issue in `integration`.",
 							Optional:            true,
 							Attributes: map[string]schema.Attribute{
-								"uuid": uuidStringAttribute,
 								"name": nameStringAttribute,
 								"integration": schema.StringAttribute{
 									Required: true,
@@ -447,7 +438,6 @@ Please note the following changes since v0.12.0:
 							MarkdownDescription: "Create a GitHub Enterprise issue in `integration`.",
 							Optional:            true,
 							Attributes: map[string]schema.Attribute{
-								"uuid": uuidStringAttribute,
 								"name": nameStringAttribute,
 								"integration": schema.StringAttribute{
 									Required: true,
@@ -468,7 +458,6 @@ Please note the following changes since v0.12.0:
 							MarkdownDescription: "Create an Azure DevOps work item in `integration`.",
 							Optional:            true,
 							Attributes: map[string]schema.Attribute{
-								"uuid": uuidStringAttribute,
 								"name": nameStringAttribute,
 								"integration": schema.StringAttribute{
 									Required: true,

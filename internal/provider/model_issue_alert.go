@@ -612,7 +612,6 @@ func (m *IssueAlertFilterModel) FromApi(ctx context.Context, filter apiclient.Pr
 // Actions
 
 type IssueAlertActionNotifyEmailModel struct {
-	Uuid             types.String `tfsdk:"uuid"`
 	Name             types.String `tfsdk:"name"`
 	TargetType       types.String `tfsdk:"target_type"`
 	TargetIdentifier types.String `tfsdk:"target_identifier"`
@@ -620,7 +619,6 @@ type IssueAlertActionNotifyEmailModel struct {
 }
 
 func (m *IssueAlertActionNotifyEmailModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionNotifyEmail) (diags diag.Diagnostics) {
-	m.Uuid = types.StringPointerValue(action.Uuid)
 	m.Name = types.StringPointerValue(action.Name)
 	m.TargetType = types.StringValue(action.TargetType)
 
@@ -656,7 +654,6 @@ func (m IssueAlertActionNotifyEmailModel) ToApi() apiclient.ProjectRuleAction {
 
 	var v apiclient.ProjectRuleAction
 	must.Do(v.FromProjectRuleActionNotifyEmail(apiclient.ProjectRuleActionNotifyEmail{
-		Uuid:             m.Uuid.ValueStringPointer(),
 		Name:             m.Name.ValueStringPointer(),
 		TargetType:       m.TargetType.ValueString(),
 		TargetIdentifier: targetIdentifier,
@@ -666,12 +663,10 @@ func (m IssueAlertActionNotifyEmailModel) ToApi() apiclient.ProjectRuleAction {
 }
 
 type IssueAlertActionNotifyEventModel struct {
-	Uuid types.String `tfsdk:"uuid"`
 	Name types.String `tfsdk:"name"`
 }
 
 func (m *IssueAlertActionNotifyEventModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionNotifyEvent) (diags diag.Diagnostics) {
-	m.Uuid = types.StringPointerValue(action.Uuid)
 	m.Name = types.StringPointerValue(action.Name)
 	return
 }
@@ -679,14 +674,12 @@ func (m *IssueAlertActionNotifyEventModel) Fill(ctx context.Context, action apic
 func (m IssueAlertActionNotifyEventModel) ToApi() apiclient.ProjectRuleAction {
 	var v apiclient.ProjectRuleAction
 	must.Do(v.FromProjectRuleActionNotifyEvent(apiclient.ProjectRuleActionNotifyEvent{
-		Uuid: m.Uuid.ValueStringPointer(),
 		Name: m.Name.ValueStringPointer(),
 	}))
 	return v
 }
 
 type IssueAlertActionOpsgenieNotifyTeam struct {
-	Uuid     types.String `tfsdk:"uuid"`
 	Name     types.String `tfsdk:"name"`
 	Account  types.String `tfsdk:"account"`
 	Team     types.String `tfsdk:"team"`
@@ -694,7 +687,6 @@ type IssueAlertActionOpsgenieNotifyTeam struct {
 }
 
 func (m *IssueAlertActionOpsgenieNotifyTeam) Fill(ctx context.Context, action apiclient.ProjectRuleActionOpsgenieNotifyTeam) (diags diag.Diagnostics) {
-	m.Uuid = types.StringPointerValue(action.Uuid)
 	m.Name = types.StringPointerValue(action.Name)
 	m.Account = types.StringValue(action.Account)
 	m.Team = types.StringValue(action.Team)
@@ -705,7 +697,6 @@ func (m *IssueAlertActionOpsgenieNotifyTeam) Fill(ctx context.Context, action ap
 func (m IssueAlertActionOpsgenieNotifyTeam) ToApi() apiclient.ProjectRuleAction {
 	var v apiclient.ProjectRuleAction
 	must.Do(v.FromProjectRuleActionOpsgenieNotifyTeam(apiclient.ProjectRuleActionOpsgenieNotifyTeam{
-		Uuid:     m.Uuid.ValueStringPointer(),
 		Name:     m.Name.ValueStringPointer(),
 		Account:  m.Account.ValueString(),
 		Team:     m.Team.ValueString(),
@@ -715,7 +706,6 @@ func (m IssueAlertActionOpsgenieNotifyTeam) ToApi() apiclient.ProjectRuleAction 
 }
 
 type IssueAlertActionPagerDutyNotifyServiceModel struct {
-	Uuid     types.String `tfsdk:"uuid"`
 	Name     types.String `tfsdk:"name"`
 	Account  types.String `tfsdk:"account"`
 	Service  types.String `tfsdk:"service"`
@@ -723,7 +713,6 @@ type IssueAlertActionPagerDutyNotifyServiceModel struct {
 }
 
 func (m *IssueAlertActionPagerDutyNotifyServiceModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionPagerDutyNotifyService) (diags diag.Diagnostics) {
-	m.Uuid = types.StringPointerValue(action.Uuid)
 	m.Name = types.StringPointerValue(action.Name)
 	m.Account = types.StringValue(action.Account)
 	m.Service = types.StringValue(action.Service)
@@ -734,7 +723,6 @@ func (m *IssueAlertActionPagerDutyNotifyServiceModel) Fill(ctx context.Context, 
 func (m IssueAlertActionPagerDutyNotifyServiceModel) ToApi() apiclient.ProjectRuleAction {
 	var v apiclient.ProjectRuleAction
 	must.Do(v.FromProjectRuleActionPagerDutyNotifyService(apiclient.ProjectRuleActionPagerDutyNotifyService{
-		Uuid:     m.Uuid.ValueStringPointer(),
 		Name:     m.Name.ValueStringPointer(),
 		Account:  m.Account.ValueString(),
 		Service:  m.Service.ValueString(),
@@ -744,7 +732,6 @@ func (m IssueAlertActionPagerDutyNotifyServiceModel) ToApi() apiclient.ProjectRu
 }
 
 type IssueAlertActionSlackNotifyServiceModel struct {
-	Uuid      types.String `tfsdk:"uuid"`
 	Name      types.String `tfsdk:"name"`
 	Workspace types.String `tfsdk:"workspace"`
 	Channel   types.String `tfsdk:"channel"`
@@ -754,7 +741,6 @@ type IssueAlertActionSlackNotifyServiceModel struct {
 }
 
 func (m *IssueAlertActionSlackNotifyServiceModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionSlackNotifyService) (diags diag.Diagnostics) {
-	m.Uuid = types.StringPointerValue(action.Uuid)
 	m.Name = types.StringPointerValue(action.Name)
 	m.Workspace = types.StringValue(action.Workspace)
 	m.Channel = types.StringValue(action.Channel)
@@ -767,7 +753,6 @@ func (m *IssueAlertActionSlackNotifyServiceModel) Fill(ctx context.Context, acti
 func (m IssueAlertActionSlackNotifyServiceModel) ToApi() apiclient.ProjectRuleAction {
 	var v apiclient.ProjectRuleAction
 	must.Do(v.FromProjectRuleActionSlackNotifyService(apiclient.ProjectRuleActionSlackNotifyService{
-		Uuid:      m.Uuid.ValueStringPointer(),
 		Name:      m.Name.ValueStringPointer(),
 		Workspace: m.Workspace.ValueString(),
 		Channel:   m.Channel.ValueString(),
@@ -779,7 +764,6 @@ func (m IssueAlertActionSlackNotifyServiceModel) ToApi() apiclient.ProjectRuleAc
 }
 
 type IssueAlertActionGitHubCreateTicketModel struct {
-	Uuid        types.String `tfsdk:"uuid"`
 	Name        types.String `tfsdk:"name"`
 	Integration types.String `tfsdk:"integration"`
 	Repo        types.String `tfsdk:"repo"`
@@ -788,7 +772,6 @@ type IssueAlertActionGitHubCreateTicketModel struct {
 }
 
 func (m *IssueAlertActionGitHubCreateTicketModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionGitHubCreateTicket) (diags diag.Diagnostics) {
-	m.Uuid = types.StringPointerValue(action.Uuid)
 	m.Name = types.StringPointerValue(action.Name)
 	m.Integration = types.StringValue(action.Integration)
 	m.Repo = types.StringValue(action.Repo)
@@ -806,7 +789,6 @@ func (m *IssueAlertActionGitHubCreateTicketModel) Fill(ctx context.Context, acti
 
 func (m IssueAlertActionGitHubCreateTicketModel) ToApi() apiclient.ProjectRuleAction {
 	body := apiclient.ProjectRuleActionGitHubCreateTicket{
-		Uuid:              m.Uuid.ValueStringPointer(),
 		Name:              m.Name.ValueStringPointer(),
 		Integration:       m.Integration.ValueString(),
 		Repo:              m.Repo.ValueString(),
@@ -828,7 +810,6 @@ func (m IssueAlertActionGitHubCreateTicketModel) ToApi() apiclient.ProjectRuleAc
 }
 
 type IssueAlertActionGitHubEnterpriseCreateTicketModel struct {
-	Uuid        types.String `tfsdk:"uuid"`
 	Name        types.String `tfsdk:"name"`
 	Integration types.String `tfsdk:"integration"`
 	Repo        types.String `tfsdk:"repo"`
@@ -837,7 +818,6 @@ type IssueAlertActionGitHubEnterpriseCreateTicketModel struct {
 }
 
 func (m *IssueAlertActionGitHubEnterpriseCreateTicketModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionGitHubEnterpriseCreateTicket) (diags diag.Diagnostics) {
-	m.Uuid = types.StringPointerValue(action.Uuid)
 	m.Name = types.StringPointerValue(action.Name)
 	m.Integration = types.StringValue(action.Integration)
 	m.Repo = types.StringValue(action.Repo)
@@ -855,7 +835,6 @@ func (m *IssueAlertActionGitHubEnterpriseCreateTicketModel) Fill(ctx context.Con
 
 func (m IssueAlertActionGitHubEnterpriseCreateTicketModel) ToApi() apiclient.ProjectRuleAction {
 	body := apiclient.ProjectRuleActionGitHubEnterpriseCreateTicket{
-		Uuid:              m.Uuid.ValueStringPointer(),
 		Name:              m.Name.ValueStringPointer(),
 		Integration:       m.Integration.ValueString(),
 		Repo:              m.Repo.ValueString(),
@@ -877,7 +856,6 @@ func (m IssueAlertActionGitHubEnterpriseCreateTicketModel) ToApi() apiclient.Pro
 }
 
 type IssueAlertActionAzureDevopsCreateTicketModel struct {
-	Uuid         types.String `tfsdk:"uuid"`
 	Name         types.String `tfsdk:"name"`
 	Integration  types.String `tfsdk:"integration"`
 	Project      types.String `tfsdk:"project"`
@@ -885,7 +863,6 @@ type IssueAlertActionAzureDevopsCreateTicketModel struct {
 }
 
 func (m *IssueAlertActionAzureDevopsCreateTicketModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionAzureDevopsCreateTicket) (diags diag.Diagnostics) {
-	m.Uuid = types.StringPointerValue(action.Uuid)
 	m.Name = types.StringPointerValue(action.Name)
 	m.Integration = types.StringValue(action.Integration)
 	m.Project = types.StringValue(action.Project)
@@ -896,7 +873,6 @@ func (m *IssueAlertActionAzureDevopsCreateTicketModel) Fill(ctx context.Context,
 func (m IssueAlertActionAzureDevopsCreateTicketModel) ToApi() apiclient.ProjectRuleAction {
 	var v apiclient.ProjectRuleAction
 	must.Do(v.FromProjectRuleActionAzureDevopsCreateTicket(apiclient.ProjectRuleActionAzureDevopsCreateTicket{
-		Uuid:              m.Uuid.ValueStringPointer(),
 		Name:              m.Name.ValueStringPointer(),
 		Integration:       m.Integration.ValueString(),
 		Project:           m.Project.ValueString(),
