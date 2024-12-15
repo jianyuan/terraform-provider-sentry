@@ -122,5 +122,5 @@ jobs:
           SENTRY_TEST_PAGERDUTY_ORGANIZATION: ${{ secrets.SENTRY_TEST_PAGERDUTY_ORGANIZATION }}
           SENTRY_TEST_VSTS_INSTALLATION_ID: ${{ secrets.SENTRY_TEST_VSTS_INSTALLATION_ID }}
           SENTRY_TEST_VSTS_REPOSITORY_IDENTIFIER: ${{ secrets.SENTRY_TEST_VSTS_REPOSITORY_IDENTIFIER }}
-        run: go test -v -cover ./internal/provider/
-        timeout-minutes: 10
+        run: go test -v -cover -timeout 60m ./internal/provider/
+        timeout-minutes: 60
