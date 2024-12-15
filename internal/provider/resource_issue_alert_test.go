@@ -76,6 +76,28 @@ func TestAccIssueAlertResource_validation(t *testing.T) {
 			},
 			{
 				Config: testAccIssueAlertConfig(team, project, alert, `
+					actions_v2 = [{ }]
+				`),
+				ExpectError: acctest.ExpectLiteralError(`Failed to convert action: exactly one action must be set`),
+			},
+			{
+				Config: testAccIssueAlertConfig(team, project, alert, `
+					actions_v2 = [{ notify_event = { } }]
+
+					filters_v2 = [{ }]
+				`),
+				ExpectError: acctest.ExpectLiteralError(`Failed to convert filter: exactly one filter must be set`),
+			},
+			{
+				Config: testAccIssueAlertConfig(team, project, alert, `
+					actions_v2 = [{ notify_event = { } }]
+
+					conditions_v2 = [{ }]
+				`),
+				ExpectError: acctest.ExpectLiteralError(`Failed to convert condition: exactly one condition must be set`),
+			},
+			{
+				Config: testAccIssueAlertConfig(team, project, alert, `
 					actions_v2 = [{ notify_event = { } }]
 
 					conditions_v2 = [

@@ -15,7 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-utils/must"
-	"github.com/jianyuan/go-utils/sliceutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
@@ -526,6 +525,30 @@ func (r *IssueAlertResource) ValidateConfig(ctx context.Context, req resource.Va
 		return
 	}
 
+	if data.ConditionsV2 != nil {
+		for i, item := range *data.ConditionsV2 {
+			if _, err := item.ToApi(); err != nil {
+				resp.Diagnostics.AddAttributeError(
+					path.Root("conditions_v2").AtListIndex(i),
+					"Missing attribute configuration",
+					fmt.Sprintf("Failed to convert condition: %s", err),
+				)
+			}
+		}
+	}
+
+	if data.FiltersV2 != nil {
+		for i, item := range *data.FiltersV2 {
+			if _, err := item.ToApi(); err != nil {
+				resp.Diagnostics.AddAttributeError(
+					path.Root("filters_v2").AtListIndex(i),
+					"Missing attribute configuration",
+					fmt.Sprintf("Failed to convert filter: %s", err),
+				)
+			}
+		}
+	}
+
 	if !data.Actions.IsNull() {
 		if ok, _ := data.Actions.StringSemanticEquals(ctx, sentrytypes.NewLossyJsonValue(`[]`)); ok {
 			resp.Diagnostics.AddAttributeError(
@@ -541,6 +564,16 @@ func (r *IssueAlertResource) ValidateConfig(ctx context.Context, req resource.Va
 				"Missing attribute configuration",
 				"You must add an action for this alert to fire",
 			)
+		}
+
+		for i, item := range *data.ActionsV2 {
+			if _, err := item.ToApi(); err != nil {
+				resp.Diagnostics.AddAttributeError(
+					path.Root("actions_v2").AtListIndex(i),
+					"Missing attribute configuration",
+					fmt.Sprintf("Failed to convert action: %s", err),
+				)
+			}
 		}
 	}
 }
@@ -566,9 +599,19 @@ func (r *IssueAlertResource) Create(ctx context.Context, req resource.CreateRequ
 	if !data.Conditions.IsNull() {
 		resp.Diagnostics.Append(data.Conditions.Unmarshal(&body.Conditions)...)
 	} else if data.ConditionsV2 != nil {
-		body.Conditions = sliceutils.Map(func(item IssueAlertConditionModel) apiclient.ProjectRuleCondition {
-			return item.ToApi()
-		}, *data.ConditionsV2)
+		body.Conditions = []apiclient.ProjectRuleCondition{}
+		for i, item := range *data.ConditionsV2 {
+			condition, err := item.ToApi()
+			if err != nil {
+				resp.Diagnostics.AddAttributeError(
+					path.Root("conditions_v2").AtListIndex(i),
+					"Missing attribute configuration",
+					fmt.Sprintf("Failed to convert condition: %s", err),
+				)
+				return
+			}
+			body.Conditions = append(body.Conditions, *condition)
+		}
 	} else {
 		body.Conditions = []apiclient.ProjectRuleCondition{}
 	}
@@ -576,9 +619,19 @@ func (r *IssueAlertResource) Create(ctx context.Context, req resource.CreateRequ
 	if !data.Filters.IsNull() {
 		resp.Diagnostics.Append(data.Filters.Unmarshal(&body.Filters)...)
 	} else if data.FiltersV2 != nil {
-		body.Filters = sliceutils.Map(func(item IssueAlertFilterModel) apiclient.ProjectRuleFilter {
-			return item.ToApi()
-		}, *data.FiltersV2)
+		body.Filters = []apiclient.ProjectRuleFilter{}
+		for i, item := range *data.FiltersV2 {
+			filter, err := item.ToApi()
+			if err != nil {
+				resp.Diagnostics.AddAttributeError(
+					path.Root("filters_v2").AtListIndex(i),
+					"Missing attribute configuration",
+					fmt.Sprintf("Failed to convert filter: %s", err),
+				)
+				return
+			}
+			body.Filters = append(body.Filters, *filter)
+		}
 	} else {
 		body.Filters = []apiclient.ProjectRuleFilter{}
 	}
@@ -586,9 +639,19 @@ func (r *IssueAlertResource) Create(ctx context.Context, req resource.CreateRequ
 	if !data.Actions.IsNull() {
 		resp.Diagnostics.Append(data.Actions.Unmarshal(&body.Actions)...)
 	} else if data.ActionsV2 != nil {
-		body.Actions = sliceutils.Map(func(item IssueAlertActionModel) apiclient.ProjectRuleAction {
-			return item.ToApi()
-		}, *data.ActionsV2)
+		body.Actions = []apiclient.ProjectRuleAction{}
+		for i, item := range *data.ActionsV2 {
+			action, err := item.ToApi()
+			if err != nil {
+				resp.Diagnostics.AddAttributeError(
+					path.Root("actions_v2").AtListIndex(i),
+					"Missing attribute configuration",
+					fmt.Sprintf("Failed to convert action: %s", err),
+				)
+				return
+			}
+			body.Actions = append(body.Actions, *action)
+		}
 	} else {
 		body.Actions = []apiclient.ProjectRuleAction{}
 	}
@@ -674,9 +737,19 @@ func (r *IssueAlertResource) Update(ctx context.Context, req resource.UpdateRequ
 	if !data.Conditions.IsNull() {
 		resp.Diagnostics.Append(data.Conditions.Unmarshal(&body.Conditions)...)
 	} else if data.ConditionsV2 != nil {
-		body.Conditions = sliceutils.Map(func(item IssueAlertConditionModel) apiclient.ProjectRuleCondition {
-			return item.ToApi()
-		}, *data.ConditionsV2)
+		body.Conditions = []apiclient.ProjectRuleCondition{}
+		for i, item := range *data.ConditionsV2 {
+			condition, err := item.ToApi()
+			if err != nil {
+				resp.Diagnostics.AddAttributeError(
+					path.Root("conditions_v2").AtListIndex(i),
+					"Missing attribute configuration",
+					fmt.Sprintf("Failed to convert condition: %s", err),
+				)
+				return
+			}
+			body.Conditions = append(body.Conditions, *condition)
+		}
 	} else {
 		body.Conditions = []apiclient.ProjectRuleCondition{}
 	}
@@ -684,9 +757,19 @@ func (r *IssueAlertResource) Update(ctx context.Context, req resource.UpdateRequ
 	if !data.Filters.IsNull() {
 		resp.Diagnostics.Append(data.Filters.Unmarshal(&body.Filters)...)
 	} else if data.FiltersV2 != nil {
-		body.Filters = sliceutils.Map(func(item IssueAlertFilterModel) apiclient.ProjectRuleFilter {
-			return item.ToApi()
-		}, *data.FiltersV2)
+		body.Filters = []apiclient.ProjectRuleFilter{}
+		for i, item := range *data.FiltersV2 {
+			filter, err := item.ToApi()
+			if err != nil {
+				resp.Diagnostics.AddAttributeError(
+					path.Root("filters_v2").AtListIndex(i),
+					"Missing attribute configuration",
+					fmt.Sprintf("Failed to convert filter: %s", err),
+				)
+				return
+			}
+			body.Filters = append(body.Filters, *filter)
+		}
 	} else {
 		body.Filters = []apiclient.ProjectRuleFilter{}
 	}
@@ -694,9 +777,19 @@ func (r *IssueAlertResource) Update(ctx context.Context, req resource.UpdateRequ
 	if !data.Actions.IsNull() {
 		resp.Diagnostics.Append(data.Actions.Unmarshal(&body.Actions)...)
 	} else if data.ActionsV2 != nil {
-		body.Actions = sliceutils.Map(func(item IssueAlertActionModel) apiclient.ProjectRuleAction {
-			return item.ToApi()
-		}, *data.ActionsV2)
+		body.Actions = []apiclient.ProjectRuleAction{}
+		for i, item := range *data.ActionsV2 {
+			action, err := item.ToApi()
+			if err != nil {
+				resp.Diagnostics.AddAttributeError(
+					path.Root("actions_v2").AtListIndex(i),
+					"Missing attribute configuration",
+					fmt.Sprintf("Failed to convert action: %s", err),
+				)
+				return
+			}
+			body.Actions = append(body.Actions, *action)
+		}
 	} else {
 		body.Actions = []apiclient.ProjectRuleAction{}
 	}

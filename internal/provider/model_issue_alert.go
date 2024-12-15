@@ -201,26 +201,26 @@ type IssueAlertConditionModel struct {
 	EventFrequencyPercent     *IssueAlertConditionEventFrequencyPercentModel    `tfsdk:"event_frequency_percent"`
 }
 
-func (m IssueAlertConditionModel) ToApi() apiclient.ProjectRuleCondition {
+func (m IssueAlertConditionModel) ToApi() (*apiclient.ProjectRuleCondition, error) {
 	if m.FirstSeenEvent != nil {
-		return m.FirstSeenEvent.ToApi()
+		return ptr.Ptr(m.FirstSeenEvent.ToApi()), nil
 	} else if m.RegressionEvent != nil {
-		return m.RegressionEvent.ToApi()
+		return ptr.Ptr(m.RegressionEvent.ToApi()), nil
 	} else if m.ReappearedEvent != nil {
-		return m.ReappearedEvent.ToApi()
+		return ptr.Ptr(m.ReappearedEvent.ToApi()), nil
 	} else if m.NewHighPriorityIssue != nil {
-		return m.NewHighPriorityIssue.ToApi()
+		return ptr.Ptr(m.NewHighPriorityIssue.ToApi()), nil
 	} else if m.ExistingHighPriorityIssue != nil {
-		return m.ExistingHighPriorityIssue.ToApi()
+		return ptr.Ptr(m.ExistingHighPriorityIssue.ToApi()), nil
 	} else if m.EventFrequency != nil {
-		return m.EventFrequency.ToApi()
+		return ptr.Ptr(m.EventFrequency.ToApi()), nil
 	} else if m.EventUniqueUserFrequency != nil {
-		return m.EventUniqueUserFrequency.ToApi()
+		return ptr.Ptr(m.EventUniqueUserFrequency.ToApi()), nil
 	} else if m.EventFrequencyPercent != nil {
-		return m.EventFrequencyPercent.ToApi()
+		return ptr.Ptr(m.EventFrequencyPercent.ToApi()), nil
+	} else {
+		return nil, fmt.Errorf("exactly one condition must be set")
 	}
-
-	panic("provider error: unsupported condition")
 }
 
 func (m *IssueAlertConditionModel) FromApi(ctx context.Context, condition apiclient.ProjectRuleCondition) (diags diag.Diagnostics) {
@@ -543,28 +543,28 @@ type IssueAlertFilterModel struct {
 	Level                *IssueAlertFilterLevelModel                `tfsdk:"level"`
 }
 
-func (m IssueAlertFilterModel) ToApi() apiclient.ProjectRuleFilter {
+func (m IssueAlertFilterModel) ToApi() (*apiclient.ProjectRuleFilter, error) {
 	if m.AgeComparison != nil {
-		return m.AgeComparison.ToApi()
+		return ptr.Ptr(m.AgeComparison.ToApi()), nil
 	} else if m.IssueOccurrences != nil {
-		return m.IssueOccurrences.ToApi()
+		return ptr.Ptr(m.IssueOccurrences.ToApi()), nil
 	} else if m.AssignedTo != nil {
-		return m.AssignedTo.ToApi()
+		return ptr.Ptr(m.AssignedTo.ToApi()), nil
 	} else if m.LatestAdoptedRelease != nil {
-		return m.LatestAdoptedRelease.ToApi()
+		return ptr.Ptr(m.LatestAdoptedRelease.ToApi()), nil
 	} else if m.LatestRelease != nil {
-		return m.LatestRelease.ToApi()
+		return ptr.Ptr(m.LatestRelease.ToApi()), nil
 	} else if m.IssueCategory != nil {
-		return m.IssueCategory.ToApi()
+		return ptr.Ptr(m.IssueCategory.ToApi()), nil
 	} else if m.EventAttribute != nil {
-		return m.EventAttribute.ToApi()
+		return ptr.Ptr(m.EventAttribute.ToApi()), nil
 	} else if m.TaggedEvent != nil {
-		return m.TaggedEvent.ToApi()
+		return ptr.Ptr(m.TaggedEvent.ToApi()), nil
 	} else if m.Level != nil {
-		return m.Level.ToApi()
+		return ptr.Ptr(m.Level.ToApi()), nil
+	} else {
+		return nil, fmt.Errorf("exactly one filter must be set")
 	}
-
-	panic("provider error: unsupported filter")
 }
 
 func (m *IssueAlertFilterModel) FromApi(ctx context.Context, filter apiclient.ProjectRuleFilter) (diags diag.Diagnostics) {
@@ -917,26 +917,26 @@ type IssueAlertActionModel struct {
 	AzureDevopsCreateTicket      *IssueAlertActionAzureDevopsCreateTicketModel      `tfsdk:"azure_devops_create_ticket"`
 }
 
-func (m IssueAlertActionModel) ToApi() apiclient.ProjectRuleAction {
+func (m IssueAlertActionModel) ToApi() (*apiclient.ProjectRuleAction, error) {
 	if m.NotifyEmail != nil {
-		return m.NotifyEmail.ToApi()
+		return ptr.Ptr(m.NotifyEmail.ToApi()), nil
 	} else if m.NotifyEvent != nil {
-		return m.NotifyEvent.ToApi()
+		return ptr.Ptr(m.NotifyEvent.ToApi()), nil
 	} else if m.OpsgenieNotifyTeam != nil {
-		return m.OpsgenieNotifyTeam.ToApi()
+		return ptr.Ptr(m.OpsgenieNotifyTeam.ToApi()), nil
 	} else if m.PagerDutyNotifyService != nil {
-		return m.PagerDutyNotifyService.ToApi()
+		return ptr.Ptr(m.PagerDutyNotifyService.ToApi()), nil
 	} else if m.SlackNotifyService != nil {
-		return m.SlackNotifyService.ToApi()
+		return ptr.Ptr(m.SlackNotifyService.ToApi()), nil
 	} else if m.GitHubCreateTicket != nil {
-		return m.GitHubCreateTicket.ToApi()
+		return ptr.Ptr(m.GitHubCreateTicket.ToApi()), nil
 	} else if m.GitHubEnterpriseCreateTicket != nil {
-		return m.GitHubEnterpriseCreateTicket.ToApi()
+		return ptr.Ptr(m.GitHubEnterpriseCreateTicket.ToApi()), nil
 	} else if m.AzureDevopsCreateTicket != nil {
-		return m.AzureDevopsCreateTicket.ToApi()
+		return ptr.Ptr(m.AzureDevopsCreateTicket.ToApi()), nil
+	} else {
+		return nil, fmt.Errorf("exactly one action must be set")
 	}
-
-	panic("provider error: unsupported action")
 }
 
 func (m *IssueAlertActionModel) FromApi(ctx context.Context, action apiclient.ProjectRuleAction) (diags diag.Diagnostics) {
