@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -23,6 +24,8 @@ import (
 )
 
 var _ resource.Resource = &IssueAlertResource{}
+var _ resource.ResourceWithConfigValidators = &IssueAlertResource{}
+var _ resource.ResourceWithValidateConfig = &IssueAlertResource{}
 var _ resource.ResourceWithConfigure = &IssueAlertResource{}
 var _ resource.ResourceWithImportState = &IssueAlertResource{}
 var _ resource.ResourceWithUpgradeState = &IssueAlertResource{}
@@ -333,6 +336,7 @@ Please note the following changes since v0.12.0:
 				Optional:            true,
 				Validators: []validator.List{
 					listvalidator.ConflictsWith(path.MatchRoot("actions")),
+					listvalidator.SizeAtLeast(1),
 				},
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: tfutils.WithMutuallyExclusiveValidator(map[string]schema.SingleNestedAttribute{
@@ -502,6 +506,42 @@ Please note the following changes since v0.12.0:
 				Optional:            true,
 			},
 		},
+	}
+}
+
+func (r *IssueAlertResource) ConfigValidators(ctx context.Context) []resource.ConfigValidator {
+	return []resource.ConfigValidator{
+		resourcevalidator.AtLeastOneOf(
+			path.MatchRoot("actions"),
+			path.MatchRoot("actions_v2"),
+		),
+	}
+}
+
+func (r *IssueAlertResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var data IssueAlertModel
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if !data.Actions.IsNull() {
+		if ok, _ := data.Actions.StringSemanticEquals(ctx, sentrytypes.NewLossyJsonValue(`[]`)); ok {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("actions"),
+				"Missing attribute configuration",
+				"You must add an action for this alert to fire",
+			)
+		}
+	} else if data.ActionsV2 != nil {
+		if len(*data.ActionsV2) == 0 {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("actions_v2"),
+				"Missing attribute configuration",
+				"You must add an action for this alert to fire",
+			)
+		}
 	}
 }
 

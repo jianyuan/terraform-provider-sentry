@@ -17,32 +17,66 @@ import (
 )
 
 func TestAccIssueAlertResource_validation(t *testing.T) {
+	team := acctest.RandomWithPrefix("tf-team")
+	project := acctest.RandomWithPrefix("tf-project")
+	alert := acctest.RandomWithPrefix("tf-issue-alert")
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccIssueAlertConfig("value", "value", "value", `
+				Config:      testAccIssueAlertConfig(team, project, alert, ``),
+				ExpectError: acctest.ExpectLiteralError(`At least one of these attributes must be configured: [actions,actions_v2]`),
+			},
+			{
+				Config: testAccIssueAlertConfig(team, project, alert, `
 					actions = "[]"
-
+				`),
+				ExpectError: acctest.ExpectLiteralError(`You must add an action for this alert to fire`),
+			},
+			{
+				Config: testAccIssueAlertConfig(team, project, alert, `
+					actions_v2 = []
+				`),
+				ExpectError: acctest.ExpectLiteralError(`You must add an action for this alert to fire`),
+			},
+			{
+				Config: testAccIssueAlertConfig(team, project, alert, `
 					conditions    = "[]"
-					conditions_v2 = [
-						{ first_seen_event = {} },
-					]
+					conditions_v2 = []
 				`),
 				ExpectError: acctest.ExpectLiteralError(`Attribute "conditions" cannot be specified when "conditions_v2" is specified`),
 			},
 			{
-				Config: testAccIssueAlertConfig("value", "value", "value", `
-					actions = "[]"
-
-					conditions_v2 = []
+				Config: testAccIssueAlertConfig(team, project, alert, `
+					filters    = "[]"
+					filters_v2 = []
 				`),
-				ExpectError: acctest.ExpectLiteralError(`Attribute conditions_v2 list must contain at least 1 elements, got: 0`),
+				ExpectError: acctest.ExpectLiteralError(`Attribute "filters" cannot be specified when "filters_v2" is specified`),
 			},
 			{
-				Config: testAccIssueAlertConfig("value", "value", "value", `
+				Config: testAccIssueAlertConfig(team, project, alert, `
+					actions    = "[]"
+					actions_v2 = []
+				`),
+				ExpectError: acctest.ExpectLiteralError(`Attribute "actions" cannot be specified when "actions_v2" is specified`),
+			},
+			{
+				Config: testAccIssueAlertConfig(team, project, alert, `
 					actions = "[]"
+				`),
+				ExpectError: acctest.ExpectLiteralError(`You must add an action for this alert to fire`),
+			},
+			{
+				Config: testAccIssueAlertConfig(team, project, alert, `
+					actions_v2 = []
+				`),
+				ExpectError: acctest.ExpectLiteralError(`You must add an action for this alert to fire`),
+			},
+			{
+				Config: testAccIssueAlertConfig(team, project, alert, `
+					actions_v2 = [{ notify_event = { } }]
 
 					conditions_v2 = [
 						{ first_seen_event = {}, regression_event = {} },
