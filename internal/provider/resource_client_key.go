@@ -80,10 +80,7 @@ func (m *ClientKeyResourceModel) Fill(ctx context.Context, key apiclient.Project
 
 	var javascriptLoaderScript ClientKeyJavascriptLoaderScriptResourceModel
 	diags.Append(javascriptLoaderScript.Fill(ctx, key)...)
-
-	var javascriptLoaderScriptDiags diag.Diagnostics
-	m.JavascriptLoaderScript, javascriptLoaderScriptDiags = types.ObjectValueFrom(ctx, javascriptLoaderScript.AttributeTypes(), javascriptLoaderScript)
-	diags.Append(javascriptLoaderScriptDiags...)
+	m.JavascriptLoaderScript = tfutils.MergeDiagnostics(types.ObjectValueFrom(ctx, javascriptLoaderScript.AttributeTypes(), javascriptLoaderScript))(&diags)
 
 	m.Public = types.StringValue(key.Public)
 	m.Secret = types.StringValue(key.Secret)

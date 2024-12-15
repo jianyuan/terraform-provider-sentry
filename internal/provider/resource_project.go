@@ -175,20 +175,14 @@ func (m *ProjectResourceModel) Fill(ctx context.Context, project apiclient.Proje
 
 	var filters ProjectFilterResourceModel
 	diags.Append(filters.Fill(ctx, project)...)
-
-	var filtersDiags diag.Diagnostics
-	m.Filters, filtersDiags = types.ObjectValueFrom(ctx, filters.AttributeTypes(), filters)
-	diags.Append(filtersDiags...)
+	m.Filters = tfutils.MergeDiagnostics(types.ObjectValueFrom(ctx, filters.AttributeTypes(), filters))(&diags)
 
 	m.FingerprintingRules = sentrytypes.TrimmedStringValue(project.FingerprintingRules)
 	m.GroupingEnhancements = sentrytypes.TrimmedStringValue(project.GroupingEnhancements)
 
 	var clientSecurity ProjectClientSecurityResourceModel
 	diags.Append(clientSecurity.Fill(ctx, project)...)
-
-	var clientSecurityDiags diag.Diagnostics
-	m.ClientSecurity, clientSecurityDiags = types.ObjectValueFrom(ctx, clientSecurity.AttributeTypes(), clientSecurity)
-	diags.Append(clientSecurityDiags...)
+	m.ClientSecurity = tfutils.MergeDiagnostics(types.ObjectValueFrom(ctx, clientSecurity.AttributeTypes(), clientSecurity))(&diags)
 
 	return
 }
