@@ -441,7 +441,6 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("actions_v2"), knownvalue.ListExact([]knownvalue.Check{
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"notify_email": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"uuid":              knownvalue.NotNull(),
 								"name":              knownvalue.StringExact("Send a notification to IssueOwners and if none can be found then send a notification to ActiveMembers"),
 								"target_type":       knownvalue.StringExact("IssueOwners"),
 								"target_identifier": knownvalue.Null(),
@@ -450,7 +449,6 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"notify_email": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"uuid":              knownvalue.NotNull(),
 								"name":              knownvalue.StringExact("Send a notification to Team and if none can be found then send a notification to ActiveMembers"),
 								"target_type":       knownvalue.StringExact("Team"),
 								"target_identifier": knownvalue.NotNull(),
@@ -459,13 +457,11 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"notify_event": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"uuid": knownvalue.NotNull(),
 								"name": knownvalue.StringExact("Send a notification (for all legacy integrations)"),
 							}),
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"opsgenie_notify_team": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"uuid":     knownvalue.NotNull(),
 								"name":     knownvalue.StringRegexp(regexp.MustCompile(`^Send a notification to Opsgenie account .+ and team .+ with P1 priority$`)),
 								"account":  knownvalue.NotNull(),
 								"team":     knownvalue.NotNull(),
@@ -474,7 +470,6 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"pagerduty_notify_service": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"uuid":     knownvalue.NotNull(),
 								"name":     knownvalue.StringRegexp(regexp.MustCompile(`^Send a notification to PagerDuty account .+ and service .+ with .+ severity$`)),
 								"account":  knownvalue.NotNull(),
 								"service":  knownvalue.NotNull(),
@@ -483,7 +478,6 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"slack_notify_service": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"uuid":       knownvalue.NotNull(),
 								"name":       knownvalue.StringRegexp(regexp.MustCompile(`^Send a notification to the .+ Slack workspace to .+ and show tags .+ and notes .+ in notification$`)),
 								"workspace":  knownvalue.NotNull(),
 								"channel":    knownvalue.StringExact("#general"),
@@ -494,7 +488,6 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"github_create_ticket": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"uuid":        knownvalue.NotNull(),
 								"name":        knownvalue.StringRegexp(regexp.MustCompile(`^Create a GitHub issue in .+ with these $`)),
 								"integration": knownvalue.NotNull(),
 								"repo":        knownvalue.StringExact("terraform-provider-sentry"),
@@ -507,7 +500,6 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"azure_devops_create_ticket": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"uuid":           knownvalue.NotNull(),
 								"name":           knownvalue.StringRegexp(regexp.MustCompile(`^Create an Azure DevOps work item in .+ with these $`)),
 								"integration":    knownvalue.NotNull(),
 								"project":        knownvalue.StringExact("123"),
@@ -553,7 +545,6 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("actions_v2"), knownvalue.ListExact([]knownvalue.Check{
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"notify_email": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"uuid":              knownvalue.NotNull(),
 								"name":              knownvalue.StringExact("Send a notification to IssueOwners and if none can be found then send a notification to NoOne"),
 								"target_type":       knownvalue.StringExact("IssueOwners"),
 								"target_identifier": knownvalue.Null(),
