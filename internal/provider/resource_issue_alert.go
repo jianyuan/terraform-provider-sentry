@@ -58,15 +58,8 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 	}, []string{"5m", "15m", "1h", "1d", "1w", "30d"})
 
 	resp.Schema = schema.Schema{
-		MarkdownDescription: `Create an Issue Alert Rule for a Project. See the [Sentry Documentation](https://docs.sentry.io/api/alerts/create-an-issue-alert-rule-for-a-project/) for more information.
-
-TODO
-
-Please note the following changes since v0.12.0:
-- The attributes ` + "`conditions`" + `, ` + "`filters`" + `, and ` + "`actions`" + ` are in JSON string format. The types must match the Sentry API, otherwise Terraform will incorrectly detect a drift. Use ` + "`parseint(\"string\", 10)`" + ` to convert a string to an integer. Avoid using ` + "`jsonencode()`" + ` as it is unable to distinguish between an integer and a float.
-- The attribute ` + "`internal_id`" + ` has been removed. Use ` + "`id`" + ` instead.
-- The attribute ` + "`id`" + ` is now the ID of the issue alert. Previously, it was a combination of the organization, project, and issue alert ID.
-		`,
+		MarkdownDescription: "Create an Issue Alert Rule for a Project. See the [Sentry Documentation](https://docs.sentry.io/api/alerts/create-an-issue-alert-rule-for-a-project/) for more information.\n\n" +
+			"**NOTE:** Since v0.15.0, the `conditions`, `filters`, and `actions` attributes which are JSON strings have been deprecated in favor of `conditions_v2`, `filters_v2`, and `actions_v2` which are lists of objects.",
 
 		Version: 2,
 

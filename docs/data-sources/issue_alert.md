@@ -85,7 +85,6 @@ Read-Only:
 
 - `integration` (String)
 - `name` (String)
-- `uuid` (String)
 - `work_item_type` (String)
 
 
@@ -99,7 +98,6 @@ Read-Only:
 - `labels` (Set of String)
 - `name` (String)
 - `repo` (String)
-- `uuid` (String)
 
 
 <a id="nestedatt--actions_v2--github_enterprise_create_ticket"></a>
@@ -112,7 +110,6 @@ Read-Only:
 - `labels` (Set of String)
 - `name` (String)
 - `repo` (String)
-- `uuid` (String)
 
 
 <a id="nestedatt--actions_v2--notify_email"></a>
@@ -124,7 +121,6 @@ Read-Only:
 - `name` (String)
 - `target_identifier` (String)
 - `target_type` (String)
-- `uuid` (String)
 
 
 <a id="nestedatt--actions_v2--notify_event"></a>
@@ -133,7 +129,6 @@ Read-Only:
 Read-Only:
 
 - `name` (String)
-- `uuid` (String)
 
 
 <a id="nestedatt--actions_v2--opsgenie_notify_team"></a>
@@ -145,7 +140,6 @@ Read-Only:
 - `name` (String)
 - `priority` (String)
 - `team` (String)
-- `uuid` (String)
 
 
 <a id="nestedatt--actions_v2--pagerduty_notify_service"></a>
@@ -157,7 +151,6 @@ Read-Only:
 - `name` (String)
 - `service` (String)
 - `severity` (String)
-- `uuid` (String)
 
 
 <a id="nestedatt--actions_v2--slack_notify_service"></a>
@@ -170,7 +163,6 @@ Read-Only:
 - `name` (String)
 - `notes` (String)
 - `tags` (String)
-- `uuid` (String)
 - `workspace` (String)
 
 

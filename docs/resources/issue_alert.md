@@ -4,21 +4,14 @@ page_title: "sentry_issue_alert Resource - terraform-provider-sentry"
 subcategory: ""
 description: |-
   Create an Issue Alert Rule for a Project. See the Sentry Documentation https://docs.sentry.io/api/alerts/create-an-issue-alert-rule-for-a-project/ for more information.
-  TODO
-  Please note the following changes since v0.12.0:
-  The attributes conditions, filters, and actions are in JSON string format. The types must match the Sentry API, otherwise Terraform will incorrectly detect a drift. Use parseint("string", 10) to convert a string to an integer. Avoid using jsonencode() as it is unable to distinguish between an integer and a float.The attribute internal_id has been removed. Use id instead.The attribute id is now the ID of the issue alert. Previously, it was a combination of the organization, project, and issue alert ID.
+  NOTE: Since v0.15.0, the conditions, filters, and actions attributes which are JSON strings have been deprecated in favor of conditions_v2, filters_v2, and actions_v2 which are lists of objects.
 ---
 
 # sentry_issue_alert (Resource)
 
 Create an Issue Alert Rule for a Project. See the [Sentry Documentation](https://docs.sentry.io/api/alerts/create-an-issue-alert-rule-for-a-project/) for more information.
 
-TODO
-
-Please note the following changes since v0.12.0:
-- The attributes `conditions`, `filters`, and `actions` are in JSON string format. The types must match the Sentry API, otherwise Terraform will incorrectly detect a drift. Use `parseint("string", 10)` to convert a string to an integer. Avoid using `jsonencode()` as it is unable to distinguish between an integer and a float.
-- The attribute `internal_id` has been removed. Use `id` instead.
-- The attribute `id` is now the ID of the issue alert. Previously, it was a combination of the organization, project, and issue alert ID.
+**NOTE:** Since v0.15.0, the `conditions`, `filters`, and `actions` attributes which are JSON strings have been deprecated in favor of `conditions_v2`, `filters_v2`, and `actions_v2` which are lists of objects.
 
 ## Example Usage
 
@@ -32,81 +25,132 @@ resource "sentry_issue_alert" "main" {
   filter_match = "any"
   frequency    = 30
 
-  conditions = <<EOT
-[
-  {
-    "id": "sentry.rules.conditions.first_seen_event.FirstSeenEventCondition"
-  },
-  {
-    "id": "sentry.rules.conditions.regression_event.RegressionEventCondition"
-  },
-  {
-    "id": "sentry.rules.conditions.event_frequency.EventFrequencyCondition",
-    "value": 500,
-    "interval": "1h"
-  },
-  {
-    "id": "sentry.rules.conditions.event_frequency.EventUniqueUserFrequencyCondition",
-    "value": 1000,
-    "interval": "15m"
-  },
-  {
-    "id": "sentry.rules.conditions.event_frequency.EventFrequencyPercentCondition",
-    "value": 50,
-    "interval": "10m"
-  }
-]
-EOT
+  conditions_v2 = [
+    { first_seen_event = {} },
+    { regression_event = {} },
+    { reappeared_event = {} },
+    { new_high_priority_issue = {} },
+    { existing_high_priority_issue = {} },
+    {
+      event_frequency = {
+        comparison_type = "count"
+        value           = 100
+        interval        = "1h"
+      }
+    },
+    {
+      event_frequency = {
+        comparison_type     = "percent"
+        comparison_interval = "1w"
+        value               = 100
+        interval            = "1h"
+      }
+    },
+    {
+      event_unique_user_frequency = {
+        comparison_type = "count"
+        value           = 100
+        interval        = "1h"
+      }
+    },
+    {
+      event_unique_user_frequency = {
+        comparison_type     = "percent"
+        comparison_interval = "1w"
+        value               = 100
+        interval            = "1h"
+      }
+    },
+    {
+      event_frequency_percent = {
+        comparison_type = "count"
+        value           = 100
+        interval        = "1h"
+      }
+    },
+    {
+      event_frequency_percent = {
+        comparison_type     = "percent"
+        comparison_interval = "1w"
+        value               = 100
+        interval            = "1h"
+      }
+    },
+  ]
 
-  actions = "[]" # Please see below for examples
+  filters_v2 = [
+    {
+      age_comparison = {
+        comparison_type = "older"
+        value           = 10
+        time            = "minute"
+      }
+    },
+    {
+      issue_occurrences = {
+        value = 10
+      }
+    },
+    {
+      assigned_to = {
+        target_type = "Unassigned"
+      }
+    },
+    {
+      assigned_to = {
+        target_type       = "Team"
+        target_identifier = sentry_team.test.internal_id // Note: This is the internal ID of the team rather than the slug
+      }
+    },
+    {
+      latest_adopted_release = {
+        oldest_or_newest = "oldest"
+        older_or_newer   = "older"
+        environment      = "test"
+      }
+    },
+    { latest_release = {} },
+    {
+      issue_category = {
+        value = "Error"
+      }
+    },
+    {
+      event_attribute = {
+        attribute = "message"
+        match     = "CONTAINS"
+        value     = "test"
+      }
+    },
+    {
+      event_attribute = {
+        attribute = "message"
+        match     = "IS_SET"
+      }
+    },
+    {
+      tagged_event = {
+        key   = "key"
+        match = "CONTAINS"
+        value = "value"
+      }
+    },
+    {
+      tagged_event = {
+        key   = "key"
+        match = "NOT_SET"
+      }
+    },
+    {
+      level = {
+        match = "EQUAL"
+        level = "error"
+      }
+    },
+  ]
 
-  filters = <<EOT
-[
-  {
-    "id": "sentry.rules.filters.age_comparison.AgeComparisonFilter",
-    "comparison_type": "older",
-    "value": 3,
-    "time": "week"
-  },
-  {
-    "id": "sentry.rules.filters.issue_occurrences.IssueOccurrencesFilter",
-    "value": 120
-  },
-  {
-    "id": "sentry.rules.filters.assigned_to.AssignedToFilter",
-    "targetType": "Unassigned"
-  },
-  {
-    "id": "sentry.rules.filters.assigned_to.AssignedToFilter",
-    "targetType": "Member",
-    "targetIdentifier": 895329789
-  },
-  {
-    "id": "sentry.rules.filters.latest_release.LatestReleaseFilter"
-  },
-  {
-    "id": "sentry.rules.filters.issue_category.IssueCategoryFilter",
-    "value": 2
-  },
-  {
-    "id": "sentry.rules.conditions.event_attribute.EventAttributeCondition",
-    "attribute": "http.url",
-    "match": "nc",
-    "value": "localhost"
-  },
-  {
-    "id": "sentry.rules.filters.tagged_event.TaggedEventFilter",
-    "key": "level",
-    "match": "eq",
-    "value": "error"
-  },
-  {
-    "id": "sentry.rules.filters.level.LevelFilter",
-    "match": "gte",
-    "level": "50"
-  }
-]
-EOT
+  actions_v2 = [/* Please see below for examples */]
+
 }
 
 #
@@ -114,15 +158,14 @@ EOT
 #
 
 resource "sentry_issue_alert" "member_alert" {
-  actions = <<EOT
-[
-  {
-    "id": "sentry.mail.actions.NotifyEmailAction",
-    "targetType": "IssueOwners",
-    "fallthroughType": "ActiveMembers"
-  }
-]
-EOT
+  actions_v2 = [
+    {
+      notify_email = {
+        target_type      = "IssueOwners"
+        fallthrough_type = "ActiveMembers"
+      }
+    },
+  ]
   // ...
 }
 
@@ -136,16 +179,15 @@ data "sentry_organization_member" "member" {
 }
 
 resource "sentry_issue_alert" "member_alert" {
-  actions = <<EOT
-[
-  {
-    "id": "sentry.mail.actions.NotifyEmailAction",
-    "targetType": "Member",
-    "fallthroughType": "AllMembers",
-    "targetIdentifier": ${parseint(data.sentry_organization_member.member.id, 10)}
-  }
-]
-EOT
+  actions_v2 = [
+    {
+      notify_email = {
+        target_type       = "Member"
+        target_identifier = data.sentry_organization_member.member.internal_id
+        fallthrough_type  = "AllMembers"
+      }
+    },
+  ]
   // ...
 }
 
@@ -159,16 +201,15 @@ data "sentry_team" "team" {
 }
 
 resource "sentry_issue_alert" "team_alert" {
-  actions = <<EOT
-[
-  {
-    "id": "sentry.mail.actions.NotifyEmailAction",
-    "targetType": "Team",
-    "fallthroughType": "AllMembers",
-    "targetIdentifier": ${parseint(data.sentry_team.team.internal_id, 10)}
-  }
-]
-EOT
+  actions_v2 = [
+    {
+      notify_email = {
+        target_type       = "Team"
+        target_identifier = data.sentry_team.team.internal_id
+        fallthrough_type  = "AllMembers"
+      }
+    },
+  ]
   // ...
 }
 
@@ -185,17 +226,16 @@ data "sentry_organization_integration" "slack" {
 }
 
 resource "sentry_issue_alert" "slack_alert" {
-  actions = <<EOT
-[
-  {
-    "id": "sentry.integrations.slack.notify_action.SlackNotifyServiceAction",
-    "workspace": ${parseint(data.sentry_organization_integration.slack.id, 10)},
-    "channel": "#warning",
-    "tags": "environment,level",
-    "notes": "Please <http://example.com|click here> for triage information"
-  }
-]
-EOT
+  actions_v2 = [
+    {
+      slack_notify = {
+        workspace = data.sentry_organization_integration.slack.id
+        channel   = "#warning"
+        tags      = "environment,level"
+        notes     = "Please <http://example.com|click here> for triage information"
+      }
+    },
+  ]
   // ...
 }
 
@@ -210,6 +250,7 @@ data "sentry_organization_integration" "msteams" {
   name         = "My Team" # Name of your Microsoft Teams team
 }
 
+# TODO
 resource "sentry_issue_alert" "msteams_alert" {
   actions = <<EOT
 [
@@ -234,6 +275,7 @@ data "sentry_organization_integration" "discord" {
   name         = "Discord Server" # Name of your Discord server
 }
 
+# TODO
 resource "sentry_issue_alert" "discord_alert" {
   actions = <<EOT
 [
@@ -259,6 +301,7 @@ data "sentry_organization_integration" "jira" {
   name         = "JIRA" # Name of your Jira server
 }
 
+# TODO
 resource "sentry_issue_alert" "jira_alert" {
   actions = <<EOT
 [
@@ -284,6 +327,7 @@ data "sentry_organization_integration" "jira_server" {
   name         = "JIRA" # Name of your Jira server
 }
 
+# TODO
 resource "sentry_issue_alert" "jira_server_alert" {
   actions = <<EOT
 [
@@ -310,18 +354,16 @@ data "sentry_organization_integration" "github" {
 }
 
 resource "sentry_issue_alert" "github_alert" {
-  actions = <<EOT
-[
-  {
-    "id": "sentry.integrations.github.notify_action.GitHubCreateTicketAction",
-    "integration": ${parseint(data.sentry_organization_integration.github.id, 10)},
-    "repo": "default",
-    "title": "My Test Issue",
-    "assignee": "Baxter the Hacker",
-    "labels": ["bug", "p1"]
-  }
-]
-EOT
+  actions_v2 = [
+    {
+      github_create_ticket = {
+        integration = data.sentry_organization_integration.github.id
+        repo        = "default"
+        assignee    = "Baxter the Hacker"
+        labels      = ["bug", "p1"]
+      }
+    },
+  ]
   // ...
 }
 
@@ -337,16 +379,15 @@ data "sentry_organization_integration" "vsts" {
 }
 
 resource "sentry_issue_alert" "vsts_alert" {
-  actions = <<EOT
-[
-  {
-    "id": "sentry.integrations.vsts.notify_action.AzureDevopsCreateTicketAction",
-    "integration": ${parseint(data.sentry_organization_integration.vsts.id, 10)},
-    "project": "0389485",
-    "work_item_type": "Microsoft.VSTS.WorkItemTypes.Task"
-  }
-]
-EOT
+  actions_v2 = [
+    {
+      azure_devops_create_ticket = {
+        integration    = data.sentry_organization_integration.vsts.id
+        project        = "0389485"
+        work_item_type = "Microsoft.VSTS.WorkItemTypes.Task"
+      }
+    },
+  ]
   // ...
 }
 
@@ -356,21 +397,27 @@ EOT
 
 data "sentry_organization_integration" "pagerduty" {
   organization = sentry_project.test.organization
-
   provider_key = "pagerduty"
   name         = "PagerDuty"
 }
 
+resource "sentry_integration_pagerduty" "pagerduty" {
+  organization    = data.sentry_organization_integration.pagerduty.organization
+  integration_id  = data.sentry_organization_integration.pagerduty.id
+  service         = "issue-alert-service"
+  integration_key = "issue-alert-integration-key"
+}
+
 resource "sentry_issue_alert" "pagerduty_alert" {
-  actions = <<EOT
-[
-  {
-    "id": "sentry.integrations.pagerduty.notify_action.PagerDutyNotifyServiceAction",
-    "account": ${parseint(data.sentry_organization_integration.pagerduty.id, 10)},
-    "service": 9823924
-  }
-]
-EOT
+  actions_v2 = [
+    {
+      pagerduty_notify_service = {
+        account  = sentry_integration_pagerduty.pagerduty.integration_id
+        service  = sentry_integration_pagerduty.pagerduty.id
+        severity = "default"
+      }
+    },
+  ]
   // ...
 }
 
@@ -380,58 +427,27 @@ EOT
 
 data "sentry_organization_integration" "opsgenie" {
   organization = sentry_project.test.organization
-
   provider_key = "opsgenie"
   name         = "Opsgenie"
 }
 
+resource "sentry_integration_opsgenie" "opsgenie" {
+  organization    = data.sentry_organization_integration.opsgenie.organization
+  integration_id  = data.sentry_organization_integration.opsgenie.id
+  team            = "issue-alert-team"
+  integration_key = "my-integration-key"
+}
+
 resource "sentry_issue_alert" "opsgenie_alert" {
-  actions = <<EOT
-[
-  {
-    "id": "sentry.integrations.opsgenie.notify_action.OpsgenieNotifyTeamAction",
-    "account": ${parseint(data.sentry_organization_integration.opsgenie.id, 10)},
-    "team": "9438930258-fairy"
-  }
-]
-EOT
-  // ...
-}
-
-#
-# Send a notification to a service
-#
-
-resource "sentry_issue_alert" "notification_alert" {
-  actions = <<EOT
-[
-  {
-    "id": "sentry.rules.actions.notify_event_service.NotifyEventServiceAction",
-    "service": "mail"
-  }
-]
-EOT
-  // ...
-}
-
-#
-# Send a notification to a Sentry app with a custom webhook payload
-#
-
-resource "sentry_issue_alert" "notification_alert" {
-  actions = <<EOT
-[
-  {
-    "id": "sentry.rules.actions.notify_event_sentry_app.NotifyEventSentryAppAction",
-    "settings": [
-        {"name": "title", "value": "Team Rocket"},
-        {"name": "summary", "value": "We're blasting off again."}
-    ],
-    "sentryAppInstallationUuid": 643522,
-    "hasSchemaFormConfig": true
-  }
-]
-EOT
+  actions_v2 = [
+    {
+      opsgenie_notify_team = {
+        account  = sentry_integration_opsgenie.opsgenie.integration_id
+        team     = sentry_integration_opsgenie.opsgenie.id
+        priority = "P1"
+      }
+    },
+  ]
   // ...
 }
 
@@ -440,13 +456,9 @@ EOT
 #
 
 resource "sentry_issue_alert" "notification_alert" {
-  actions = <<EOT
-[
-  {
-    "id": "sentry.rules.actions.notify_event.NotifyEventAction"
-  }
-]
-EOT
+  actions_v2 = [
+    { notify_event = {} },
+  ]
   // ...
 }
 ```
@@ -504,7 +516,6 @@ Required:
 Read-Only:
 
 - `name` (String)
-- `uuid` (String)
 
 
 <a id="nestedatt--actions_v2--github_create_ticket"></a>
@@ -523,7 +534,6 @@ Optional:
 Read-Only:
 
 - `name` (String)
-- `uuid` (String)
 
 
 <a id="nestedatt--actions_v2--github_enterprise_create_ticket"></a>
@@ -542,7 +552,6 @@ Optional:
 Read-Only:
 
 - `name` (String)
-- `uuid` (String)
 
 
 <a id="nestedatt--actions_v2--notify_email"></a>
@@ -560,7 +569,6 @@ Optional:
 Read-Only:
 
 - `name` (String)
-- `uuid` (String)
 
 
 <a id="nestedatt--actions_v2--notify_event"></a>
@@ -569,7 +577,6 @@ Read-Only:
 Read-Only:
 
 - `name` (String)
-- `uuid` (String)
 
 
 <a id="nestedatt--actions_v2--opsgenie_notify_team"></a>
@@ -584,7 +591,6 @@ Required:
 Read-Only:
 
 - `name` (String)
-- `uuid` (String)
 
 
 <a id="nestedatt--actions_v2--pagerduty_notify_service"></a>
@@ -599,7 +605,6 @@ Required:
 Read-Only:
 
 - `name` (String)
-- `uuid` (String)
 
 
 <a id="nestedatt--actions_v2--slack_notify_service"></a>
@@ -619,7 +624,6 @@ Read-Only:
 
 - `channel_id` (String)
 - `name` (String)
-- `uuid` (String)
 
 
 
