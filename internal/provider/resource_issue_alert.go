@@ -516,11 +516,11 @@ func (r *IssueAlertResource) ValidateConfig(ctx context.Context, req resource.Va
 
 	if data.ConditionsV2 != nil {
 		for i, item := range *data.ConditionsV2 {
-			if _, err := item.ToApi(); err != nil {
+			if _, diags := item.ToApi(ctx); diags.HasError() {
 				resp.Diagnostics.AddAttributeError(
 					path.Root("conditions_v2").AtListIndex(i),
 					"Missing attribute configuration",
-					fmt.Sprintf("Failed to convert condition: %s", err),
+					fmt.Sprintf("Failed to convert condition: %s", diags),
 				)
 			}
 		}
@@ -528,11 +528,11 @@ func (r *IssueAlertResource) ValidateConfig(ctx context.Context, req resource.Va
 
 	if data.FiltersV2 != nil {
 		for i, item := range *data.FiltersV2 {
-			if _, err := item.ToApi(); err != nil {
+			if _, diags := item.ToApi(ctx); diags.HasError() {
 				resp.Diagnostics.AddAttributeError(
 					path.Root("filters_v2").AtListIndex(i),
 					"Missing attribute configuration",
-					fmt.Sprintf("Failed to convert filter: %s", err),
+					fmt.Sprintf("Failed to convert filter: %s", diags),
 				)
 			}
 		}
@@ -556,11 +556,11 @@ func (r *IssueAlertResource) ValidateConfig(ctx context.Context, req resource.Va
 		}
 
 		for i, item := range *data.ActionsV2 {
-			if _, err := item.ToApi(); err != nil {
+			if _, diags := item.ToApi(ctx); diags.HasError() {
 				resp.Diagnostics.AddAttributeError(
 					path.Root("actions_v2").AtListIndex(i),
 					"Missing attribute configuration",
-					fmt.Sprintf("Failed to convert action: %s", err),
+					fmt.Sprintf("Failed to convert action: %s", diags),
 				)
 			}
 		}
@@ -590,12 +590,12 @@ func (r *IssueAlertResource) Create(ctx context.Context, req resource.CreateRequ
 	} else if data.ConditionsV2 != nil {
 		body.Conditions = []apiclient.ProjectRuleCondition{}
 		for i, item := range *data.ConditionsV2 {
-			condition, err := item.ToApi()
-			if err != nil {
+			condition, diags := item.ToApi(ctx)
+			if diags.HasError() {
 				resp.Diagnostics.AddAttributeError(
 					path.Root("conditions_v2").AtListIndex(i),
 					"Missing attribute configuration",
-					fmt.Sprintf("Failed to convert condition: %s", err),
+					fmt.Sprintf("Failed to convert condition: %s", diags),
 				)
 				return
 			}
@@ -610,12 +610,12 @@ func (r *IssueAlertResource) Create(ctx context.Context, req resource.CreateRequ
 	} else if data.FiltersV2 != nil {
 		body.Filters = []apiclient.ProjectRuleFilter{}
 		for i, item := range *data.FiltersV2 {
-			filter, err := item.ToApi()
-			if err != nil {
+			filter, diags := item.ToApi(ctx)
+			if diags.HasError() {
 				resp.Diagnostics.AddAttributeError(
 					path.Root("filters_v2").AtListIndex(i),
 					"Missing attribute configuration",
-					fmt.Sprintf("Failed to convert filter: %s", err),
+					fmt.Sprintf("Failed to convert filter: %s", diags),
 				)
 				return
 			}
@@ -630,12 +630,12 @@ func (r *IssueAlertResource) Create(ctx context.Context, req resource.CreateRequ
 	} else if data.ActionsV2 != nil {
 		body.Actions = []apiclient.ProjectRuleAction{}
 		for i, item := range *data.ActionsV2 {
-			action, err := item.ToApi()
-			if err != nil {
+			action, diags := item.ToApi(ctx)
+			if diags.HasError() {
 				resp.Diagnostics.AddAttributeError(
 					path.Root("actions_v2").AtListIndex(i),
 					"Missing attribute configuration",
-					fmt.Sprintf("Failed to convert action: %s", err),
+					fmt.Sprintf("Failed to convert action: %s", diags),
 				)
 				return
 			}
@@ -728,12 +728,12 @@ func (r *IssueAlertResource) Update(ctx context.Context, req resource.UpdateRequ
 	} else if data.ConditionsV2 != nil {
 		body.Conditions = []apiclient.ProjectRuleCondition{}
 		for i, item := range *data.ConditionsV2 {
-			condition, err := item.ToApi()
-			if err != nil {
+			condition, diags := item.ToApi(ctx)
+			if diags.HasError() {
 				resp.Diagnostics.AddAttributeError(
 					path.Root("conditions_v2").AtListIndex(i),
 					"Missing attribute configuration",
-					fmt.Sprintf("Failed to convert condition: %s", err),
+					fmt.Sprintf("Failed to convert condition: %s", diags),
 				)
 				return
 			}
@@ -748,12 +748,12 @@ func (r *IssueAlertResource) Update(ctx context.Context, req resource.UpdateRequ
 	} else if data.FiltersV2 != nil {
 		body.Filters = []apiclient.ProjectRuleFilter{}
 		for i, item := range *data.FiltersV2 {
-			filter, err := item.ToApi()
-			if err != nil {
+			filter, diags := item.ToApi(ctx)
+			if diags.HasError() {
 				resp.Diagnostics.AddAttributeError(
 					path.Root("filters_v2").AtListIndex(i),
 					"Missing attribute configuration",
-					fmt.Sprintf("Failed to convert filter: %s", err),
+					fmt.Sprintf("Failed to convert filter: %s", diags),
 				)
 				return
 			}
@@ -768,12 +768,12 @@ func (r *IssueAlertResource) Update(ctx context.Context, req resource.UpdateRequ
 	} else if data.ActionsV2 != nil {
 		body.Actions = []apiclient.ProjectRuleAction{}
 		for i, item := range *data.ActionsV2 {
-			action, err := item.ToApi()
-			if err != nil {
+			action, diags := item.ToApi(ctx)
+			if diags.HasError() {
 				resp.Diagnostics.AddAttributeError(
 					path.Root("actions_v2").AtListIndex(i),
 					"Missing attribute configuration",
-					fmt.Sprintf("Failed to convert action: %s", err),
+					fmt.Sprintf("Failed to convert action: %s", diags),
 				)
 				return
 			}

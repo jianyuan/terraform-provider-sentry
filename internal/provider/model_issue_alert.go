@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/jianyuan/go-utils/must"
 	"github.com/jianyuan/go-utils/ptr"
 	"github.com/jianyuan/go-utils/sliceutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
@@ -27,12 +26,17 @@ func (m *IssueAlertConditionFirstSeenEventModel) Fill(ctx context.Context, condi
 	return
 }
 
-func (m IssueAlertConditionFirstSeenEventModel) ToApi() apiclient.ProjectRuleCondition {
+func (m IssueAlertConditionFirstSeenEventModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleCondition, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	var v apiclient.ProjectRuleCondition
-	must.Do(v.FromProjectRuleConditionFirstSeenEvent(apiclient.ProjectRuleConditionFirstSeenEvent{
+	err := v.FromProjectRuleConditionFirstSeenEvent(apiclient.ProjectRuleConditionFirstSeenEvent{
 		Name: m.Name.ValueStringPointer(),
-	}))
-	return v
+	})
+	if err != nil {
+		diags.AddError("Failed to convert to API model", err.Error())
+		return nil, diags
+	}
+	return &v, diags
 }
 
 type IssueAlertConditionRegressionEventModel struct {
@@ -44,12 +48,17 @@ func (m *IssueAlertConditionRegressionEventModel) Fill(ctx context.Context, cond
 	return
 }
 
-func (m IssueAlertConditionRegressionEventModel) ToApi() apiclient.ProjectRuleCondition {
+func (m IssueAlertConditionRegressionEventModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleCondition, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	var v apiclient.ProjectRuleCondition
-	must.Do(v.FromProjectRuleConditionRegressionEvent(apiclient.ProjectRuleConditionRegressionEvent{
+	err := v.FromProjectRuleConditionRegressionEvent(apiclient.ProjectRuleConditionRegressionEvent{
 		Name: m.Name.ValueStringPointer(),
-	}))
-	return v
+	})
+	if err != nil {
+		diags.AddError("Failed to convert to API model", err.Error())
+		return nil, diags
+	}
+	return &v, diags
 }
 
 type IssueAlertConditionReappearedEventModel struct {
@@ -61,12 +70,17 @@ func (m *IssueAlertConditionReappearedEventModel) Fill(ctx context.Context, cond
 	return
 }
 
-func (m IssueAlertConditionReappearedEventModel) ToApi() apiclient.ProjectRuleCondition {
+func (m IssueAlertConditionReappearedEventModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleCondition, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	var v apiclient.ProjectRuleCondition
-	must.Do(v.FromProjectRuleConditionReappearedEvent(apiclient.ProjectRuleConditionReappearedEvent{
+	err := v.FromProjectRuleConditionReappearedEvent(apiclient.ProjectRuleConditionReappearedEvent{
 		Name: m.Name.ValueStringPointer(),
-	}))
-	return v
+	})
+	if err != nil {
+		diags.AddError("Failed to convert to API model", err.Error())
+		return nil, diags
+	}
+	return &v, diags
 }
 
 type IssueAlertConditionNewHighPriorityIssueModel struct {
@@ -78,12 +92,17 @@ func (m *IssueAlertConditionNewHighPriorityIssueModel) Fill(ctx context.Context,
 	return
 }
 
-func (m IssueAlertConditionNewHighPriorityIssueModel) ToApi() apiclient.ProjectRuleCondition {
+func (m IssueAlertConditionNewHighPriorityIssueModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleCondition, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	var v apiclient.ProjectRuleCondition
-	must.Do(v.FromProjectRuleConditionNewHighPriorityIssue(apiclient.ProjectRuleConditionNewHighPriorityIssue{
+	err := v.FromProjectRuleConditionNewHighPriorityIssue(apiclient.ProjectRuleConditionNewHighPriorityIssue{
 		Name: m.Name.ValueStringPointer(),
-	}))
-	return v
+	})
+	if err != nil {
+		diags.AddError("Failed to convert to API model", err.Error())
+		return nil, diags
+	}
+	return &v, diags
 }
 
 type IssueAlertCondtionExistingHighPriorityIssueModel struct {
@@ -95,12 +114,17 @@ func (m *IssueAlertCondtionExistingHighPriorityIssueModel) Fill(ctx context.Cont
 	return
 }
 
-func (m IssueAlertCondtionExistingHighPriorityIssueModel) ToApi() apiclient.ProjectRuleCondition {
+func (m IssueAlertCondtionExistingHighPriorityIssueModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleCondition, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	var v apiclient.ProjectRuleCondition
-	must.Do(v.FromProjectRuleConditionExistingHighPriorityIssue(apiclient.ProjectRuleConditionExistingHighPriorityIssue{
+	err := v.FromProjectRuleConditionExistingHighPriorityIssue(apiclient.ProjectRuleConditionExistingHighPriorityIssue{
 		Name: m.Name.ValueStringPointer(),
-	}))
-	return v
+	})
+	if err != nil {
+		diags.AddError("Failed to convert to API model", err.Error())
+		return nil, diags
+	}
+	return &v, diags
 }
 
 type IssueAlertConditionEventFrequencyModel struct {
@@ -120,16 +144,21 @@ func (m *IssueAlertConditionEventFrequencyModel) Fill(ctx context.Context, condi
 	return
 }
 
-func (m IssueAlertConditionEventFrequencyModel) ToApi() apiclient.ProjectRuleCondition {
+func (m IssueAlertConditionEventFrequencyModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleCondition, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	var v apiclient.ProjectRuleCondition
-	must.Do(v.FromProjectRuleConditionEventFrequency(apiclient.ProjectRuleConditionEventFrequency{
+	err := v.FromProjectRuleConditionEventFrequency(apiclient.ProjectRuleConditionEventFrequency{
 		Name:               m.Name.ValueStringPointer(),
 		ComparisonType:     m.ComparisonType.ValueString(),
 		ComparisonInterval: m.ComparisonInterval.ValueStringPointer(),
 		Value:              m.Value.ValueInt64(),
 		Interval:           m.Interval.ValueString(),
-	}))
-	return v
+	})
+	if err != nil {
+		diags.AddError("Failed to convert to API model", err.Error())
+		return nil, diags
+	}
+	return &v, diags
 }
 
 type IssueAlertConditionEventUniqueUserFrequencyModel struct {
@@ -149,16 +178,21 @@ func (m *IssueAlertConditionEventUniqueUserFrequencyModel) Fill(ctx context.Cont
 	return
 }
 
-func (m IssueAlertConditionEventUniqueUserFrequencyModel) ToApi() apiclient.ProjectRuleCondition {
+func (m IssueAlertConditionEventUniqueUserFrequencyModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleCondition, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	var v apiclient.ProjectRuleCondition
-	must.Do(v.FromProjectRuleConditionEventUniqueUserFrequency(apiclient.ProjectRuleConditionEventUniqueUserFrequency{
+	err := v.FromProjectRuleConditionEventUniqueUserFrequency(apiclient.ProjectRuleConditionEventUniqueUserFrequency{
 		Name:               m.Name.ValueStringPointer(),
 		ComparisonType:     m.ComparisonType.ValueString(),
 		ComparisonInterval: m.ComparisonInterval.ValueStringPointer(),
 		Value:              m.Value.ValueInt64(),
 		Interval:           m.Interval.ValueString(),
-	}))
-	return v
+	})
+	if err != nil {
+		diags.AddError("Failed to convert to API model", err.Error())
+		return nil, diags
+	}
+	return &v, diags
 }
 
 type IssueAlertConditionEventFrequencyPercentModel struct {
@@ -178,16 +212,21 @@ func (m *IssueAlertConditionEventFrequencyPercentModel) Fill(ctx context.Context
 	return
 }
 
-func (m IssueAlertConditionEventFrequencyPercentModel) ToApi() apiclient.ProjectRuleCondition {
+func (m IssueAlertConditionEventFrequencyPercentModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleCondition, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	var v apiclient.ProjectRuleCondition
-	must.Do(v.FromProjectRuleConditionEventFrequencyPercent(apiclient.ProjectRuleConditionEventFrequencyPercent{
+	err := v.FromProjectRuleConditionEventFrequencyPercent(apiclient.ProjectRuleConditionEventFrequencyPercent{
 		Name:               m.Name.ValueStringPointer(),
 		ComparisonType:     m.ComparisonType.ValueString(),
 		ComparisonInterval: m.ComparisonInterval.ValueStringPointer(),
 		Value:              m.Value.ValueFloat64(),
 		Interval:           m.Interval.ValueString(),
-	}))
-	return v
+	})
+	if err != nil {
+		diags.AddError("Failed to convert to API model", err.Error())
+		return nil, diags
+	}
+	return &v, diags
 }
 
 type IssueAlertConditionModel struct {
@@ -201,25 +240,27 @@ type IssueAlertConditionModel struct {
 	EventFrequencyPercent     *IssueAlertConditionEventFrequencyPercentModel    `tfsdk:"event_frequency_percent"`
 }
 
-func (m IssueAlertConditionModel) ToApi() (*apiclient.ProjectRuleCondition, error) {
+func (m IssueAlertConditionModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleCondition, diag.Diagnostics) {
 	if m.FirstSeenEvent != nil {
-		return ptr.Ptr(m.FirstSeenEvent.ToApi()), nil
+		return m.FirstSeenEvent.ToApi(ctx)
 	} else if m.RegressionEvent != nil {
-		return ptr.Ptr(m.RegressionEvent.ToApi()), nil
+		return m.RegressionEvent.ToApi(ctx)
 	} else if m.ReappearedEvent != nil {
-		return ptr.Ptr(m.ReappearedEvent.ToApi()), nil
+		return m.ReappearedEvent.ToApi(ctx)
 	} else if m.NewHighPriorityIssue != nil {
-		return ptr.Ptr(m.NewHighPriorityIssue.ToApi()), nil
+		return m.NewHighPriorityIssue.ToApi(ctx)
 	} else if m.ExistingHighPriorityIssue != nil {
-		return ptr.Ptr(m.ExistingHighPriorityIssue.ToApi()), nil
+		return m.ExistingHighPriorityIssue.ToApi(ctx)
 	} else if m.EventFrequency != nil {
-		return ptr.Ptr(m.EventFrequency.ToApi()), nil
+		return m.EventFrequency.ToApi(ctx)
 	} else if m.EventUniqueUserFrequency != nil {
-		return ptr.Ptr(m.EventUniqueUserFrequency.ToApi()), nil
+		return m.EventUniqueUserFrequency.ToApi(ctx)
 	} else if m.EventFrequencyPercent != nil {
-		return ptr.Ptr(m.EventFrequencyPercent.ToApi()), nil
+		return m.EventFrequencyPercent.ToApi(ctx)
 	} else {
-		return nil, fmt.Errorf("exactly one condition must be set")
+		var diags diag.Diagnostics
+		diags.AddError("Exactly one condition must be set", "Exactly one condition must be set")
+		return nil, diags
 	}
 }
 
@@ -279,15 +320,20 @@ func (m *IssueAlertFilterAgeComparisonModel) Fill(ctx context.Context, filter ap
 	return
 }
 
-func (m IssueAlertFilterAgeComparisonModel) ToApi() apiclient.ProjectRuleFilter {
+func (m IssueAlertFilterAgeComparisonModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleFilter, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	var v apiclient.ProjectRuleFilter
-	must.Do(v.FromProjectRuleFilterAgeComparison(apiclient.ProjectRuleFilterAgeComparison{
+	err := v.FromProjectRuleFilterAgeComparison(apiclient.ProjectRuleFilterAgeComparison{
 		Name:           m.Name.ValueStringPointer(),
 		ComparisonType: m.ComparisonType.ValueString(),
 		Value:          m.Value.ValueInt64(),
 		Time:           m.Time.ValueString(),
-	}))
-	return v
+	})
+	if err != nil {
+		diags.AddError("Failed to convert to API model", err.Error())
+		return nil, diags
+	}
+	return &v, diags
 }
 
 type IssueAlertFilterIssueOccurrencesModel struct {
@@ -301,13 +347,18 @@ func (m *IssueAlertFilterIssueOccurrencesModel) Fill(ctx context.Context, filter
 	return
 }
 
-func (m IssueAlertFilterIssueOccurrencesModel) ToApi() apiclient.ProjectRuleFilter {
+func (m IssueAlertFilterIssueOccurrencesModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleFilter, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	var v apiclient.ProjectRuleFilter
-	must.Do(v.FromProjectRuleFilterIssueOccurrences(apiclient.ProjectRuleFilterIssueOccurrences{
+	err := v.FromProjectRuleFilterIssueOccurrences(apiclient.ProjectRuleFilterIssueOccurrences{
 		Name:  m.Name.ValueStringPointer(),
 		Value: m.Value.ValueInt64(),
-	}))
-	return v
+	})
+	if err != nil {
+		diags.AddError("Failed to convert to API model", err.Error())
+		return nil, diags
+	}
+	return &v, diags
 }
 
 type IssueAlertFilterAssignedToModel struct {
@@ -335,21 +386,31 @@ func (m *IssueAlertFilterAssignedToModel) Fill(ctx context.Context, filter apicl
 	return
 }
 
-func (m IssueAlertFilterAssignedToModel) ToApi() apiclient.ProjectRuleFilter {
+func (m IssueAlertFilterAssignedToModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleFilter, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
 	var targetIdentifier *apiclient.ProjectRuleFilterAssignedTo_TargetIdentifier
 
 	if !m.TargetIdentifier.IsNull() {
 		targetIdentifier = &apiclient.ProjectRuleFilterAssignedTo_TargetIdentifier{}
-		must.Do(targetIdentifier.FromProjectRuleFilterAssignedToTargetIdentifier0(m.TargetIdentifier.ValueString()))
+		err := targetIdentifier.FromProjectRuleFilterAssignedToTargetIdentifier0(m.TargetIdentifier.ValueString())
+		if err != nil {
+			diags.AddError("Failed to convert to API model", err.Error())
+			return nil, diags
+		}
 	}
 
 	var v apiclient.ProjectRuleFilter
-	must.Do(v.FromProjectRuleFilterAssignedTo(apiclient.ProjectRuleFilterAssignedTo{
+	err := v.FromProjectRuleFilterAssignedTo(apiclient.ProjectRuleFilterAssignedTo{
 		Name:             m.Name.ValueStringPointer(),
 		TargetType:       m.TargetType.ValueString(),
 		TargetIdentifier: targetIdentifier,
-	}))
-	return v
+	})
+	if err != nil {
+		diags.AddError("Failed to convert to API model", err.Error())
+		return nil, diags
+	}
+	return &v, diags
 }
 
 type IssueAlertFilterLatestAdoptedReleaseModel struct {
@@ -367,15 +428,20 @@ func (m *IssueAlertFilterLatestAdoptedReleaseModel) Fill(ctx context.Context, fi
 	return
 }
 
-func (m IssueAlertFilterLatestAdoptedReleaseModel) ToApi() apiclient.ProjectRuleFilter {
+func (m IssueAlertFilterLatestAdoptedReleaseModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleFilter, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	var v apiclient.ProjectRuleFilter
-	must.Do(v.FromProjectRuleFilterLatestAdoptedRelease(apiclient.ProjectRuleFilterLatestAdoptedRelease{
+	err := v.FromProjectRuleFilterLatestAdoptedRelease(apiclient.ProjectRuleFilterLatestAdoptedRelease{
 		Name:           m.Name.ValueStringPointer(),
 		OldestOrNewest: m.OldestOrNewest.ValueString(),
 		OlderOrNewer:   m.OlderOrNewer.ValueString(),
 		Environment:    m.Environment.ValueString(),
-	}))
-	return v
+	})
+	if err != nil {
+		diags.AddError("Failed to convert to API model", err.Error())
+		return nil, diags
+	}
+	return &v, diags
 }
 
 type IssueAlertFilterLatestReleaseModel struct {
@@ -387,12 +453,17 @@ func (m *IssueAlertFilterLatestReleaseModel) Fill(ctx context.Context, filter ap
 	return
 }
 
-func (m IssueAlertFilterLatestReleaseModel) ToApi() apiclient.ProjectRuleFilter {
+func (m IssueAlertFilterLatestReleaseModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleFilter, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	var v apiclient.ProjectRuleFilter
-	must.Do(v.FromProjectRuleFilterLatestRelease(apiclient.ProjectRuleFilterLatestRelease{
+	err := v.FromProjectRuleFilterLatestRelease(apiclient.ProjectRuleFilterLatestRelease{
 		Name: m.Name.ValueStringPointer(),
-	}))
-	return v
+	})
+	if err != nil {
+		diags.AddError("Failed to convert to API model", err.Error())
+		return nil, diags
+	}
+	return &v, diags
 }
 
 type IssueAlertFilterIssueCategoryModel struct {
@@ -413,13 +484,18 @@ func (m *IssueAlertFilterIssueCategoryModel) Fill(ctx context.Context, filter ap
 	return
 }
 
-func (m IssueAlertFilterIssueCategoryModel) ToApi() apiclient.ProjectRuleFilter {
+func (m IssueAlertFilterIssueCategoryModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleFilter, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	var v apiclient.ProjectRuleFilter
-	must.Do(v.FromProjectRuleFilterIssueCategory(apiclient.ProjectRuleFilterIssueCategory{
+	err := v.FromProjectRuleFilterIssueCategory(apiclient.ProjectRuleFilterIssueCategory{
 		Name:  m.Name.ValueStringPointer(),
 		Value: sentrydata.IssueGroupCategoryNameToId[m.Value.ValueString()],
-	}))
-	return v
+	})
+	if err != nil {
+		diags.AddError("Failed to convert to API model", err.Error())
+		return nil, diags
+	}
+	return &v, diags
 }
 
 type IssueAlertFilterEventAttributeModel struct {
@@ -448,15 +524,20 @@ func (m *IssueAlertFilterEventAttributeModel) Fill(ctx context.Context, filter a
 	return
 }
 
-func (m IssueAlertFilterEventAttributeModel) ToApi() apiclient.ProjectRuleFilter {
+func (m IssueAlertFilterEventAttributeModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleFilter, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	var v apiclient.ProjectRuleFilter
-	must.Do(v.FromProjectRuleFilterEventAttribute(apiclient.ProjectRuleFilterEventAttribute{
+	err := v.FromProjectRuleFilterEventAttribute(apiclient.ProjectRuleFilterEventAttribute{
 		Name:      m.Name.ValueStringPointer(),
 		Attribute: m.Attribute.ValueString(),
 		Match:     sentrydata.MatchTypeNameToId[m.Match.ValueString()],
 		Value:     m.Value.ValueStringPointer(),
-	}))
-	return v
+	})
+	if err != nil {
+		diags.AddError("Failed to convert to API model", err.Error())
+		return nil, diags
+	}
+	return &v, diags
 }
 
 type IssueAlertFilterTaggedEventModel struct {
@@ -485,15 +566,20 @@ func (m *IssueAlertFilterTaggedEventModel) Fill(ctx context.Context, filter apic
 	return
 }
 
-func (m IssueAlertFilterTaggedEventModel) ToApi() apiclient.ProjectRuleFilter {
+func (m IssueAlertFilterTaggedEventModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleFilter, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	var v apiclient.ProjectRuleFilter
-	must.Do(v.FromProjectRuleFilterTaggedEvent(apiclient.ProjectRuleFilterTaggedEvent{
+	err := v.FromProjectRuleFilterTaggedEvent(apiclient.ProjectRuleFilterTaggedEvent{
 		Name:  m.Name.ValueStringPointer(),
 		Key:   m.Key.ValueString(),
 		Match: sentrydata.MatchTypeNameToId[m.Match.ValueString()],
 		Value: m.Value.ValueStringPointer(),
-	}))
-	return v
+	})
+	if err != nil {
+		diags.AddError("Failed to convert to API model", err.Error())
+		return nil, diags
+	}
+	return &v, diags
 }
 
 type IssueAlertFilterLevelModel struct {
@@ -521,14 +607,19 @@ func (m *IssueAlertFilterLevelModel) Fill(ctx context.Context, filter apiclient.
 	return
 }
 
-func (m IssueAlertFilterLevelModel) ToApi() apiclient.ProjectRuleFilter {
+func (m IssueAlertFilterLevelModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleFilter, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	var v apiclient.ProjectRuleFilter
-	must.Do(v.FromProjectRuleFilterLevel(apiclient.ProjectRuleFilterLevel{
+	err := v.FromProjectRuleFilterLevel(apiclient.ProjectRuleFilterLevel{
 		Name:  m.Name.ValueStringPointer(),
 		Match: sentrydata.MatchTypeNameToId[m.Match.ValueString()],
 		Level: sentrydata.LogLevelNameToId[m.Level.ValueString()],
-	}))
-	return v
+	})
+	if err != nil {
+		diags.AddError("Failed to convert to API model", err.Error())
+		return nil, diags
+	}
+	return &v, diags
 }
 
 type IssueAlertFilterModel struct {
@@ -543,27 +634,29 @@ type IssueAlertFilterModel struct {
 	Level                *IssueAlertFilterLevelModel                `tfsdk:"level"`
 }
 
-func (m IssueAlertFilterModel) ToApi() (*apiclient.ProjectRuleFilter, error) {
+func (m IssueAlertFilterModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleFilter, diag.Diagnostics) {
 	if m.AgeComparison != nil {
-		return ptr.Ptr(m.AgeComparison.ToApi()), nil
+		return m.AgeComparison.ToApi(ctx)
 	} else if m.IssueOccurrences != nil {
-		return ptr.Ptr(m.IssueOccurrences.ToApi()), nil
+		return m.IssueOccurrences.ToApi(ctx)
 	} else if m.AssignedTo != nil {
-		return ptr.Ptr(m.AssignedTo.ToApi()), nil
+		return m.AssignedTo.ToApi(ctx)
 	} else if m.LatestAdoptedRelease != nil {
-		return ptr.Ptr(m.LatestAdoptedRelease.ToApi()), nil
+		return m.LatestAdoptedRelease.ToApi(ctx)
 	} else if m.LatestRelease != nil {
-		return ptr.Ptr(m.LatestRelease.ToApi()), nil
+		return m.LatestRelease.ToApi(ctx)
 	} else if m.IssueCategory != nil {
-		return ptr.Ptr(m.IssueCategory.ToApi()), nil
+		return m.IssueCategory.ToApi(ctx)
 	} else if m.EventAttribute != nil {
-		return ptr.Ptr(m.EventAttribute.ToApi()), nil
+		return m.EventAttribute.ToApi(ctx)
 	} else if m.TaggedEvent != nil {
-		return ptr.Ptr(m.TaggedEvent.ToApi()), nil
+		return m.TaggedEvent.ToApi(ctx)
 	} else if m.Level != nil {
-		return ptr.Ptr(m.Level.ToApi()), nil
+		return m.Level.ToApi(ctx)
 	} else {
-		return nil, fmt.Errorf("exactly one filter must be set")
+		var diags diag.Diagnostics
+		diags.AddError("Exactly one filter must be set", "Exactly one filter must be set")
+		return nil, diags
 	}
 }
 
@@ -644,22 +737,31 @@ func (m *IssueAlertActionNotifyEmailModel) Fill(ctx context.Context, action apic
 	return
 }
 
-func (m IssueAlertActionNotifyEmailModel) ToApi() apiclient.ProjectRuleAction {
+func (m IssueAlertActionNotifyEmailModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleAction, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	var targetIdentifier *apiclient.ProjectRuleActionNotifyEmail_TargetIdentifier
 
 	if !m.TargetIdentifier.IsNull() {
 		targetIdentifier = &apiclient.ProjectRuleActionNotifyEmail_TargetIdentifier{}
-		must.Do(targetIdentifier.FromProjectRuleActionNotifyEmailTargetIdentifier0(m.TargetIdentifier.ValueString()))
+		err := targetIdentifier.FromProjectRuleActionNotifyEmailTargetIdentifier0(m.TargetIdentifier.ValueString())
+		if err != nil {
+			diags.AddError("Failed to convert to API model", err.Error())
+			return nil, diags
+		}
 	}
 
 	var v apiclient.ProjectRuleAction
-	must.Do(v.FromProjectRuleActionNotifyEmail(apiclient.ProjectRuleActionNotifyEmail{
+	err := v.FromProjectRuleActionNotifyEmail(apiclient.ProjectRuleActionNotifyEmail{
 		Name:             m.Name.ValueStringPointer(),
 		TargetType:       m.TargetType.ValueString(),
 		TargetIdentifier: targetIdentifier,
 		FallthroughType:  m.FallthroughType.ValueStringPointer(),
-	}))
-	return v
+	})
+	if err != nil {
+		diags.AddError("Failed to convert to API model", err.Error())
+		return nil, diags
+	}
+	return &v, diags
 }
 
 type IssueAlertActionNotifyEventModel struct {
@@ -671,12 +773,17 @@ func (m *IssueAlertActionNotifyEventModel) Fill(ctx context.Context, action apic
 	return
 }
 
-func (m IssueAlertActionNotifyEventModel) ToApi() apiclient.ProjectRuleAction {
+func (m IssueAlertActionNotifyEventModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleAction, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	var v apiclient.ProjectRuleAction
-	must.Do(v.FromProjectRuleActionNotifyEvent(apiclient.ProjectRuleActionNotifyEvent{
+	err := v.FromProjectRuleActionNotifyEvent(apiclient.ProjectRuleActionNotifyEvent{
 		Name: m.Name.ValueStringPointer(),
-	}))
-	return v
+	})
+	if err != nil {
+		diags.AddError("Failed to convert to API model", err.Error())
+		return nil, diags
+	}
+	return &v, diags
 }
 
 type IssueAlertActionOpsgenieNotifyTeam struct {
@@ -694,15 +801,20 @@ func (m *IssueAlertActionOpsgenieNotifyTeam) Fill(ctx context.Context, action ap
 	return
 }
 
-func (m IssueAlertActionOpsgenieNotifyTeam) ToApi() apiclient.ProjectRuleAction {
+func (m IssueAlertActionOpsgenieNotifyTeam) ToApi(ctx context.Context) (*apiclient.ProjectRuleAction, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	var v apiclient.ProjectRuleAction
-	must.Do(v.FromProjectRuleActionOpsgenieNotifyTeam(apiclient.ProjectRuleActionOpsgenieNotifyTeam{
+	err := v.FromProjectRuleActionOpsgenieNotifyTeam(apiclient.ProjectRuleActionOpsgenieNotifyTeam{
 		Name:     m.Name.ValueStringPointer(),
 		Account:  m.Account.ValueString(),
 		Team:     m.Team.ValueString(),
 		Priority: m.Priority.ValueString(),
-	}))
-	return v
+	})
+	if err != nil {
+		diags.AddError("Failed to convert to API model", err.Error())
+		return nil, diags
+	}
+	return &v, diags
 }
 
 type IssueAlertActionPagerDutyNotifyServiceModel struct {
@@ -720,15 +832,20 @@ func (m *IssueAlertActionPagerDutyNotifyServiceModel) Fill(ctx context.Context, 
 	return
 }
 
-func (m IssueAlertActionPagerDutyNotifyServiceModel) ToApi() apiclient.ProjectRuleAction {
+func (m IssueAlertActionPagerDutyNotifyServiceModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleAction, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	var v apiclient.ProjectRuleAction
-	must.Do(v.FromProjectRuleActionPagerDutyNotifyService(apiclient.ProjectRuleActionPagerDutyNotifyService{
+	err := v.FromProjectRuleActionPagerDutyNotifyService(apiclient.ProjectRuleActionPagerDutyNotifyService{
 		Name:     m.Name.ValueStringPointer(),
 		Account:  m.Account.ValueString(),
 		Service:  m.Service.ValueString(),
 		Severity: m.Severity.ValueString(),
-	}))
-	return v
+	})
+	if err != nil {
+		diags.AddError("Failed to convert to API model", err.Error())
+		return nil, diags
+	}
+	return &v, diags
 }
 
 type IssueAlertActionSlackNotifyServiceModel struct {
@@ -750,17 +867,22 @@ func (m *IssueAlertActionSlackNotifyServiceModel) Fill(ctx context.Context, acti
 	return
 }
 
-func (m IssueAlertActionSlackNotifyServiceModel) ToApi() apiclient.ProjectRuleAction {
+func (m IssueAlertActionSlackNotifyServiceModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleAction, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	var v apiclient.ProjectRuleAction
-	must.Do(v.FromProjectRuleActionSlackNotifyService(apiclient.ProjectRuleActionSlackNotifyService{
+	err := v.FromProjectRuleActionSlackNotifyService(apiclient.ProjectRuleActionSlackNotifyService{
 		Name:      m.Name.ValueStringPointer(),
 		Workspace: m.Workspace.ValueString(),
 		Channel:   m.Channel.ValueString(),
 		ChannelId: m.ChannelId.ValueStringPointer(),
 		Tags:      m.Tags.ValueStringPointer(),
 		Notes:     m.Notes.ValueStringPointer(),
-	}))
-	return v
+	})
+	if err != nil {
+		diags.AddError("Failed to convert to API model", err.Error())
+		return nil, diags
+	}
+	return &v, diags
 }
 
 type IssueAlertActionGitHubCreateTicketModel struct {
@@ -787,7 +909,9 @@ func (m *IssueAlertActionGitHubCreateTicketModel) Fill(ctx context.Context, acti
 	return
 }
 
-func (m IssueAlertActionGitHubCreateTicketModel) ToApi() apiclient.ProjectRuleAction {
+func (m IssueAlertActionGitHubCreateTicketModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleAction, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
 	body := apiclient.ProjectRuleActionGitHubCreateTicket{
 		Name:              m.Name.ValueStringPointer(),
 		Integration:       m.Integration.ValueString(),
@@ -798,15 +922,21 @@ func (m IssueAlertActionGitHubCreateTicketModel) ToApi() apiclient.ProjectRuleAc
 
 	if !m.Labels.IsNull() {
 		var labels []string
-		// TODO: Handle diagnostics
-		m.Labels.ElementsAs(context.Background(), &labels, false)
+		diags.Append(m.Labels.ElementsAs(ctx, &labels, false)...)
+		if diags.HasError() {
+			return nil, diags
+		}
 
 		body.Labels = &labels
 	}
 
 	var v apiclient.ProjectRuleAction
-	must.Do(v.FromProjectRuleActionGitHubCreateTicket(body))
-	return v
+	err := v.FromProjectRuleActionGitHubCreateTicket(body)
+	if err != nil {
+		diags.AddError("Failed to convert to API model", err.Error())
+		return nil, diags
+	}
+	return &v, diags
 }
 
 type IssueAlertActionGitHubEnterpriseCreateTicketModel struct {
@@ -833,7 +963,9 @@ func (m *IssueAlertActionGitHubEnterpriseCreateTicketModel) Fill(ctx context.Con
 	return
 }
 
-func (m IssueAlertActionGitHubEnterpriseCreateTicketModel) ToApi() apiclient.ProjectRuleAction {
+func (m IssueAlertActionGitHubEnterpriseCreateTicketModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleAction, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
 	body := apiclient.ProjectRuleActionGitHubEnterpriseCreateTicket{
 		Name:              m.Name.ValueStringPointer(),
 		Integration:       m.Integration.ValueString(),
@@ -844,15 +976,21 @@ func (m IssueAlertActionGitHubEnterpriseCreateTicketModel) ToApi() apiclient.Pro
 
 	if !m.Labels.IsNull() {
 		var labels []string
-		// TODO: Handle diagnostics
-		m.Labels.ElementsAs(context.Background(), &labels, false)
+		diags.Append(m.Labels.ElementsAs(ctx, &labels, false)...)
+		if diags.HasError() {
+			return nil, diags
+		}
 
 		body.Labels = &labels
 	}
 
 	var v apiclient.ProjectRuleAction
-	must.Do(v.FromProjectRuleActionGitHubEnterpriseCreateTicket(body))
-	return v
+	err := v.FromProjectRuleActionGitHubEnterpriseCreateTicket(body)
+	if err != nil {
+		diags.AddError("Failed to convert to API model", err.Error())
+		return nil, diags
+	}
+	return &v, diags
 }
 
 type IssueAlertActionAzureDevopsCreateTicketModel struct {
@@ -870,16 +1008,21 @@ func (m *IssueAlertActionAzureDevopsCreateTicketModel) Fill(ctx context.Context,
 	return
 }
 
-func (m IssueAlertActionAzureDevopsCreateTicketModel) ToApi() apiclient.ProjectRuleAction {
+func (m IssueAlertActionAzureDevopsCreateTicketModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleAction, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	var v apiclient.ProjectRuleAction
-	must.Do(v.FromProjectRuleActionAzureDevopsCreateTicket(apiclient.ProjectRuleActionAzureDevopsCreateTicket{
+	err := v.FromProjectRuleActionAzureDevopsCreateTicket(apiclient.ProjectRuleActionAzureDevopsCreateTicket{
 		Name:              m.Name.ValueStringPointer(),
 		Integration:       m.Integration.ValueString(),
 		Project:           m.Project.ValueString(),
 		WorkItemType:      m.WorkItemType.ValueString(),
 		DynamicFormFields: []map[string]interface{}{{"dummy": "dummy"}},
-	}))
-	return v
+	})
+	if err != nil {
+		diags.AddError("Failed to convert to API model", err.Error())
+		return nil, diags
+	}
+	return &v, diags
 }
 
 type IssueAlertActionModel struct {
@@ -893,25 +1036,27 @@ type IssueAlertActionModel struct {
 	AzureDevopsCreateTicket      *IssueAlertActionAzureDevopsCreateTicketModel      `tfsdk:"azure_devops_create_ticket"`
 }
 
-func (m IssueAlertActionModel) ToApi() (*apiclient.ProjectRuleAction, error) {
+func (m IssueAlertActionModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleAction, diag.Diagnostics) {
 	if m.NotifyEmail != nil {
-		return ptr.Ptr(m.NotifyEmail.ToApi()), nil
+		return m.NotifyEmail.ToApi(ctx)
 	} else if m.NotifyEvent != nil {
-		return ptr.Ptr(m.NotifyEvent.ToApi()), nil
+		return m.NotifyEvent.ToApi(ctx)
 	} else if m.OpsgenieNotifyTeam != nil {
-		return ptr.Ptr(m.OpsgenieNotifyTeam.ToApi()), nil
+		return m.OpsgenieNotifyTeam.ToApi(ctx)
 	} else if m.PagerDutyNotifyService != nil {
-		return ptr.Ptr(m.PagerDutyNotifyService.ToApi()), nil
+		return m.PagerDutyNotifyService.ToApi(ctx)
 	} else if m.SlackNotifyService != nil {
-		return ptr.Ptr(m.SlackNotifyService.ToApi()), nil
+		return m.SlackNotifyService.ToApi(ctx)
 	} else if m.GitHubCreateTicket != nil {
-		return ptr.Ptr(m.GitHubCreateTicket.ToApi()), nil
+		return m.GitHubCreateTicket.ToApi(ctx)
 	} else if m.GitHubEnterpriseCreateTicket != nil {
-		return ptr.Ptr(m.GitHubEnterpriseCreateTicket.ToApi()), nil
+		return m.GitHubEnterpriseCreateTicket.ToApi(ctx)
 	} else if m.AzureDevopsCreateTicket != nil {
-		return ptr.Ptr(m.AzureDevopsCreateTicket.ToApi()), nil
+		return m.AzureDevopsCreateTicket.ToApi(ctx)
 	} else {
-		return nil, fmt.Errorf("exactly one action must be set")
+		var diags diag.Diagnostics
+		diags.AddError("Exactly one action must be set", "Exactly one action must be set")
+		return nil, diags
 	}
 }
 
