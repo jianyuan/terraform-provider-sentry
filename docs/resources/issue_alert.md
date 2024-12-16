@@ -228,10 +228,10 @@ data "sentry_organization_integration" "slack" {
 resource "sentry_issue_alert" "slack_alert" {
   actions_v2 = [
     {
-      slack_notify = {
+      slack_notify_service = {
         workspace = data.sentry_organization_integration.slack.id
         channel   = "#warning"
-        tags      = "environment,level"
+        tags      = ["environment", "level"]
         notes     = "Please <http://example.com|click here> for triage information"
       }
     },
@@ -243,6 +243,7 @@ resource "sentry_issue_alert" "slack_alert" {
 # Send a Microsoft Teams notification
 #
 
+# Retrieve a MS Teams integration
 data "sentry_organization_integration" "msteams" {
   organization = sentry_project.test.organization
 
@@ -250,17 +251,15 @@ data "sentry_organization_integration" "msteams" {
   name         = "My Team" # Name of your Microsoft Teams team
 }
 
-# TODO
-resource "sentry_issue_alert" "msteams_alert" {
-  actions = <<EOT
-[
-  {
-    "id": "sentry.integrations.msteams.notify_action.MsTeamsNotifyServiceAction",
-    "team": ${parseint(data.sentry_organization_integration.msteams.id, 10)},
-    "channel": "General"
-  }
-]
-EOT
+resource "sentry_issue_alert" "slack_alert" {
+  actions_v2 = [
+    {
+      msteams_notify_service = {
+        team    = data.sentry_organization_integration.msteams.id
+        channel = "General"
+      }
+    },
+  ]
   // ...
 }
 
@@ -275,18 +274,16 @@ data "sentry_organization_integration" "discord" {
   name         = "Discord Server" # Name of your Discord server
 }
 
-# TODO
 resource "sentry_issue_alert" "discord_alert" {
-  actions = <<EOT
-[
-  {
-    "id": "sentry.integrations.discord.notify_action.DiscordNotifyServiceAction",
-    "server": ${parseint(data.sentry_organization_integration.discord.id, 10)},
-    "channel_id": 94732897,
-    "tags": "browser,user"
-  }
-]
-EOT
+  actions_v2 = [
+    {
+      discord_notify_service = {
+        server     = data.sentry_organization_integration.discord.id
+        channel_id = "94732897"
+        tags       = ["browser", "user"]
+      }
+    },
+  ]
   // ...
 }
 
@@ -301,18 +298,16 @@ data "sentry_organization_integration" "jira" {
   name         = "JIRA" # Name of your Jira server
 }
 
-# TODO
 resource "sentry_issue_alert" "jira_alert" {
-  actions = <<EOT
-[
-  {
-    "id": "sentry.integrations.jira.notify_action.JiraCreateTicketAction",
-    "integration": ${parseint(data.sentry_organization_integration.jira.id, 10)},
-    "project": "349719",
-    "issueType": "1"
-  }
-]
-EOT
+  actions_v2 = [
+    {
+      jira_create_ticket = {
+        integration = data.sentry_organization_integration.jira.id
+        project     = "349719"
+        issue_type  = "1"
+      }
+    },
+  ]
   // ...
 }
 
@@ -329,16 +324,15 @@ data "sentry_organization_integration" "jira_server" {
 
 # TODO
 resource "sentry_issue_alert" "jira_server_alert" {
-  actions = <<EOT
-[
-  {
-    "id": "sentry.integrations.jira_server.notify_action.JiraServerCreateTicketAction",
-    "integration": ${parseint(data.sentry_organization_integration.jira_server.id, 10)},
-    "project": "349719",
-    "issueType": "1"
-  }
-]
-EOT
+  actions_v2 = [
+    {
+      jira_server_create_ticket = {
+        integration = data.sentry_organization_integration.jira_server.id
+        project     = "349719"
+        issue_type  = "1"
+      }
+    },
+  ]
   // ...
 }
 
@@ -452,6 +446,42 @@ resource "sentry_issue_alert" "opsgenie_alert" {
 }
 
 #
+# Send a notification via an integration
+#
+
+resource "sentry_issue_alert" "notification_alert" {
+  actions_v2 = [
+    {
+      notify_event_service = {
+        # Sourced from: https://terraform-provider-sentry.sentry.io/settings/developer-settings/<service>/
+        service = "my-service"
+      }
+    },
+  ]
+  // ...
+}
+
+#
+# Send a notification to a Sentry app
+#
+
+resource "sentry_issue_alert" "sentry_app" {
+  actions_v2 = [
+    {
+      notify_event_sentry_app = {
+        sentry_app_installation_uuid = "my-sentry-app-installation-uuid"
+        settings = {
+          key1 = "value1"
+          key2 = "value2"
+          key3 = "value3"
+        }
+      }
+    },
+  ]
+  // ...
+}
+
+#
 # Send a notification (for all legacy integrations)
 #
 
@@ -496,10 +526,16 @@ resource "sentry_issue_alert" "notification_alert" {
 Optional:
 
 - `azure_devops_create_ticket` (Attributes) Create an Azure DevOps work item in `integration`. (see [below for nested schema](#nestedatt--actions_v2--azure_devops_create_ticket))
+- `discord_notify_service` (Attributes) Send a notification to the `server` Discord server in the channel with ID or URL: `channel_id` and show tags `tags` in the notification. (see [below for nested schema](#nestedatt--actions_v2--discord_notify_service))
 - `github_create_ticket` (Attributes) Create a GitHub issue in `integration`. (see [below for nested schema](#nestedatt--actions_v2--github_create_ticket))
 - `github_enterprise_create_ticket` (Attributes) Create a GitHub Enterprise issue in `integration`. (see [below for nested schema](#nestedatt--actions_v2--github_enterprise_create_ticket))
+- `jira_create_ticket` (Attributes) Create a Jira issue in `integration`. (see [below for nested schema](#nestedatt--actions_v2--jira_create_ticket))
+- `jira_server_create_ticket` (Attributes) Create a Jira Server issue in `integration`. (see [below for nested schema](#nestedatt--actions_v2--jira_server_create_ticket))
+- `msteams_notify_service` (Attributes) Send a notification to the `team` Team to `channel`. (see [below for nested schema](#nestedatt--actions_v2--msteams_notify_service))
 - `notify_email` (Attributes) Send a notification to `target_type` and if none can be found then send a notification to `fallthrough_type`. (see [below for nested schema](#nestedatt--actions_v2--notify_email))
 - `notify_event` (Attributes) Send a notification to all legacy integrations. (see [below for nested schema](#nestedatt--actions_v2--notify_event))
+- `notify_event_sentry_app` (Attributes) Send a notification to a Sentry app. (see [below for nested schema](#nestedatt--actions_v2--notify_event_sentry_app))
+- `notify_event_service` (Attributes) Send a notification via an integration. (see [below for nested schema](#nestedatt--actions_v2--notify_event_service))
 - `opsgenie_notify_team` (Attributes) Send a notification to Opsgenie account `account` and team `team` with `priority` priority. (see [below for nested schema](#nestedatt--actions_v2--opsgenie_notify_team))
 - `pagerduty_notify_service` (Attributes) Send a notification to PagerDuty account `account` and service `service` with `severity` severity. (see [below for nested schema](#nestedatt--actions_v2--pagerduty_notify_service))
 - `slack_notify_service` (Attributes) Send a notification to the `workspace` Slack workspace to `channel` (optionally, an ID: `channel_id`) and show tags `tags` and notes `notes` in notification. (see [below for nested schema](#nestedatt--actions_v2--slack_notify_service))
@@ -509,9 +545,26 @@ Optional:
 
 Required:
 
-- `integration` (String)
-- `project` (String)
-- `work_item_type` (String)
+- `integration` (String) The integration ID.
+- `project` (String) The ID of the Azure DevOps project.
+- `work_item_type` (String) The type of work item to create.
+
+Read-Only:
+
+- `name` (String)
+
+
+<a id="nestedatt--actions_v2--discord_notify_service"></a>
+### Nested Schema for `actions_v2.discord_notify_service`
+
+Required:
+
+- `channel_id` (String) The ID of the channel to send the notification to. You must enter either a channel ID or a channel URL, not a channel name
+- `server` (String) The integration ID associated with the Discord server.
+
+Optional:
+
+- `tags` (Set of String) A string of tags to show in the notification.
 
 Read-Only:
 
@@ -523,13 +576,13 @@ Read-Only:
 
 Required:
 
-- `integration` (String)
-- `repo` (String)
+- `integration` (String) The integration ID associated with GitHub.
+- `repo` (String) The name of the repository to create the issue in.
 
 Optional:
 
-- `assignee` (String)
-- `labels` (Set of String)
+- `assignee` (String) The GitHub user to assign the issue to.
+- `labels` (Set of String) A list of labels to assign to the issue.
 
 Read-Only:
 
@@ -541,16 +594,58 @@ Read-Only:
 
 Required:
 
-- `integration` (String)
-- `repo` (String)
+- `integration` (String) The integration ID associated with GitHub Enterprise.
+- `repo` (String) The name of the repository to create the issue in.
 
 Optional:
 
-- `assignee` (String)
-- `labels` (Set of String)
+- `assignee` (String) The GitHub user to assign the issue to.
+- `labels` (Set of String) A list of labels to assign to the issue.
 
 Read-Only:
 
+- `name` (String)
+
+
+<a id="nestedatt--actions_v2--jira_create_ticket"></a>
+### Nested Schema for `actions_v2.jira_create_ticket`
+
+Required:
+
+- `integration` (String) The integration ID associated with Jira.
+- `issue_type` (String) The ID of the type of issue that the ticket should be created as.
+- `project` (String) The ID of the Jira project.
+
+Read-Only:
+
+- `name` (String)
+
+
+<a id="nestedatt--actions_v2--jira_server_create_ticket"></a>
+### Nested Schema for `actions_v2.jira_server_create_ticket`
+
+Required:
+
+- `integration` (String) The integration ID associated with Jira Server.
+- `issue_type` (String) The ID of the type of issue that the ticket should be created as.
+- `project` (String) The ID of the Jira Server project.
+
+Read-Only:
+
+- `name` (String)
+
+
+<a id="nestedatt--actions_v2--msteams_notify_service"></a>
+### Nested Schema for `actions_v2.msteams_notify_service`
+
+Required:
+
+- `channel` (String) The name of the channel to send the notification to.
+- `team` (String) The integration ID associated with the Microsoft Teams team.
+
+Read-Only:
+
+- `channel_id` (String)
 - `name` (String)
 
 
@@ -563,8 +658,8 @@ Required:
 
 Optional:
 
-- `fallthrough_type` (String) Valid values are: `AllMembers`, `ActiveMembers`, and `NoOne`.
-- `target_identifier` (String) Only required when `target_type` is `Team` or `Member`.
+- `fallthrough_type` (String) Who the notification should be sent to if there are no suggested assignees. Valid values are: `AllMembers`, `ActiveMembers`, and `NoOne`.
+- `target_identifier` (String) The ID of the Member or Team the notification should be sent to. Only required when `target_type` is `Team` or `Member`.
 
 Read-Only:
 
@@ -573,6 +668,34 @@ Read-Only:
 
 <a id="nestedatt--actions_v2--notify_event"></a>
 ### Nested Schema for `actions_v2.notify_event`
+
+Read-Only:
+
+- `name` (String)
+
+
+<a id="nestedatt--actions_v2--notify_event_sentry_app"></a>
+### Nested Schema for `actions_v2.notify_event_sentry_app`
+
+Required:
+
+- `sentry_app_installation_uuid` (String)
+
+Optional:
+
+- `settings` (Map of String)
+
+Read-Only:
+
+- `name` (String)
+
+
+<a id="nestedatt--actions_v2--notify_event_service"></a>
+### Nested Schema for `actions_v2.notify_event_service`
+
+Required:
+
+- `service` (String) The slug of the integration service. Sourced from `https://terraform-provider-sentry.sentry.io/settings/developer-settings/<service>/`.
 
 Read-Only:
 
@@ -612,17 +735,17 @@ Read-Only:
 
 Required:
 
-- `channel` (String)
-- `workspace` (String)
+- `channel` (String) The name of the channel to send the notification to (e.g., #critical, Jane Schmidt).
+- `workspace` (String) The integration ID associated with the Slack workspace.
 
 Optional:
 
-- `notes` (String)
-- `tags` (String)
+- `notes` (String) Text to show alongside the notification. To @ a user, include their user id like `@<USER_ID>`. To include a clickable link, format the link and title like `<http://example.com|Click Here>`.
+- `tags` (Set of String) A string of tags to show in the notification.
 
 Read-Only:
 
-- `channel_id` (String)
+- `channel_id` (String) The ID of the channel to send the notification to.
 - `name` (String)
 
 
@@ -774,7 +897,7 @@ Required:
 
 Optional:
 
-- `target_identifier` (String) Only required when `target_type` is `Team` or `Member`.
+- `target_identifier` (String) The target's ID. Only required when `target_type` is `Team` or `Member`.
 
 Read-Only:
 
@@ -787,7 +910,7 @@ Read-Only:
 Required:
 
 - `attribute` (String) Valid values are: `message`, `platform`, `environment`, `type`, `error.handled`, `error.unhandled`, `error.main_thread`, `exception.type`, `exception.value`, `user.id`, `user.email`, `user.username`, `user.ip_address`, `http.method`, `http.url`, `http.status_code`, `sdk.name`, `stacktrace.code`, `stacktrace.module`, `stacktrace.filename`, `stacktrace.abs_path`, `stacktrace.package`, `unreal.crashtype`, `app.in_foreground`, `os.distribution_name`, and `os.distribution_version`.
-- `match` (String) Valid values are: `CONTAINS`, `ENDS_WITH`, `EQUAL`, `GREATER_OR_EQUAL`, `GREATER`, `IS_SET`, `IS_IN`, `LESS_OR_EQUAL`, `LESS`, `NOT_CONTAINS`, `NOT_ENDS_WITH`, `NOT_EQUAL`, `NOT_SET`, `NOT_STARTS_WITH`, `NOT_IN`, and `STARTS_WITH`.
+- `match` (String) The comparison operator. Valid values are: `CONTAINS`, `ENDS_WITH`, `EQUAL`, `GREATER_OR_EQUAL`, `GREATER`, `IS_SET`, `IS_IN`, `LESS_OR_EQUAL`, `LESS`, `NOT_CONTAINS`, `NOT_ENDS_WITH`, `NOT_EQUAL`, `NOT_SET`, `NOT_STARTS_WITH`, `NOT_IN`, and `STARTS_WITH`.
 
 Optional:
 
@@ -850,7 +973,7 @@ Read-Only:
 Required:
 
 - `level` (String) Valid values are: `sample`, `debug`, `info`, `warning`, `error`, and `fatal`.
-- `match` (String) Valid values are: `EQUAL`, `GREATER_OR_EQUAL`, and `LESS_OR_EQUAL`.
+- `match` (String) The comparison operator. Valid values are: `EQUAL`, `GREATER_OR_EQUAL`, and `LESS_OR_EQUAL`.
 
 Read-Only:
 
@@ -862,8 +985,8 @@ Read-Only:
 
 Required:
 
-- `key` (String)
-- `match` (String) Valid values are: `CONTAINS`, `ENDS_WITH`, `EQUAL`, `GREATER_OR_EQUAL`, `GREATER`, `IS_SET`, `IS_IN`, `LESS_OR_EQUAL`, `LESS`, `NOT_CONTAINS`, `NOT_ENDS_WITH`, `NOT_EQUAL`, `NOT_SET`, `NOT_STARTS_WITH`, `NOT_IN`, and `STARTS_WITH`.
+- `key` (String) The tag.
+- `match` (String) The comparison operator. Valid values are: `CONTAINS`, `ENDS_WITH`, `EQUAL`, `GREATER_OR_EQUAL`, `GREATER`, `IS_SET`, `IS_IN`, `LESS_OR_EQUAL`, `LESS`, `NOT_CONTAINS`, `NOT_ENDS_WITH`, `NOT_EQUAL`, `NOT_SET`, `NOT_STARTS_WITH`, `NOT_IN`, and `STARTS_WITH`.
 
 Optional:
 

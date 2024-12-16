@@ -27,6 +27,11 @@ const (
 	SentryIntegrationsVstsNotifyActionAzureDevopsCreateTicketAction ProjectRuleActionAzureDevopsCreateTicketId = "sentry.integrations.vsts.notify_action.AzureDevopsCreateTicketAction"
 )
 
+// Defines values for ProjectRuleActionDiscordNotifyServiceId.
+const (
+	SentryIntegrationsDiscordNotifyActionDiscordNotifyServiceAction ProjectRuleActionDiscordNotifyServiceId = "sentry.integrations.discord.notify_action.DiscordNotifyServiceAction"
+)
+
 // Defines values for ProjectRuleActionGitHubCreateTicketId.
 const (
 	SentryIntegrationsGithubNotifyActionGitHubCreateTicketAction ProjectRuleActionGitHubCreateTicketId = "sentry.integrations.github.notify_action.GitHubCreateTicketAction"
@@ -37,6 +42,21 @@ const (
 	SentryIntegrationsGithubEnterpriseNotifyActionGitHubEnterpriseCreateTicketAction ProjectRuleActionGitHubEnterpriseCreateTicketId = "sentry.integrations.github_enterprise.notify_action.GitHubEnterpriseCreateTicketAction"
 )
 
+// Defines values for ProjectRuleActionJiraCreateTicketId.
+const (
+	ProjectRuleActionJiraCreateTicketIdSentryIntegrationsJiraNotifyActionJiraCreateTicketAction ProjectRuleActionJiraCreateTicketId = "sentry.integrations.jira.notify_action.JiraCreateTicketAction"
+)
+
+// Defines values for ProjectRuleActionJiraServerCreateTicketId.
+const (
+	ProjectRuleActionJiraServerCreateTicketIdSentryIntegrationsJiraNotifyActionJiraCreateTicketAction ProjectRuleActionJiraServerCreateTicketId = "sentry.integrations.jira.notify_action.JiraCreateTicketAction"
+)
+
+// Defines values for ProjectRuleActionMsTeamsNotifyServiceId.
+const (
+	SentryIntegrationsMsteamsNotifyActionMsTeamsNotifyServiceAction ProjectRuleActionMsTeamsNotifyServiceId = "sentry.integrations.msteams.notify_action.MsTeamsNotifyServiceAction"
+)
+
 // Defines values for ProjectRuleActionNotifyEmailId.
 const (
 	SentryMailActionsNotifyEmailAction ProjectRuleActionNotifyEmailId = "sentry.mail.actions.NotifyEmailAction"
@@ -45,6 +65,16 @@ const (
 // Defines values for ProjectRuleActionNotifyEventId.
 const (
 	SentryRulesActionsNotifyEventNotifyEventAction ProjectRuleActionNotifyEventId = "sentry.rules.actions.notify_event.NotifyEventAction"
+)
+
+// Defines values for ProjectRuleActionNotifyEventSentryAppId.
+const (
+	SentryRulesActionsNotifyEventSentryAppNotifyEventSentryAppAction ProjectRuleActionNotifyEventSentryAppId = "sentry.rules.actions.notify_event_sentry_app.NotifyEventSentryAppAction"
+)
+
+// Defines values for ProjectRuleActionNotifyEventServiceId.
+const (
+	SentryRulesActionsNotifyEventServiceNotifyEventServiceAction ProjectRuleActionNotifyEventServiceId = "sentry.rules.actions.notify_event_service.NotifyEventServiceAction"
 )
 
 // Defines values for ProjectRuleActionOpsgenieNotifyTeamId.
@@ -242,6 +272,19 @@ type ProjectRuleActionAzureDevopsCreateTicket struct {
 // ProjectRuleActionAzureDevopsCreateTicketId defines model for ProjectRuleActionAzureDevopsCreateTicket.Id.
 type ProjectRuleActionAzureDevopsCreateTicketId string
 
+// ProjectRuleActionDiscordNotifyService defines model for ProjectRuleActionDiscordNotifyService.
+type ProjectRuleActionDiscordNotifyService struct {
+	ChannelId string                                  `json:"channel_id"`
+	Id        ProjectRuleActionDiscordNotifyServiceId `json:"id"`
+	Name      *string                                 `json:"name,omitempty"`
+	Server    string                                  `json:"server"`
+	Tags      *string                                 `json:"tags,omitempty"`
+	Uuid      *string                                 `json:"uuid,omitempty"`
+}
+
+// ProjectRuleActionDiscordNotifyServiceId defines model for ProjectRuleActionDiscordNotifyService.Id.
+type ProjectRuleActionDiscordNotifyServiceId string
+
 // ProjectRuleActionGitHubCreateTicket defines model for ProjectRuleActionGitHubCreateTicket.
 type ProjectRuleActionGitHubCreateTicket struct {
 	Assignee          *string                               `json:"assignee,omitempty"`
@@ -271,6 +314,47 @@ type ProjectRuleActionGitHubEnterpriseCreateTicket struct {
 
 // ProjectRuleActionGitHubEnterpriseCreateTicketId defines model for ProjectRuleActionGitHubEnterpriseCreateTicket.Id.
 type ProjectRuleActionGitHubEnterpriseCreateTicketId string
+
+// ProjectRuleActionJiraCreateTicket defines model for ProjectRuleActionJiraCreateTicket.
+type ProjectRuleActionJiraCreateTicket struct {
+	DynamicFormFields []map[string]interface{}            `json:"dynamic_form_fields"`
+	Id                ProjectRuleActionJiraCreateTicketId `json:"id"`
+	Integration       string                              `json:"integration"`
+	IssueType         string                              `json:"issueType"`
+	Name              *string                             `json:"name,omitempty"`
+	Project           string                              `json:"project"`
+	Uuid              *string                             `json:"uuid,omitempty"`
+}
+
+// ProjectRuleActionJiraCreateTicketId defines model for ProjectRuleActionJiraCreateTicket.Id.
+type ProjectRuleActionJiraCreateTicketId string
+
+// ProjectRuleActionJiraServerCreateTicket defines model for ProjectRuleActionJiraServerCreateTicket.
+type ProjectRuleActionJiraServerCreateTicket struct {
+	DynamicFormFields []map[string]interface{}                  `json:"dynamic_form_fields"`
+	Id                ProjectRuleActionJiraServerCreateTicketId `json:"id"`
+	Integration       string                                    `json:"integration"`
+	IssueType         string                                    `json:"issueType"`
+	Name              *string                                   `json:"name,omitempty"`
+	Project           string                                    `json:"project"`
+	Uuid              *string                                   `json:"uuid,omitempty"`
+}
+
+// ProjectRuleActionJiraServerCreateTicketId defines model for ProjectRuleActionJiraServerCreateTicket.Id.
+type ProjectRuleActionJiraServerCreateTicketId string
+
+// ProjectRuleActionMsTeamsNotifyService defines model for ProjectRuleActionMsTeamsNotifyService.
+type ProjectRuleActionMsTeamsNotifyService struct {
+	Channel   string                                  `json:"channel"`
+	ChannelId *string                                 `json:"channel_id,omitempty"`
+	Id        ProjectRuleActionMsTeamsNotifyServiceId `json:"id"`
+	Name      *string                                 `json:"name,omitempty"`
+	Team      string                                  `json:"team"`
+	Uuid      *string                                 `json:"uuid,omitempty"`
+}
+
+// ProjectRuleActionMsTeamsNotifyServiceId defines model for ProjectRuleActionMsTeamsNotifyService.Id.
+type ProjectRuleActionMsTeamsNotifyServiceId string
 
 // ProjectRuleActionNotifyEmail defines model for ProjectRuleActionNotifyEmail.
 type ProjectRuleActionNotifyEmail struct {
@@ -305,6 +389,33 @@ type ProjectRuleActionNotifyEvent struct {
 
 // ProjectRuleActionNotifyEventId defines model for ProjectRuleActionNotifyEvent.Id.
 type ProjectRuleActionNotifyEventId string
+
+// ProjectRuleActionNotifyEventSentryApp defines model for ProjectRuleActionNotifyEventSentryApp.
+type ProjectRuleActionNotifyEventSentryApp struct {
+	HasSchemaFormConfig       bool                                    `json:"hasSchemaFormConfig"`
+	Id                        ProjectRuleActionNotifyEventSentryAppId `json:"id"`
+	Name                      *string                                 `json:"name,omitempty"`
+	SentryAppInstallationUuid string                                  `json:"sentryAppInstallationUuid"`
+	Settings                  *[]struct {
+		Name  string `json:"name"`
+		Value string `json:"value"`
+	} `json:"settings,omitempty"`
+	Uuid *string `json:"uuid,omitempty"`
+}
+
+// ProjectRuleActionNotifyEventSentryAppId defines model for ProjectRuleActionNotifyEventSentryApp.Id.
+type ProjectRuleActionNotifyEventSentryAppId string
+
+// ProjectRuleActionNotifyEventService defines model for ProjectRuleActionNotifyEventService.
+type ProjectRuleActionNotifyEventService struct {
+	Id      ProjectRuleActionNotifyEventServiceId `json:"id"`
+	Name    *string                               `json:"name,omitempty"`
+	Service string                                `json:"service"`
+	Uuid    *string                               `json:"uuid,omitempty"`
+}
+
+// ProjectRuleActionNotifyEventServiceId defines model for ProjectRuleActionNotifyEventService.Id.
+type ProjectRuleActionNotifyEventServiceId string
 
 // ProjectRuleActionOpsgenieNotifyTeam defines model for ProjectRuleActionOpsgenieNotifyTeam.
 type ProjectRuleActionOpsgenieNotifyTeam struct {
@@ -737,6 +848,62 @@ func (t *ProjectRuleAction) MergeProjectRuleActionNotifyEvent(v ProjectRuleActio
 	return err
 }
 
+// AsProjectRuleActionNotifyEventService returns the union data inside the ProjectRuleAction as a ProjectRuleActionNotifyEventService
+func (t ProjectRuleAction) AsProjectRuleActionNotifyEventService() (ProjectRuleActionNotifyEventService, error) {
+	var body ProjectRuleActionNotifyEventService
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectRuleActionNotifyEventService overwrites any union data inside the ProjectRuleAction as the provided ProjectRuleActionNotifyEventService
+func (t *ProjectRuleAction) FromProjectRuleActionNotifyEventService(v ProjectRuleActionNotifyEventService) error {
+	v.Id = "sentry.rules.actions.notify_event_service.NotifyEventServiceAction"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectRuleActionNotifyEventService performs a merge with any union data inside the ProjectRuleAction, using the provided ProjectRuleActionNotifyEventService
+func (t *ProjectRuleAction) MergeProjectRuleActionNotifyEventService(v ProjectRuleActionNotifyEventService) error {
+	v.Id = "sentry.rules.actions.notify_event_service.NotifyEventServiceAction"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectRuleActionNotifyEventSentryApp returns the union data inside the ProjectRuleAction as a ProjectRuleActionNotifyEventSentryApp
+func (t ProjectRuleAction) AsProjectRuleActionNotifyEventSentryApp() (ProjectRuleActionNotifyEventSentryApp, error) {
+	var body ProjectRuleActionNotifyEventSentryApp
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectRuleActionNotifyEventSentryApp overwrites any union data inside the ProjectRuleAction as the provided ProjectRuleActionNotifyEventSentryApp
+func (t *ProjectRuleAction) FromProjectRuleActionNotifyEventSentryApp(v ProjectRuleActionNotifyEventSentryApp) error {
+	v.Id = "sentry.rules.actions.notify_event_sentry_app.NotifyEventSentryAppAction"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectRuleActionNotifyEventSentryApp performs a merge with any union data inside the ProjectRuleAction, using the provided ProjectRuleActionNotifyEventSentryApp
+func (t *ProjectRuleAction) MergeProjectRuleActionNotifyEventSentryApp(v ProjectRuleActionNotifyEventSentryApp) error {
+	v.Id = "sentry.rules.actions.notify_event_sentry_app.NotifyEventSentryAppAction"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
 // AsProjectRuleActionOpsgenieNotifyTeam returns the union data inside the ProjectRuleAction as a ProjectRuleActionOpsgenieNotifyTeam
 func (t ProjectRuleAction) AsProjectRuleActionOpsgenieNotifyTeam() (ProjectRuleActionOpsgenieNotifyTeam, error) {
 	var body ProjectRuleActionOpsgenieNotifyTeam
@@ -811,6 +978,118 @@ func (t *ProjectRuleAction) FromProjectRuleActionSlackNotifyService(v ProjectRul
 // MergeProjectRuleActionSlackNotifyService performs a merge with any union data inside the ProjectRuleAction, using the provided ProjectRuleActionSlackNotifyService
 func (t *ProjectRuleAction) MergeProjectRuleActionSlackNotifyService(v ProjectRuleActionSlackNotifyService) error {
 	v.Id = "sentry.integrations.slack.notify_action.SlackNotifyServiceAction"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectRuleActionMsTeamsNotifyService returns the union data inside the ProjectRuleAction as a ProjectRuleActionMsTeamsNotifyService
+func (t ProjectRuleAction) AsProjectRuleActionMsTeamsNotifyService() (ProjectRuleActionMsTeamsNotifyService, error) {
+	var body ProjectRuleActionMsTeamsNotifyService
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectRuleActionMsTeamsNotifyService overwrites any union data inside the ProjectRuleAction as the provided ProjectRuleActionMsTeamsNotifyService
+func (t *ProjectRuleAction) FromProjectRuleActionMsTeamsNotifyService(v ProjectRuleActionMsTeamsNotifyService) error {
+	v.Id = "sentry.integrations.msteams.notify_action.MsTeamsNotifyServiceAction"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectRuleActionMsTeamsNotifyService performs a merge with any union data inside the ProjectRuleAction, using the provided ProjectRuleActionMsTeamsNotifyService
+func (t *ProjectRuleAction) MergeProjectRuleActionMsTeamsNotifyService(v ProjectRuleActionMsTeamsNotifyService) error {
+	v.Id = "sentry.integrations.msteams.notify_action.MsTeamsNotifyServiceAction"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectRuleActionDiscordNotifyService returns the union data inside the ProjectRuleAction as a ProjectRuleActionDiscordNotifyService
+func (t ProjectRuleAction) AsProjectRuleActionDiscordNotifyService() (ProjectRuleActionDiscordNotifyService, error) {
+	var body ProjectRuleActionDiscordNotifyService
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectRuleActionDiscordNotifyService overwrites any union data inside the ProjectRuleAction as the provided ProjectRuleActionDiscordNotifyService
+func (t *ProjectRuleAction) FromProjectRuleActionDiscordNotifyService(v ProjectRuleActionDiscordNotifyService) error {
+	v.Id = "sentry.integrations.discord.notify_action.DiscordNotifyServiceAction"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectRuleActionDiscordNotifyService performs a merge with any union data inside the ProjectRuleAction, using the provided ProjectRuleActionDiscordNotifyService
+func (t *ProjectRuleAction) MergeProjectRuleActionDiscordNotifyService(v ProjectRuleActionDiscordNotifyService) error {
+	v.Id = "sentry.integrations.discord.notify_action.DiscordNotifyServiceAction"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectRuleActionJiraCreateTicket returns the union data inside the ProjectRuleAction as a ProjectRuleActionJiraCreateTicket
+func (t ProjectRuleAction) AsProjectRuleActionJiraCreateTicket() (ProjectRuleActionJiraCreateTicket, error) {
+	var body ProjectRuleActionJiraCreateTicket
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectRuleActionJiraCreateTicket overwrites any union data inside the ProjectRuleAction as the provided ProjectRuleActionJiraCreateTicket
+func (t *ProjectRuleAction) FromProjectRuleActionJiraCreateTicket(v ProjectRuleActionJiraCreateTicket) error {
+	v.Id = "sentry.integrations.jira.notify_action.JiraCreateTicketAction"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectRuleActionJiraCreateTicket performs a merge with any union data inside the ProjectRuleAction, using the provided ProjectRuleActionJiraCreateTicket
+func (t *ProjectRuleAction) MergeProjectRuleActionJiraCreateTicket(v ProjectRuleActionJiraCreateTicket) error {
+	v.Id = "sentry.integrations.jira.notify_action.JiraCreateTicketAction"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectRuleActionJiraServerCreateTicket returns the union data inside the ProjectRuleAction as a ProjectRuleActionJiraServerCreateTicket
+func (t ProjectRuleAction) AsProjectRuleActionJiraServerCreateTicket() (ProjectRuleActionJiraServerCreateTicket, error) {
+	var body ProjectRuleActionJiraServerCreateTicket
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectRuleActionJiraServerCreateTicket overwrites any union data inside the ProjectRuleAction as the provided ProjectRuleActionJiraServerCreateTicket
+func (t *ProjectRuleAction) FromProjectRuleActionJiraServerCreateTicket(v ProjectRuleActionJiraServerCreateTicket) error {
+	v.Id = "sentry.integrations.jira_server.notify_action.JiraServerCreateTicketAction"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectRuleActionJiraServerCreateTicket performs a merge with any union data inside the ProjectRuleAction, using the provided ProjectRuleActionJiraServerCreateTicket
+func (t *ProjectRuleAction) MergeProjectRuleActionJiraServerCreateTicket(v ProjectRuleActionJiraServerCreateTicket) error {
+	v.Id = "sentry.integrations.jira_server.notify_action.JiraServerCreateTicketAction"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -919,10 +1198,18 @@ func (t ProjectRuleAction) ValueByDiscriminator() (interface{}, error) {
 		return nil, err
 	}
 	switch discriminator {
+	case "sentry.integrations.discord.notify_action.DiscordNotifyServiceAction":
+		return t.AsProjectRuleActionDiscordNotifyService()
 	case "sentry.integrations.github.notify_action.GitHubCreateTicketAction":
 		return t.AsProjectRuleActionGitHubCreateTicket()
 	case "sentry.integrations.github_enterprise.notify_action.GitHubEnterpriseCreateTicketAction":
 		return t.AsProjectRuleActionGitHubEnterpriseCreateTicket()
+	case "sentry.integrations.jira.notify_action.JiraCreateTicketAction":
+		return t.AsProjectRuleActionJiraCreateTicket()
+	case "sentry.integrations.jira_server.notify_action.JiraServerCreateTicketAction":
+		return t.AsProjectRuleActionJiraServerCreateTicket()
+	case "sentry.integrations.msteams.notify_action.MsTeamsNotifyServiceAction":
+		return t.AsProjectRuleActionMsTeamsNotifyService()
 	case "sentry.integrations.opsgenie.notify_action.OpsgenieNotifyTeamAction":
 		return t.AsProjectRuleActionOpsgenieNotifyTeam()
 	case "sentry.integrations.pagerduty.notify_action.PagerDutyNotifyServiceAction":
@@ -935,6 +1222,10 @@ func (t ProjectRuleAction) ValueByDiscriminator() (interface{}, error) {
 		return t.AsProjectRuleActionNotifyEmail()
 	case "sentry.rules.actions.notify_event.NotifyEventAction":
 		return t.AsProjectRuleActionNotifyEvent()
+	case "sentry.rules.actions.notify_event_sentry_app.NotifyEventSentryAppAction":
+		return t.AsProjectRuleActionNotifyEventSentryApp()
+	case "sentry.rules.actions.notify_event_service.NotifyEventServiceAction":
+		return t.AsProjectRuleActionNotifyEventService()
 	default:
 		return nil, errors.New("unknown discriminator value: " + discriminator)
 	}

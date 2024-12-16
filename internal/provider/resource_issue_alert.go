@@ -225,7 +225,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 									Required: true,
 								}, []string{"Unassigned", "Team", "Member"}),
 								"target_identifier": schema.StringAttribute{
-									MarkdownDescription: "Only required when `target_type` is `Team` or `Member`.",
+									MarkdownDescription: "The target's ID. Only required when `target_type` is `Team` or `Member`.",
 									Optional:            true,
 								},
 							},
@@ -272,7 +272,8 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 									Required: true,
 								}, sentrydata.EventAttributes),
 								"match": tfutils.WithEnumStringAttribute(schema.StringAttribute{
-									Required: true,
+									MarkdownDescription: "The comparison operator.",
+									Required:            true,
 								}, sentrydata.MatchTypes),
 								"value": schema.StringAttribute{
 									Optional: true,
@@ -285,10 +286,12 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
 								"key": schema.StringAttribute{
-									Required: true,
+									MarkdownDescription: "The tag.",
+									Required:            true,
 								},
 								"match": tfutils.WithEnumStringAttribute(schema.StringAttribute{
-									Required: true,
+									MarkdownDescription: "The comparison operator.",
+									Required:            true,
 								}, sentrydata.MatchTypes),
 								"value": schema.StringAttribute{
 									Optional: true,
@@ -301,7 +304,8 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
 								"match": tfutils.WithEnumStringAttribute(schema.StringAttribute{
-									Required: true,
+									MarkdownDescription: "The comparison operator.",
+									Required:            true,
 								}, sentrydata.LevelMatchTypes),
 								"level": tfutils.WithEnumStringAttribute(schema.StringAttribute{
 									Required: true,
@@ -338,11 +342,12 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 									Required: true,
 								}, []string{"IssueOwners", "Team", "Member"}),
 								"target_identifier": schema.StringAttribute{
-									MarkdownDescription: "Only required when `target_type` is `Team` or `Member`.",
+									MarkdownDescription: "The ID of the Member or Team the notification should be sent to. Only required when `target_type` is `Team` or `Member`.",
 									Optional:            true,
 								},
 								"fallthrough_type": tfutils.WithEnumStringAttribute(schema.StringAttribute{
-									Optional: true,
+									MarkdownDescription: "Who the notification should be sent to if there are no suggested assignees.",
+									Optional:            true,
 								}, []string{"AllMembers", "ActiveMembers", "NoOne"}),
 							},
 						},
@@ -351,6 +356,31 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 							Optional:            true,
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
+							},
+						},
+						"notify_event_service": {
+							MarkdownDescription: "Send a notification via an integration.",
+							Optional:            true,
+							Attributes: map[string]schema.Attribute{
+								"name": nameStringAttribute,
+								"service": schema.StringAttribute{
+									MarkdownDescription: "The slug of the integration service. Sourced from `https://terraform-provider-sentry.sentry.io/settings/developer-settings/<service>/`.",
+									Required:            true,
+								},
+							},
+						},
+						"notify_event_sentry_app": {
+							MarkdownDescription: "Send a notification to a Sentry app.",
+							Optional:            true,
+							Attributes: map[string]schema.Attribute{
+								"name": nameStringAttribute,
+								"sentry_app_installation_uuid": schema.StringAttribute{
+									Required: true,
+								},
+								"settings": schema.MapAttribute{
+									ElementType: types.StringType,
+									Optional:    true,
+								},
 							},
 						},
 						"opsgenie_notify_team": {
@@ -391,19 +421,109 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
 								"workspace": schema.StringAttribute{
-									Required: true,
+									MarkdownDescription: "The integration ID associated with the Slack workspace.",
+									Required:            true,
 								},
 								"channel": schema.StringAttribute{
-									Required: true,
+									MarkdownDescription: "The name of the channel to send the notification to (e.g., #critical, Jane Schmidt).",
+									Required:            true,
+								},
+								"channel_id": schema.StringAttribute{
+									MarkdownDescription: "The ID of the channel to send the notification to.",
+									Computed:            true,
+								},
+								"tags": schema.SetAttribute{
+									MarkdownDescription: "A string of tags to show in the notification.",
+									Optional:            true,
+									CustomType: sentrytypes.StringSetType{
+										SetType: types.SetType{
+											ElemType: types.StringType,
+										},
+									},
+								},
+								"notes": schema.StringAttribute{
+									MarkdownDescription: "Text to show alongside the notification. To @ a user, include their user id like `@<USER_ID>`. To include a clickable link, format the link and title like `<http://example.com|Click Here>`.",
+									Optional:            true,
+								},
+							},
+						},
+						"msteams_notify_service": {
+							MarkdownDescription: "Send a notification to the `team` Team to `channel`.",
+							Optional:            true,
+							Attributes: map[string]schema.Attribute{
+								"name": nameStringAttribute,
+								"team": schema.StringAttribute{
+									MarkdownDescription: "The integration ID associated with the Microsoft Teams team.",
+									Required:            true,
+								},
+								"channel": schema.StringAttribute{
+									MarkdownDescription: "The name of the channel to send the notification to.",
+									Required:            true,
 								},
 								"channel_id": schema.StringAttribute{
 									Computed: true,
 								},
-								"tags": schema.StringAttribute{
-									Optional: true,
+							},
+						},
+						"discord_notify_service": {
+							MarkdownDescription: "Send a notification to the `server` Discord server in the channel with ID or URL: `channel_id` and show tags `tags` in the notification.",
+							Optional:            true,
+							Attributes: map[string]schema.Attribute{
+								"name": nameStringAttribute,
+								"server": schema.StringAttribute{
+									MarkdownDescription: "The integration ID associated with the Discord server.",
+									Required:            true,
 								},
-								"notes": schema.StringAttribute{
-									Optional: true,
+								"channel_id": schema.StringAttribute{
+									MarkdownDescription: "The ID of the channel to send the notification to. You must enter either a channel ID or a channel URL, not a channel name",
+									Required:            true,
+								},
+								"tags": schema.SetAttribute{
+									MarkdownDescription: "A string of tags to show in the notification.",
+									Optional:            true,
+									CustomType: sentrytypes.StringSetType{
+										SetType: types.SetType{
+											ElemType: types.StringType,
+										},
+									},
+								},
+							},
+						},
+						"jira_create_ticket": {
+							MarkdownDescription: "Create a Jira issue in `integration`.",
+							Optional:            true,
+							Attributes: map[string]schema.Attribute{
+								"name": nameStringAttribute,
+								"integration": schema.StringAttribute{
+									MarkdownDescription: "The integration ID associated with Jira.",
+									Required:            true,
+								},
+								"project": schema.StringAttribute{
+									MarkdownDescription: "The ID of the Jira project.",
+									Required:            true,
+								},
+								"issue_type": schema.StringAttribute{
+									MarkdownDescription: "The ID of the type of issue that the ticket should be created as.",
+									Required:            true,
+								},
+							},
+						},
+						"jira_server_create_ticket": {
+							MarkdownDescription: "Create a Jira Server issue in `integration`.",
+							Optional:            true,
+							Attributes: map[string]schema.Attribute{
+								"name": nameStringAttribute,
+								"integration": schema.StringAttribute{
+									MarkdownDescription: "The integration ID associated with Jira Server.",
+									Required:            true,
+								},
+								"project": schema.StringAttribute{
+									MarkdownDescription: "The ID of the Jira Server project.",
+									Required:            true,
+								},
+								"issue_type": schema.StringAttribute{
+									MarkdownDescription: "The ID of the type of issue that the ticket should be created as.",
+									Required:            true,
 								},
 							},
 						},
@@ -413,17 +533,21 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
 								"integration": schema.StringAttribute{
-									Required: true,
+									MarkdownDescription: "The integration ID associated with GitHub.",
+									Required:            true,
 								},
 								"repo": schema.StringAttribute{
-									Required: true,
+									MarkdownDescription: "The name of the repository to create the issue in.",
+									Required:            true,
 								},
 								"assignee": schema.StringAttribute{
-									Optional: true,
+									MarkdownDescription: "The GitHub user to assign the issue to.",
+									Optional:            true,
 								},
 								"labels": schema.SetAttribute{
-									Optional:    true,
-									ElementType: types.StringType,
+									MarkdownDescription: "A list of labels to assign to the issue.",
+									Optional:            true,
+									ElementType:         types.StringType,
 								},
 							},
 						},
@@ -433,17 +557,21 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
 								"integration": schema.StringAttribute{
-									Required: true,
+									MarkdownDescription: "The integration ID associated with GitHub Enterprise.",
+									Required:            true,
 								},
 								"repo": schema.StringAttribute{
-									Required: true,
+									MarkdownDescription: "The name of the repository to create the issue in.",
+									Required:            true,
 								},
 								"assignee": schema.StringAttribute{
-									Optional: true,
+									MarkdownDescription: "The GitHub user to assign the issue to.",
+									Optional:            true,
 								},
 								"labels": schema.SetAttribute{
-									Optional:    true,
-									ElementType: types.StringType,
+									MarkdownDescription: "A list of labels to assign to the issue.",
+									Optional:            true,
+									ElementType:         types.StringType,
 								},
 							},
 						},
@@ -453,13 +581,16 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
 								"integration": schema.StringAttribute{
-									Required: true,
+									MarkdownDescription: "The integration ID.",
+									Required:            true,
 								},
 								"project": schema.StringAttribute{
-									Required: true,
+									MarkdownDescription: "The ID of the Azure DevOps project.",
+									Required:            true,
 								},
 								"work_item_type": schema.StringAttribute{
-									Required: true,
+									MarkdownDescription: "The type of work item to create.",
+									Required:            true,
 								},
 							},
 						},

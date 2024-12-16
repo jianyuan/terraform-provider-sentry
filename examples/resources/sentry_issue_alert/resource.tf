@@ -211,10 +211,10 @@ data "sentry_organization_integration" "slack" {
 resource "sentry_issue_alert" "slack_alert" {
   actions_v2 = [
     {
-      slack_notify = {
+      slack_notify_service = {
         workspace = data.sentry_organization_integration.slack.id
         channel   = "#warning"
-        tags      = "environment,level"
+        tags      = ["environment", "level"]
         notes     = "Please <http://example.com|click here> for triage information"
       }
     },
@@ -226,6 +226,7 @@ resource "sentry_issue_alert" "slack_alert" {
 # Send a Microsoft Teams notification
 #
 
+# Retrieve a MS Teams integration
 data "sentry_organization_integration" "msteams" {
   organization = sentry_project.test.organization
 
@@ -233,17 +234,15 @@ data "sentry_organization_integration" "msteams" {
   name         = "My Team" # Name of your Microsoft Teams team
 }
 
-# TODO
-resource "sentry_issue_alert" "msteams_alert" {
-  actions = <<EOT
-[
-  {
-    "id": "sentry.integrations.msteams.notify_action.MsTeamsNotifyServiceAction",
-    "team": ${parseint(data.sentry_organization_integration.msteams.id, 10)},
-    "channel": "General"
-  }
-]
-EOT
+resource "sentry_issue_alert" "slack_alert" {
+  actions_v2 = [
+    {
+      msteams_notify_service = {
+        team    = data.sentry_organization_integration.msteams.id
+        channel = "General"
+      }
+    },
+  ]
   // ...
 }
 
@@ -258,18 +257,16 @@ data "sentry_organization_integration" "discord" {
   name         = "Discord Server" # Name of your Discord server
 }
 
-# TODO
 resource "sentry_issue_alert" "discord_alert" {
-  actions = <<EOT
-[
-  {
-    "id": "sentry.integrations.discord.notify_action.DiscordNotifyServiceAction",
-    "server": ${parseint(data.sentry_organization_integration.discord.id, 10)},
-    "channel_id": 94732897,
-    "tags": "browser,user"
-  }
-]
-EOT
+  actions_v2 = [
+    {
+      discord_notify_service = {
+        server     = data.sentry_organization_integration.discord.id
+        channel_id = "94732897"
+        tags       = ["browser", "user"]
+      }
+    },
+  ]
   // ...
 }
 
@@ -284,18 +281,16 @@ data "sentry_organization_integration" "jira" {
   name         = "JIRA" # Name of your Jira server
 }
 
-# TODO
 resource "sentry_issue_alert" "jira_alert" {
-  actions = <<EOT
-[
-  {
-    "id": "sentry.integrations.jira.notify_action.JiraCreateTicketAction",
-    "integration": ${parseint(data.sentry_organization_integration.jira.id, 10)},
-    "project": "349719",
-    "issueType": "1"
-  }
-]
-EOT
+  actions_v2 = [
+    {
+      jira_create_ticket = {
+        integration = data.sentry_organization_integration.jira.id
+        project     = "349719"
+        issue_type  = "1"
+      }
+    },
+  ]
   // ...
 }
 
@@ -312,16 +307,15 @@ data "sentry_organization_integration" "jira_server" {
 
 # TODO
 resource "sentry_issue_alert" "jira_server_alert" {
-  actions = <<EOT
-[
-  {
-    "id": "sentry.integrations.jira_server.notify_action.JiraServerCreateTicketAction",
-    "integration": ${parseint(data.sentry_organization_integration.jira_server.id, 10)},
-    "project": "349719",
-    "issueType": "1"
-  }
-]
-EOT
+  actions_v2 = [
+    {
+      jira_server_create_ticket = {
+        integration = data.sentry_organization_integration.jira_server.id
+        project     = "349719"
+        issue_type  = "1"
+      }
+    },
+  ]
   // ...
 }
 
@@ -428,6 +422,42 @@ resource "sentry_issue_alert" "opsgenie_alert" {
         account  = sentry_integration_opsgenie.opsgenie.integration_id
         team     = sentry_integration_opsgenie.opsgenie.id
         priority = "P1"
+      }
+    },
+  ]
+  // ...
+}
+
+#
+# Send a notification via an integration
+#
+
+resource "sentry_issue_alert" "notification_alert" {
+  actions_v2 = [
+    {
+      notify_event_service = {
+        # Sourced from: https://terraform-provider-sentry.sentry.io/settings/developer-settings/<service>/
+        service = "my-service"
+      }
+    },
+  ]
+  // ...
+}
+
+#
+# Send a notification to a Sentry app
+#
+
+resource "sentry_issue_alert" "sentry_app" {
+  actions_v2 = [
+    {
+      notify_event_sentry_app = {
+        sentry_app_installation_uuid = "my-sentry-app-installation-uuid"
+        settings = {
+          key1 = "value1"
+          key2 = "value2"
+          key3 = "value3"
+        }
       }
     },
   ]

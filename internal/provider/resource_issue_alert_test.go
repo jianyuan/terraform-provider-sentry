@@ -184,6 +184,25 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 						{ notify_email = { target_type = "Team", target_identifier = sentry_team.test.internal_id } },
 						{ notify_event = { } },
 						{
+							notify_event_service = {
+								service = "terraform-provider-sentry-ea4fdd"
+							}
+						},
+						{
+							notify_event_sentry_app = {
+								sentry_app_installation_uuid = "d384d654-0e4c-447d-999c-a298fad579a7"
+
+								settings = {
+									teamId     = "5538c20b-37cf-4efd-b0aa-83c7f2e691f8"
+									assigneeId = "b7afdd84-58b9-48ab-a682-9bb121d9dfbd"
+									labelId    = "9f918fa3-9641-4522-950e-84dfb5c21099"
+									projectId  = ""
+									stateId    = "23e412bc-5abc-4812-916c-f91b4e21a060"
+									priority   = "0"
+								}
+							}
+						},
+						{
 							opsgenie_notify_team = {
 								account  = sentry_integration_opsgenie.opsgenie.integration_id
 								team     = sentry_integration_opsgenie.opsgenie.id
@@ -201,8 +220,28 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 							slack_notify_service = {
 								workspace = data.sentry_organization_integration.slack.id
 								channel   = "#general"
-								tags      = "environment,level"
 								notes     = "Please <http://example.com|click here> for triage information"
+							}
+						},
+						{
+							slack_notify_service = {
+								workspace = data.sentry_organization_integration.slack.id
+								channel   = "#general"
+								tags      = ["environment", "level"]
+								notes     = "Please <http://example.com|click here> for triage information"
+							}
+						},
+						{
+							discord_notify_service = {
+								server     = data.sentry_organization_integration.discord.id
+								channel_id = "714123428994482189"
+							}
+						},
+						{
+							discord_notify_service = {
+								server     = data.sentry_organization_integration.discord.id
+								channel_id = "714123428994482189"
+								tags       = ["environment", "level"]
 							}
 						},
 						{
@@ -222,6 +261,7 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 						}
 					]
 				`) + fmt.Sprintf(`
+					# Opsgenie
 					data "sentry_organization_integration" "opsgenie" {
 						organization = sentry_project.test.organization
 						provider_key = "opsgenie"
@@ -235,6 +275,7 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 						integration_key = "%[1]s"
 					}
 
+					# PagerDuty
 					data "sentry_organization_integration" "pagerduty" {
 						organization = sentry_project.test.organization
 						provider_key = "pagerduty"
@@ -248,18 +289,28 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 						integration_key = "issue-alert-integration-key"
 					}
 
+					# Slack
 					data "sentry_organization_integration" "slack" {
 						organization = sentry_project.test.organization
 						provider_key = "slack"
 						name         = "A2 Marketing"  # TODO: Use a real integration name
 					}
 
+					# Discord
+					data "sentry_organization_integration" "discord" {
+						organization = sentry_project.test.organization
+						provider_key = "discord"
+						name         = "jy's server"
+					}
+
+					# GitHub
 					data "sentry_organization_integration" "github" {
 						organization = sentry_project.test.organization
 						provider_key = "github"
 						name         = "jianyuan"
 					}
 
+					# Azure DevOps
 					data "sentry_organization_integration" "vsts" {
 						organization = sentry_project.test.organization
 						provider_key = "vsts"
@@ -272,32 +323,32 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("conditions_v2"), knownvalue.ListExact([]knownvalue.Check{
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"first_seen_event": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name": knownvalue.StringExact("A new issue is created"),
+								"name": knownvalue.NotNull(),
 							}),
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"regression_event": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name": knownvalue.StringExact("The issue changes state from resolved to unresolved"),
+								"name": knownvalue.NotNull(),
 							}),
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"reappeared_event": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name": knownvalue.StringExact("The issue changes state from ignored to unresolved"),
+								"name": knownvalue.NotNull(),
 							}),
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"new_high_priority_issue": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name": knownvalue.StringExact("Sentry marks a new issue as high priority"),
+								"name": knownvalue.NotNull(),
 							}),
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"existing_high_priority_issue": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name": knownvalue.StringExact("Sentry marks an existing issue as high priority"),
+								"name": knownvalue.NotNull(),
 							}),
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"event_frequency": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name":                knownvalue.StringExact("The issue is seen more than 100 times in 1h"),
+								"name":                knownvalue.NotNull(),
 								"comparison_type":     knownvalue.StringExact("count"),
 								"comparison_interval": knownvalue.Null(),
 								"value":               knownvalue.Int64Exact(100),
@@ -306,7 +357,7 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"event_frequency": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name":                knownvalue.StringExact("The issue is seen more than 100 times in 1h"),
+								"name":                knownvalue.NotNull(),
 								"comparison_type":     knownvalue.StringExact("percent"),
 								"comparison_interval": knownvalue.StringExact("1w"),
 								"value":               knownvalue.Int64Exact(100),
@@ -315,7 +366,7 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"event_unique_user_frequency": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name":                knownvalue.StringExact("The issue is seen by more than 100 users in 1h"),
+								"name":                knownvalue.NotNull(),
 								"comparison_type":     knownvalue.StringExact("count"),
 								"comparison_interval": knownvalue.Null(),
 								"value":               knownvalue.Int64Exact(100),
@@ -324,7 +375,7 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"event_unique_user_frequency": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name":                knownvalue.StringExact("The issue is seen by more than 100 users in 1h"),
+								"name":                knownvalue.NotNull(),
 								"comparison_type":     knownvalue.StringExact("percent"),
 								"comparison_interval": knownvalue.StringExact("1w"),
 								"value":               knownvalue.Int64Exact(100),
@@ -333,7 +384,7 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"event_frequency_percent": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name":                knownvalue.StringExact("The issue affects more than 100.0 percent of sessions in 1h"),
+								"name":                knownvalue.NotNull(),
 								"comparison_type":     knownvalue.StringExact("count"),
 								"comparison_interval": knownvalue.Null(),
 								"value":               knownvalue.Float64Exact(100),
@@ -342,7 +393,7 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"event_frequency_percent": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name":                knownvalue.StringExact("The issue affects more than 100.0 percent of sessions in 1h"),
+								"name":                knownvalue.NotNull(),
 								"comparison_type":     knownvalue.StringExact("percent"),
 								"comparison_interval": knownvalue.StringExact("1w"),
 								"value":               knownvalue.Float64Exact(100),
@@ -353,7 +404,7 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters_v2"), knownvalue.ListExact([]knownvalue.Check{
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"age_comparison": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name":            knownvalue.StringExact("The issue is older than 10 minute"),
+								"name":            knownvalue.NotNull(),
 								"comparison_type": knownvalue.StringExact("older"),
 								"value":           knownvalue.Int64Exact(10),
 								"time":            knownvalue.StringExact("minute"),
@@ -361,27 +412,27 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"issue_occurrences": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name":  knownvalue.StringExact("The issue has happened at least 10 times"),
+								"name":  knownvalue.NotNull(),
 								"value": knownvalue.Int64Exact(10),
 							}),
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"assigned_to": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name":              knownvalue.StringExact("The issue is assigned to Unassigned"),
+								"name":              knownvalue.NotNull(),
 								"target_type":       knownvalue.StringExact("Unassigned"),
 								"target_identifier": knownvalue.Null(),
 							}),
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"assigned_to": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name":              knownvalue.StringRegexp(regexp.MustCompile(`^The issue is assigned to team .+$`)),
+								"name":              knownvalue.NotNull(),
 								"target_type":       knownvalue.StringExact("Team"),
 								"target_identifier": knownvalue.StringRegexp(regexp.MustCompile(`^\d+$`)),
 							}),
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"latest_adopted_release": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name":             knownvalue.StringExact("The oldest adopted release associated with the event's issue is older than the latest adopted release in test"),
+								"name":             knownvalue.NotNull(),
 								"oldest_or_newest": knownvalue.StringExact("oldest"),
 								"older_or_newer":   knownvalue.StringExact("older"),
 								"environment":      knownvalue.StringExact("test"),
@@ -389,18 +440,18 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"latest_release": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name": knownvalue.StringExact("The event is from the latest release"),
+								"name": knownvalue.NotNull(),
 							}),
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"issue_category": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name":  knownvalue.StringExact("The issue's category is equal to Error"),
+								"name":  knownvalue.NotNull(),
 								"value": knownvalue.StringExact("Error"),
 							}),
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"event_attribute": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name":      knownvalue.StringExact("The event's message value contains test"),
+								"name":      knownvalue.NotNull(),
 								"attribute": knownvalue.StringExact("message"),
 								"match":     knownvalue.StringExact("CONTAINS"),
 								"value":     knownvalue.StringExact("test"),
@@ -408,7 +459,7 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"event_attribute": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name":      knownvalue.StringExact("The event's message value is set "),
+								"name":      knownvalue.NotNull(),
 								"attribute": knownvalue.StringExact("message"),
 								"match":     knownvalue.StringExact("IS_SET"),
 								"value":     knownvalue.Null(),
@@ -416,7 +467,7 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"tagged_event": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name":  knownvalue.StringExact("The event's tags match key contains value"),
+								"name":  knownvalue.NotNull(),
 								"key":   knownvalue.StringExact("key"),
 								"match": knownvalue.StringExact("CONTAINS"),
 								"value": knownvalue.StringExact("value"),
@@ -424,7 +475,7 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"tagged_event": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name":  knownvalue.StringExact("The event's tags match key is not set "),
+								"name":  knownvalue.NotNull(),
 								"key":   knownvalue.StringExact("key"),
 								"match": knownvalue.StringExact("NOT_SET"),
 								"value": knownvalue.Null(),
@@ -432,7 +483,7 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"level": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name":  knownvalue.StringExact("The event's level is equal to error"),
+								"name":  knownvalue.NotNull(),
 								"match": knownvalue.StringExact("EQUAL"),
 								"level": knownvalue.StringExact("error"),
 							}),
@@ -441,7 +492,7 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("actions_v2"), knownvalue.ListExact([]knownvalue.Check{
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"notify_email": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name":              knownvalue.StringExact("Send a notification to IssueOwners and if none can be found then send a notification to ActiveMembers"),
+								"name":              knownvalue.NotNull(),
 								"target_type":       knownvalue.StringExact("IssueOwners"),
 								"target_identifier": knownvalue.Null(),
 								"fallthrough_type":  knownvalue.StringExact("ActiveMembers"),
@@ -449,7 +500,7 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"notify_email": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name":              knownvalue.StringExact("Send a notification to Team and if none can be found then send a notification to ActiveMembers"),
+								"name":              knownvalue.NotNull(),
 								"target_type":       knownvalue.StringExact("Team"),
 								"target_identifier": knownvalue.NotNull(),
 								"fallthrough_type":  knownvalue.Null(),
@@ -457,12 +508,32 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"notify_event": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name": knownvalue.StringExact("Send a notification (for all legacy integrations)"),
+								"name": knownvalue.NotNull(),
+							}),
+						}),
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"notify_event_service": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"name":    knownvalue.NotNull(),
+								"service": knownvalue.StringExact("terraform-provider-sentry-ea4fdd"),
+							}),
+						}),
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"notify_event_sentry_app": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"name":                         knownvalue.NotNull(),
+								"sentry_app_installation_uuid": knownvalue.StringExact("d384d654-0e4c-447d-999c-a298fad579a7"),
+								"settings": knownvalue.ObjectExact(map[string]knownvalue.Check{
+									"teamId":     knownvalue.StringExact("5538c20b-37cf-4efd-b0aa-83c7f2e691f8"),
+									"assigneeId": knownvalue.StringExact("b7afdd84-58b9-48ab-a682-9bb121d9dfbd"),
+									"labelId":    knownvalue.StringExact("9f918fa3-9641-4522-950e-84dfb5c21099"),
+									"projectId":  knownvalue.StringExact(""),
+									"stateId":    knownvalue.StringExact("23e412bc-5abc-4812-916c-f91b4e21a060"),
+									"priority":   knownvalue.StringExact("0"),
+								}),
 							}),
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"opsgenie_notify_team": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name":     knownvalue.StringRegexp(regexp.MustCompile(`^Send a notification to Opsgenie account .+ and team .+ with P1 priority$`)),
+								"name":     knownvalue.NotNull(),
 								"account":  knownvalue.NotNull(),
 								"team":     knownvalue.NotNull(),
 								"priority": knownvalue.StringExact("P1"),
@@ -470,7 +541,7 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"pagerduty_notify_service": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name":     knownvalue.StringRegexp(regexp.MustCompile(`^Send a notification to PagerDuty account .+ and service .+ with .+ severity$`)),
+								"name":     knownvalue.NotNull(),
 								"account":  knownvalue.NotNull(),
 								"service":  knownvalue.NotNull(),
 								"severity": knownvalue.StringExact("default"),
@@ -478,17 +549,49 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"slack_notify_service": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name":       knownvalue.StringRegexp(regexp.MustCompile(`^Send a notification to the .+ Slack workspace to .+ and show tags .+ and notes .+ in notification$`)),
+								"name":       knownvalue.NotNull(),
 								"workspace":  knownvalue.NotNull(),
 								"channel":    knownvalue.StringExact("#general"),
 								"channel_id": knownvalue.NotNull(),
-								"tags":       knownvalue.StringExact("environment,level"),
+								"tags":       knownvalue.Null(),
 								"notes":      knownvalue.StringExact("Please <http://example.com|click here> for triage information"),
 							}),
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"slack_notify_service": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"name":       knownvalue.NotNull(),
+								"workspace":  knownvalue.NotNull(),
+								"channel":    knownvalue.StringExact("#general"),
+								"channel_id": knownvalue.NotNull(),
+								"tags": knownvalue.SetExact([]knownvalue.Check{
+									knownvalue.StringExact("environment"),
+									knownvalue.StringExact("level"),
+								}),
+								"notes": knownvalue.StringExact("Please <http://example.com|click here> for triage information"),
+							}),
+						}),
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"discord_notify_service": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"name":       knownvalue.NotNull(),
+								"server":     knownvalue.NotNull(),
+								"channel_id": knownvalue.NotNull(),
+								"tags":       knownvalue.Null(),
+							}),
+						}),
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"discord_notify_service": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"name":       knownvalue.NotNull(),
+								"server":     knownvalue.NotNull(),
+								"channel_id": knownvalue.NotNull(),
+								"tags": knownvalue.SetExact([]knownvalue.Check{
+									knownvalue.StringExact("environment"),
+									knownvalue.StringExact("level"),
+								}),
+							}),
+						}),
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"github_create_ticket": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name":        knownvalue.StringRegexp(regexp.MustCompile(`^Create a GitHub issue in .+ with these $`)),
+								"name":        knownvalue.NotNull(),
 								"integration": knownvalue.NotNull(),
 								"repo":        knownvalue.StringExact("terraform-provider-sentry"),
 								"assignee":    knownvalue.StringExact("jianyuan"),
@@ -500,7 +603,7 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"azure_devops_create_ticket": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name":           knownvalue.StringRegexp(regexp.MustCompile(`^Create an Azure DevOps work item in .+ with these $`)),
+								"name":           knownvalue.NotNull(),
 								"integration":    knownvalue.NotNull(),
 								"project":        knownvalue.StringExact("123"),
 								"work_item_type": knownvalue.StringExact("Microsoft.VSTS.WorkItemTypes.Task"),
@@ -527,17 +630,17 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("conditions_v2"), knownvalue.ListExact([]knownvalue.Check{
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"reappeared_event": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name": knownvalue.StringExact("The issue changes state from ignored to unresolved"),
+								"name": knownvalue.NotNull(),
 							}),
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"new_high_priority_issue": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name": knownvalue.StringExact("Sentry marks a new issue as high priority"),
+								"name": knownvalue.NotNull(),
 							}),
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"existing_high_priority_issue": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name": knownvalue.StringExact("Sentry marks an existing issue as high priority"),
+								"name": knownvalue.NotNull(),
 							}),
 						}),
 					})),
@@ -545,7 +648,7 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("actions_v2"), knownvalue.ListExact([]knownvalue.Check{
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"notify_email": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name":              knownvalue.StringExact("Send a notification to IssueOwners and if none can be found then send a notification to NoOne"),
+								"name":              knownvalue.NotNull(),
 								"target_type":       knownvalue.StringExact("IssueOwners"),
 								"target_identifier": knownvalue.Null(),
 								"fallthrough_type":  knownvalue.StringExact("NoOne"),

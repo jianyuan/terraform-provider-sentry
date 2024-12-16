@@ -70,10 +70,16 @@ resource "sentry_issue_alert" "copy" {
 Read-Only:
 
 - `azure_devops_create_ticket` (Attributes) Create an Azure DevOps work item in `integration`. (see [below for nested schema](#nestedatt--actions_v2--azure_devops_create_ticket))
+- `discord_notify_service` (Attributes) Send a notification to the `server` Discord server in the channel with ID or URL: `channel_id` and show tags `tags` in the notification. (see [below for nested schema](#nestedatt--actions_v2--discord_notify_service))
 - `github_create_ticket` (Attributes) Create a GitHub issue in `integration`. (see [below for nested schema](#nestedatt--actions_v2--github_create_ticket))
 - `github_enterprise_create_ticket` (Attributes) Create a GitHub Enterprise issue in `integration`. (see [below for nested schema](#nestedatt--actions_v2--github_enterprise_create_ticket))
+- `jira_create_ticket` (Attributes) Create a Jira issue in `integration`. (see [below for nested schema](#nestedatt--actions_v2--jira_create_ticket))
+- `jira_server_create_ticket` (Attributes) Create a Jira Server issue in `integration`. (see [below for nested schema](#nestedatt--actions_v2--jira_server_create_ticket))
+- `msteams_notify_service` (Attributes) Send a notification to the `team` Team to `channel`. (see [below for nested schema](#nestedatt--actions_v2--msteams_notify_service))
 - `notify_email` (Attributes) Send a notification to `target_type` and if none can be found then send a notification to `fallthrough_type`. (see [below for nested schema](#nestedatt--actions_v2--notify_email))
 - `notify_event` (Attributes) Send a notification to all legacy integrations. (see [below for nested schema](#nestedatt--actions_v2--notify_event))
+- `notify_event_sentry_app` (Attributes) Send a notification to a Sentry app. (see [below for nested schema](#nestedatt--actions_v2--notify_event_sentry_app))
+- `notify_event_service` (Attributes) Send a notification via an integration. (see [below for nested schema](#nestedatt--actions_v2--notify_event_service))
 - `opsgenie_notify_team` (Attributes) Send a notification to Opsgenie account `account` and team `team` with `priority` priority. (see [below for nested schema](#nestedatt--actions_v2--opsgenie_notify_team))
 - `pagerduty_notify_service` (Attributes) Send a notification to PagerDuty account `account` and service `service` with `severity` severity. (see [below for nested schema](#nestedatt--actions_v2--pagerduty_notify_service))
 - `slack_notify_service` (Attributes) Send a notification to the `workspace` Slack workspace to `channel` (optionally, an ID: `channel_id`) and show tags `tags` and notes `notes` in notification. (see [below for nested schema](#nestedatt--actions_v2--slack_notify_service))
@@ -86,6 +92,17 @@ Read-Only:
 - `integration` (String)
 - `name` (String)
 - `work_item_type` (String)
+
+
+<a id="nestedatt--actions_v2--discord_notify_service"></a>
+### Nested Schema for `actions_v2.discord_notify_service`
+
+Read-Only:
+
+- `channel_id` (String)
+- `name` (String)
+- `server` (String)
+- `tags` (Set of String)
 
 
 <a id="nestedatt--actions_v2--github_create_ticket"></a>
@@ -112,6 +129,39 @@ Read-Only:
 - `repo` (String)
 
 
+<a id="nestedatt--actions_v2--jira_create_ticket"></a>
+### Nested Schema for `actions_v2.jira_create_ticket`
+
+Read-Only:
+
+- `integration` (String)
+- `issue_type` (String)
+- `name` (String)
+- `project` (String)
+
+
+<a id="nestedatt--actions_v2--jira_server_create_ticket"></a>
+### Nested Schema for `actions_v2.jira_server_create_ticket`
+
+Read-Only:
+
+- `integration` (String)
+- `issue_type` (String)
+- `name` (String)
+- `project` (String)
+
+
+<a id="nestedatt--actions_v2--msteams_notify_service"></a>
+### Nested Schema for `actions_v2.msteams_notify_service`
+
+Read-Only:
+
+- `channel` (String)
+- `channel_id` (String)
+- `name` (String)
+- `team` (String)
+
+
 <a id="nestedatt--actions_v2--notify_email"></a>
 ### Nested Schema for `actions_v2.notify_email`
 
@@ -129,6 +179,25 @@ Read-Only:
 Read-Only:
 
 - `name` (String)
+
+
+<a id="nestedatt--actions_v2--notify_event_sentry_app"></a>
+### Nested Schema for `actions_v2.notify_event_sentry_app`
+
+Read-Only:
+
+- `name` (String)
+- `sentry_app_installation_uuid` (String)
+- `settings` (Map of String)
+
+
+<a id="nestedatt--actions_v2--notify_event_service"></a>
+### Nested Schema for `actions_v2.notify_event_service`
+
+Read-Only:
+
+- `name` (String)
+- `service` (String)
 
 
 <a id="nestedatt--actions_v2--opsgenie_notify_team"></a>
@@ -162,7 +231,7 @@ Read-Only:
 - `channel_id` (String)
 - `name` (String)
 - `notes` (String)
-- `tags` (String)
+- `tags` (Set of String)
 - `workspace` (String)
 
 

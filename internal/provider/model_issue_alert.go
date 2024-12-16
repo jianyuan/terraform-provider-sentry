@@ -13,6 +13,7 @@ import (
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
+	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
 
 // Conditions
@@ -105,16 +106,16 @@ func (m IssueAlertConditionNewHighPriorityIssueModel) ToApi(ctx context.Context)
 	return &v, diags
 }
 
-type IssueAlertCondtionExistingHighPriorityIssueModel struct {
+type IssueAlertConditionExistingHighPriorityIssueModel struct {
 	Name types.String `tfsdk:"name"`
 }
 
-func (m *IssueAlertCondtionExistingHighPriorityIssueModel) Fill(ctx context.Context, condition apiclient.ProjectRuleConditionExistingHighPriorityIssue) (diags diag.Diagnostics) {
+func (m *IssueAlertConditionExistingHighPriorityIssueModel) Fill(ctx context.Context, condition apiclient.ProjectRuleConditionExistingHighPriorityIssue) (diags diag.Diagnostics) {
 	m.Name = types.StringPointerValue(condition.Name)
 	return
 }
 
-func (m IssueAlertCondtionExistingHighPriorityIssueModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleCondition, diag.Diagnostics) {
+func (m IssueAlertConditionExistingHighPriorityIssueModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleCondition, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	var v apiclient.ProjectRuleCondition
 	err := v.FromProjectRuleConditionExistingHighPriorityIssue(apiclient.ProjectRuleConditionExistingHighPriorityIssue{
@@ -230,14 +231,14 @@ func (m IssueAlertConditionEventFrequencyPercentModel) ToApi(ctx context.Context
 }
 
 type IssueAlertConditionModel struct {
-	FirstSeenEvent            *IssueAlertConditionFirstSeenEventModel           `tfsdk:"first_seen_event"`
-	RegressionEvent           *IssueAlertConditionRegressionEventModel          `tfsdk:"regression_event"`
-	ReappearedEvent           *IssueAlertConditionReappearedEventModel          `tfsdk:"reappeared_event"`
-	NewHighPriorityIssue      *IssueAlertConditionNewHighPriorityIssueModel     `tfsdk:"new_high_priority_issue"`
-	ExistingHighPriorityIssue *IssueAlertCondtionExistingHighPriorityIssueModel `tfsdk:"existing_high_priority_issue"`
-	EventFrequency            *IssueAlertConditionEventFrequencyModel           `tfsdk:"event_frequency"`
-	EventUniqueUserFrequency  *IssueAlertConditionEventUniqueUserFrequencyModel `tfsdk:"event_unique_user_frequency"`
-	EventFrequencyPercent     *IssueAlertConditionEventFrequencyPercentModel    `tfsdk:"event_frequency_percent"`
+	FirstSeenEvent            *IssueAlertConditionFirstSeenEventModel            `tfsdk:"first_seen_event"`
+	RegressionEvent           *IssueAlertConditionRegressionEventModel           `tfsdk:"regression_event"`
+	ReappearedEvent           *IssueAlertConditionReappearedEventModel           `tfsdk:"reappeared_event"`
+	NewHighPriorityIssue      *IssueAlertConditionNewHighPriorityIssueModel      `tfsdk:"new_high_priority_issue"`
+	ExistingHighPriorityIssue *IssueAlertConditionExistingHighPriorityIssueModel `tfsdk:"existing_high_priority_issue"`
+	EventFrequency            *IssueAlertConditionEventFrequencyModel            `tfsdk:"event_frequency"`
+	EventUniqueUserFrequency  *IssueAlertConditionEventUniqueUserFrequencyModel  `tfsdk:"event_unique_user_frequency"`
+	EventFrequencyPercent     *IssueAlertConditionEventFrequencyPercentModel     `tfsdk:"event_frequency_percent"`
 }
 
 func (m IssueAlertConditionModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleCondition, diag.Diagnostics) {
@@ -264,12 +265,21 @@ func (m IssueAlertConditionModel) ToApi(ctx context.Context) (*apiclient.Project
 	}
 }
 
-func (m *IssueAlertConditionModel) FromApi(ctx context.Context, condition apiclient.ProjectRuleCondition) (diags diag.Diagnostics) {
+func (m *IssueAlertConditionModel) Fill(ctx context.Context, condition apiclient.ProjectRuleCondition) (diags diag.Diagnostics) {
 	conditionValue, err := condition.ValueByDiscriminator()
 	if err != nil {
 		diags.AddError("Invalid condition", err.Error())
 		return
 	}
+
+	m.FirstSeenEvent = nil
+	m.RegressionEvent = nil
+	m.ReappearedEvent = nil
+	m.NewHighPriorityIssue = nil
+	m.ExistingHighPriorityIssue = nil
+	m.EventFrequency = nil
+	m.EventUniqueUserFrequency = nil
+	m.EventFrequencyPercent = nil
 
 	switch conditionValue := conditionValue.(type) {
 	case apiclient.ProjectRuleConditionFirstSeenEvent:
@@ -285,7 +295,7 @@ func (m *IssueAlertConditionModel) FromApi(ctx context.Context, condition apicli
 		m.NewHighPriorityIssue = &IssueAlertConditionNewHighPriorityIssueModel{}
 		diags.Append(m.NewHighPriorityIssue.Fill(ctx, conditionValue)...)
 	case apiclient.ProjectRuleConditionExistingHighPriorityIssue:
-		m.ExistingHighPriorityIssue = &IssueAlertCondtionExistingHighPriorityIssueModel{}
+		m.ExistingHighPriorityIssue = &IssueAlertConditionExistingHighPriorityIssueModel{}
 		diags.Append(m.ExistingHighPriorityIssue.Fill(ctx, conditionValue)...)
 	case apiclient.ProjectRuleConditionEventFrequency:
 		m.EventFrequency = &IssueAlertConditionEventFrequencyModel{}
@@ -660,12 +670,22 @@ func (m IssueAlertFilterModel) ToApi(ctx context.Context) (*apiclient.ProjectRul
 	}
 }
 
-func (m *IssueAlertFilterModel) FromApi(ctx context.Context, filter apiclient.ProjectRuleFilter) (diags diag.Diagnostics) {
+func (m *IssueAlertFilterModel) Fill(ctx context.Context, filter apiclient.ProjectRuleFilter) (diags diag.Diagnostics) {
 	filterValue, err := filter.ValueByDiscriminator()
 	if err != nil {
 		diags.AddError("Invalid filter", err.Error())
 		return
 	}
+
+	m.AgeComparison = nil
+	m.IssueOccurrences = nil
+	m.AssignedTo = nil
+	m.LatestAdoptedRelease = nil
+	m.LatestRelease = nil
+	m.IssueCategory = nil
+	m.EventAttribute = nil
+	m.TaggedEvent = nil
+	m.Level = nil
 
 	switch filterValue := filterValue.(type) {
 	case apiclient.ProjectRuleFilterAgeComparison:
@@ -786,6 +806,98 @@ func (m IssueAlertActionNotifyEventModel) ToApi(ctx context.Context) (*apiclient
 	return &v, diags
 }
 
+type IssueAlertActionNotifyEventServiceModel struct {
+	Name    types.String `tfsdk:"name"`
+	Service types.String `tfsdk:"service"`
+}
+
+func (m *IssueAlertActionNotifyEventServiceModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionNotifyEventService) (diags diag.Diagnostics) {
+	m.Name = types.StringPointerValue(action.Name)
+	m.Service = types.StringValue(action.Service)
+	return
+}
+
+func (m IssueAlertActionNotifyEventServiceModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleAction, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	var v apiclient.ProjectRuleAction
+	err := v.FromProjectRuleActionNotifyEventService(apiclient.ProjectRuleActionNotifyEventService{
+		Name:    m.Name.ValueStringPointer(),
+		Service: m.Service.ValueString(),
+	})
+	if err != nil {
+		diags.AddError("Failed to convert to API model", err.Error())
+		return nil, diags
+	}
+	return &v, diags
+}
+
+type IssueAlertActionNotifyEventSentryAppModel struct {
+	Name                      types.String `tfsdk:"name"`
+	SentryAppInstallationUuid types.String `tfsdk:"sentry_app_installation_uuid"`
+	Settings                  types.Map    `tfsdk:"settings"`
+}
+
+func (m *IssueAlertActionNotifyEventSentryAppModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionNotifyEventSentryApp) (diags diag.Diagnostics) {
+	m.Name = types.StringPointerValue(action.Name)
+	m.SentryAppInstallationUuid = types.StringValue(action.SentryAppInstallationUuid)
+
+	if action.Settings == nil {
+		m.Settings = types.MapNull(types.StringType)
+	} else {
+		var settingsMap = make(map[string]attr.Value)
+		for _, setting := range *action.Settings {
+			settingsMap[setting.Name] = types.StringValue(setting.Value)
+		}
+		m.Settings = types.MapValueMust(types.StringType, settingsMap)
+	}
+	return
+}
+
+func (m IssueAlertActionNotifyEventSentryAppModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleAction, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	var v apiclient.ProjectRuleAction
+
+	var settings *[]struct {
+		Name  string `json:"name"`
+		Value string `json:"value"`
+	}
+
+	if !m.Settings.IsNull() {
+		elements := make(map[string]string, len(m.Settings.Elements()))
+		diags.Append(m.Settings.ElementsAs(ctx, &elements, false)...)
+		if diags.HasError() {
+			return nil, diags
+		}
+
+		settings = &[]struct {
+			Name  string `json:"name"`
+			Value string `json:"value"`
+		}{}
+
+		for k, v := range elements {
+			*settings = append(*settings, struct {
+				Name  string `json:"name"`
+				Value string `json:"value"`
+			}{
+				Name:  k,
+				Value: v,
+			})
+		}
+	}
+
+	err := v.FromProjectRuleActionNotifyEventSentryApp(apiclient.ProjectRuleActionNotifyEventSentryApp{
+		Name:                      m.Name.ValueStringPointer(),
+		SentryAppInstallationUuid: m.SentryAppInstallationUuid.ValueString(),
+		Settings:                  settings,
+		HasSchemaFormConfig:       true,
+	})
+	if err != nil {
+		diags.AddError("Failed to convert to API model", err.Error())
+		return nil, diags
+	}
+	return &v, diags
+}
+
 type IssueAlertActionOpsgenieNotifyTeam struct {
 	Name     types.String `tfsdk:"name"`
 	Account  types.String `tfsdk:"account"`
@@ -849,12 +961,12 @@ func (m IssueAlertActionPagerDutyNotifyServiceModel) ToApi(ctx context.Context) 
 }
 
 type IssueAlertActionSlackNotifyServiceModel struct {
-	Name      types.String `tfsdk:"name"`
-	Workspace types.String `tfsdk:"workspace"`
-	Channel   types.String `tfsdk:"channel"`
-	ChannelId types.String `tfsdk:"channel_id"`
-	Tags      types.String `tfsdk:"tags"`
-	Notes     types.String `tfsdk:"notes"`
+	Name      types.String          `tfsdk:"name"`
+	Workspace types.String          `tfsdk:"workspace"`
+	Channel   types.String          `tfsdk:"channel"`
+	ChannelId types.String          `tfsdk:"channel_id"`
+	Tags      sentrytypes.StringSet `tfsdk:"tags"`
+	Notes     types.String          `tfsdk:"notes"`
 }
 
 func (m *IssueAlertActionSlackNotifyServiceModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionSlackNotifyService) (diags diag.Diagnostics) {
@@ -862,7 +974,7 @@ func (m *IssueAlertActionSlackNotifyServiceModel) Fill(ctx context.Context, acti
 	m.Workspace = types.StringValue(action.Workspace)
 	m.Channel = types.StringValue(action.Channel)
 	m.ChannelId = types.StringPointerValue(action.ChannelId)
-	m.Tags = types.StringPointerValue(action.Tags)
+	m.Tags = tfutils.MergeDiagnostics(sentrytypes.StringSetPointerValue(action.Tags))(&diags)
 	m.Notes = types.StringPointerValue(action.Notes)
 	return
 }
@@ -875,8 +987,134 @@ func (m IssueAlertActionSlackNotifyServiceModel) ToApi(ctx context.Context) (*ap
 		Workspace: m.Workspace.ValueString(),
 		Channel:   m.Channel.ValueString(),
 		ChannelId: m.ChannelId.ValueStringPointer(),
-		Tags:      m.Tags.ValueStringPointer(),
+		Tags:      tfutils.MergeDiagnostics(m.Tags.ValueStringPointer(ctx))(&diags),
 		Notes:     m.Notes.ValueStringPointer(),
+	})
+	if err != nil {
+		diags.AddError("Failed to convert to API model", err.Error())
+		return nil, diags
+	}
+	return &v, diags
+}
+
+type IssueAlertActionMsTeamsNotifyServiceModel struct {
+	Name      types.String `tfsdk:"name"`
+	Team      types.String `tfsdk:"team"`
+	Channel   types.String `tfsdk:"channel"`
+	ChannelId types.String `tfsdk:"channel_id"`
+}
+
+func (m *IssueAlertActionMsTeamsNotifyServiceModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionMsTeamsNotifyService) (diags diag.Diagnostics) {
+	m.Name = types.StringPointerValue(action.Name)
+	m.Team = types.StringValue(action.Team)
+	m.Channel = types.StringValue(action.Channel)
+	m.ChannelId = types.StringPointerValue(action.ChannelId)
+	return
+}
+
+func (m IssueAlertActionMsTeamsNotifyServiceModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleAction, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	var v apiclient.ProjectRuleAction
+	err := v.FromProjectRuleActionMsTeamsNotifyService(apiclient.ProjectRuleActionMsTeamsNotifyService{
+		Name:      m.Name.ValueStringPointer(),
+		Team:      m.Team.ValueString(),
+		Channel:   m.Channel.ValueString(),
+		ChannelId: m.ChannelId.ValueStringPointer(),
+	})
+	if err != nil {
+		diags.AddError("Failed to convert to API model", err.Error())
+		return nil, diags
+	}
+	return &v, diags
+}
+
+type IssueAlertActionDiscordNotifyServiceModel struct {
+	Name      types.String          `tfsdk:"name"`
+	Server    types.String          `tfsdk:"server"`
+	ChannelId types.String          `tfsdk:"channel_id"`
+	Tags      sentrytypes.StringSet `tfsdk:"tags"`
+}
+
+func (m *IssueAlertActionDiscordNotifyServiceModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionDiscordNotifyService) (diags diag.Diagnostics) {
+	m.Name = types.StringPointerValue(action.Name)
+	m.Server = types.StringValue(action.Server)
+	m.ChannelId = types.StringValue(action.ChannelId)
+	m.Tags = tfutils.MergeDiagnostics(sentrytypes.StringSetPointerValue(action.Tags))(&diags)
+	return
+}
+
+func (m IssueAlertActionDiscordNotifyServiceModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleAction, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	var v apiclient.ProjectRuleAction
+	err := v.FromProjectRuleActionDiscordNotifyService(apiclient.ProjectRuleActionDiscordNotifyService{
+		Name:      m.Name.ValueStringPointer(),
+		Server:    m.Server.ValueString(),
+		ChannelId: m.ChannelId.ValueString(),
+		Tags:      tfutils.MergeDiagnostics(m.Tags.ValueStringPointer(ctx))(&diags),
+	})
+	if err != nil {
+		diags.AddError("Failed to convert to API model", err.Error())
+		return nil, diags
+	}
+	return &v, diags
+}
+
+type IssueAlertActionJiraCreateTicketModel struct {
+	Name        types.String `tfsdk:"name"`
+	Integration types.String `tfsdk:"integration"`
+	Project     types.String `tfsdk:"project"`
+	IssueType   types.String `tfsdk:"issue_type"`
+}
+
+func (m *IssueAlertActionJiraCreateTicketModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionJiraCreateTicket) (diags diag.Diagnostics) {
+	m.Name = types.StringPointerValue(action.Name)
+	m.Integration = types.StringValue(action.Integration)
+	m.Project = types.StringValue(action.Project)
+	m.IssueType = types.StringValue(action.IssueType)
+	return
+}
+
+func (m IssueAlertActionJiraCreateTicketModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleAction, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	var v apiclient.ProjectRuleAction
+	err := v.FromProjectRuleActionJiraCreateTicket(apiclient.ProjectRuleActionJiraCreateTicket{
+		Name:              m.Name.ValueStringPointer(),
+		Integration:       m.Integration.ValueString(),
+		Project:           m.Project.ValueString(),
+		IssueType:         m.IssueType.ValueString(),
+		DynamicFormFields: []map[string]interface{}{{"dummy": "dummy"}},
+	})
+	if err != nil {
+		diags.AddError("Failed to convert to API model", err.Error())
+		return nil, diags
+	}
+	return &v, diags
+}
+
+type IssueAlertActionJiraServerCreateTicketModel struct {
+	Name        types.String `tfsdk:"name"`
+	Integration types.String `tfsdk:"integration"`
+	Project     types.String `tfsdk:"project"`
+	IssueType   types.String `tfsdk:"issue_type"`
+}
+
+func (m *IssueAlertActionJiraServerCreateTicketModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionJiraServerCreateTicket) (diags diag.Diagnostics) {
+	m.Name = types.StringPointerValue(action.Name)
+	m.Integration = types.StringValue(action.Integration)
+	m.Project = types.StringValue(action.Project)
+	m.IssueType = types.StringValue(action.IssueType)
+	return
+}
+
+func (m IssueAlertActionJiraServerCreateTicketModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleAction, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	var v apiclient.ProjectRuleAction
+	err := v.FromProjectRuleActionJiraServerCreateTicket(apiclient.ProjectRuleActionJiraServerCreateTicket{
+		Name:              m.Name.ValueStringPointer(),
+		Integration:       m.Integration.ValueString(),
+		Project:           m.Project.ValueString(),
+		IssueType:         m.IssueType.ValueString(),
+		DynamicFormFields: []map[string]interface{}{{"dummy": "dummy"}},
 	})
 	if err != nil {
 		diags.AddError("Failed to convert to API model", err.Error())
@@ -1028,9 +1266,15 @@ func (m IssueAlertActionAzureDevopsCreateTicketModel) ToApi(ctx context.Context)
 type IssueAlertActionModel struct {
 	NotifyEmail                  *IssueAlertActionNotifyEmailModel                  `tfsdk:"notify_email"`
 	NotifyEvent                  *IssueAlertActionNotifyEventModel                  `tfsdk:"notify_event"`
+	NotifyEventService           *IssueAlertActionNotifyEventServiceModel           `tfsdk:"notify_event_service"`
+	NotifyEventSentryApp         *IssueAlertActionNotifyEventSentryAppModel         `tfsdk:"notify_event_sentry_app"`
 	OpsgenieNotifyTeam           *IssueAlertActionOpsgenieNotifyTeam                `tfsdk:"opsgenie_notify_team"`
 	PagerDutyNotifyService       *IssueAlertActionPagerDutyNotifyServiceModel       `tfsdk:"pagerduty_notify_service"`
 	SlackNotifyService           *IssueAlertActionSlackNotifyServiceModel           `tfsdk:"slack_notify_service"`
+	MsTeamsNotifyService         *IssueAlertActionMsTeamsNotifyServiceModel         `tfsdk:"msteams_notify_service"`
+	DiscordNotifyService         *IssueAlertActionDiscordNotifyServiceModel         `tfsdk:"discord_notify_service"`
+	JiraCreateTicket             *IssueAlertActionJiraCreateTicketModel             `tfsdk:"jira_create_ticket"`
+	JiraServerCreateTicket       *IssueAlertActionJiraServerCreateTicketModel       `tfsdk:"jira_server_create_ticket"`
 	GitHubCreateTicket           *IssueAlertActionGitHubCreateTicketModel           `tfsdk:"github_create_ticket"`
 	GitHubEnterpriseCreateTicket *IssueAlertActionGitHubEnterpriseCreateTicketModel `tfsdk:"github_enterprise_create_ticket"`
 	AzureDevopsCreateTicket      *IssueAlertActionAzureDevopsCreateTicketModel      `tfsdk:"azure_devops_create_ticket"`
@@ -1041,12 +1285,24 @@ func (m IssueAlertActionModel) ToApi(ctx context.Context) (*apiclient.ProjectRul
 		return m.NotifyEmail.ToApi(ctx)
 	} else if m.NotifyEvent != nil {
 		return m.NotifyEvent.ToApi(ctx)
+	} else if m.NotifyEventService != nil {
+		return m.NotifyEventService.ToApi(ctx)
+	} else if m.NotifyEventSentryApp != nil {
+		return m.NotifyEventSentryApp.ToApi(ctx)
 	} else if m.OpsgenieNotifyTeam != nil {
 		return m.OpsgenieNotifyTeam.ToApi(ctx)
 	} else if m.PagerDutyNotifyService != nil {
 		return m.PagerDutyNotifyService.ToApi(ctx)
 	} else if m.SlackNotifyService != nil {
 		return m.SlackNotifyService.ToApi(ctx)
+	} else if m.MsTeamsNotifyService != nil {
+		return m.MsTeamsNotifyService.ToApi(ctx)
+	} else if m.DiscordNotifyService != nil {
+		return m.DiscordNotifyService.ToApi(ctx)
+	} else if m.JiraCreateTicket != nil {
+		return m.JiraCreateTicket.ToApi(ctx)
+	} else if m.JiraServerCreateTicket != nil {
+		return m.JiraServerCreateTicket.ToApi(ctx)
 	} else if m.GitHubCreateTicket != nil {
 		return m.GitHubCreateTicket.ToApi(ctx)
 	} else if m.GitHubEnterpriseCreateTicket != nil {
@@ -1060,12 +1316,27 @@ func (m IssueAlertActionModel) ToApi(ctx context.Context) (*apiclient.ProjectRul
 	}
 }
 
-func (m *IssueAlertActionModel) FromApi(ctx context.Context, action apiclient.ProjectRuleAction) (diags diag.Diagnostics) {
+func (m *IssueAlertActionModel) Fill(ctx context.Context, action apiclient.ProjectRuleAction) (diags diag.Diagnostics) {
 	actionValue, err := action.ValueByDiscriminator()
 	if err != nil {
 		diags.AddError("Invalid action", err.Error())
 		return
 	}
+
+	m.NotifyEmail = nil
+	m.NotifyEvent = nil
+	m.NotifyEventService = nil
+	m.NotifyEventSentryApp = nil
+	m.OpsgenieNotifyTeam = nil
+	m.PagerDutyNotifyService = nil
+	m.SlackNotifyService = nil
+	m.MsTeamsNotifyService = nil
+	m.DiscordNotifyService = nil
+	m.JiraCreateTicket = nil
+	m.JiraServerCreateTicket = nil
+	m.GitHubCreateTicket = nil
+	m.GitHubEnterpriseCreateTicket = nil
+	m.AzureDevopsCreateTicket = nil
 
 	switch actionValue := actionValue.(type) {
 	case apiclient.ProjectRuleActionNotifyEmail:
@@ -1074,6 +1345,12 @@ func (m *IssueAlertActionModel) FromApi(ctx context.Context, action apiclient.Pr
 	case apiclient.ProjectRuleActionNotifyEvent:
 		m.NotifyEvent = &IssueAlertActionNotifyEventModel{}
 		diags.Append(m.NotifyEvent.Fill(ctx, actionValue)...)
+	case apiclient.ProjectRuleActionNotifyEventService:
+		m.NotifyEventService = &IssueAlertActionNotifyEventServiceModel{}
+		diags.Append(m.NotifyEventService.Fill(ctx, actionValue)...)
+	case apiclient.ProjectRuleActionNotifyEventSentryApp:
+		m.NotifyEventSentryApp = &IssueAlertActionNotifyEventSentryAppModel{}
+		diags.Append(m.NotifyEventSentryApp.Fill(ctx, actionValue)...)
 	case apiclient.ProjectRuleActionOpsgenieNotifyTeam:
 		m.OpsgenieNotifyTeam = &IssueAlertActionOpsgenieNotifyTeam{}
 		diags.Append(m.OpsgenieNotifyTeam.Fill(ctx, actionValue)...)
@@ -1083,6 +1360,18 @@ func (m *IssueAlertActionModel) FromApi(ctx context.Context, action apiclient.Pr
 	case apiclient.ProjectRuleActionSlackNotifyService:
 		m.SlackNotifyService = &IssueAlertActionSlackNotifyServiceModel{}
 		diags.Append(m.SlackNotifyService.Fill(ctx, actionValue)...)
+	case apiclient.ProjectRuleActionMsTeamsNotifyService:
+		m.MsTeamsNotifyService = &IssueAlertActionMsTeamsNotifyServiceModel{}
+		diags.Append(m.MsTeamsNotifyService.Fill(ctx, actionValue)...)
+	case apiclient.ProjectRuleActionDiscordNotifyService:
+		m.DiscordNotifyService = &IssueAlertActionDiscordNotifyServiceModel{}
+		diags.Append(m.DiscordNotifyService.Fill(ctx, actionValue)...)
+	case apiclient.ProjectRuleActionJiraCreateTicket:
+		m.JiraCreateTicket = &IssueAlertActionJiraCreateTicketModel{}
+		diags.Append(m.JiraCreateTicket.Fill(ctx, actionValue)...)
+	case apiclient.ProjectRuleActionJiraServerCreateTicket:
+		m.JiraServerCreateTicket = &IssueAlertActionJiraServerCreateTicketModel{}
+		diags.Append(m.JiraServerCreateTicket.Fill(ctx, actionValue)...)
 	case apiclient.ProjectRuleActionGitHubCreateTicket:
 		m.GitHubCreateTicket = &IssueAlertActionGitHubCreateTicketModel{}
 		diags.Append(m.GitHubCreateTicket.Fill(ctx, actionValue)...)
@@ -1144,7 +1433,7 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 	} else if m.ConditionsV2 != nil {
 		m.ConditionsV2 = ptr.Ptr(sliceutils.Map(func(condition apiclient.ProjectRuleCondition) IssueAlertConditionModel {
 			var conditionModel IssueAlertConditionModel
-			diags.Append(conditionModel.FromApi(ctx, condition)...)
+			diags.Append(conditionModel.Fill(ctx, condition)...)
 			return conditionModel
 		}, alert.Conditions))
 
@@ -1162,7 +1451,7 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 	} else if m.FiltersV2 != nil {
 		m.FiltersV2 = ptr.Ptr(sliceutils.Map(func(filter apiclient.ProjectRuleFilter) IssueAlertFilterModel {
 			var filterModel IssueAlertFilterModel
-			diags.Append(filterModel.FromApi(ctx, filter)...)
+			diags.Append(filterModel.Fill(ctx, filter)...)
 			return filterModel
 		}, alert.Filters))
 
@@ -1180,7 +1469,7 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 	} else if m.ActionsV2 != nil {
 		m.ActionsV2 = ptr.Ptr(sliceutils.Map(func(action apiclient.ProjectRuleAction) IssueAlertActionModel {
 			var actionModel IssueAlertActionModel
-			diags.Append(actionModel.FromApi(ctx, action)...)
+			diags.Append(actionModel.Fill(ctx, action)...)
 			return actionModel
 		}, alert.Actions))
 

@@ -1094,9 +1094,15 @@ components:
       oneOf:
         - $ref: "#/components/schemas/ProjectRuleActionNotifyEmail"
         - $ref: "#/components/schemas/ProjectRuleActionNotifyEvent"
+        - $ref: "#/components/schemas/ProjectRuleActionNotifyEventService"
+        - $ref: "#/components/schemas/ProjectRuleActionNotifyEventSentryApp"
         - $ref: "#/components/schemas/ProjectRuleActionOpsgenieNotifyTeam"
         - $ref: "#/components/schemas/ProjectRuleActionPagerDutyNotifyService"
         - $ref: "#/components/schemas/ProjectRuleActionSlackNotifyService"
+        - $ref: "#/components/schemas/ProjectRuleActionMsTeamsNotifyService"
+        - $ref: "#/components/schemas/ProjectRuleActionDiscordNotifyService"
+        - $ref: "#/components/schemas/ProjectRuleActionJiraCreateTicket"
+        - $ref: "#/components/schemas/ProjectRuleActionJiraServerCreateTicket"
         - $ref: "#/components/schemas/ProjectRuleActionGitHubCreateTicket"
         - $ref: "#/components/schemas/ProjectRuleActionGitHubEnterpriseCreateTicket"
         - $ref: "#/components/schemas/ProjectRuleActionAzureDevopsCreateTicket"
@@ -1105,9 +1111,15 @@ components:
         mapping:
           "sentry.mail.actions.NotifyEmailAction": "#/components/schemas/ProjectRuleActionNotifyEmail"
           "sentry.rules.actions.notify_event.NotifyEventAction": "#/components/schemas/ProjectRuleActionNotifyEvent"
+          "sentry.rules.actions.notify_event_service.NotifyEventServiceAction": "#/components/schemas/ProjectRuleActionNotifyEventService"
+          "sentry.rules.actions.notify_event_sentry_app.NotifyEventSentryAppAction": "#/components/schemas/ProjectRuleActionNotifyEventSentryApp"
           "sentry.integrations.opsgenie.notify_action.OpsgenieNotifyTeamAction": "#/components/schemas/ProjectRuleActionOpsgenieNotifyTeam"
           "sentry.integrations.pagerduty.notify_action.PagerDutyNotifyServiceAction": "#/components/schemas/ProjectRuleActionPagerDutyNotifyService"
           "sentry.integrations.slack.notify_action.SlackNotifyServiceAction": "#/components/schemas/ProjectRuleActionSlackNotifyService"
+          "sentry.integrations.msteams.notify_action.MsTeamsNotifyServiceAction": "#/components/schemas/ProjectRuleActionMsTeamsNotifyService"
+          "sentry.integrations.discord.notify_action.DiscordNotifyServiceAction": "#/components/schemas/ProjectRuleActionDiscordNotifyService"
+          "sentry.integrations.jira.notify_action.JiraCreateTicketAction": "#/components/schemas/ProjectRuleActionJiraCreateTicket"
+          "sentry.integrations.jira_server.notify_action.JiraServerCreateTicketAction": "#/components/schemas/ProjectRuleActionJiraServerCreateTicket"
           "sentry.integrations.github.notify_action.GitHubCreateTicketAction": "#/components/schemas/ProjectRuleActionGitHubCreateTicket"
           "sentry.integrations.github_enterprise.notify_action.GitHubEnterpriseCreateTicketAction": "#/components/schemas/ProjectRuleActionGitHubEnterpriseCreateTicket"
           "sentry.integrations.vsts.notify_action.AzureDevopsCreateTicketAction": "#/components/schemas/ProjectRuleActionAzureDevopsCreateTicket"
@@ -1147,6 +1159,53 @@ components:
           type: string
         name:
           type: string
+    ProjectRuleActionNotifyEventService:
+      type: object
+      required:
+        - id
+        - service
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.actions.notify_event_service.NotifyEventServiceAction"
+        uuid:
+          type: string
+        name:
+          type: string
+        service:
+          type: string
+    ProjectRuleActionNotifyEventSentryApp:
+      type: object
+      required:
+        - id
+        - sentryAppInstallationUuid
+        - hasSchemaFormConfig
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.actions.notify_event_sentry_app.NotifyEventSentryAppAction"
+        uuid:
+          type: string
+        name:
+          type: string
+        sentryAppInstallationUuid:
+          type: string
+        hasSchemaFormConfig:
+          type: boolean
+        settings:
+          type: array
+          items:
+            type: object
+            required:
+              - name
+              - value
+            properties:
+              name:
+                type: string
+              value:
+                type: string
     ProjectRuleActionOpsgenieNotifyTeam:
       type: object
       required:
@@ -1216,6 +1275,102 @@ components:
           type: string
         notes:
           type: string
+    ProjectRuleActionMsTeamsNotifyService:
+      type: object
+      required:
+        - id
+        - team
+        - channel
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.integrations.msteams.notify_action.MsTeamsNotifyServiceAction"
+        uuid:
+          type: string
+        name:
+          type: string
+        team:
+          type: string
+        channel:
+          type: string
+        channel_id:
+          type: string
+    ProjectRuleActionDiscordNotifyService:
+      type: object
+      required:
+        - id
+        - server
+        - channel_id
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.integrations.discord.notify_action.DiscordNotifyServiceAction"
+        uuid:
+          type: string
+        name:
+          type: string
+        server:
+          type: string
+        channel_id:
+          type: string
+        tags:
+          type: string
+    ProjectRuleActionJiraCreateTicket:
+      type: object
+      required:
+        - id
+        - integration
+        - project
+        - issueType
+        - dynamic_form_fields
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.integrations.jira.notify_action.JiraCreateTicketAction"
+        uuid:
+          type: string
+        name:
+          type: string
+        integration:
+          type: string
+        project:
+          type: string
+        issueType:
+          type: string
+        dynamic_form_fields:
+          type: array
+          items:
+            type: object
+    ProjectRuleActionJiraServerCreateTicket:
+      type: object
+      required:
+        - id
+        - integration
+        - project
+        - issueType
+        - dynamic_form_fields
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.integrations.jira.notify_action.JiraCreateTicketAction"
+        uuid:
+          type: string
+        name:
+          type: string
+        integration:
+          type: string
+        project:
+          type: string
+        issueType:
+          type: string
+        dynamic_form_fields:
+          type: array
+          items:
+            type: object
     ProjectRuleActionGitHubCreateTicket:
       type: object
       required:

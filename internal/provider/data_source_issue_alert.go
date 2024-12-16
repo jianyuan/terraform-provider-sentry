@@ -252,6 +252,26 @@ func (d *IssueAlertDataSource) Schema(ctx context.Context, req datasource.Schema
 								"name": stringAttribute,
 							},
 						},
+						"notify_event_service": schema.SingleNestedAttribute{
+							MarkdownDescription: "Send a notification via an integration.",
+							Computed:            true,
+							Attributes: map[string]schema.Attribute{
+								"name":    stringAttribute,
+								"service": stringAttribute,
+							},
+						},
+						"notify_event_sentry_app": schema.SingleNestedAttribute{
+							MarkdownDescription: "Send a notification to a Sentry app.",
+							Computed:            true,
+							Attributes: map[string]schema.Attribute{
+								"name":                         stringAttribute,
+								"sentry_app_installation_uuid": stringAttribute,
+								"settings": schema.MapAttribute{
+									ElementType: types.StringType,
+									Computed:    true,
+								},
+							},
+						},
 						"opsgenie_notify_team": schema.SingleNestedAttribute{
 							MarkdownDescription: "Send a notification to Opsgenie account `account` and team `team` with `priority` priority.",
 							Computed:            true,
@@ -280,8 +300,62 @@ func (d *IssueAlertDataSource) Schema(ctx context.Context, req datasource.Schema
 								"workspace":  stringAttribute,
 								"channel":    stringAttribute,
 								"channel_id": stringAttribute,
-								"tags":       stringAttribute,
-								"notes":      stringAttribute,
+								"tags": schema.SetAttribute{
+									Computed: true,
+									CustomType: sentrytypes.StringSetType{
+										SetType: types.SetType{
+											ElemType: types.StringType,
+										},
+									},
+								},
+								"notes": stringAttribute,
+							},
+						},
+						"msteams_notify_service": schema.SingleNestedAttribute{
+							MarkdownDescription: "Send a notification to the `team` Team to `channel`.",
+							Computed:            true,
+							Attributes: map[string]schema.Attribute{
+								"name":       stringAttribute,
+								"team":       stringAttribute,
+								"channel":    stringAttribute,
+								"channel_id": stringAttribute,
+							},
+						},
+						"discord_notify_service": schema.SingleNestedAttribute{
+							MarkdownDescription: "Send a notification to the `server` Discord server in the channel with ID or URL: `channel_id` and show tags `tags` in the notification.",
+							Computed:            true,
+							Attributes: map[string]schema.Attribute{
+								"name":       stringAttribute,
+								"server":     stringAttribute,
+								"channel_id": stringAttribute,
+								"tags": schema.SetAttribute{
+									Computed: true,
+									CustomType: sentrytypes.StringSetType{
+										SetType: types.SetType{
+											ElemType: types.StringType,
+										},
+									},
+								},
+							},
+						},
+						"jira_create_ticket": schema.SingleNestedAttribute{
+							MarkdownDescription: "Create a Jira issue in `integration`.",
+							Computed:            true,
+							Attributes: map[string]schema.Attribute{
+								"name":        stringAttribute,
+								"integration": stringAttribute,
+								"project":     stringAttribute,
+								"issue_type":  stringAttribute,
+							},
+						},
+						"jira_server_create_ticket": schema.SingleNestedAttribute{
+							MarkdownDescription: "Create a Jira Server issue in `integration`.",
+							Computed:            true,
+							Attributes: map[string]schema.Attribute{
+								"name":        stringAttribute,
+								"integration": stringAttribute,
+								"project":     stringAttribute,
+								"issue_type":  stringAttribute,
 							},
 						},
 						"github_create_ticket": schema.SingleNestedAttribute{
