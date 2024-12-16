@@ -14,29 +14,10 @@ Sentry Issue Alert data source. See the [Sentry documentation](https://docs.sent
 
 ```terraform
 # Retrieve an Issue Alert
-# URL format: https://sentry.io/organizations/[organization]/alerts/rules/[project]/[internal_id]/details/
 data "sentry_issue_alert" "original" {
   organization = "my-organization"
   project      = "my-project"
-  internal_id  = "42"
-}
-
-# Create a copy of an Issue Alert
-resource "sentry_issue_alert" "copy" {
-  organization = data.sentry_issue_alert.original.organization
-  project      = data.sentry_issue_alert.original.project
-
-  # Copy and modify attributes as necessary.
-
-  name = "${data.sentry_issue_alert.original.name}-copy"
-
-  action_match = data.sentry_issue_alert.original.action_match
-  filter_match = data.sentry_issue_alert.original.filter_match
-  frequency    = data.sentry_issue_alert.original.frequency
-
-  conditions = data.sentry_issue_alert.original.conditions
-  filters    = data.sentry_issue_alert.original.filters
-  actions    = data.sentry_issue_alert.original.actions
+  id           = "42"
 }
 ```
 
@@ -53,10 +34,380 @@ resource "sentry_issue_alert" "copy" {
 
 - `action_match` (String) Trigger actions when an event is captured by Sentry and `any` or `all` of the specified conditions happen.
 - `actions` (String) List of actions. In JSON string format.
+- `actions_v2` (Attributes List) A list of actions that take place when all required conditions and filters for the rule are met. (see [below for nested schema](#nestedatt--actions_v2))
 - `conditions` (String) List of conditions. In JSON string format.
+- `conditions_v2` (Attributes List) A list of triggers that determine when the rule fires. (see [below for nested schema](#nestedatt--conditions_v2))
 - `environment` (String) Perform issue alert in a specific environment.
 - `filter_match` (String) A string determining which filters need to be true before any actions take place. Required when a value is provided for `filters`.
 - `filters` (String) A list of filters that determine if a rule fires after the necessary conditions have been met. In JSON string format.
+- `filters_v2` (Attributes List) A list of filters that determine if a rule fires after the necessary conditions have been met. (see [below for nested schema](#nestedatt--filters_v2))
 - `frequency` (Number) Perform actions at most once every `X` minutes for this issue.
 - `name` (String) The issue alert name.
 - `owner` (String) The ID of the team or user that owns the rule.
+
+<a id="nestedatt--actions_v2"></a>
+### Nested Schema for `actions_v2`
+
+Read-Only:
+
+- `azure_devops_create_ticket` (Attributes) Create an Azure DevOps work item in `integration`. (see [below for nested schema](#nestedatt--actions_v2--azure_devops_create_ticket))
+- `discord_notify_service` (Attributes) Send a notification to the `server` Discord server in the channel with ID or URL: `channel_id` and show tags `tags` in the notification. (see [below for nested schema](#nestedatt--actions_v2--discord_notify_service))
+- `github_create_ticket` (Attributes) Create a GitHub issue in `integration`. (see [below for nested schema](#nestedatt--actions_v2--github_create_ticket))
+- `github_enterprise_create_ticket` (Attributes) Create a GitHub Enterprise issue in `integration`. (see [below for nested schema](#nestedatt--actions_v2--github_enterprise_create_ticket))
+- `jira_create_ticket` (Attributes) Create a Jira issue in `integration`. (see [below for nested schema](#nestedatt--actions_v2--jira_create_ticket))
+- `jira_server_create_ticket` (Attributes) Create a Jira Server issue in `integration`. (see [below for nested schema](#nestedatt--actions_v2--jira_server_create_ticket))
+- `msteams_notify_service` (Attributes) Send a notification to the `team` Team to `channel`. (see [below for nested schema](#nestedatt--actions_v2--msteams_notify_service))
+- `notify_email` (Attributes) Send a notification to `target_type` and if none can be found then send a notification to `fallthrough_type`. (see [below for nested schema](#nestedatt--actions_v2--notify_email))
+- `notify_event` (Attributes) Send a notification to all legacy integrations. (see [below for nested schema](#nestedatt--actions_v2--notify_event))
+- `notify_event_sentry_app` (Attributes) Send a notification to a Sentry app. (see [below for nested schema](#nestedatt--actions_v2--notify_event_sentry_app))
+- `notify_event_service` (Attributes) Send a notification via an integration. (see [below for nested schema](#nestedatt--actions_v2--notify_event_service))
+- `opsgenie_notify_team` (Attributes) Send a notification to Opsgenie account `account` and team `team` with `priority` priority. (see [below for nested schema](#nestedatt--actions_v2--opsgenie_notify_team))
+- `pagerduty_notify_service` (Attributes) Send a notification to PagerDuty account `account` and service `service` with `severity` severity. (see [below for nested schema](#nestedatt--actions_v2--pagerduty_notify_service))
+- `slack_notify_service` (Attributes) Send a notification to the `workspace` Slack workspace to `channel` (optionally, an ID: `channel_id`) and show tags `tags` and notes `notes` in notification. (see [below for nested schema](#nestedatt--actions_v2--slack_notify_service))
+
+<a id="nestedatt--actions_v2--azure_devops_create_ticket"></a>
+### Nested Schema for `actions_v2.azure_devops_create_ticket`
+
+Read-Only:
+
+- `integration` (String)
+- `name` (String)
+- `work_item_type` (String)
+
+
+<a id="nestedatt--actions_v2--discord_notify_service"></a>
+### Nested Schema for `actions_v2.discord_notify_service`
+
+Read-Only:
+
+- `channel_id` (String)
+- `name` (String)
+- `server` (String)
+- `tags` (Set of String)
+
+
+<a id="nestedatt--actions_v2--github_create_ticket"></a>
+### Nested Schema for `actions_v2.github_create_ticket`
+
+Read-Only:
+
+- `assignee` (String)
+- `integration` (String)
+- `labels` (Set of String)
+- `name` (String)
+- `repo` (String)
+
+
+<a id="nestedatt--actions_v2--github_enterprise_create_ticket"></a>
+### Nested Schema for `actions_v2.github_enterprise_create_ticket`
+
+Read-Only:
+
+- `assignee` (String)
+- `integration` (String)
+- `labels` (Set of String)
+- `name` (String)
+- `repo` (String)
+
+
+<a id="nestedatt--actions_v2--jira_create_ticket"></a>
+### Nested Schema for `actions_v2.jira_create_ticket`
+
+Read-Only:
+
+- `integration` (String)
+- `issue_type` (String)
+- `name` (String)
+- `project` (String)
+
+
+<a id="nestedatt--actions_v2--jira_server_create_ticket"></a>
+### Nested Schema for `actions_v2.jira_server_create_ticket`
+
+Read-Only:
+
+- `integration` (String)
+- `issue_type` (String)
+- `name` (String)
+- `project` (String)
+
+
+<a id="nestedatt--actions_v2--msteams_notify_service"></a>
+### Nested Schema for `actions_v2.msteams_notify_service`
+
+Read-Only:
+
+- `channel` (String)
+- `channel_id` (String)
+- `name` (String)
+- `team` (String)
+
+
+<a id="nestedatt--actions_v2--notify_email"></a>
+### Nested Schema for `actions_v2.notify_email`
+
+Read-Only:
+
+- `fallthrough_type` (String)
+- `name` (String)
+- `target_identifier` (String)
+- `target_type` (String)
+
+
+<a id="nestedatt--actions_v2--notify_event"></a>
+### Nested Schema for `actions_v2.notify_event`
+
+Read-Only:
+
+- `name` (String)
+
+
+<a id="nestedatt--actions_v2--notify_event_sentry_app"></a>
+### Nested Schema for `actions_v2.notify_event_sentry_app`
+
+Read-Only:
+
+- `name` (String)
+- `sentry_app_installation_uuid` (String)
+- `settings` (Map of String)
+
+
+<a id="nestedatt--actions_v2--notify_event_service"></a>
+### Nested Schema for `actions_v2.notify_event_service`
+
+Read-Only:
+
+- `name` (String)
+- `service` (String)
+
+
+<a id="nestedatt--actions_v2--opsgenie_notify_team"></a>
+### Nested Schema for `actions_v2.opsgenie_notify_team`
+
+Read-Only:
+
+- `account` (String)
+- `name` (String)
+- `priority` (String)
+- `team` (String)
+
+
+<a id="nestedatt--actions_v2--pagerduty_notify_service"></a>
+### Nested Schema for `actions_v2.pagerduty_notify_service`
+
+Read-Only:
+
+- `account` (String)
+- `name` (String)
+- `service` (String)
+- `severity` (String)
+
+
+<a id="nestedatt--actions_v2--slack_notify_service"></a>
+### Nested Schema for `actions_v2.slack_notify_service`
+
+Read-Only:
+
+- `channel` (String)
+- `channel_id` (String)
+- `name` (String)
+- `notes` (String)
+- `tags` (Set of String)
+- `workspace` (String)
+
+
+
+<a id="nestedatt--conditions_v2"></a>
+### Nested Schema for `conditions_v2`
+
+Read-Only:
+
+- `event_frequency` (Attributes) When the `comparison_type` is `count`, the number of events in an issue is more than `value` in `interval`. When the `comparison_type` is `percent`, the number of events in an issue is `value` % higher in `interval` compared to `comparison_interval` ago. (see [below for nested schema](#nestedatt--conditions_v2--event_frequency))
+- `event_frequency_percent` (Attributes) When the `comparison_type` is `count`, the percent of sessions affected by an issue is more than `value` in `interval`. When the `comparison_type` is `percent`, the percent of sessions affected by an issue is `value` % higher in `interval` compared to `comparison_interval` ago. (see [below for nested schema](#nestedatt--conditions_v2--event_frequency_percent))
+- `event_unique_user_frequency` (Attributes) When the `comparison_type` is `count`, the number of users affected by an issue is more than `value` in `interval`. When the `comparison_type` is `percent`, the number of users affected by an issue is `value` % higher in `interval` compared to `comparison_interval` ago. (see [below for nested schema](#nestedatt--conditions_v2--event_unique_user_frequency))
+- `existing_high_priority_issue` (Attributes) Sentry marks an existing issue as high priority. (see [below for nested schema](#nestedatt--conditions_v2--existing_high_priority_issue))
+- `first_seen_event` (Attributes) A new issue is created. (see [below for nested schema](#nestedatt--conditions_v2--first_seen_event))
+- `new_high_priority_issue` (Attributes) Sentry marks a new issue as high priority. (see [below for nested schema](#nestedatt--conditions_v2--new_high_priority_issue))
+- `reappeared_event` (Attributes) The issue changes state from ignored to unresolved. (see [below for nested schema](#nestedatt--conditions_v2--reappeared_event))
+- `regression_event` (Attributes) The issue changes state from resolved to unresolved. (see [below for nested schema](#nestedatt--conditions_v2--regression_event))
+
+<a id="nestedatt--conditions_v2--event_frequency"></a>
+### Nested Schema for `conditions_v2.event_frequency`
+
+Read-Only:
+
+- `comparison_interval` (String)
+- `comparison_type` (String)
+- `interval` (String)
+- `name` (String)
+- `value` (Number)
+
+
+<a id="nestedatt--conditions_v2--event_frequency_percent"></a>
+### Nested Schema for `conditions_v2.event_frequency_percent`
+
+Read-Only:
+
+- `comparison_interval` (String)
+- `comparison_type` (String)
+- `interval` (String)
+- `name` (String)
+- `value` (Number)
+
+
+<a id="nestedatt--conditions_v2--event_unique_user_frequency"></a>
+### Nested Schema for `conditions_v2.event_unique_user_frequency`
+
+Read-Only:
+
+- `comparison_interval` (String)
+- `comparison_type` (String)
+- `interval` (String)
+- `name` (String)
+- `value` (Number)
+
+
+<a id="nestedatt--conditions_v2--existing_high_priority_issue"></a>
+### Nested Schema for `conditions_v2.existing_high_priority_issue`
+
+Read-Only:
+
+- `name` (String)
+
+
+<a id="nestedatt--conditions_v2--first_seen_event"></a>
+### Nested Schema for `conditions_v2.first_seen_event`
+
+Read-Only:
+
+- `name` (String)
+
+
+<a id="nestedatt--conditions_v2--new_high_priority_issue"></a>
+### Nested Schema for `conditions_v2.new_high_priority_issue`
+
+Read-Only:
+
+- `name` (String)
+
+
+<a id="nestedatt--conditions_v2--reappeared_event"></a>
+### Nested Schema for `conditions_v2.reappeared_event`
+
+Read-Only:
+
+- `name` (String)
+
+
+<a id="nestedatt--conditions_v2--regression_event"></a>
+### Nested Schema for `conditions_v2.regression_event`
+
+Read-Only:
+
+- `name` (String)
+
+
+
+<a id="nestedatt--filters_v2"></a>
+### Nested Schema for `filters_v2`
+
+Read-Only:
+
+- `age_comparison` (Attributes) The issue is older or newer than `value` `time`. (see [below for nested schema](#nestedatt--filters_v2--age_comparison))
+- `assigned_to` (Attributes) The issue is assigned to no one, team, or member. (see [below for nested schema](#nestedatt--filters_v2--assigned_to))
+- `event_attribute` (Attributes) The event's `attribute` value `match` `value`. (see [below for nested schema](#nestedatt--filters_v2--event_attribute))
+- `issue_category` (Attributes) The issue's category is equal to `value`. (see [below for nested schema](#nestedatt--filters_v2--issue_category))
+- `issue_occurrences` (Attributes) The issue has happened at least `value` times (Note: this is approximate). (see [below for nested schema](#nestedatt--filters_v2--issue_occurrences))
+- `latest_adopted_release` (Attributes) The {oldest_or_newest} adopted release associated with the event's issue is {older_or_newer} than the latest adopted release in {environment}. (see [below for nested schema](#nestedatt--filters_v2--latest_adopted_release))
+- `latest_release` (Attributes) The event is from the latest release. (see [below for nested schema](#nestedatt--filters_v2--latest_release))
+- `level` (Attributes) The event's level is `match` `level`. (see [below for nested schema](#nestedatt--filters_v2--level))
+- `tagged_event` (Attributes) The event's tags match `key` `match` `value`. (see [below for nested schema](#nestedatt--filters_v2--tagged_event))
+
+<a id="nestedatt--filters_v2--age_comparison"></a>
+### Nested Schema for `filters_v2.age_comparison`
+
+Read-Only:
+
+- `comparison_type` (String)
+- `name` (String)
+- `time` (String)
+- `value` (Number)
+
+
+<a id="nestedatt--filters_v2--assigned_to"></a>
+### Nested Schema for `filters_v2.assigned_to`
+
+Read-Only:
+
+- `name` (String)
+- `target_identifier` (Number)
+- `target_type` (Number)
+
+
+<a id="nestedatt--filters_v2--event_attribute"></a>
+### Nested Schema for `filters_v2.event_attribute`
+
+Read-Only:
+
+- `attribute` (String)
+- `match` (String)
+- `name` (String)
+- `value` (String)
+
+
+<a id="nestedatt--filters_v2--issue_category"></a>
+### Nested Schema for `filters_v2.issue_category`
+
+Read-Only:
+
+- `name` (String)
+- `value` (String)
+
+
+<a id="nestedatt--filters_v2--issue_occurrences"></a>
+### Nested Schema for `filters_v2.issue_occurrences`
+
+Read-Only:
+
+- `name` (String)
+- `value` (Number)
+
+
+<a id="nestedatt--filters_v2--latest_adopted_release"></a>
+### Nested Schema for `filters_v2.latest_adopted_release`
+
+Read-Only:
+
+- `environment` (Number)
+- `name` (String)
+- `older_or_newer` (Number)
+- `oldest_or_newest` (Number)
+
+
+<a id="nestedatt--filters_v2--latest_release"></a>
+### Nested Schema for `filters_v2.latest_release`
+
+Read-Only:
+
+- `name` (String)
+
+
+<a id="nestedatt--filters_v2--level"></a>
+### Nested Schema for `filters_v2.level`
+
+Read-Only:
+
+- `level` (String)
+- `match` (String)
+- `name` (String)
+
+
+<a id="nestedatt--filters_v2--tagged_event"></a>
+### Nested Schema for `filters_v2.tagged_event`
+
+Read-Only:
+
+- `key` (String)
+- `match` (String)
+- `name` (String)
+- `value` (String)

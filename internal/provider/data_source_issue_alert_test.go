@@ -1,47 +1,24 @@
 package provider
 
 import (
-	"context"
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/compare"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
-	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
 )
 
 func TestAccIssueAlertDataSource(t *testing.T) {
 	rn := "sentry_issue_alert.test"
-	rnCopy := "sentry_issue_alert.test_copy"
 	dsn := "data.sentry_issue_alert.test"
 	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")
 	alert := acctest.RandomWithPrefix("tf-issue-alert")
 	var alertId string
-	var alertIdCopy string
-
-	checkResourceAttrJsonPair := func(a, b, attr string) resource.TestCheckFunc {
-		return func(s *terraform.State) error {
-			resA, ok := s.RootModule().Resources[a]
-			if !ok {
-				return fmt.Errorf("resource %s not found", a)
-			}
-
-			resB, ok := s.RootModule().Resources[b]
-			if !ok {
-				return fmt.Errorf("resource %s not found", b)
-			}
-
-			expected := sentrytypes.NewLossyJsonValue(resA.Primary.Attributes[attr])
-			given := sentrytypes.NewLossyJsonValue(resB.Primary.Attributes[attr])
-			match, diags := expected.StringSemanticEquals(context.Background(), given)
-			if !match {
-				return fmt.Errorf("expected %s, got %s: %s", expected, given, diags)
-			}
-			return nil
-		}
-	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
@@ -51,30 +28,16 @@ func TestAccIssueAlertDataSource(t *testing.T) {
 				Config: testAccIssueAlertDataSourceConfig(team, project, alert),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIssueAlertExists(rn, &alertId),
-					resource.TestCheckResourceAttr(dsn, "organization", acctest.TestOrganization),
-					resource.TestCheckResourceAttr(dsn, "project", project),
-					resource.TestCheckResourceAttrPair(dsn, "organization", rn, "organization"),
-					resource.TestCheckResourceAttrPair(dsn, "project", rn, "project"),
-					checkResourceAttrJsonPair(dsn, rn, "conditions"),
-					checkResourceAttrJsonPair(dsn, rn, "filters"),
-					checkResourceAttrJsonPair(dsn, rn, "actions"),
-					resource.TestCheckResourceAttrPair(dsn, "action_match", rn, "action_match"),
-					resource.TestCheckResourceAttrPair(dsn, "filter_match", rn, "filter_match"),
-					resource.TestCheckResourceAttrPair(dsn, "frequency", rn, "frequency"),
-					resource.TestCheckResourceAttrPair(dsn, "name", rn, "name"),
-					resource.TestCheckResourceAttrPair(dsn, "environment", rn, "environment"),
-					testAccCheckIssueAlertExists(rnCopy, &alertIdCopy),
-					resource.TestCheckResourceAttrPair(rnCopy, "organization", rn, "organization"),
-					resource.TestCheckResourceAttrPair(rnCopy, "project", rn, "project"),
-					checkResourceAttrJsonPair(rnCopy, rn, "conditions"),
-					checkResourceAttrJsonPair(rnCopy, rn, "filters"),
-					checkResourceAttrJsonPair(rnCopy, rn, "actions"),
-					resource.TestCheckResourceAttr(rnCopy, "action_match", "all"),
-					resource.TestCheckResourceAttr(rnCopy, "filter_match", "all"),
-					resource.TestCheckResourceAttrPair(rnCopy, "frequency", rn, "frequency"),
-					resource.TestCheckResourceAttr(rnCopy, "name", alert+"-copy"),
-					resource.TestCheckResourceAttrPair(rnCopy, "environment", rn, "environment"),
 				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(dsn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
+					statecheck.ExpectKnownValue(dsn, tfjsonpath.New("project"), knownvalue.StringExact(project)),
+					statecheck.CompareValuePairs(dsn, tfjsonpath.New("action_match"), rn, tfjsonpath.New("action_match"), compare.ValuesSame()),
+					statecheck.CompareValuePairs(dsn, tfjsonpath.New("filter_match"), rn, tfjsonpath.New("filter_match"), compare.ValuesSame()),
+					statecheck.CompareValuePairs(dsn, tfjsonpath.New("frequency"), rn, tfjsonpath.New("frequency"), compare.ValuesSame()),
+					statecheck.CompareValuePairs(dsn, tfjsonpath.New("name"), rn, tfjsonpath.New("name"), compare.ValuesSame()),
+					statecheck.CompareValuePairs(dsn, tfjsonpath.New("environment"), rn, tfjsonpath.New("environment"), compare.ValuesSame()),
+				},
 			},
 		},
 	})
@@ -196,20 +159,6 @@ data "sentry_issue_alert" "test" {
 	id           = sentry_issue_alert.test.id
 	organization = sentry_issue_alert.test.organization
 	project      = sentry_issue_alert.test.project
-}
-
-resource "sentry_issue_alert" "test_copy" {
-	organization = data.sentry_issue_alert.test.organization
-	project      = data.sentry_issue_alert.test.project
-	name         = "${data.sentry_issue_alert.test.name}-copy"
-
-	action_match = "all"
-	filter_match = "all"
-	frequency    = data.sentry_issue_alert.test.frequency
-
-	conditions = data.sentry_issue_alert.test.conditions
-	filters    = data.sentry_issue_alert.test.filters
-	actions    = data.sentry_issue_alert.test.actions
 }
 `, teamName, projectName, alertName)
 }

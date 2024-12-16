@@ -354,6 +354,180 @@ paths:
           description: Forbidden
         "404":
           description: Not Found
+  /0/projects/{organization_id_or_slug}/{project_id_or_slug}/rules/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+      - $ref: "#/components/parameters/project_id_or_slug"
+    post:
+      summary: Create a Rule
+      operationId: createProjectRule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - actionMatch
+                - filterMatch
+                - frequency
+                - projects
+                - conditions
+                - filters
+                - actions
+              properties:
+                name:
+                  type: string
+                actionMatch:
+                  type: string
+                filterMatch:
+                  type: string
+                frequency:
+                  type: integer
+                  format: int64
+                owner:
+                  type: string
+                environment:
+                  type: string
+                projects:
+                  type: array
+                  items:
+                    type: string
+                conditions:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/ProjectRuleCondition"
+                filters:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/ProjectRuleFilter"
+                actions:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/ProjectRuleAction"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectRule"
+        "202":
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - uuid
+                properties:
+                  uuid:
+                    type: string
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+  /0/projects/{organization_id_or_slug}/{project_id_or_slug}/rules/{rule_id}/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+      - $ref: "#/components/parameters/project_id_or_slug"
+      - name: rule_id
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Retrieve a Rule
+      operationId: getProjectRule
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectRule"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+    put:
+      summary: Update a Rule
+      operationId: updateProjectRule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - actionMatch
+                - filterMatch
+                - frequency
+                - projects
+                - conditions
+                - filters
+                - actions
+              properties:
+                name:
+                  type: string
+                actionMatch:
+                  type: string
+                filterMatch:
+                  type: string
+                frequency:
+                  type: integer
+                  format: int64
+                owner:
+                  type: string
+                environment:
+                  type: string
+                projects:
+                  type: array
+                  items:
+                    type: string
+                conditions:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/ProjectRuleCondition"
+                filters:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/ProjectRuleFilter"
+                actions:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/ProjectRuleAction"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectRule"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+    delete:
+      summary: Delete a Rule
+      operationId: deleteProjectRule
+      responses:
+        "202":
+          description: Accepted
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
 security:
   - bearerAuth: []
 components:
@@ -545,6 +719,745 @@ components:
               type: boolean
             hasDebug:
               type: boolean
+    ProjectRule:
+      type: object
+      required:
+        - id
+        - name
+        - projects
+        - actionMatch
+        - filterMatch
+        - frequency
+        - environment
+        - owner
+        - conditions
+        - filters
+        - actions
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        projects:
+          type: array
+          items:
+            type: string
+        actionMatch:
+          type: string
+        filterMatch:
+          type: string
+        frequency:
+          type: integer
+          format: int64
+        environment:
+          type: string
+          nullable: true
+        owner:
+          type: string
+          nullable: true
+        conditions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectRuleCondition"
+        filters:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectRuleFilter"
+        actions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectRuleAction"
+    ProjectRuleCondition:
+      oneOf:
+        - $ref: "#/components/schemas/ProjectRuleConditionFirstSeenEvent"
+        - $ref: "#/components/schemas/ProjectRuleConditionRegressionEvent"
+        - $ref: "#/components/schemas/ProjectRuleConditionReappearedEvent"
+        - $ref: "#/components/schemas/ProjectRuleConditionNewHighPriorityIssue"
+        - $ref: "#/components/schemas/ProjectRuleConditionExistingHighPriorityIssue"
+        - $ref: "#/components/schemas/ProjectRuleConditionEventFrequency"
+        - $ref: "#/components/schemas/ProjectRuleConditionEventUniqueUserFrequency"
+        - $ref: "#/components/schemas/ProjectRuleConditionEventFrequencyPercent"
+      discriminator:
+        propertyName: id
+        mapping:
+          "sentry.rules.conditions.first_seen_event.FirstSeenEventCondition": "#/components/schemas/ProjectRuleConditionFirstSeenEvent"
+          "sentry.rules.conditions.regression_event.RegressionEventCondition": "#/components/schemas/ProjectRuleConditionRegressionEvent"
+          "sentry.rules.conditions.reappeared_event.ReappearedEventCondition": "#/components/schemas/ProjectRuleConditionReappearedEvent"
+          "sentry.rules.conditions.high_priority_issue.NewHighPriorityIssueCondition": "#/components/schemas/ProjectRuleConditionNewHighPriorityIssue"
+          "sentry.rules.conditions.high_priority_issue.ExistingHighPriorityIssueCondition": "#/components/schemas/ProjectRuleConditionExistingHighPriorityIssue"
+          "sentry.rules.conditions.event_frequency.EventFrequencyCondition": "#/components/schemas/ProjectRuleConditionEventFrequency"
+          "sentry.rules.conditions.event_frequency.EventUniqueUserFrequencyCondition": "#/components/schemas/ProjectRuleConditionEventUniqueUserFrequency"
+          "sentry.rules.conditions.event_frequency.EventFrequencyPercentCondition": "#/components/schemas/ProjectRuleConditionEventFrequencyPercent"
+    ProjectRuleConditionFirstSeenEvent:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.conditions.first_seen_event.FirstSeenEventCondition"
+        name:
+          type: string
+    ProjectRuleConditionRegressionEvent:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.conditions.regression_event.RegressionEventCondition"
+        name:
+          type: string
+    ProjectRuleConditionReappearedEvent:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.conditions.reappeared_event.ReappearedEventCondition"
+        name:
+          type: string
+    ProjectRuleConditionNewHighPriorityIssue:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.conditions.high_priority_issue.NewHighPriorityIssueCondition"
+        name:
+          type: string
+    ProjectRuleConditionExistingHighPriorityIssue:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.conditions.high_priority_issue.ExistingHighPriorityIssueCondition"
+        name:
+          type: string
+    ProjectRuleConditionEventFrequency:
+      type: object
+      required:
+        - id
+        - comparisonType
+        - value
+        - interval
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.conditions.event_frequency.EventFrequencyCondition"
+        name:
+          type: string
+        comparisonType:
+          type: string
+        comparisonInterval:
+          type: string
+        value:
+          type: integer
+          format: int64
+        interval:
+          type: string
+    ProjectRuleConditionEventUniqueUserFrequency:
+      type: object
+      required:
+        - id
+        - comparisonType
+        - value
+        - interval
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.conditions.event_frequency.EventUniqueUserFrequencyCondition"
+        name:
+          type: string
+        comparisonType:
+          type: string
+        comparisonInterval:
+          type: string
+        value:
+          type: integer
+          format: int64
+        interval:
+          type: string
+    ProjectRuleConditionEventFrequencyPercent:
+      type: object
+      required:
+        - id
+        - comparisonType
+        - value
+        - interval
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.conditions.event_frequency.EventFrequencyPercentCondition"
+        name:
+          type: string
+        comparisonType:
+          type: string
+        comparisonInterval:
+          type: string
+        value:
+          type: number
+          format: double
+        interval:
+          type: string
+    ProjectRuleFilter:
+      oneOf:
+        - $ref: "#/components/schemas/ProjectRuleFilterAgeComparison"
+        - $ref: "#/components/schemas/ProjectRuleFilterIssueOccurrences"
+        - $ref: "#/components/schemas/ProjectRuleFilterAssignedTo"
+        - $ref: "#/components/schemas/ProjectRuleFilterLatestAdoptedRelease"
+        - $ref: "#/components/schemas/ProjectRuleFilterLatestRelease"
+        - $ref: "#/components/schemas/ProjectRuleFilterIssueCategory"
+        - $ref: "#/components/schemas/ProjectRuleFilterEventAttribute"
+        - $ref: "#/components/schemas/ProjectRuleFilterTaggedEvent"
+        - $ref: "#/components/schemas/ProjectRuleFilterLevel"
+      discriminator:
+        propertyName: id
+        mapping:
+          "sentry.rules.filters.age_comparison.AgeComparisonFilter": "#/components/schemas/ProjectRuleFilterAgeComparison"
+          "sentry.rules.filters.issue_occurrences.IssueOccurrencesFilter": "#/components/schemas/ProjectRuleFilterIssueOccurrences"
+          "sentry.rules.filters.assigned_to.AssignedToFilter": "#/components/schemas/ProjectRuleFilterAssignedTo"
+          "sentry.rules.filters.latest_adopted_release_filter.LatestAdoptedReleaseFilter": "#/components/schemas/ProjectRuleFilterLatestAdoptedRelease"
+          "sentry.rules.filters.latest_release.LatestReleaseFilter": "#/components/schemas/ProjectRuleFilterLatestRelease"
+          "sentry.rules.filters.issue_category.IssueCategoryFilter": "#/components/schemas/ProjectRuleFilterIssueCategory"
+          "sentry.rules.filters.event_attribute.EventAttributeFilter": "#/components/schemas/ProjectRuleFilterEventAttribute"
+          "sentry.rules.filters.tagged_event.TaggedEventFilter": "#/components/schemas/ProjectRuleFilterTaggedEvent"
+          "sentry.rules.filters.level.LevelFilter": "#/components/schemas/ProjectRuleFilterLevel"
+    ProjectRuleFilterAgeComparison:
+      type: object
+      required:
+        - id
+        - comparison_type
+        - value
+        - time
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.filters.age_comparison.AgeComparisonFilter"
+        name:
+          type: string
+        comparison_type:
+          type: string
+        value:
+          type: integer
+          format: int64
+        time:
+          type: string
+    ProjectRuleFilterIssueOccurrences:
+      type: object
+      required:
+        - id
+        - value
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.filters.issue_occurrences.IssueOccurrencesFilter"
+        name:
+          type: string
+        value:
+          type: integer
+          format: int64
+    ProjectRuleFilterAssignedTo:
+      type: object
+      required:
+        - id
+        - targetType
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.filters.assigned_to.AssignedToFilter"
+        name:
+          type: string
+        targetType:
+          type: string
+        targetIdentifier:
+          oneOf:
+            - type: string
+            - type: integer
+              x-go-type: json.Number
+    ProjectRuleFilterLatestAdoptedRelease:
+      type: object
+      required:
+        - id
+        - oldest_or_newest
+        - older_or_newer
+        - environment
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.filters.latest_adopted_release_filter.LatestAdoptedReleaseFilter"
+        name:
+          type: string
+        oldest_or_newest:
+          type: string
+        older_or_newer:
+          type: string
+        environment:
+          type: string
+    ProjectRuleFilterLatestRelease:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.filters.latest_release.LatestReleaseFilter"
+        name:
+          type: string
+    ProjectRuleFilterIssueCategory:
+      type: object
+      required:
+        - id
+        - value
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.filters.issue_category.IssueCategoryFilter"
+        name:
+          type: string
+        value:
+          type: string
+    ProjectRuleFilterEventAttribute:
+      type: object
+      required:
+        - id
+        - attribute
+        - match
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.filters.event_attribute.EventAttributeFilter"
+        name:
+          type: string
+        attribute:
+          type: string
+        match:
+          type: string
+        value:
+          type: string
+    ProjectRuleFilterTaggedEvent:
+      type: object
+      required:
+        - id
+        - key
+        - match
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.filters.tagged_event.TaggedEventFilter"
+        name:
+          type: string
+        key:
+          type: string
+        match:
+          type: string
+        value:
+          type: string
+    ProjectRuleFilterLevel:
+      type: object
+      required:
+        - id
+        - level
+        - match
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.filters.level.LevelFilter"
+        name:
+          type: string
+        level:
+          type: string
+        match:
+          type: string
+    ProjectRuleAction:
+      oneOf:
+        - $ref: "#/components/schemas/ProjectRuleActionNotifyEmail"
+        - $ref: "#/components/schemas/ProjectRuleActionNotifyEvent"
+        - $ref: "#/components/schemas/ProjectRuleActionNotifyEventService"
+        - $ref: "#/components/schemas/ProjectRuleActionNotifyEventSentryApp"
+        - $ref: "#/components/schemas/ProjectRuleActionOpsgenieNotifyTeam"
+        - $ref: "#/components/schemas/ProjectRuleActionPagerDutyNotifyService"
+        - $ref: "#/components/schemas/ProjectRuleActionSlackNotifyService"
+        - $ref: "#/components/schemas/ProjectRuleActionMsTeamsNotifyService"
+        - $ref: "#/components/schemas/ProjectRuleActionDiscordNotifyService"
+        - $ref: "#/components/schemas/ProjectRuleActionJiraCreateTicket"
+        - $ref: "#/components/schemas/ProjectRuleActionJiraServerCreateTicket"
+        - $ref: "#/components/schemas/ProjectRuleActionGitHubCreateTicket"
+        - $ref: "#/components/schemas/ProjectRuleActionGitHubEnterpriseCreateTicket"
+        - $ref: "#/components/schemas/ProjectRuleActionAzureDevopsCreateTicket"
+      discriminator:
+        propertyName: id
+        mapping:
+          "sentry.mail.actions.NotifyEmailAction": "#/components/schemas/ProjectRuleActionNotifyEmail"
+          "sentry.rules.actions.notify_event.NotifyEventAction": "#/components/schemas/ProjectRuleActionNotifyEvent"
+          "sentry.rules.actions.notify_event_service.NotifyEventServiceAction": "#/components/schemas/ProjectRuleActionNotifyEventService"
+          "sentry.rules.actions.notify_event_sentry_app.NotifyEventSentryAppAction": "#/components/schemas/ProjectRuleActionNotifyEventSentryApp"
+          "sentry.integrations.opsgenie.notify_action.OpsgenieNotifyTeamAction": "#/components/schemas/ProjectRuleActionOpsgenieNotifyTeam"
+          "sentry.integrations.pagerduty.notify_action.PagerDutyNotifyServiceAction": "#/components/schemas/ProjectRuleActionPagerDutyNotifyService"
+          "sentry.integrations.slack.notify_action.SlackNotifyServiceAction": "#/components/schemas/ProjectRuleActionSlackNotifyService"
+          "sentry.integrations.msteams.notify_action.MsTeamsNotifyServiceAction": "#/components/schemas/ProjectRuleActionMsTeamsNotifyService"
+          "sentry.integrations.discord.notify_action.DiscordNotifyServiceAction": "#/components/schemas/ProjectRuleActionDiscordNotifyService"
+          "sentry.integrations.jira.notify_action.JiraCreateTicketAction": "#/components/schemas/ProjectRuleActionJiraCreateTicket"
+          "sentry.integrations.jira_server.notify_action.JiraServerCreateTicketAction": "#/components/schemas/ProjectRuleActionJiraServerCreateTicket"
+          "sentry.integrations.github.notify_action.GitHubCreateTicketAction": "#/components/schemas/ProjectRuleActionGitHubCreateTicket"
+          "sentry.integrations.github_enterprise.notify_action.GitHubEnterpriseCreateTicketAction": "#/components/schemas/ProjectRuleActionGitHubEnterpriseCreateTicket"
+          "sentry.integrations.vsts.notify_action.AzureDevopsCreateTicketAction": "#/components/schemas/ProjectRuleActionAzureDevopsCreateTicket"
+    ProjectRuleActionNotifyEmail:
+      type: object
+      required:
+        - id
+        - targetType
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.mail.actions.NotifyEmailAction"
+        uuid:
+          type: string
+        name:
+          type: string
+        targetType:
+          type: string
+        targetIdentifier:
+          oneOf:
+            - type: string
+            - type: integer
+              x-go-type: json.Number
+        fallthroughType:
+          type: string
+    ProjectRuleActionNotifyEvent:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.actions.notify_event.NotifyEventAction"
+        uuid:
+          type: string
+        name:
+          type: string
+    ProjectRuleActionNotifyEventService:
+      type: object
+      required:
+        - id
+        - service
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.actions.notify_event_service.NotifyEventServiceAction"
+        uuid:
+          type: string
+        name:
+          type: string
+        service:
+          type: string
+    ProjectRuleActionNotifyEventSentryApp:
+      type: object
+      required:
+        - id
+        - sentryAppInstallationUuid
+        - hasSchemaFormConfig
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.actions.notify_event_sentry_app.NotifyEventSentryAppAction"
+        uuid:
+          type: string
+        name:
+          type: string
+        sentryAppInstallationUuid:
+          type: string
+        hasSchemaFormConfig:
+          type: boolean
+        settings:
+          type: array
+          items:
+            type: object
+            required:
+              - name
+              - value
+            properties:
+              name:
+                type: string
+              value:
+                type: string
+    ProjectRuleActionOpsgenieNotifyTeam:
+      type: object
+      required:
+        - id
+        - account
+        - team
+        - priority
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.integrations.opsgenie.notify_action.OpsgenieNotifyTeamAction"
+        uuid:
+          type: string
+        name:
+          type: string
+        account:
+          type: string
+        team:
+          type: string
+        priority:
+          type: string
+    ProjectRuleActionPagerDutyNotifyService:
+      type: object
+      required:
+        - id
+        - account
+        - service
+        - severity
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.integrations.pagerduty.notify_action.PagerDutyNotifyServiceAction"
+        uuid:
+          type: string
+        name:
+          type: string
+        account:
+          type: string
+        service:
+          type: string
+        severity:
+          type: string
+    ProjectRuleActionSlackNotifyService:
+      type: object
+      required:
+        - id
+        - workspace
+        - channel
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.integrations.slack.notify_action.SlackNotifyServiceAction"
+        uuid:
+          type: string
+        name:
+          type: string
+        workspace:
+          type: string
+        channel:
+          type: string
+        channel_id:
+          type: string
+        tags:
+          type: string
+        notes:
+          type: string
+    ProjectRuleActionMsTeamsNotifyService:
+      type: object
+      required:
+        - id
+        - team
+        - channel
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.integrations.msteams.notify_action.MsTeamsNotifyServiceAction"
+        uuid:
+          type: string
+        name:
+          type: string
+        team:
+          type: string
+        channel:
+          type: string
+        channel_id:
+          type: string
+    ProjectRuleActionDiscordNotifyService:
+      type: object
+      required:
+        - id
+        - server
+        - channel_id
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.integrations.discord.notify_action.DiscordNotifyServiceAction"
+        uuid:
+          type: string
+        name:
+          type: string
+        server:
+          type: string
+        channel_id:
+          type: string
+        tags:
+          type: string
+    ProjectRuleActionJiraCreateTicket:
+      type: object
+      required:
+        - id
+        - integration
+        - project
+        - issueType
+        - dynamic_form_fields
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.integrations.jira.notify_action.JiraCreateTicketAction"
+        uuid:
+          type: string
+        name:
+          type: string
+        integration:
+          type: string
+        project:
+          type: string
+        issueType:
+          type: string
+        dynamic_form_fields:
+          type: array
+          items:
+            type: object
+    ProjectRuleActionJiraServerCreateTicket:
+      type: object
+      required:
+        - id
+        - integration
+        - project
+        - issueType
+        - dynamic_form_fields
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.integrations.jira.notify_action.JiraCreateTicketAction"
+        uuid:
+          type: string
+        name:
+          type: string
+        integration:
+          type: string
+        project:
+          type: string
+        issueType:
+          type: string
+        dynamic_form_fields:
+          type: array
+          items:
+            type: object
+    ProjectRuleActionGitHubCreateTicket:
+      type: object
+      required:
+        - id
+        - integration
+        - repo
+        - dynamic_form_fields
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.integrations.github.notify_action.GitHubCreateTicketAction"
+        uuid:
+          type: string
+        name:
+          type: string
+        integration:
+          type: string
+        repo:
+          type: string
+        assignee:
+          type: string
+        labels:
+          type: array
+          items:
+            type: string
+        dynamic_form_fields:
+          type: array
+          items:
+            type: object
+    ProjectRuleActionGitHubEnterpriseCreateTicket:
+      type: object
+      required:
+        - id
+        - integration
+        - repo
+        - dynamic_form_fields
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.integrations.github_enterprise.notify_action.GitHubEnterpriseCreateTicketAction"
+        uuid:
+          type: string
+        name:
+          type: string
+        integration:
+          type: string
+        repo:
+          type: string
+        assignee:
+          type: string
+        labels:
+          type: array
+          items:
+            type: string
+        dynamic_form_fields:
+          type: array
+          items:
+            type: object
+    ProjectRuleActionAzureDevopsCreateTicket:
+      type: object
+      required:
+        - id
+        - integration
+        - project
+        - work_item_type
+        - dynamic_form_fields
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.integrations.vsts.notify_action.AzureDevopsCreateTicketAction"
+        uuid:
+          type: string
+        name:
+          type: string
+        integration:
+          type: string
+        project:
+          type: string
+        work_item_type:
+          type: string
+        dynamic_form_fields:
+          type: array
+          items:
+            type: object
     Team:
       type: object
       required:
