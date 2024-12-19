@@ -66,6 +66,7 @@ node-gcpfunctions
 node-hapi
 node-koa
 node-nestjs
+other
 php
 php-laravel
 php-symfony
