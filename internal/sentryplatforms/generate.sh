@@ -4,4 +4,5 @@ set -euxo pipefail
 
 curl -sSfL https://raw.githubusercontent.com/getsentry/sentry/master/src/sentry/models/project.py \
   | awk '/GETTING_STARTED_DOCS_PLATFORMS = \[/ { platforms = 1; next } /\]/ { platforms = 0 } platforms { gsub(/[ ",]/, ""); print }' \
+  | awk 'BEGIN { print "other" } { print $0 }' | sort -u \
   > platforms.txt
