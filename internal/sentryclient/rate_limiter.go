@@ -20,8 +20,10 @@ func NewRateLimiterRoundTripper(delegate http.RoundTripper) http.RoundTripper {
 	retryClient.ErrorHandler = retryablehttp.PassthroughErrorHandler
 	retryClient.Logger = nil // Disable DEBUG logs
 	retryClient.Backoff = func(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration {
-		if rateLimitErr, ok := sentry.CheckResponse(resp).(*sentry.RateLimitError); ok {
-			return time.Until(rateLimitErr.Rate.Reset)
+		if resp != nil {
+			if rateLimitErr, ok := sentry.CheckResponse(resp).(*sentry.RateLimitError); ok {
+				return time.Until(rateLimitErr.Rate.Reset)
+			}
 		}
 		return retryablehttp.DefaultBackoff(min, max, attemptNum, resp)
 	}
