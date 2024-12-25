@@ -681,6 +681,22 @@ type ProjectIdOrSlug = string
 // TeamIdOrSlug defines model for team_id_or_slug.
 type TeamIdOrSlug = string
 
+// ListOrganizationProjectsParams defines parameters for ListOrganizationProjects.
+type ListOrganizationProjectsParams struct {
+	Cursor  *Cursor   `form:"cursor,omitempty" json:"cursor,omitempty"`
+	Options *[]string `form:"options,omitempty" json:"options,omitempty"`
+}
+
+// DisableSpikeProtectionJSONBody defines parameters for DisableSpikeProtection.
+type DisableSpikeProtectionJSONBody struct {
+	Projects []string `json:"projects"`
+}
+
+// EnableSpikeProtectionJSONBody defines parameters for EnableSpikeProtection.
+type EnableSpikeProtectionJSONBody struct {
+	Projects []string `json:"projects"`
+}
+
 // UpdateOrganizationProjectJSONBody defines parameters for UpdateOrganizationProject.
 type UpdateOrganizationProjectJSONBody struct {
 	AllowedDomains       *[]string               `json:"allowedDomains,omitempty"`
@@ -773,6 +789,12 @@ type CreateOrganizationTeamProjectJSONBody struct {
 	Platform     *string `json:"platform,omitempty"`
 	Slug         *string `json:"slug,omitempty"`
 }
+
+// DisableSpikeProtectionJSONRequestBody defines body for DisableSpikeProtection for application/json ContentType.
+type DisableSpikeProtectionJSONRequestBody DisableSpikeProtectionJSONBody
+
+// EnableSpikeProtectionJSONRequestBody defines body for EnableSpikeProtection for application/json ContentType.
+type EnableSpikeProtectionJSONRequestBody EnableSpikeProtectionJSONBody
 
 // UpdateOrganizationProjectJSONRequestBody defines body for UpdateOrganizationProject for application/json ContentType.
 type UpdateOrganizationProjectJSONRequestBody UpdateOrganizationProjectJSONBody
@@ -2009,6 +2031,19 @@ type ClientInterface interface {
 	// GetOrganization request
 	GetOrganization(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListOrganizationProjects request
+	ListOrganizationProjects(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationProjectsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DisableSpikeProtectionWithBody request with any body
+	DisableSpikeProtectionWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	DisableSpikeProtection(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body DisableSpikeProtectionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// EnableSpikeProtectionWithBody request with any body
+	EnableSpikeProtectionWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	EnableSpikeProtection(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body EnableSpikeProtectionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// DeleteOrganizationProject request
 	DeleteOrganizationProject(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -2069,6 +2104,66 @@ type ClientInterface interface {
 
 func (c *Client) GetOrganization(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetOrganizationRequest(c.Server, organizationIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListOrganizationProjects(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationProjectsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListOrganizationProjectsRequest(c.Server, organizationIdOrSlug, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DisableSpikeProtectionWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDisableSpikeProtectionRequestWithBody(c.Server, organizationIdOrSlug, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DisableSpikeProtection(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body DisableSpikeProtectionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDisableSpikeProtectionRequest(c.Server, organizationIdOrSlug, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) EnableSpikeProtectionWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewEnableSpikeProtectionRequestWithBody(c.Server, organizationIdOrSlug, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) EnableSpikeProtection(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body EnableSpikeProtectionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewEnableSpikeProtectionRequest(c.Server, organizationIdOrSlug, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2361,6 +2456,172 @@ func NewGetOrganizationRequest(server string, organizationIdOrSlug OrganizationI
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewListOrganizationProjectsRequest generates requests for ListOrganizationProjects
+func NewListOrganizationProjectsRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationProjectsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organization_id_or_slug", runtime.ParamLocationPath, organizationIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/projects/", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "cursor", runtime.ParamLocationQuery, *params.Cursor); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Options != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "options", runtime.ParamLocationQuery, *params.Options); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDisableSpikeProtectionRequest calls the generic DisableSpikeProtection builder with application/json body
+func NewDisableSpikeProtectionRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, body DisableSpikeProtectionJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewDisableSpikeProtectionRequestWithBody(server, organizationIdOrSlug, "application/json", bodyReader)
+}
+
+// NewDisableSpikeProtectionRequestWithBody generates requests for DisableSpikeProtection with any type of body
+func NewDisableSpikeProtectionRequestWithBody(server string, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organization_id_or_slug", runtime.ParamLocationPath, organizationIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/spike-protections/", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewEnableSpikeProtectionRequest calls the generic EnableSpikeProtection builder with application/json body
+func NewEnableSpikeProtectionRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, body EnableSpikeProtectionJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewEnableSpikeProtectionRequestWithBody(server, organizationIdOrSlug, "application/json", bodyReader)
+}
+
+// NewEnableSpikeProtectionRequestWithBody generates requests for EnableSpikeProtection with any type of body
+func NewEnableSpikeProtectionRequestWithBody(server string, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organization_id_or_slug", runtime.ParamLocationPath, organizationIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/spike-protections/", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -3198,6 +3459,19 @@ type ClientWithResponsesInterface interface {
 	// GetOrganizationWithResponse request
 	GetOrganizationWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*GetOrganizationResponse, error)
 
+	// ListOrganizationProjectsWithResponse request
+	ListOrganizationProjectsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationProjectsParams, reqEditors ...RequestEditorFn) (*ListOrganizationProjectsResponse, error)
+
+	// DisableSpikeProtectionWithBodyWithResponse request with any body
+	DisableSpikeProtectionWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DisableSpikeProtectionResponse, error)
+
+	DisableSpikeProtectionWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body DisableSpikeProtectionJSONRequestBody, reqEditors ...RequestEditorFn) (*DisableSpikeProtectionResponse, error)
+
+	// EnableSpikeProtectionWithBodyWithResponse request with any body
+	EnableSpikeProtectionWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*EnableSpikeProtectionResponse, error)
+
+	EnableSpikeProtectionWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body EnableSpikeProtectionJSONRequestBody, reqEditors ...RequestEditorFn) (*EnableSpikeProtectionResponse, error)
+
 	// DeleteOrganizationProjectWithResponse request
 	DeleteOrganizationProjectWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, reqEditors ...RequestEditorFn) (*DeleteOrganizationProjectResponse, error)
 
@@ -3272,6 +3546,70 @@ func (r GetOrganizationResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetOrganizationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListOrganizationProjectsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]Project
+}
+
+// Status returns HTTPResponse.Status
+func (r ListOrganizationProjectsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListOrganizationProjectsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DisableSpikeProtectionResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DisableSpikeProtectionResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DisableSpikeProtectionResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type EnableSpikeProtectionResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r EnableSpikeProtectionResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r EnableSpikeProtectionResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -3617,6 +3955,49 @@ func (c *ClientWithResponses) GetOrganizationWithResponse(ctx context.Context, o
 	return ParseGetOrganizationResponse(rsp)
 }
 
+// ListOrganizationProjectsWithResponse request returning *ListOrganizationProjectsResponse
+func (c *ClientWithResponses) ListOrganizationProjectsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationProjectsParams, reqEditors ...RequestEditorFn) (*ListOrganizationProjectsResponse, error) {
+	rsp, err := c.ListOrganizationProjects(ctx, organizationIdOrSlug, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListOrganizationProjectsResponse(rsp)
+}
+
+// DisableSpikeProtectionWithBodyWithResponse request with arbitrary body returning *DisableSpikeProtectionResponse
+func (c *ClientWithResponses) DisableSpikeProtectionWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DisableSpikeProtectionResponse, error) {
+	rsp, err := c.DisableSpikeProtectionWithBody(ctx, organizationIdOrSlug, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDisableSpikeProtectionResponse(rsp)
+}
+
+func (c *ClientWithResponses) DisableSpikeProtectionWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body DisableSpikeProtectionJSONRequestBody, reqEditors ...RequestEditorFn) (*DisableSpikeProtectionResponse, error) {
+	rsp, err := c.DisableSpikeProtection(ctx, organizationIdOrSlug, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDisableSpikeProtectionResponse(rsp)
+}
+
+// EnableSpikeProtectionWithBodyWithResponse request with arbitrary body returning *EnableSpikeProtectionResponse
+func (c *ClientWithResponses) EnableSpikeProtectionWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*EnableSpikeProtectionResponse, error) {
+	rsp, err := c.EnableSpikeProtectionWithBody(ctx, organizationIdOrSlug, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseEnableSpikeProtectionResponse(rsp)
+}
+
+func (c *ClientWithResponses) EnableSpikeProtectionWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body EnableSpikeProtectionJSONRequestBody, reqEditors ...RequestEditorFn) (*EnableSpikeProtectionResponse, error) {
+	rsp, err := c.EnableSpikeProtection(ctx, organizationIdOrSlug, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseEnableSpikeProtectionResponse(rsp)
+}
+
 // DeleteOrganizationProjectWithResponse request returning *DeleteOrganizationProjectResponse
 func (c *ClientWithResponses) DeleteOrganizationProjectWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, reqEditors ...RequestEditorFn) (*DeleteOrganizationProjectResponse, error) {
 	rsp, err := c.DeleteOrganizationProject(ctx, organizationIdOrSlug, projectIdOrSlug, reqEditors...)
@@ -3821,6 +4202,64 @@ func ParseGetOrganizationResponse(rsp *http.Response) (*GetOrganizationResponse,
 		}
 		response.JSON200 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseListOrganizationProjectsResponse parses an HTTP response from a ListOrganizationProjectsWithResponse call
+func ParseListOrganizationProjectsResponse(rsp *http.Response) (*ListOrganizationProjectsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListOrganizationProjectsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []Project
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDisableSpikeProtectionResponse parses an HTTP response from a DisableSpikeProtectionWithResponse call
+func ParseDisableSpikeProtectionResponse(rsp *http.Response) (*DisableSpikeProtectionResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DisableSpikeProtectionResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseEnableSpikeProtectionResponse parses an HTTP response from a EnableSpikeProtectionWithResponse call
+func ParseEnableSpikeProtectionResponse(rsp *http.Response) (*EnableSpikeProtectionResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &EnableSpikeProtectionResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil
