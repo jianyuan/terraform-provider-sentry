@@ -2,15 +2,24 @@ package provider
 
 import (
 	"context"
+	"net/http"
+	"slices"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/go-utils/ptr"
+	"github.com/jianyuan/go-utils/sliceutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
 
 type AllProjectsSpikeProtectionResourceModel struct {
@@ -19,17 +28,11 @@ type AllProjectsSpikeProtectionResourceModel struct {
 	Projects     types.Set    `tfsdk:"projects"`
 }
 
-func (m *AllProjectsSpikeProtectionResourceModel) Fill(organization string, enabled bool, projects []sentry.Project) error {
-	m.Organization = types.StringValue(organization)
-	m.Enabled = types.BoolValue(enabled)
-
-	projectElements := []attr.Value{}
-	for _, project := range projects {
-		projectElements = append(projectElements, types.StringValue(project.Slug))
-	}
-	m.Projects = types.SetValueMust(types.StringType, projectElements)
-
-	return nil
+func (m *AllProjectsSpikeProtectionResourceModel) Fill(ctx context.Context, projects []apiclient.Project) (diags diag.Diagnostics) {
+	m.Projects = types.SetValueMust(types.StringType, sliceutils.Map(func(project apiclient.Project) attr.Value {
+		return types.StringValue(project.Slug)
+	}, projects))
+	return
 }
 
 var _ resource.Resource = &AllProjectsSpikeProtectionResource{}
@@ -60,6 +63,9 @@ func (r *AllProjectsSpikeProtectionResource) Schema(ctx context.Context, req res
 				Validators: []validator.Set{
 					setvalidator.SizeAtLeast(1),
 				},
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.RequiresReplace(),
+				},
 			},
 			"enabled": schema.BoolAttribute{
 				MarkdownDescription: "Toggle the browser-extensions, localhost, filtered-transaction, or web-crawlers filter on or off for all projects.",
@@ -69,34 +75,39 @@ func (r *AllProjectsSpikeProtectionResource) Schema(ctx context.Context, req res
 	}
 }
 
-func (r *AllProjectsSpikeProtectionResource) readProjects(ctx context.Context, organization string, enabled bool, projectSlugs []string) ([]sentry.Project, error) {
-	var allProjects []sentry.Project
-	params := &sentry.ListOrganizationProjectsParams{
-		Options: "quotas:spike-protection-disabled",
-	}
+func (r *AllProjectsSpikeProtectionResource) readProjects(ctx context.Context, organization string, enabled bool, projectSlugs []string) ([]apiclient.Project, diag.Diagnostics) {
+	var diags diag.Diagnostics
 
+	var allProjects []apiclient.Project
+	params := &apiclient.ListOrganizationProjectsParams{
+		Options: ptr.Ptr([]string{"quotas:spike-protection-disabled"}),
+	}
 	for {
-		projects, apiResp, err := r.client.OrganizationProjects.List(ctx, organization, params)
+		httpResp, err := r.apiClient.ListOrganizationProjectsWithResponse(
+			ctx,
+			organization,
+			params,
+		)
 		if err != nil {
-			return nil, err
+			diags.Append(diagutils.NewClientError("read", err))
+			return nil, diags
+		} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
+			diags.Append(diagutils.NewClientStatusError("read", httpResp.StatusCode(), httpResp.Body))
+			return nil, diags
 		}
 
-		for _, project := range projects {
-			for _, projectSlug := range projectSlugs {
-				if projectSlug == project.Slug {
-					if projectDisabled, ok := project.Options["quotas:spike-protection-disabled"].(bool); ok && projectDisabled != enabled {
-						allProjects = append(allProjects, *project)
-					}
-
-					break
+		for _, project := range *httpResp.JSON200 {
+			if slices.Contains(projectSlugs, project.Slug) {
+				if projectDisabled, ok := project.Options["quotas:spike-protection-disabled"].(bool); ok && projectDisabled != enabled {
+					allProjects = append(allProjects, project)
 				}
 			}
 		}
 
-		if apiResp.Cursor == "" {
+		params.Cursor = sentryclient.ParseNextPaginationCursor(httpResp.HTTPResponse)
+		if params.Cursor == nil {
 			break
 		}
-		params.Cursor = apiResp.Cursor
 	}
 
 	return allProjects, nil
@@ -110,45 +121,50 @@ func (r *AllProjectsSpikeProtectionResource) Create(ctx context.Context, req res
 		return
 	}
 
-	projects := []string{}
+	var projects []string
 	if !data.Projects.IsNull() {
 		resp.Diagnostics.Append(data.Projects.ElementsAs(ctx, &projects, false)...)
 	}
 
 	if data.Enabled.ValueBool() {
-		_, err := r.client.SpikeProtections.Enable(
+		httpResp, err := r.apiClient.EnableSpikeProtectionWithResponse(
 			ctx,
 			data.Organization.ValueString(),
-			&sentry.SpikeProtectionParams{
+			apiclient.EnableSpikeProtectionJSONRequestBody{
 				Projects: projects,
 			},
 		)
 		if err != nil {
 			resp.Diagnostics.Append(diagutils.NewClientError("enable", err))
 			return
+		} else if httpResp.StatusCode() != http.StatusCreated {
+			resp.Diagnostics.Append(diagutils.NewClientStatusError("enable", httpResp.StatusCode(), httpResp.Body))
+			return
 		}
 	} else {
-		_, err := r.client.SpikeProtections.Disable(
+		httpResp, err := r.apiClient.DisableSpikeProtectionWithResponse(
 			ctx,
 			data.Organization.ValueString(),
-			&sentry.SpikeProtectionParams{
+			apiclient.DisableSpikeProtectionJSONRequestBody{
 				Projects: projects,
 			},
 		)
 		if err != nil {
 			resp.Diagnostics.Append(diagutils.NewClientError("disable", err))
 			return
+		} else if httpResp.StatusCode() != http.StatusOK {
+			resp.Diagnostics.Append(diagutils.NewClientStatusError("disable", httpResp.StatusCode(), httpResp.Body))
+			return
 		}
 	}
 
-	allProjects, err := r.readProjects(ctx, data.Organization.ValueString(), data.Enabled.ValueBool(), projects)
-	if err != nil {
-		resp.Diagnostics.Append(diagutils.NewClientError("create", err))
+	allProjects := tfutils.MergeDiagnostics(r.readProjects(ctx, data.Organization.ValueString(), data.Enabled.ValueBool(), projects))(&resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	if err := data.Fill(data.Organization.ValueString(), data.Enabled.ValueBool(), allProjects); err != nil {
-		resp.Diagnostics.Append(diagutils.NewFillError(err))
+	resp.Diagnostics.Append(data.Fill(ctx, allProjects)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -168,14 +184,13 @@ func (r *AllProjectsSpikeProtectionResource) Read(ctx context.Context, req resou
 		resp.Diagnostics.Append(data.Projects.ElementsAs(ctx, &projects, false)...)
 	}
 
-	allProjects, err := r.readProjects(ctx, data.Organization.ValueString(), data.Enabled.ValueBool(), projects)
-	if err != nil {
-		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
+	allProjects := tfutils.MergeDiagnostics(r.readProjects(ctx, data.Organization.ValueString(), data.Enabled.ValueBool(), projects))(&resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	if err := data.Fill(data.Organization.ValueString(), data.Enabled.ValueBool(), allProjects); err != nil {
-		resp.Diagnostics.Append(diagutils.NewFillError(err))
+	resp.Diagnostics.Append(data.Fill(ctx, allProjects)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -196,39 +211,44 @@ func (r *AllProjectsSpikeProtectionResource) Update(ctx context.Context, req res
 	}
 
 	if data.Enabled.ValueBool() {
-		_, err := r.client.SpikeProtections.Enable(
+		httpResp, err := r.apiClient.EnableSpikeProtectionWithResponse(
 			ctx,
 			data.Organization.ValueString(),
-			&sentry.SpikeProtectionParams{
+			apiclient.EnableSpikeProtectionJSONRequestBody{
 				Projects: projects,
 			},
 		)
 		if err != nil {
 			resp.Diagnostics.Append(diagutils.NewClientError("enable", err))
 			return
+		} else if httpResp.StatusCode() != http.StatusCreated {
+			resp.Diagnostics.Append(diagutils.NewClientStatusError("enable", httpResp.StatusCode(), httpResp.Body))
+			return
 		}
 	} else {
-		_, err := r.client.SpikeProtections.Disable(
+		httpResp, err := r.apiClient.DisableSpikeProtectionWithResponse(
 			ctx,
 			data.Organization.ValueString(),
-			&sentry.SpikeProtectionParams{
+			apiclient.DisableSpikeProtectionJSONRequestBody{
 				Projects: projects,
 			},
 		)
 		if err != nil {
 			resp.Diagnostics.Append(diagutils.NewClientError("disable", err))
 			return
+		} else if httpResp.StatusCode() != http.StatusOK {
+			resp.Diagnostics.Append(diagutils.NewClientStatusError("disable", httpResp.StatusCode(), httpResp.Body))
+			return
 		}
 	}
 
-	allProjects, err := r.readProjects(ctx, data.Organization.ValueString(), data.Enabled.ValueBool(), projects)
-	if err != nil {
-		resp.Diagnostics.Append(diagutils.NewClientError("update", err))
+	allProjects := tfutils.MergeDiagnostics(r.readProjects(ctx, data.Organization.ValueString(), data.Enabled.ValueBool(), projects))(&resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	if err := data.Fill(data.Organization.ValueString(), data.Enabled.ValueBool(), allProjects); err != nil {
-		resp.Diagnostics.Append(diagutils.NewFillError(err))
+	resp.Diagnostics.Append(data.Fill(ctx, allProjects)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -250,28 +270,34 @@ func (r *AllProjectsSpikeProtectionResource) Delete(ctx context.Context, req res
 
 	if data.Enabled.ValueBool() {
 		// We need to disable the spike protection if it was enabled.
-		_, err := r.client.SpikeProtections.Disable(
+		httpResp, err := r.apiClient.DisableSpikeProtectionWithResponse(
 			ctx,
 			data.Organization.ValueString(),
-			&sentry.SpikeProtectionParams{
+			apiclient.DisableSpikeProtectionJSONRequestBody{
 				Projects: projects,
 			},
 		)
 		if err != nil {
 			resp.Diagnostics.Append(diagutils.NewClientError("disable", err))
 			return
+		} else if httpResp.StatusCode() != http.StatusOK {
+			resp.Diagnostics.Append(diagutils.NewClientStatusError("disable", httpResp.StatusCode(), httpResp.Body))
+			return
 		}
 	} else {
 		// We need to enable the spike protection if it was disabled.
-		_, err := r.client.SpikeProtections.Enable(
+		httpResp, err := r.apiClient.EnableSpikeProtectionWithResponse(
 			ctx,
 			data.Organization.ValueString(),
-			&sentry.SpikeProtectionParams{
+			apiclient.EnableSpikeProtectionJSONRequestBody{
 				Projects: projects,
 			},
 		)
 		if err != nil {
 			resp.Diagnostics.Append(diagutils.NewClientError("enable", err))
+			return
+		} else if httpResp.StatusCode() != http.StatusCreated {
+			resp.Diagnostics.Append(diagutils.NewClientStatusError("enable", httpResp.StatusCode(), httpResp.Body))
 			return
 		}
 	}
