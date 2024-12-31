@@ -2,11 +2,13 @@ package provider
 
 import (
 	"context"
+	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/jianyuan/go-utils/must"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 	"github.com/jianyuan/terraform-provider-sentry/sentry"
@@ -39,4 +41,37 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 
 		return muxServer.ProviderServer(), nil
 	},
+}
+
+func TestAccProvider_validation(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					provider "sentry" {
+						token = "invalid"
+					}
+
+					data "sentry_organization" "test" {
+						slug = "invalid"
+					}
+				`,
+				ExpectError: acctest.ExpectLiteralError("Sentry API is not available, Please check the authentication token"),
+			},
+			{
+				Config: `
+					provider "sentry" {
+						base_url = "https://github.com/jianyuan/terraform-provider-sentry"
+					}
+
+					data "sentry_organization" "test" {
+						slug = "invalid"
+					}
+				`,
+				ExpectError: acctest.ExpectLiteralError("Sentry API is not available, please check the base URL"),
+			},
+		},
+	})
 }
