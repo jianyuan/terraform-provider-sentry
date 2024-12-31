@@ -6,6 +6,15 @@ servers:
   - url: https://sentry.io/api
 
 paths:
+  /0/internal/health/:
+    get:
+      summary: Health Check
+      operationId: healthCheck
+      responses:
+        "200":
+          description: OK
+        "401":
+          description: Unauthorized
   /0/organizations/{organization_id_or_slug}/:
     parameters:
       - $ref: "#/components/parameters/organization_id_or_slug"

@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -57,7 +58,6 @@ func (p *SentryProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	var data SentryProviderModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -107,6 +107,21 @@ func (p *SentryProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	)
 	if err != nil {
 		resp.Diagnostics.AddError("failed to create Sentry API client", err.Error())
+		return
+	}
+
+	httpResp, err := apiClient.HealthCheckWithResponse(ctx)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to perform health check", err.Error())
+		return
+	} else if httpResp.StatusCode() == http.StatusNotFound {
+		resp.Diagnostics.AddError("failed to perform health check", "Sentry API is not available, please check the base URL")
+		return
+	} else if httpResp.StatusCode() == http.StatusUnauthorized {
+		resp.Diagnostics.AddError("failed to perform health check", "Sentry API is not available, Please check the authentication token")
+		return
+	} else if httpResp.StatusCode() != http.StatusOK {
+		resp.Diagnostics.AddError("failed to perform health check", fmt.Errorf("unexpected status code: %d", httpResp.StatusCode()).Error())
 		return
 	}
 
