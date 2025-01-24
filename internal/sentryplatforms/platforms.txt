@@ -4,8 +4,6 @@ apple-ios
 apple-macos
 bun
 capacitor
-cloudflare-pages
-cloudflare-workers
 cordova
 dart
 deno
@@ -59,6 +57,8 @@ nintendo-switch
 node
 node-awslambda
 node-azurefunctions
+node-cloudflare-pages
+node-cloudflare-workers
 node-connect
 node-express
 node-fastify
