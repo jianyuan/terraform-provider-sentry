@@ -222,6 +222,7 @@ func (r *ClientKeyResource) Schema(ctx context.Context, req resource.SchemaReque
 			"secret": schema.StringAttribute{
 				MarkdownDescription: "The secret key.",
 				Computed:            true,
+				Sensitive:           true,
 			},
 			"dsn": schema.MapAttribute{
 				MarkdownDescription: "This is a map of DSN values. The keys include `public`, `secret`, `csp`, `security`, `minidump`, `nel`, `unreal`, `cdn`, and `crons`.",
@@ -237,6 +238,7 @@ func (r *ClientKeyResource) Schema(ctx context.Context, req resource.SchemaReque
 				MarkdownDescription: "Deprecated DSN includes a secret which is no longer required by newer SDK versions. If you are unsure which to use, follow installation instructions for your language. **Deprecated** Use `dsn[\"secret\"] instead.",
 				DeprecationMessage:  "This field is deprecated and will be removed in a future version. Use `dsn[\"secret\"]` instead.",
 				Computed:            true,
+				Sensitive:           true,
 			},
 			"dsn_csp": schema.StringAttribute{
 				MarkdownDescription: "Security header endpoint for features like CSP and Expect-CT reports. **Deprecated** Use `dsn[\"csp\"]` instead.",
