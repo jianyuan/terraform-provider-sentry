@@ -136,6 +136,7 @@ func (d *ClientKeyDataSource) Schema(ctx context.Context, req datasource.SchemaR
 			"secret": schema.StringAttribute{
 				MarkdownDescription: "The secret key.",
 				Computed:            true,
+				Sensitive:           true,
 			},
 			"rate_limit_window": schema.Int64Attribute{
 				MarkdownDescription: "Length of time in seconds that will be considered when checking the rate limit.",
@@ -181,6 +182,7 @@ func (d *ClientKeyDataSource) Schema(ctx context.Context, req datasource.SchemaR
 				MarkdownDescription: "Deprecated DSN includes a secret which is no longer required by newer SDK versions. If you are unsure which to use, follow installation instructions for your language. **Deprecated** Use `dsn[\"secret\"]` instead.",
 				DeprecationMessage:  "This field is deprecated and will be removed in a future version. Use `dsn[\"secret\"]` instead.",
 				Computed:            true,
+				Sensitive:           true,
 			},
 			"dsn_csp": schema.StringAttribute{
 				MarkdownDescription: "Security header endpoint for features like CSP and Expect-CT reports. **Deprecated** Use `dsn[\"csp\"]` instead.",
