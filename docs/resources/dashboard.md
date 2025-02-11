@@ -21,7 +21,7 @@ resource "sentry_dashboard" "main" {
     title        = "Number of Errors"
     display_type = "big_number"
     interval     = "5m"
-    widget_type  = "discover"
+    widget_type  = "error-events"
 
     query {
       fields     = ["count()"]
@@ -43,12 +43,12 @@ resource "sentry_dashboard" "main" {
     title        = "Number of Issues"
     display_type = "big_number"
     interval     = "5m"
-    widget_type  = "discover"
+    widget_type  = "error-events"
 
     query {
       fields     = ["count_unique(issue)"]
       aggregates = ["count_unique(issue)"]
-      conditions = "!event.type:transaction"
+      conditions = ""
       order_by   = "count_unique(issue)"
     }
 
@@ -62,16 +62,16 @@ resource "sentry_dashboard" "main" {
   }
 
   widget {
-    title        = "Events"
+    title        = "Error Events"
     display_type = "line"
     interval     = "5m"
-    widget_type  = "discover"
+    widget_type  = "error-events"
 
     query {
       name       = "Events"
       fields     = ["count()"]
       aggregates = ["count()"]
-      conditions = "!event.type:transaction"
+      conditions = ""
       order_by   = "count()"
     }
 
@@ -88,13 +88,13 @@ resource "sentry_dashboard" "main" {
     title        = "Affected Users"
     display_type = "line"
     interval     = "5m"
-    widget_type  = "discover"
+    widget_type  = "error-events"
 
     query {
       name       = "Known Users"
       fields     = ["count_unique(user)"]
       aggregates = ["count_unique(user)"]
-      conditions = "has:user.email !event.type:transaction"
+      conditions = "has:user.email"
       order_by   = "count_unique(user)"
     }
 
@@ -102,7 +102,7 @@ resource "sentry_dashboard" "main" {
       name       = "Anonymous Users"
       fields     = ["count_unique(user)"]
       aggregates = ["count_unique(user)"]
-      conditions = "!has:user.email !event.type:transaction"
+      conditions = "!has:user.email"
       order_by   = "count_unique(user)"
     }
 
@@ -119,7 +119,7 @@ resource "sentry_dashboard" "main" {
     title        = "Handled vs. Unhandled"
     display_type = "line"
     interval     = "5m"
-    widget_type  = "discover"
+    widget_type  = "error-events"
 
     query {
       name       = "Handled"
@@ -150,12 +150,12 @@ resource "sentry_dashboard" "main" {
     title        = "Errors by Country"
     display_type = "table"
     interval     = "5m"
-    widget_type  = "discover"
+    widget_type  = "error-events"
 
     query {
       fields     = ["geo.country_code", "geo.region", "count()"]
       aggregates = ["count()"]
-      conditions = "!event.type:transaction has:geo.country_code"
+      conditions = "has:geo.country_code"
       order_by   = "count()"
     }
 
@@ -172,13 +172,13 @@ resource "sentry_dashboard" "main" {
     title        = "High Throughput Transactions"
     display_type = "table"
     interval     = "5m"
-    widget_type  = "discover"
+    widget_type  = "transaction-like"
 
     query {
       fields     = ["count()", "transaction"]
       aggregates = ["count()"]
       columns    = ["transaction"]
-      conditions = "!event.type:error"
+      conditions = ""
       order_by   = "-count()"
     }
 
@@ -195,13 +195,13 @@ resource "sentry_dashboard" "main" {
     title        = "Errors by Browser"
     display_type = "table"
     interval     = "5m"
-    widget_type  = "discover"
+    widget_type  = "error-events"
 
     query {
       fields     = ["browser.name", "count()"]
       aggregates = ["count()"]
       columns    = ["browser.name"]
-      conditions = "!event.type:transaction has:browser.name"
+      conditions = "has:browser.name"
       order_by   = "-count()"
     }
 
@@ -218,7 +218,7 @@ resource "sentry_dashboard" "main" {
     title        = "Overall User Misery"
     display_type = "big_number"
     interval     = "5m"
-    widget_type  = "discover"
+    widget_type  = "transaction-like"
 
     query {
       fields     = ["user_misery(300)"]
@@ -238,7 +238,7 @@ resource "sentry_dashboard" "main" {
     title        = "Overall Apdex"
     display_type = "big_number"
     interval     = "5m"
-    widget_type  = "discover"
+    widget_type  = "transaction-like"
 
     query {
       fields     = ["apdex(300)"]
@@ -258,13 +258,13 @@ resource "sentry_dashboard" "main" {
     title        = "High Throughput Transactions"
     display_type = "top_n"
     interval     = "5m"
-    widget_type  = "discover"
+    widget_type  = "transaction-like"
 
     query {
       fields     = ["transaction", "count()"]
       aggregates = ["count()"]
       columns    = ["transaction"]
-      conditions = "!event.type:error"
+      conditions = ""
       order_by   = "-count()"
     }
 
@@ -303,7 +303,7 @@ resource "sentry_dashboard" "main" {
     title        = "Transactions Ordered by Misery"
     display_type = "table"
     interval     = "5m"
-    widget_type  = "discover"
+    widget_type  = "transaction-like"
 
     query {
       fields     = ["transaction", "user_misery(300)"]
@@ -325,13 +325,13 @@ resource "sentry_dashboard" "main" {
     title        = "Errors by Browser Over Time"
     display_type = "top_n"
     interval     = "5m"
-    widget_type  = "discover"
+    widget_type  = "error-events"
 
     query {
       fields     = ["browser.name", "count()"]
       aggregates = ["count()"]
       columns    = ["browser.name"]
-      conditions = "event.type:error has:browser.name"
+      conditions = "has:browser.name"
       order_by   = "-count()"
     }
 

@@ -145,9 +145,10 @@ func resourceSentryDashboard() *schema.Resource {
 							// https://github.com/getsentry/sentry/blob/22.5.0/src/sentry/models/dashboard_widget.py#L39
 							ValidateFunc: validation.StringInSlice(
 								[]string{
-									"discover",
 									"issue",
 									"metrics",
+									"error-events",
+									"transaction-like",
 								},
 								false,
 							),
