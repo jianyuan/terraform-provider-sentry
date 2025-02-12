@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 )
 
 func resourceSentryDashboard() *schema.Resource {
@@ -58,21 +59,9 @@ func resourceSentryDashboard() *schema.Resource {
 							Required: true,
 						},
 						"display_type": {
-							Type:     schema.TypeString,
-							Required: true,
-							// https://github.com/getsentry/sentry/blob/22.5.0/src/sentry/models/dashboard_widget.py#L51
-							ValidateFunc: validation.StringInSlice(
-								[]string{
-									"line",
-									"area",
-									"stacked_area",
-									"bar",
-									"table",
-									"big_number",
-									"top_n",
-								},
-								false,
-							),
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.StringInSlice(sentrydata.DashboardWidgetDisplayTypes, false),
 						},
 						"interval": {
 							Type:     schema.TypeString,
@@ -139,19 +128,10 @@ func resourceSentryDashboard() *schema.Resource {
 							},
 						},
 						"widget_type": {
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
-							// https://github.com/getsentry/sentry/blob/22.5.0/src/sentry/models/dashboard_widget.py#L39
-							ValidateFunc: validation.StringInSlice(
-								[]string{
-									"issue",
-									"metrics",
-									"error-events",
-									"transaction-like",
-								},
-								false,
-							),
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validation.StringInSlice(sentrydata.DashboardWidgetTypes, false),
 						},
 						"limit": {
 							Type:     schema.TypeInt,
