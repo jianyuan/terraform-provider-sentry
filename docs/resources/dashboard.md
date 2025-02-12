@@ -26,7 +26,7 @@ resource "sentry_dashboard" "main" {
     query {
       fields     = ["count()"]
       aggregates = ["count()"]
-      conditions = "!event.type:transaction"
+      conditions = ""
       order_by   = "count()"
     }
 
@@ -48,7 +48,7 @@ resource "sentry_dashboard" "main" {
     query {
       fields     = ["count_unique(issue)"]
       aggregates = ["count_unique(issue)"]
-      conditions = ""
+      conditions = "!event.type:transaction"
       order_by   = "count_unique(issue)"
     }
 
@@ -264,7 +264,7 @@ resource "sentry_dashboard" "main" {
       fields     = ["transaction", "count()"]
       aggregates = ["count()"]
       columns    = ["transaction"]
-      conditions = ""
+      conditions = "!event.type:error"
       order_by   = "-count()"
     }
 
