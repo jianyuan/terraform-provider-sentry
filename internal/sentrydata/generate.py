@@ -258,6 +258,27 @@ def parse_models_dashboard_widget() -> dict[str, ResultData[Any]]:
     return out
 
 
+def parse_models_project() -> dict[str, ResultData[Any]]:
+    data = get_file_data("src/sentry/models/project.py")
+    out: dict[str, ResultData[Any]] = {}
+    for node in ast.walk(data.tree):
+        match node:
+            case ast.Assign(
+                targets=[ast.Name(id="GETTING_STARTED_DOCS_PLATFORMS")],
+                value=ast.List(elts=elts),
+            ):
+                out["Platforms"] = ResultData(
+                    github_url=data.github_url.for_stmt(node),
+                    result=["other"],
+                )
+                for elt in elts:
+                    assert isinstance(elt, ast.Constant)
+                    out["Platforms"].result.append(elt.value)
+            case _:
+                pass
+    return out
+
+
 def main() -> None:
     result: OrderedDict[str, ResultData[Any]] = OrderedDict()
     result.update(parse_constants())
@@ -265,6 +286,7 @@ def main() -> None:
     result.update(parse_rules_conditions_event_attribute())
     result.update(parse_rules_match())
     result.update(parse_models_dashboard_widget())
+    result.update(parse_models_project())
 
     env = get_jinja2_env()
     template = env.from_string(TEMPLATE)

@@ -3,7 +3,7 @@ name: update-sentrydata
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 * * * *"
+    - cron: "0 0 * * *"
 
 permissions:
   contents: write
@@ -20,7 +20,7 @@ jobs:
           cache: true
       - name: Install uv
         uses: astral-sh/setup-uv@v5
-      - run: go generate ./internal/sentrydata
+      - run: make generate
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:

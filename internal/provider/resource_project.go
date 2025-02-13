@@ -26,7 +26,7 @@ import (
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
-	"github.com/jianyuan/terraform-provider-sentry/internal/sentryplatforms"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
@@ -230,13 +230,10 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
-			"platform": schema.StringAttribute{
-				MarkdownDescription: "The platform for this project. For a list of valid values, [see this page](https://github.com/jianyuan/terraform-provider-sentry/blob/main/internal/sentryplatforms/platforms.txt). Use `other` for platforms not listed.",
+			"platform": tfutils.WithEnumStringAttribute(schema.StringAttribute{
+				MarkdownDescription: "The platform for this project. Use `other` for platforms not listed.",
 				Optional:            true,
-				Validators: []validator.String{
-					stringvalidator.OneOf(append(sentryplatforms.Platforms, "other")...),
-				},
-			},
+			}, sentrydata.Platforms),
 			"default_rules": schema.BoolAttribute{
 				Description: "Whether to create a default issue alert. Defaults to true where the behavior is to alert the user on every new issue.",
 				Optional:    true,
