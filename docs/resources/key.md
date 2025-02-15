@@ -39,10 +39,10 @@ resource "sentry_key" "default" {
 
 ### Read-Only
 
-- `dsn` (Map of String) This is a map of DSN values. The keys include `public`, `secret`, `csp`, `security`, `minidump`, `nel`, `unreal`, `cdn`, and `crons`.
-- `dsn_csp` (String, Deprecated) Security header endpoint for features like CSP and Expect-CT reports. **Deprecated** Use `dsn["csp"]` instead.
-- `dsn_public` (String, Deprecated) The DSN tells the SDK where to send the events to. **Deprecated** Use `dsn["public"]` instead.
-- `dsn_secret` (String, Sensitive, Deprecated) Deprecated DSN includes a secret which is no longer required by newer SDK versions. If you are unsure which to use, follow installation instructions for your language. **Deprecated** Use `dsn["secret"] instead.
+- `dsn` (Map of String, Sensitive) This is a map of DSN values. The keys include `public`, `secret`, `csp`, `security`, `minidump`, `nel`, `unreal`, `cdn`, and `crons`.
+- `dsn_csp` (String, Deprecated) Security header endpoint for features like CSP and Expect-CT reports.
+- `dsn_public` (String, Deprecated) The DSN tells the SDK where to send the events to.
+- `dsn_secret` (String, Sensitive, Deprecated) Deprecated DSN includes a secret which is no longer required by newer SDK versions. If you are unsure which to use, follow installation instructions for your language.
 - `id` (String) The ID of this resource.
 - `project_id` (String) The ID of the project that the key belongs to.
 - `public` (String) The public key.
