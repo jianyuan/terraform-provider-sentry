@@ -10,26 +10,30 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/jianyuan/go-utils/sliceutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/services/client_key"
+	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 )
 
 type AllClientKeysDataSourceModel struct {
-	Organization types.String             `tfsdk:"organization"`
-	Project      types.String             `tfsdk:"project"`
-	FilterStatus types.String             `tfsdk:"filter_status"`
-	Keys         []ClientKeyResourceModel `tfsdk:"keys"`
+	Organization types.String                                                 `tfsdk:"organization"`
+	Project      types.String                                                 `tfsdk:"project"`
+	FilterStatus types.String                                                 `tfsdk:"filter_status"`
+	Keys         supertypes.ListNestedObjectValueOf[client_key.ResourceModel] `tfsdk:"keys"`
 }
 
 func (m *AllClientKeysDataSourceModel) Fill(ctx context.Context, keys []apiclient.ProjectKey) (diags diag.Diagnostics) {
-	m.Keys = make([]ClientKeyResourceModel, len(keys))
-	for i, key := range keys {
-		m.Keys[i].Organization = types.StringValue(m.Organization.ValueString())
-		m.Keys[i].Project = types.StringValue(m.Project.ValueString())
-		diags.Append(m.Keys[i].Fill(ctx, key)...)
-	}
-
+	m.Keys = supertypes.NewListNestedObjectValueOfValueSlice(ctx, sliceutils.Map(func(v apiclient.ProjectKey) client_key.ResourceModel {
+		key := client_key.ResourceModel{
+			Organization: types.StringValue(m.Organization.ValueString()),
+			Project:      types.StringValue(m.Project.ValueString()),
+		}
+		diags.Append(key.Fill(ctx, v)...)
+		return key
+	}, keys))
 	return
 }
 
@@ -67,6 +71,7 @@ func (d *AllClientKeysDataSource) Schema(ctx context.Context, req datasource.Sch
 			},
 			"keys": schema.ListNestedAttribute{
 				MarkdownDescription: "The list of client keys.",
+				CustomType:          supertypes.NewListNestedObjectTypeOf[client_key.ResourceModel](ctx),
 				Computed:            true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{

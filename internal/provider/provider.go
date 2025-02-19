@@ -15,6 +15,7 @@ import (
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/services/client_key"
 )
 
 var _ provider.Provider = &SentryProvider{}
@@ -137,8 +138,8 @@ func (p *SentryProvider) Configure(ctx context.Context, req provider.ConfigureRe
 func (p *SentryProvider) Resources(ctx context.Context) []func() resource.Resource {
 	// Please keep the resources sorted by name.
 	return []func() resource.Resource{
+		client_key.NewResource,
 		NewAllProjectsSpikeProtectionResource,
-		NewClientKeyResource,
 		NewIntegrationOpsgenie,
 		NewIntegrationPagerDuty,
 		NewIssueAlertResource,
@@ -155,10 +156,10 @@ func (p *SentryProvider) Resources(ctx context.Context) []func() resource.Resour
 func (p *SentryProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	// Please keep the data sources sorted by name.
 	return []func() datasource.DataSource{
+		client_key.NewDataSource,
 		NewAllClientKeysDataSource,
 		NewAllOrganizationMembersDataSource,
 		NewAllProjectsDataSource,
-		NewClientKeyDataSource,
 		NewIssueAlertDataSource,
 		NewOrganizationDataSource,
 		NewOrganizationIntegrationDataSource,

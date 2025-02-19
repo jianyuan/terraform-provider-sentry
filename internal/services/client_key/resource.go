@@ -1,110 +1,36 @@
-package provider
+package client_key
 
 import (
 	"context"
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/jianyuan/go-utils/maputils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/services"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
-	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 )
 
-type ClientKeyResourceModel struct {
-	Id                     types.String                                                               `tfsdk:"id"`
-	Organization           types.String                                                               `tfsdk:"organization"`
-	Project                types.String                                                               `tfsdk:"project"`
-	ProjectId              types.String                                                               `tfsdk:"project_id"`
-	Name                   types.String                                                               `tfsdk:"name"`
-	RateLimitWindow        types.Int64                                                                `tfsdk:"rate_limit_window"`
-	RateLimitCount         types.Int64                                                                `tfsdk:"rate_limit_count"`
-	JavascriptLoaderScript supertypes.SingleNestedObjectValueOf[ClientKeyJavascriptLoaderScriptModel] `tfsdk:"javascript_loader_script"`
-	Public                 types.String                                                               `tfsdk:"public"`
-	Secret                 types.String                                                               `tfsdk:"secret"`
-	Dsn                    types.Map                                                                  `tfsdk:"dsn"`
-	DsnPublic              types.String                                                               `tfsdk:"dsn_public"`
-	DsnSecret              types.String                                                               `tfsdk:"dsn_secret"`
-	DsnCsp                 types.String                                                               `tfsdk:"dsn_csp"`
+var _ resource.Resource = &Resource{}
+var _ resource.ResourceWithConfigure = &Resource{}
+var _ resource.ResourceWithConfigValidators = &Resource{}
+var _ resource.ResourceWithImportState = &Resource{}
+
+func NewResource() resource.Resource {
+	return &Resource{}
 }
 
-func (m *ClientKeyResourceModel) Fill(ctx context.Context, key apiclient.ProjectKey) (diags diag.Diagnostics) {
-	m.Id = types.StringValue(key.Id)
-	m.ProjectId = types.StringValue(key.ProjectId.String())
-	m.Name = types.StringValue(key.Name)
-
-	if key.RateLimit == nil {
-		m.RateLimitWindow = types.Int64Null()
-		m.RateLimitCount = types.Int64Null()
-	} else {
-		m.RateLimitWindow = types.Int64Value(key.RateLimit.Window)
-		m.RateLimitCount = types.Int64Value(key.RateLimit.Count)
-	}
-
-	var javascriptLoaderScript ClientKeyJavascriptLoaderScriptModel
-	diags.Append(javascriptLoaderScript.Fill(ctx, key)...)
-	if diags.HasError() {
-		return
-	}
-
-	m.JavascriptLoaderScript = supertypes.NewSingleNestedObjectValueOfNull[ClientKeyJavascriptLoaderScriptModel](ctx)
-	diags.Append(m.JavascriptLoaderScript.Set(ctx, &javascriptLoaderScript)...)
-	if diags.HasError() {
-		return
-	}
-
-	m.Public = types.StringValue(key.Public)
-	m.Secret = types.StringValue(key.Secret)
-
-	m.Dsn = types.MapValueMust(types.StringType, maputils.MapValues(key.Dsn, func(v string) attr.Value {
-		return types.StringValue(v)
-	}))
-
-	if v, ok := key.Dsn["public"]; ok {
-		m.DsnPublic = types.StringValue(v)
-	} else {
-		m.DsnPublic = types.StringNull()
-	}
-
-	if v, ok := key.Dsn["secret"]; ok {
-		m.DsnSecret = types.StringValue(v)
-	} else {
-		m.DsnSecret = types.StringNull()
-	}
-
-	if v, ok := key.Dsn["csp"]; ok {
-		m.DsnCsp = types.StringValue(v)
-	} else {
-		m.DsnCsp = types.StringNull()
-	}
-
-	return
+type Resource struct {
+	services.BaseResource
 }
 
-var _ resource.Resource = &ClientKeyResource{}
-var _ resource.ResourceWithConfigure = &ClientKeyResource{}
-var _ resource.ResourceWithConfigValidators = &ClientKeyResource{}
-var _ resource.ResourceWithImportState = &ClientKeyResource{}
-
-func NewClientKeyResource() resource.Resource {
-	return &ClientKeyResource{}
-}
-
-type ClientKeyResource struct {
-	baseResource
-}
-
-func (r *ClientKeyResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *Resource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_key"
 }
 
-func (d *ClientKeyResource) ConfigValidators(ctx context.Context) []resource.ConfigValidator {
+func (d *Resource) ConfigValidators(ctx context.Context) []resource.ConfigValidator {
 	return []resource.ConfigValidator{
 		resourcevalidator.RequiredTogether(
 			path.MatchRoot("rate_limit_window"),
@@ -118,12 +44,12 @@ func (d *ClientKeyResource) ConfigValidators(ctx context.Context) []resource.Con
 	}
 }
 
-func (r *ClientKeyResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = clientKeySchema().GetResource(ctx)
+func (r *Resource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = Schema().GetResource(ctx)
 }
 
-func (r *ClientKeyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data ClientKeyResourceModel
+func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data ResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -169,7 +95,7 @@ func (r *ClientKeyResource) Create(ctx context.Context, req resource.CreateReque
 		}
 	}
 
-	httpResp, err := r.apiClient.CreateProjectClientKeyWithResponse(
+	httpResp, err := r.ApiClient.CreateProjectClientKeyWithResponse(
 		ctx,
 		data.Organization.ValueString(),
 		data.Project.ValueString(),
@@ -191,15 +117,15 @@ func (r *ClientKeyResource) Create(ctx context.Context, req resource.CreateReque
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *ClientKeyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data ClientKeyResourceModel
+func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data ResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	httpResp, err := r.apiClient.GetProjectClientKeyWithResponse(
+	httpResp, err := r.ApiClient.GetProjectClientKeyWithResponse(
 		ctx,
 		data.Organization.ValueString(),
 		data.Project.ValueString(),
@@ -225,8 +151,8 @@ func (r *ClientKeyResource) Read(ctx context.Context, req resource.ReadRequest, 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *ClientKeyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan, state ClientKeyResourceModel
+func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var plan, state ResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
@@ -267,7 +193,7 @@ func (r *ClientKeyResource) Update(ctx context.Context, req resource.UpdateReque
 		}
 	}
 
-	httpResp, err := r.apiClient.UpdateProjectClientKeyWithResponse(
+	httpResp, err := r.ApiClient.UpdateProjectClientKeyWithResponse(
 		ctx,
 		plan.Organization.ValueString(),
 		plan.Project.ValueString(),
@@ -294,15 +220,15 @@ func (r *ClientKeyResource) Update(ctx context.Context, req resource.UpdateReque
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *ClientKeyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data ClientKeyResourceModel
+func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data ResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	httpResp, err := r.apiClient.DeleteProjectClientKeyWithResponse(
+	httpResp, err := r.ApiClient.DeleteProjectClientKeyWithResponse(
 		ctx,
 		data.Organization.ValueString(),
 		data.Project.ValueString(),
@@ -319,6 +245,6 @@ func (r *ClientKeyResource) Delete(ctx context.Context, req resource.DeleteReque
 	}
 }
 
-func (r *ClientKeyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *Resource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	tfutils.ImportStateThreePartId(ctx, "organization", "project", req, resp)
 }

@@ -1,4 +1,4 @@
-package provider
+package client_key
 
 import (
 	schemaD "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -12,7 +12,7 @@ import (
 	superschema "github.com/orange-cloudavenue/terraform-plugin-framework-superschema"
 )
 
-func clientKeySchema() superschema.Schema {
+func Schema() superschema.Schema {
 	return superschema.Schema{
 		Resource: superschema.SchemaDetails{
 			MarkdownDescription: "Return a client key bound to a project.",
@@ -98,7 +98,7 @@ func clientKeySchema() superschema.Schema {
 					Computed: true,
 				},
 			},
-			"javascript_loader_script": superschema.SuperSingleNestedAttributeOf[ClientKeyJavascriptLoaderScriptModel]{
+			"javascript_loader_script": superschema.SuperSingleNestedAttributeOf[JavascriptLoaderScriptModel]{
 				Common: &schemaR.SingleNestedAttribute{
 					MarkdownDescription: "The JavaScript loader script configuration.",
 				},
@@ -194,7 +194,7 @@ func clientKeySchema() superschema.Schema {
 					Sensitive:           true,
 				},
 			},
-			"dsn": superschema.MapAttribute{
+			"dsn": superschema.SuperMapAttributeOf[string]{
 				Common: &schemaR.MapAttribute{
 					MarkdownDescription: "This is a map of DSN values. The keys include `public`, `secret`, `csp`, `security`, `minidump`, `nel`, `unreal`, `cdn`, and `crons`.",
 					ElementType:         types.StringType,
