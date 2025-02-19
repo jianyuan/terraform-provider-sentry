@@ -16,10 +16,10 @@ resource "sentry_project_inbound_data_filter" "test" {
 }
 
 # Create an inbound data filter with subfilters. Only applicable to the
-# `legacy-browser` filter.
+# `legacy-browsers` filter.
 resource "sentry_project_inbound_data_filter" "test" {
   organization = sentry_project.default.organization
   project      = sentry_project.default.id
-  filter_id    = "legacy-browser"
+  filter_id    = "legacy-browsers"
   subfilters   = ["ie_pre_9", "ie9"]
 }
