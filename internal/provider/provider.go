@@ -16,6 +16,7 @@ import (
 	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/services/client_key"
+	"github.com/jianyuan/terraform-provider-sentry/internal/services/organization"
 )
 
 var _ provider.Provider = &SentryProvider{}
@@ -161,10 +162,10 @@ func (p *SentryProvider) DataSources(ctx context.Context) []func() datasource.Da
 		NewAllOrganizationMembersDataSource,
 		NewAllProjectsDataSource,
 		NewIssueAlertDataSource,
-		NewOrganizationDataSource,
 		NewOrganizationIntegrationDataSource,
 		NewOrganizationMemberDataSource,
 		NewProjectDataSource,
+		organization.NewDataSource,
 	}
 }
 
