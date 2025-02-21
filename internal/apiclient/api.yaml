@@ -621,6 +621,1557 @@ paths:
           description: Forbidden
         "404":
           description: Not Found
+  /0/organizations/{organization_id_or_slug}/monitors/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+    # get:
+    #   operationId: Retrieve Monitors for an Organization
+    #   description: Lists monitors, including nested monitor environments. May be
+    #     filtered to a project or environment.
+    #   parameters:
+    #     - in: path
+    #       name: organization_id_or_slug
+    #       schema:
+    #         type: string
+    #       description: The ID or slug of the organization the resource belongs to.
+    #       required: true
+    #     - in: query
+    #       name: project
+    #       schema:
+    #         type: array
+    #         items:
+    #           type: integer
+    #       description: |
+    #         The IDs of projects to filter by. `-1` means all available projects.
+    #         For example, the following are valid parameters:
+    #         - `/?project=1234&project=56789`
+    #         - `/?project=-1`
+    #     - in: query
+    #       name: environment
+    #       schema:
+    #         type: array
+    #         items:
+    #           type: string
+    #       description: The name of environments to filter by.
+    #     - in: query
+    #       name: owner
+    #       schema:
+    #         type: string
+    #       description:
+    #         The owner of the monitor, in the format `user:id` or `team:id`. May
+    #         be specified multiple times.
+    #   tags:
+    #     - Crons
+    #   security:
+    #     - auth_token:
+    #         - org:admin
+    #         - org:read
+    #         - org:write
+    #   responses:
+    #     "200":
+    #       content:
+    #         application/json:
+    #           schema:
+    #             type: array
+    #             items:
+    #               type: object
+    #               properties:
+    #                 alertRule:
+    #                   type: object
+    #                   properties:
+    #                     targets:
+    #                       type: array
+    #                       items:
+    #                         type: object
+    #                         properties:
+    #                           targetIdentifier:
+    #                             type: integer
+    #                           targetType:
+    #                             type: string
+    #                         required:
+    #                           - targetIdentifier
+    #                           - targetType
+    #                     environment:
+    #                       type: string
+    #                   required:
+    #                     - environment
+    #                     - targets
+    #                 id:
+    #                   type: string
+    #                 name:
+    #                   type: string
+    #                 slug:
+    #                   type: string
+    #                 status:
+    #                   type: string
+    #                 isMuted:
+    #                   type: boolean
+    #                 type:
+    #                   enum:
+    #                     - cron_job
+    #                     - unknown
+    #                   type: string
+    #                 config:
+    #                   type: object
+    #                   properties:
+    #                     schedule_type:
+    #                       enum:
+    #                         - crontab
+    #                         - interval
+    #                       type: string
+    #                     schedule:
+    #                       anyOf:
+    #                         - type: string
+    #                         - type: array
+    #                           items:
+    #                             type: integer
+    #                           minItems: 2
+    #                           maxItems: 2
+    #                     checkin_margin:
+    #                       type: integer
+    #                       nullable: true
+    #                     max_runtime:
+    #                       type: integer
+    #                       nullable: true
+    #                     timezone:
+    #                       type: string
+    #                       nullable: true
+    #                     failure_issue_threshold:
+    #                       type: integer
+    #                       nullable: true
+    #                     recovery_threshold:
+    #                       type: integer
+    #                       nullable: true
+    #                     alert_rule_id:
+    #                       type: integer
+    #                       nullable: true
+    #                   required:
+    #                     - alert_rule_id
+    #                     - checkin_margin
+    #                     - failure_issue_threshold
+    #                     - max_runtime
+    #                     - recovery_threshold
+    #                     - schedule
+    #                     - schedule_type
+    #                     - timezone
+    #                 dateCreated:
+    #                   type: string
+    #                   format: date-time
+    #                 project:
+    #                   type: object
+    #                   properties:
+    #                     stats: {}
+    #                     transactionStats: {}
+    #                     sessionStats: {}
+    #                     id:
+    #                       type: string
+    #                     slug:
+    #                       type: string
+    #                     name:
+    #                       type: string
+    #                     platform:
+    #                       type: string
+    #                       nullable: true
+    #                     dateCreated:
+    #                       type: string
+    #                       format: date-time
+    #                     isBookmarked:
+    #                       type: boolean
+    #                     isMember:
+    #                       type: boolean
+    #                     features:
+    #                       type: array
+    #                       items:
+    #                         type: string
+    #                     firstEvent:
+    #                       type: string
+    #                       format: date-time
+    #                       nullable: true
+    #                     firstTransactionEvent:
+    #                       type: boolean
+    #                     access:
+    #                       type: array
+    #                       items:
+    #                         type: string
+    #                     hasAccess:
+    #                       type: boolean
+    #                     hasCustomMetrics:
+    #                       type: boolean
+    #                     hasFeedbacks:
+    #                       type: boolean
+    #                     hasMinifiedStackTrace:
+    #                       type: boolean
+    #                     hasMonitors:
+    #                       type: boolean
+    #                     hasNewFeedbacks:
+    #                       type: boolean
+    #                     hasProfiles:
+    #                       type: boolean
+    #                     hasReplays:
+    #                       type: boolean
+    #                     hasSessions:
+    #                       type: boolean
+    #                     hasInsightsHttp:
+    #                       type: boolean
+    #                     hasInsightsDb:
+    #                       type: boolean
+    #                     hasInsightsAssets:
+    #                       type: boolean
+    #                     hasInsightsAppStart:
+    #                       type: boolean
+    #                     hasInsightsScreenLoad:
+    #                       type: boolean
+    #                     hasInsightsVitals:
+    #                       type: boolean
+    #                     hasInsightsCaches:
+    #                       type: boolean
+    #                     hasInsightsQueues:
+    #                       type: boolean
+    #                     hasInsightsLlmMonitoring:
+    #                       type: boolean
+    #                     isInternal:
+    #                       type: boolean
+    #                     isPublic:
+    #                       type: boolean
+    #                     avatar:
+    #                       type: object
+    #                       properties:
+    #                         avatarType:
+    #                           type: string
+    #                         avatarUuid:
+    #                           type: string
+    #                           nullable: true
+    #                         avatarUrl:
+    #                           type: string
+    #                           nullable: true
+    #                     color:
+    #                       type: string
+    #                     status:
+    #                       type: string
+    #                   required:
+    #                     - access
+    #                     - avatar
+    #                     - color
+    #                     - dateCreated
+    #                     - features
+    #                     - firstEvent
+    #                     - firstTransactionEvent
+    #                     - hasAccess
+    #                     - hasCustomMetrics
+    #                     - hasFeedbacks
+    #                     - hasInsightsAppStart
+    #                     - hasInsightsAssets
+    #                     - hasInsightsCaches
+    #                     - hasInsightsDb
+    #                     - hasInsightsHttp
+    #                     - hasInsightsLlmMonitoring
+    #                     - hasInsightsQueues
+    #                     - hasInsightsScreenLoad
+    #                     - hasInsightsVitals
+    #                     - hasMinifiedStackTrace
+    #                     - hasMonitors
+    #                     - hasNewFeedbacks
+    #                     - hasProfiles
+    #                     - hasReplays
+    #                     - hasSessions
+    #                     - id
+    #                     - isBookmarked
+    #                     - isInternal
+    #                     - isMember
+    #                     - isPublic
+    #                     - name
+    #                     - platform
+    #                     - slug
+    #                     - status
+    #                 environments:
+    #                   type: object
+    #                   properties:
+    #                     name:
+    #                       type: string
+    #                     status:
+    #                       type: string
+    #                     isMuted:
+    #                       type: boolean
+    #                     dateCreated:
+    #                       type: string
+    #                       format: date-time
+    #                     lastCheckIn:
+    #                       type: string
+    #                       format: date-time
+    #                     nextCheckIn:
+    #                       type: string
+    #                       format: date-time
+    #                     nextCheckInLatest:
+    #                       type: string
+    #                       format: date-time
+    #                     activeIncident:
+    #                       type: object
+    #                       properties:
+    #                         startingTimestamp:
+    #                           type: string
+    #                           format: date-time
+    #                         resolvingTimestamp:
+    #                           type: string
+    #                           format: date-time
+    #                         brokenNotice:
+    #                           type: object
+    #                           properties:
+    #                             userNotifiedTimestamp:
+    #                               type: string
+    #                               format: date-time
+    #                             environmentMutedTimestamp:
+    #                               type: string
+    #                               format: date-time
+    #                           required:
+    #                             - environmentMutedTimestamp
+    #                             - userNotifiedTimestamp
+    #                           nullable: true
+    #                       required:
+    #                         - brokenNotice
+    #                         - resolvingTimestamp
+    #                         - startingTimestamp
+    #                       nullable: true
+    #                   required:
+    #                     - activeIncident
+    #                     - dateCreated
+    #                     - isMuted
+    #                     - lastCheckIn
+    #                     - name
+    #                     - nextCheckIn
+    #                     - nextCheckInLatest
+    #                     - status
+    #                 owner:
+    #                   type: object
+    #                   properties:
+    #                     type:
+    #                       enum:
+    #                         - user
+    #                         - team
+    #                       type: string
+    #                     id:
+    #                       type: string
+    #                     name:
+    #                       type: string
+    #                     email:
+    #                       type: string
+    #                       nullable: true
+    #                   required:
+    #                     - email
+    #                     - id
+    #                     - name
+    #                     - type
+    #               required:
+    #                 - config
+    #                 - dateCreated
+    #                 - environments
+    #                 - id
+    #                 - isMuted
+    #                 - name
+    #                 - owner
+    #                 - project
+    #                 - slug
+    #                 - status
+    #                 - type
+    #       description: ""
+    #     "401":
+    #       description: Unauthorized
+    #     "403":
+    #       description: Forbidden
+    #     "404":
+    #       description: Not Found
+    post:
+      operationId: createMonitor
+      description: Create a new monitor.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: >-
+                Allows parameters to be defined in snake case, but passed as
+                camel case.
+
+
+                Errors are output in camel case.
+              properties:
+                name:
+                  type: string
+                  description: Name of the monitor. Used for notifications.
+                  maxLength: 128
+                type:
+                  enum:
+                    - cron_job
+                  type: string
+                  description: "* `cron_job`"
+                slug:
+                  type: string
+                  description:
+                    Uniquely identifies your monitor within your organization. Changing
+                    this slug will require updates to any instrumented check-in
+                    calls.
+                  maxLength: 50
+                  pattern: ^(?![0-9]+$)[a-z0-9_\-]+$
+                status:
+                  enum:
+                    - active
+                    - disabled
+                  type: string
+                  default: active
+                  description: >-
+                    Status of the monitor. Disabled monitors will not accept
+                    events and will not count towards the monitor quota.
+
+
+                    * `active`
+
+                    * `disabled`
+                owner:
+                  type: string
+                  nullable: true
+                  description:
+                    The ID of the team or user that owns the monitor. (eg. user:51 or
+                    team:6)
+                is_muted:
+                  type: boolean
+                  description: Disable creation of monitor incidents
+              required:
+                - name
+                - type
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Monitor'
+                # type: object
+                # properties:
+                #   alertRule:
+                #     type: object
+                #     properties:
+                #       targets:
+                #         type: array
+                #         items:
+                #           type: object
+                #           properties:
+                #             targetIdentifier:
+                #               type: integer
+                #             targetType:
+                #               type: string
+                #           required:
+                #             - targetIdentifier
+                #             - targetType
+                #       environment:
+                #         type: string
+                #     required:
+                #       - environment
+                #       - targets
+                #   id:
+                #     type: string
+                #   name:
+                #     type: string
+                #   slug:
+                #     type: string
+                #   status:
+                #     type: string
+                #   isMuted:
+                #     type: boolean
+                #   type:
+                #     enum:
+                #       - cron_job
+                #       - unknown
+                #     type: string
+                #   config:
+                #     type: object
+                #     properties:
+                #       schedule_type:
+                #         enum:
+                #           - crontab
+                #           - interval
+                #         type: string
+                #       schedule:
+                #         anyOf:
+                #           - type: string
+                #           - type: array
+                #             items:
+                #               type: integer
+                #             minItems: 2
+                #             maxItems: 2
+                #       checkin_margin:
+                #         type: integer
+                #         nullable: true
+                #       max_runtime:
+                #         type: integer
+                #         nullable: true
+                #       timezone:
+                #         type: string
+                #         nullable: true
+                #       failure_issue_threshold:
+                #         type: integer
+                #         nullable: true
+                #       recovery_threshold:
+                #         type: integer
+                #         nullable: true
+                #       alert_rule_id:
+                #         type: integer
+                #         nullable: true
+                #     required:
+                #       - alert_rule_id
+                #       - checkin_margin
+                #       - failure_issue_threshold
+                #       - max_runtime
+                #       - recovery_threshold
+                #       - schedule
+                #       - schedule_type
+                #       - timezone
+                #   dateCreated:
+                #     type: string
+                #     format: date-time
+                #   project:
+                #     type: object
+                #     properties:
+                #       stats: {}
+                #       transactionStats: {}
+                #       sessionStats: {}
+                #       id:
+                #         type: string
+                #       slug:
+                #         type: string
+                #       name:
+                #         type: string
+                #       platform:
+                #         type: string
+                #         nullable: true
+                #       dateCreated:
+                #         type: string
+                #         format: date-time
+                #       isBookmarked:
+                #         type: boolean
+                #       isMember:
+                #         type: boolean
+                #       features:
+                #         type: array
+                #         items:
+                #           type: string
+                #       firstEvent:
+                #         type: string
+                #         format: date-time
+                #         nullable: true
+                #       firstTransactionEvent:
+                #         type: boolean
+                #       access:
+                #         type: array
+                #         items:
+                #           type: string
+                #       hasAccess:
+                #         type: boolean
+                #       hasCustomMetrics:
+                #         type: boolean
+                #       hasFeedbacks:
+                #         type: boolean
+                #       hasMinifiedStackTrace:
+                #         type: boolean
+                #       hasMonitors:
+                #         type: boolean
+                #       hasNewFeedbacks:
+                #         type: boolean
+                #       hasProfiles:
+                #         type: boolean
+                #       hasReplays:
+                #         type: boolean
+                #       hasSessions:
+                #         type: boolean
+                #       hasInsightsHttp:
+                #         type: boolean
+                #       hasInsightsDb:
+                #         type: boolean
+                #       hasInsightsAssets:
+                #         type: boolean
+                #       hasInsightsAppStart:
+                #         type: boolean
+                #       hasInsightsScreenLoad:
+                #         type: boolean
+                #       hasInsightsVitals:
+                #         type: boolean
+                #       hasInsightsCaches:
+                #         type: boolean
+                #       hasInsightsQueues:
+                #         type: boolean
+                #       hasInsightsLlmMonitoring:
+                #         type: boolean
+                #       isInternal:
+                #         type: boolean
+                #       isPublic:
+                #         type: boolean
+                #       avatar:
+                #         type: object
+                #         properties:
+                #           avatarType:
+                #             type: string
+                #           avatarUuid:
+                #             type: string
+                #             nullable: true
+                #           avatarUrl:
+                #             type: string
+                #             nullable: true
+                #       color:
+                #         type: string
+                #       status:
+                #         type: string
+                #     required:
+                #       - access
+                #       - avatar
+                #       - color
+                #       - dateCreated
+                #       - features
+                #       - firstEvent
+                #       - firstTransactionEvent
+                #       - hasAccess
+                #       - hasCustomMetrics
+                #       - hasFeedbacks
+                #       - hasInsightsAppStart
+                #       - hasInsightsAssets
+                #       - hasInsightsCaches
+                #       - hasInsightsDb
+                #       - hasInsightsHttp
+                #       - hasInsightsLlmMonitoring
+                #       - hasInsightsQueues
+                #       - hasInsightsScreenLoad
+                #       - hasInsightsVitals
+                #       - hasMinifiedStackTrace
+                #       - hasMonitors
+                #       - hasNewFeedbacks
+                #       - hasProfiles
+                #       - hasReplays
+                #       - hasSessions
+                #       - id
+                #       - isBookmarked
+                #       - isInternal
+                #       - isMember
+                #       - isPublic
+                #       - name
+                #       - platform
+                #       - slug
+                #       - status
+                #   environments:
+                #     type: object
+                #     properties:
+                #       name:
+                #         type: string
+                #       status:
+                #         type: string
+                #       isMuted:
+                #         type: boolean
+                #       dateCreated:
+                #         type: string
+                #         format: date-time
+                #       lastCheckIn:
+                #         type: string
+                #         format: date-time
+                #       nextCheckIn:
+                #         type: string
+                #         format: date-time
+                #       nextCheckInLatest:
+                #         type: string
+                #         format: date-time
+                #       activeIncident:
+                #         type: object
+                #         properties:
+                #           startingTimestamp:
+                #             type: string
+                #             format: date-time
+                #           resolvingTimestamp:
+                #             type: string
+                #             format: date-time
+                #           brokenNotice:
+                #             type: object
+                #             properties:
+                #               userNotifiedTimestamp:
+                #                 type: string
+                #                 format: date-time
+                #               environmentMutedTimestamp:
+                #                 type: string
+                #                 format: date-time
+                #             required:
+                #               - environmentMutedTimestamp
+                #               - userNotifiedTimestamp
+                #             nullable: true
+                #         required:
+                #           - brokenNotice
+                #           - resolvingTimestamp
+                #           - startingTimestamp
+                #         nullable: true
+                #     required:
+                #       - activeIncident
+                #       - dateCreated
+                #       - isMuted
+                #       - lastCheckIn
+                #       - name
+                #       - nextCheckIn
+                #       - nextCheckInLatest
+                #       - status
+                #   owner:
+                #     type: object
+                #     properties:
+                #       type:
+                #         enum:
+                #           - user
+                #           - team
+                #         type: string
+                #       id:
+                #         type: string
+                #       name:
+                #         type: string
+                #       email:
+                #         type: string
+                #         nullable: true
+                #     required:
+                #       - email
+                #       - id
+                #       - name
+                #       - type
+                # required:
+                #   - config
+                #   - dateCreated
+                #   - environments
+                #   - id
+                #   - isMuted
+                #   - name
+                #   - owner
+                #   - project
+                #   - slug
+                #   - status
+                #   - type
+          description: ""
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+  /0/organizations/{organization_id_or_slug}/monitors/{monitor_id_or_slug}/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+      - $ref: "#/components/parameters/monitor_id_or_slug"
+    get:
+      operationId: getOrganizationMonitor
+      description: Retrieves details for a monitor.
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Monitor"
+          description: ""
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+    delete:
+      operationId: deleteOrganizationMonitor
+      description: Delete a monitor.
+      responses:
+        "202":
+          description: Accepted
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+  # /0/projects/{organization_id_or_slug}/{project_id_or_slug}/monitors/{monitor_id_or_slug}/:
+  #   parameters:
+  #     - $ref: "#/components/parameters/organization_id_or_slug"
+  #     - $ref: "#/components/parameters/project_id_or_slug"
+  #     - $ref: "#/components/parameters/monitor_id_or_slug"
+  #   get:
+  #     operationId: Retrieve a Monitor for a Project
+  #     description: Retrieves details for a monitor.
+  #     parameters:
+  #       - in: path
+  #         name: organization_id_or_slug
+  #         schema:
+  #           type: string
+  #         description: The ID or slug of the organization the resource belongs to.
+  #         required: true
+  #       - in: path
+  #         name: project_id_or_slug
+  #         schema:
+  #           type: string
+  #         description: The ID or slug of the project the resource belongs to.
+  #         required: true
+  #       - in: path
+  #         name: monitor_id_or_slug
+  #         schema:
+  #           type: string
+  #         description: The ID or slug of the monitor.
+  #         required: true
+  #     tags:
+  #       - Crons
+  #     security:
+  #       - auth_token:
+  #           - project:admin
+  #           - project:read
+  #           - project:write
+  #     responses:
+  #       "200":
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: object
+  #               properties:
+  #                 alertRule:
+  #                   type: object
+  #                   properties:
+  #                     targets:
+  #                       type: array
+  #                       items:
+  #                         type: object
+  #                         properties:
+  #                           targetIdentifier:
+  #                             type: integer
+  #                           targetType:
+  #                             type: string
+  #                         required:
+  #                           - targetIdentifier
+  #                           - targetType
+  #                     environment:
+  #                       type: string
+  #                   required:
+  #                     - environment
+  #                     - targets
+  #                 id:
+  #                   type: string
+  #                 name:
+  #                   type: string
+  #                 slug:
+  #                   type: string
+  #                 status:
+  #                   type: string
+  #                 isMuted:
+  #                   type: boolean
+  #                 type:
+  #                   enum:
+  #                     - cron_job
+  #                     - unknown
+  #                   type: string
+  #                 config:
+  #                   type: object
+  #                   properties:
+  #                     schedule_type:
+  #                       enum:
+  #                         - crontab
+  #                         - interval
+  #                       type: string
+  #                     schedule:
+  #                       anyOf:
+  #                         - type: string
+  #                         - type: array
+  #                           items:
+  #                             type: integer
+  #                           minItems: 2
+  #                           maxItems: 2
+  #                     checkin_margin:
+  #                       type: integer
+  #                       nullable: true
+  #                     max_runtime:
+  #                       type: integer
+  #                       nullable: true
+  #                     timezone:
+  #                       type: string
+  #                       nullable: true
+  #                     failure_issue_threshold:
+  #                       type: integer
+  #                       nullable: true
+  #                     recovery_threshold:
+  #                       type: integer
+  #                       nullable: true
+  #                     alert_rule_id:
+  #                       type: integer
+  #                       nullable: true
+  #                   required:
+  #                     - alert_rule_id
+  #                     - checkin_margin
+  #                     - failure_issue_threshold
+  #                     - max_runtime
+  #                     - recovery_threshold
+  #                     - schedule
+  #                     - schedule_type
+  #                     - timezone
+  #                 dateCreated:
+  #                   type: string
+  #                   format: date-time
+  #                 project:
+  #                   type: object
+  #                   properties:
+  #                     stats: {}
+  #                     transactionStats: {}
+  #                     sessionStats: {}
+  #                     id:
+  #                       type: string
+  #                     slug:
+  #                       type: string
+  #                     name:
+  #                       type: string
+  #                     platform:
+  #                       type: string
+  #                       nullable: true
+  #                     dateCreated:
+  #                       type: string
+  #                       format: date-time
+  #                     isBookmarked:
+  #                       type: boolean
+  #                     isMember:
+  #                       type: boolean
+  #                     features:
+  #                       type: array
+  #                       items:
+  #                         type: string
+  #                     firstEvent:
+  #                       type: string
+  #                       format: date-time
+  #                       nullable: true
+  #                     firstTransactionEvent:
+  #                       type: boolean
+  #                     access:
+  #                       type: array
+  #                       items:
+  #                         type: string
+  #                     hasAccess:
+  #                       type: boolean
+  #                     hasCustomMetrics:
+  #                       type: boolean
+  #                     hasFeedbacks:
+  #                       type: boolean
+  #                     hasMinifiedStackTrace:
+  #                       type: boolean
+  #                     hasMonitors:
+  #                       type: boolean
+  #                     hasNewFeedbacks:
+  #                       type: boolean
+  #                     hasProfiles:
+  #                       type: boolean
+  #                     hasReplays:
+  #                       type: boolean
+  #                     hasSessions:
+  #                       type: boolean
+  #                     hasInsightsHttp:
+  #                       type: boolean
+  #                     hasInsightsDb:
+  #                       type: boolean
+  #                     hasInsightsAssets:
+  #                       type: boolean
+  #                     hasInsightsAppStart:
+  #                       type: boolean
+  #                     hasInsightsScreenLoad:
+  #                       type: boolean
+  #                     hasInsightsVitals:
+  #                       type: boolean
+  #                     hasInsightsCaches:
+  #                       type: boolean
+  #                     hasInsightsQueues:
+  #                       type: boolean
+  #                     hasInsightsLlmMonitoring:
+  #                       type: boolean
+  #                     isInternal:
+  #                       type: boolean
+  #                     isPublic:
+  #                       type: boolean
+  #                     avatar:
+  #                       type: object
+  #                       properties:
+  #                         avatarType:
+  #                           type: string
+  #                         avatarUuid:
+  #                           type: string
+  #                           nullable: true
+  #                         avatarUrl:
+  #                           type: string
+  #                           nullable: true
+  #                     color:
+  #                       type: string
+  #                     status:
+  #                       type: string
+  #                   required:
+  #                     - access
+  #                     - avatar
+  #                     - color
+  #                     - dateCreated
+  #                     - features
+  #                     - firstEvent
+  #                     - firstTransactionEvent
+  #                     - hasAccess
+  #                     - hasCustomMetrics
+  #                     - hasFeedbacks
+  #                     - hasInsightsAppStart
+  #                     - hasInsightsAssets
+  #                     - hasInsightsCaches
+  #                     - hasInsightsDb
+  #                     - hasInsightsHttp
+  #                     - hasInsightsLlmMonitoring
+  #                     - hasInsightsQueues
+  #                     - hasInsightsScreenLoad
+  #                     - hasInsightsVitals
+  #                     - hasMinifiedStackTrace
+  #                     - hasMonitors
+  #                     - hasNewFeedbacks
+  #                     - hasProfiles
+  #                     - hasReplays
+  #                     - hasSessions
+  #                     - id
+  #                     - isBookmarked
+  #                     - isInternal
+  #                     - isMember
+  #                     - isPublic
+  #                     - name
+  #                     - platform
+  #                     - slug
+  #                     - status
+  #                 environments:
+  #                   type: object
+  #                   properties:
+  #                     name:
+  #                       type: string
+  #                     status:
+  #                       type: string
+  #                     isMuted:
+  #                       type: boolean
+  #                     dateCreated:
+  #                       type: string
+  #                       format: date-time
+  #                     lastCheckIn:
+  #                       type: string
+  #                       format: date-time
+  #                     nextCheckIn:
+  #                       type: string
+  #                       format: date-time
+  #                     nextCheckInLatest:
+  #                       type: string
+  #                       format: date-time
+  #                     activeIncident:
+  #                       type: object
+  #                       properties:
+  #                         startingTimestamp:
+  #                           type: string
+  #                           format: date-time
+  #                         resolvingTimestamp:
+  #                           type: string
+  #                           format: date-time
+  #                         brokenNotice:
+  #                           type: object
+  #                           properties:
+  #                             userNotifiedTimestamp:
+  #                               type: string
+  #                               format: date-time
+  #                             environmentMutedTimestamp:
+  #                               type: string
+  #                               format: date-time
+  #                           required:
+  #                             - environmentMutedTimestamp
+  #                             - userNotifiedTimestamp
+  #                           nullable: true
+  #                       required:
+  #                         - brokenNotice
+  #                         - resolvingTimestamp
+  #                         - startingTimestamp
+  #                       nullable: true
+  #                   required:
+  #                     - activeIncident
+  #                     - dateCreated
+  #                     - isMuted
+  #                     - lastCheckIn
+  #                     - name
+  #                     - nextCheckIn
+  #                     - nextCheckInLatest
+  #                     - status
+  #                 owner:
+  #                   type: object
+  #                   properties:
+  #                     type:
+  #                       enum:
+  #                         - user
+  #                         - team
+  #                       type: string
+  #                     id:
+  #                       type: string
+  #                     name:
+  #                       type: string
+  #                     email:
+  #                       type: string
+  #                       nullable: true
+  #                   required:
+  #                     - email
+  #                     - id
+  #                     - name
+  #                     - type
+  #               required:
+  #                 - config
+  #                 - dateCreated
+  #                 - environments
+  #                 - id
+  #                 - isMuted
+  #                 - name
+  #                 - owner
+  #                 - project
+  #                 - slug
+  #                 - status
+  #                 - type
+  #         description: ""
+  #       "401":
+  #         description: Unauthorized
+  #       "403":
+  #         description: Forbidden
+  #       "404":
+  #         description: Not Found
+  #   put:
+  #     operationId: Update a Monitor for a Project
+  #     description: Update a monitor.
+  #     parameters:
+  #       - in: path
+  #         name: organization_id_or_slug
+  #         schema:
+  #           type: string
+  #         description: The ID or slug of the organization the resource belongs to.
+  #         required: true
+  #       - in: path
+  #         name: project_id_or_slug
+  #         schema:
+  #           type: string
+  #         description: The ID or slug of the project the resource belongs to.
+  #         required: true
+  #       - in: path
+  #         name: monitor_id_or_slug
+  #         schema:
+  #           type: string
+  #         description: The ID or slug of the monitor.
+  #         required: true
+  #     tags:
+  #       - Crons
+  #     requestBody:
+  #       content:
+  #         application/json:
+  #           schema:
+  #             type: object
+  #             description: >-
+  #               Allows parameters to be defined in snake case, but passed as
+  #               camel case.
+
+
+  #               Errors are output in camel case.
+  #             properties:
+  #               name:
+  #                 type: string
+  #                 description: Name of the monitor. Used for notifications.
+  #                 maxLength: 128
+  #               type:
+  #                 enum:
+  #                   - cron_job
+  #                 type: string
+  #                 description: "* `cron_job`"
+  #               slug:
+  #                 type: string
+  #                 description:
+  #                   Uniquely identifies your monitor within your organization. Changing
+  #                   this slug will require updates to any instrumented check-in
+  #                   calls.
+  #                 maxLength: 50
+  #                 pattern: ^(?![0-9]+$)[a-z0-9_\-]+$
+  #               status:
+  #                 enum:
+  #                   - active
+  #                   - disabled
+  #                 type: string
+  #                 default: active
+  #                 description: >-
+  #                   Status of the monitor. Disabled monitors will not accept
+  #                   events and will not count towards the monitor quota.
+
+
+  #                   * `active`
+
+  #                   * `disabled`
+  #               owner:
+  #                 type: string
+  #                 nullable: true
+  #                 description:
+  #                   The ID of the team or user that owns the monitor. (eg. user:51 or
+  #                   team:6)
+  #               is_muted:
+  #                 type: boolean
+  #                 description: Disable creation of monitor incidents
+  #             required:
+  #               - name
+  #               - type
+  #       required: true
+  #     security:
+  #       - auth_token:
+  #           - project:admin
+  #           - project:read
+  #           - project:write
+  #     responses:
+  #       "200":
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: object
+  #               properties:
+  #                 alertRule:
+  #                   type: object
+  #                   properties:
+  #                     targets:
+  #                       type: array
+  #                       items:
+  #                         type: object
+  #                         properties:
+  #                           targetIdentifier:
+  #                             type: integer
+  #                           targetType:
+  #                             type: string
+  #                         required:
+  #                           - targetIdentifier
+  #                           - targetType
+  #                     environment:
+  #                       type: string
+  #                   required:
+  #                     - environment
+  #                     - targets
+  #                 id:
+  #                   type: string
+  #                 name:
+  #                   type: string
+  #                 slug:
+  #                   type: string
+  #                 status:
+  #                   type: string
+  #                 isMuted:
+  #                   type: boolean
+  #                 type:
+  #                   enum:
+  #                     - cron_job
+  #                     - unknown
+  #                   type: string
+  #                 config:
+  #                   type: object
+  #                   properties:
+  #                     schedule_type:
+  #                       enum:
+  #                         - crontab
+  #                         - interval
+  #                       type: string
+  #                     schedule:
+  #                       anyOf:
+  #                         - type: string
+  #                         - type: array
+  #                           items:
+  #                             type: integer
+  #                           minItems: 2
+  #                           maxItems: 2
+  #                     checkin_margin:
+  #                       type: integer
+  #                       nullable: true
+  #                     max_runtime:
+  #                       type: integer
+  #                       nullable: true
+  #                     timezone:
+  #                       type: string
+  #                       nullable: true
+  #                     failure_issue_threshold:
+  #                       type: integer
+  #                       nullable: true
+  #                     recovery_threshold:
+  #                       type: integer
+  #                       nullable: true
+  #                     alert_rule_id:
+  #                       type: integer
+  #                       nullable: true
+  #                   required:
+  #                     - alert_rule_id
+  #                     - checkin_margin
+  #                     - failure_issue_threshold
+  #                     - max_runtime
+  #                     - recovery_threshold
+  #                     - schedule
+  #                     - schedule_type
+  #                     - timezone
+  #                 dateCreated:
+  #                   type: string
+  #                   format: date-time
+  #                 project:
+  #                   type: object
+  #                   properties:
+  #                     stats: {}
+  #                     transactionStats: {}
+  #                     sessionStats: {}
+  #                     id:
+  #                       type: string
+  #                     slug:
+  #                       type: string
+  #                     name:
+  #                       type: string
+  #                     platform:
+  #                       type: string
+  #                       nullable: true
+  #                     dateCreated:
+  #                       type: string
+  #                       format: date-time
+  #                     isBookmarked:
+  #                       type: boolean
+  #                     isMember:
+  #                       type: boolean
+  #                     features:
+  #                       type: array
+  #                       items:
+  #                         type: string
+  #                     firstEvent:
+  #                       type: string
+  #                       format: date-time
+  #                       nullable: true
+  #                     firstTransactionEvent:
+  #                       type: boolean
+  #                     access:
+  #                       type: array
+  #                       items:
+  #                         type: string
+  #                     hasAccess:
+  #                       type: boolean
+  #                     hasCustomMetrics:
+  #                       type: boolean
+  #                     hasFeedbacks:
+  #                       type: boolean
+  #                     hasMinifiedStackTrace:
+  #                       type: boolean
+  #                     hasMonitors:
+  #                       type: boolean
+  #                     hasNewFeedbacks:
+  #                       type: boolean
+  #                     hasProfiles:
+  #                       type: boolean
+  #                     hasReplays:
+  #                       type: boolean
+  #                     hasSessions:
+  #                       type: boolean
+  #                     hasInsightsHttp:
+  #                       type: boolean
+  #                     hasInsightsDb:
+  #                       type: boolean
+  #                     hasInsightsAssets:
+  #                       type: boolean
+  #                     hasInsightsAppStart:
+  #                       type: boolean
+  #                     hasInsightsScreenLoad:
+  #                       type: boolean
+  #                     hasInsightsVitals:
+  #                       type: boolean
+  #                     hasInsightsCaches:
+  #                       type: boolean
+  #                     hasInsightsQueues:
+  #                       type: boolean
+  #                     hasInsightsLlmMonitoring:
+  #                       type: boolean
+  #                     isInternal:
+  #                       type: boolean
+  #                     isPublic:
+  #                       type: boolean
+  #                     avatar:
+  #                       type: object
+  #                       properties:
+  #                         avatarType:
+  #                           type: string
+  #                         avatarUuid:
+  #                           type: string
+  #                           nullable: true
+  #                         avatarUrl:
+  #                           type: string
+  #                           nullable: true
+  #                     color:
+  #                       type: string
+  #                     status:
+  #                       type: string
+  #                   required:
+  #                     - access
+  #                     - avatar
+  #                     - color
+  #                     - dateCreated
+  #                     - features
+  #                     - firstEvent
+  #                     - firstTransactionEvent
+  #                     - hasAccess
+  #                     - hasCustomMetrics
+  #                     - hasFeedbacks
+  #                     - hasInsightsAppStart
+  #                     - hasInsightsAssets
+  #                     - hasInsightsCaches
+  #                     - hasInsightsDb
+  #                     - hasInsightsHttp
+  #                     - hasInsightsLlmMonitoring
+  #                     - hasInsightsQueues
+  #                     - hasInsightsScreenLoad
+  #                     - hasInsightsVitals
+  #                     - hasMinifiedStackTrace
+  #                     - hasMonitors
+  #                     - hasNewFeedbacks
+  #                     - hasProfiles
+  #                     - hasReplays
+  #                     - hasSessions
+  #                     - id
+  #                     - isBookmarked
+  #                     - isInternal
+  #                     - isMember
+  #                     - isPublic
+  #                     - name
+  #                     - platform
+  #                     - slug
+  #                     - status
+  #                 environments:
+  #                   type: object
+  #                   properties:
+  #                     name:
+  #                       type: string
+  #                     status:
+  #                       type: string
+  #                     isMuted:
+  #                       type: boolean
+  #                     dateCreated:
+  #                       type: string
+  #                       format: date-time
+  #                     lastCheckIn:
+  #                       type: string
+  #                       format: date-time
+  #                     nextCheckIn:
+  #                       type: string
+  #                       format: date-time
+  #                     nextCheckInLatest:
+  #                       type: string
+  #                       format: date-time
+  #                     activeIncident:
+  #                       type: object
+  #                       properties:
+  #                         startingTimestamp:
+  #                           type: string
+  #                           format: date-time
+  #                         resolvingTimestamp:
+  #                           type: string
+  #                           format: date-time
+  #                         brokenNotice:
+  #                           type: object
+  #                           properties:
+  #                             userNotifiedTimestamp:
+  #                               type: string
+  #                               format: date-time
+  #                             environmentMutedTimestamp:
+  #                               type: string
+  #                               format: date-time
+  #                           required:
+  #                             - environmentMutedTimestamp
+  #                             - userNotifiedTimestamp
+  #                           nullable: true
+  #                       required:
+  #                         - brokenNotice
+  #                         - resolvingTimestamp
+  #                         - startingTimestamp
+  #                       nullable: true
+  #                   required:
+  #                     - activeIncident
+  #                     - dateCreated
+  #                     - isMuted
+  #                     - lastCheckIn
+  #                     - name
+  #                     - nextCheckIn
+  #                     - nextCheckInLatest
+  #                     - status
+  #                 owner:
+  #                   type: object
+  #                   properties:
+  #                     type:
+  #                       enum:
+  #                         - user
+  #                         - team
+  #                       type: string
+  #                     id:
+  #                       type: string
+  #                     name:
+  #                       type: string
+  #                     email:
+  #                       type: string
+  #                       nullable: true
+  #                   required:
+  #                     - email
+  #                     - id
+  #                     - name
+  #                     - type
+  #               required:
+  #                 - config
+  #                 - dateCreated
+  #                 - environments
+  #                 - id
+  #                 - isMuted
+  #                 - name
+  #                 - owner
+  #                 - project
+  #                 - slug
+  #                 - status
+  #                 - type
+  #         description: ""
+  #       "400":
+  #         description: Bad Request
+  #       "401":
+  #         description: Unauthorized
+  #       "403":
+  #         description: Forbidden
+  #       "404":
+  #         description: Not Found
+  #   delete:
+  #     operationId: Delete a Monitor or Monitor Environments for a Project
+  #     description: Delete a monitor or monitor environments.
+  #     parameters:
+  #       - in: path
+  #         name: organization_id_or_slug
+  #         schema:
+  #           type: string
+  #         description: The ID or slug of the organization the resource belongs to.
+  #         required: true
+  #       - in: path
+  #         name: project_id_or_slug
+  #         schema:
+  #           type: string
+  #         description: The ID or slug of the project the resource belongs to.
+  #         required: true
+  #       - in: path
+  #         name: monitor_id_or_slug
+  #         schema:
+  #           type: string
+  #         description: The ID or slug of the monitor.
+  #         required: true
+  #       - in: query
+  #         name: environment
+  #         schema:
+  #           type: array
+  #           items:
+  #             type: string
+  #         description: The name of environments to filter by.
+  #     tags:
+  #       - Crons
+  #     security:
+  #       - auth_token:
+  #           - project:admin
+  #           - project:read
+  #           - project:write
+  #     responses:
+  #       "202":
+  #         description: Accepted
+  #       "401":
+  #         description: Unauthorized
+  #       "403":
+  #         description: Forbidden
+  #       "404":
+  #         description: Not Found
+
 security:
   - bearerAuth: []
 components:
@@ -631,6 +2182,12 @@ components:
   parameters:
     organization_id_or_slug:
       name: organization_id_or_slug
+      in: path
+      required: true
+      schema:
+        type: string
+    monitor_id_or_slug:
+      name: monitor_id_or_slug
       in: path
       required: true
       schema:
@@ -654,6 +2211,138 @@ components:
       schema:
         type: string
   schemas:
+    Monitor:
+      type: object
+      required:
+        - id
+        - type
+        - name
+        - owner
+        - project
+        - slug
+        - config
+        - dateCreated
+        - isMuted
+        - status
+      properties:
+        id:
+          type: string
+        type:
+          $ref: "#/components/schemas/MonitorType"
+        name:
+          type: string
+        owner:
+          type: object
+          properties:
+            type:
+              enum:
+                - user
+                - team
+              type: string
+            id:
+              type: string
+          required:
+            - type
+            - id
+          nullable: true
+        project:
+          type: object
+          required:
+            - id
+            - slug
+          properties:
+            id:
+              type: string
+            slug:
+              type: string
+        slug:
+          type: string
+        config:
+          $ref: "#/components/schemas/MonitorConfig"
+        dateCreated:
+          type: string
+          format: date-time
+        isMuted:
+          type: boolean
+        status:
+          type: string
+    MonitorConfig:
+      type: object
+      required:
+        - alert_rule_id
+        - checkin_margin
+        - failure_issue_threshold
+        - max_runtime
+        - recovery_threshold
+        - schedule
+        - schedule_type
+        - timezone
+      properties:
+        schedule_type:
+          type: string
+          enum:
+            - crontab
+            - interval
+        schedule:
+          anyOf:
+            - $ref: "#/components/schemas/MonitorConfigScheduleString"
+            - $ref: "#/components/schemas/MonitorConfigScheduleInterval"
+        checkin_margin:
+          type: integer
+          format: int64
+        max_runtime:
+          type: integer
+          format: int64
+          nullable: true
+        timezone:
+          type: string
+          nullable: true
+        failure_issue_threshold:
+          type: integer
+          format: int64
+          nullable: true
+        recovery_threshold:
+          type: integer
+          format: int64
+          nullable: true
+        alert_rule_id:
+          type: integer
+          nullable: true
+          x-go-type: json.Number
+    MonitorConfigScheduleString:
+      type: string
+    MonitorConfigScheduleInterval:
+      type: array
+      minItems: 2
+      maxItems: 2
+    MonitorAlertRule:
+      type: object
+      properties:
+        targets:
+          type: array
+          items:
+            $ref: "#/components/schemas/MonitorAlertRuleTarget"
+        environment:
+          type: string
+      required:
+        - environment
+        - targets
+    MonitorAlertRuleTarget:
+      type: object
+      properties:
+        targetIdentifier:
+          type: integer
+          x-go-type: json.Number
+        targetType:
+          type: string
+      required:
+        - targetIdentifier
+        - targetType
+    MonitorType:
+      type: string
+      enum:
+        - cron_job
+        - unknown
     Organization:
       type: object
       required:
