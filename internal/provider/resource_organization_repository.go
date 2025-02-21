@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -13,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
 
 var _ resource.Resource = &OrganizationRepositoryResource{}
@@ -170,22 +170,5 @@ func (r *OrganizationRepositoryResource) Delete(ctx context.Context, req resourc
 }
 
 func (r *OrganizationRepositoryResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	organization, integrationType, integrationId, id, err := splitFourPartID(req.ID, "organization", "integration_type", "integration_id", "id")
-	if err != nil {
-		resp.Diagnostics.Append(diagutils.NewImportError(err))
-		return
-	}
-
-	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("organization"), organization,
-	)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("integration_type"), integrationType,
-	)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("integration_id"), integrationId,
-	)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("id"), id,
-	)...)
+	tfutils.ImportStateFourPartId(ctx, "organization", "integration_type", "integration_id", req, resp)
 }

@@ -1043,7 +1043,7 @@ func (r *IssueAlertResource) UpgradeState(ctx context.Context) map[int64]resourc
 					return
 				}
 
-				organization, project, actionId, err := splitThreePartID(priorStateData.Id.ValueString(), "organization", "project-slug", "alert-id")
+				organization, project, actionId, err := tfutils.SplitThreePartId(priorStateData.Id.ValueString(), "organization", "project-slug", "alert-id")
 				if err != nil {
 					resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Error parsing ID: %s", err.Error()))
 					return

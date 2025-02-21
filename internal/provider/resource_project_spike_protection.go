@@ -11,6 +11,7 @@ import (
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
 
 type ProjectSpikeProtectionResourceModel struct {
@@ -21,7 +22,7 @@ type ProjectSpikeProtectionResourceModel struct {
 }
 
 func (data *ProjectSpikeProtectionResourceModel) Fill(project apiclient.Project) error {
-	data.Id = types.StringValue(buildTwoPartID(project.Organization.Slug, project.Slug))
+	data.Id = types.StringValue(tfutils.BuildTwoPartId(project.Organization.Slug, project.Slug))
 	data.Organization = types.StringValue(project.Organization.Slug)
 	data.Project = types.StringValue(project.Slug)
 	if disabled, ok := project.Options["quotas:spike-protection-disabled"].(bool); ok {
@@ -99,7 +100,7 @@ func (r *ProjectSpikeProtectionResource) Create(ctx context.Context, req resourc
 		}
 	}
 
-	data.Id = types.StringValue(buildTwoPartID(data.Organization.ValueString(), data.Project.ValueString()))
+	data.Id = types.StringValue(tfutils.BuildTwoPartId(data.Organization.ValueString(), data.Project.ValueString()))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -203,7 +204,7 @@ func (r *ProjectSpikeProtectionResource) Delete(ctx context.Context, req resourc
 }
 
 func (r *ProjectSpikeProtectionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	organization, project, err := splitTwoPartID(req.ID, "organization", "project-slug")
+	organization, project, err := tfutils.SplitTwoPartId(req.ID, "organization", "project-slug")
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return

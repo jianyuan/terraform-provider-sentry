@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
 
 type ProjectInboundDataFilterResourceModel struct {
@@ -28,7 +29,7 @@ type ProjectInboundDataFilterResourceModel struct {
 }
 
 func (m *ProjectInboundDataFilterResourceModel) Fill(organization string, project string, filterId string, filter sentry.ProjectInboundDataFilter) error {
-	m.Id = types.StringValue(buildThreePartID(organization, project, filterId))
+	m.Id = types.StringValue(tfutils.BuildThreePartId(organization, project, filterId))
 	m.Organization = types.StringValue(organization)
 	m.Project = types.StringValue(project)
 	m.FilterId = types.StringValue(filterId)
@@ -125,7 +126,7 @@ func (r *ProjectInboundDataFilterResource) Create(ctx context.Context, req resou
 		return
 	}
 
-	data.Id = types.StringValue(buildThreePartID(data.Organization.ValueString(), data.Project.ValueString(), data.FilterId.ValueString()))
+	data.Id = types.StringValue(tfutils.BuildThreePartId(data.Organization.ValueString(), data.Project.ValueString(), data.FilterId.ValueString()))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -204,7 +205,7 @@ func (r *ProjectInboundDataFilterResource) Update(ctx context.Context, req resou
 		return
 	}
 
-	plan.Id = types.StringValue(buildThreePartID(plan.Organization.ValueString(), plan.Project.ValueString(), plan.FilterId.ValueString()))
+	plan.Id = types.StringValue(tfutils.BuildThreePartId(plan.Organization.ValueString(), plan.Project.ValueString(), plan.FilterId.ValueString()))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -236,7 +237,7 @@ func (r *ProjectInboundDataFilterResource) Delete(ctx context.Context, req resou
 }
 
 func (r *ProjectInboundDataFilterResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	organization, project, filterID, err := splitThreePartID(req.ID, "organization", "project-slug", "filter-id")
+	organization, project, filterID, err := tfutils.SplitThreePartId(req.ID, "organization", "project-slug", "filter-id")
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewImportError(err))
 		return

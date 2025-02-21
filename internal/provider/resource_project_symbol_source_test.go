@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
+	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
 
 func TestAccProjectSymbolSourceResource(t *testing.T) {
@@ -61,7 +62,7 @@ func TestAccProjectSymbolSourceResource(t *testing.T) {
 					organization := rs.Primary.Attributes["organization"]
 					project := rs.Primary.Attributes["project"]
 					sourceId := rs.Primary.ID
-					return buildThreePartID(organization, project, sourceId), nil
+					return tfutils.BuildThreePartId(organization, project, sourceId), nil
 				},
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"secret_key"},

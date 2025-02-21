@@ -17,6 +17,7 @@ import (
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/go-utils/must"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
+	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
 
 func init() {
@@ -128,7 +129,7 @@ func TestAccOrganizationRepositoryResource_GitHub(t *testing.T) {
 					integrationType := rs.Primary.Attributes["integration_type"]
 					integrationId := rs.Primary.Attributes["integration_id"]
 					id := rs.Primary.ID
-					return buildFourPartID(organization, integrationType, integrationId, id), nil
+					return tfutils.BuildFourPartId(organization, integrationType, integrationId, id), nil
 				},
 				ImportStateVerify: true,
 			},
@@ -180,7 +181,7 @@ func TestAccOrganizationRepositoryResource_GitLab(t *testing.T) {
 					integrationType := rs.Primary.Attributes["integration_type"]
 					integrationId := rs.Primary.Attributes["integration_id"]
 					id := rs.Primary.ID
-					return buildFourPartID(organization, integrationType, integrationId, id), nil
+					return tfutils.BuildFourPartId(organization, integrationType, integrationId, id), nil
 				},
 				ImportStateVerify: true,
 			},
@@ -232,7 +233,7 @@ func TestAccOrganizationRepositoryResource_VSTS(t *testing.T) {
 					integrationType := rs.Primary.Attributes["integration_type"]
 					integrationId := rs.Primary.Attributes["integration_id"]
 					id := rs.Primary.ID
-					return buildFourPartID(organization, integrationType, integrationId, id), nil
+					return tfutils.BuildFourPartId(organization, integrationType, integrationId, id), nil
 				},
 				ImportStateVerify: true,
 			},

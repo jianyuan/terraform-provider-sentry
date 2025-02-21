@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
+	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
 
 // no UpdateContext, unsupported by this integration. will have to ForceNew
@@ -168,7 +169,7 @@ func resourceSentryOrganizationRepositoryGithubDelete(ctx context.Context, d *sc
 }
 
 func importSentryOrganizationRepositoryGithub(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-	org, id, err := splitTwoPartID(d.Id(), "organization-slug", "id")
+	org, id, err := tfutils.SplitTwoPartId(d.Id(), "organization-slug", "id")
 	if err != nil {
 		return nil, err
 	}

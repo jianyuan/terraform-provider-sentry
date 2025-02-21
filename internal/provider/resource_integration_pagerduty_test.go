@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
+	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
 
 func TestAccIntegrationPagerDutyResource(t *testing.T) {
@@ -95,7 +96,7 @@ func TestAccIntegrationPagerDutyResource(t *testing.T) {
 					organization := rs.Primary.Attributes["organization"]
 					integrationId := rs.Primary.Attributes["integration_id"]
 					id := rs.Primary.ID
-					return buildThreePartID(organization, integrationId, id), nil
+					return tfutils.BuildThreePartId(organization, integrationId, id), nil
 				},
 				ImportStateVerify: true,
 			},

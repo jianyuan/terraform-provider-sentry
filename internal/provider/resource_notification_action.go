@@ -8,7 +8,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -16,6 +15,7 @@ import (
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
 
 type NotificationActionResourceModel struct {
@@ -291,15 +291,5 @@ func (r *NotificationActionResource) Delete(ctx context.Context, req resource.De
 }
 
 func (r *NotificationActionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	org, actionId, err := splitTwoPartID(req.ID, "organization", "action-id")
-	if err != nil {
-		resp.Diagnostics.Append(diagutils.NewImportError(err))
-		return
-	}
-	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("organization"), org,
-	)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("id"), actionId,
-	)...)
+	tfutils.ImportStateTwoPartId(ctx, "organization", req, resp)
 }

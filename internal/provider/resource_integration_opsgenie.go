@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
 
 type IntegrationOpsgenieModel struct {
@@ -368,18 +368,5 @@ func (r *IntegrationOpsgenie) Delete(ctx context.Context, req resource.DeleteReq
 }
 
 func (r *IntegrationOpsgenie) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	organization, integrationId, id, err := splitThreePartID(req.ID, "organization", "integration-id", "id")
-	if err != nil {
-		resp.Diagnostics.Append(diagutils.NewImportError(err))
-		return
-	}
-	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("organization"), organization,
-	)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("integration_id"), integrationId,
-	)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("id"), id,
-	)...)
+	tfutils.ImportStateThreePartId(ctx, "organization", "integration_id", req, resp)
 }

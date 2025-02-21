@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
+	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
 
 func resourceSentryOrganizationMember() *schema.Resource {
@@ -88,7 +89,7 @@ func resourceSentryOrganizationMemberCreate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	d.SetId(buildTwoPartID(org, member.ID))
+	d.SetId(tfutils.BuildTwoPartId(org, member.ID))
 	return resourceSentryOrganizationMemberRead(ctx, d, meta)
 }
 
@@ -113,7 +114,7 @@ func resourceSentryOrganizationMemberRead(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	d.SetId(buildTwoPartID(org, member.ID))
+	d.SetId(tfutils.BuildTwoPartId(org, member.ID))
 	retErr := multierror.Append(
 		d.Set("organization", org),
 		d.Set("internal_id", member.ID),
@@ -155,7 +156,7 @@ func resourceSentryOrganizationMemberUpdate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	d.SetId(buildTwoPartID(org, member.ID))
+	d.SetId(tfutils.BuildTwoPartId(org, member.ID))
 	return resourceSentryOrganizationMemberRead(ctx, d, meta)
 }
 
@@ -176,6 +177,6 @@ func resourceSentryOrganizationMemberDelete(ctx context.Context, d *schema.Resou
 }
 
 func splitSentryOrganizationMemberID(id string) (org string, memberID string, err error) {
-	org, memberID, err = splitTwoPartID(id, "organization-id", "member-id")
+	org, memberID, err = tfutils.SplitTwoPartId(id, "organization-id", "member-id")
 	return
 }

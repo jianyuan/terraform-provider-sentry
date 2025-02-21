@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
+	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
 
 func dataSourceSentryDashboard() *schema.Resource {
@@ -163,7 +164,7 @@ func dataSourceSentryDashboardRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(buildTwoPartID(org, sentry.StringValue(dashboard.ID)))
+	d.SetId(tfutils.BuildTwoPartId(org, sentry.StringValue(dashboard.ID)))
 	retErr := multierror.Append(
 		d.Set("organization", org),
 		d.Set("internal_id", dashboard.ID),

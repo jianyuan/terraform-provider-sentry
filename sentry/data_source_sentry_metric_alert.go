@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
+	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
 
 func dataSourceSentryMetricAlert() *schema.Resource {
@@ -153,7 +154,7 @@ func dataSourceSentryMetricAlertRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	d.SetId(buildThreePartID(org, project, sentry.StringValue(alert.ID)))
+	d.SetId(tfutils.BuildThreePartId(org, project, sentry.StringValue(alert.ID)))
 	retErr := multierror.Append(
 		d.Set("organization", org),
 		d.Set("project", project),

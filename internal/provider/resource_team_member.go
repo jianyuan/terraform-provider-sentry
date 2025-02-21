@@ -18,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
 
 type TeamMemberResourceModel struct {
@@ -30,7 +31,7 @@ type TeamMemberResourceModel struct {
 }
 
 func (data *TeamMemberResourceModel) Fill(organization string, team string, memberId string, role *string, effectiveRole string) error {
-	data.Id = types.StringValue(buildThreePartID(organization, team, memberId))
+	data.Id = types.StringValue(tfutils.BuildThreePartId(organization, team, memberId))
 	data.Organization = types.StringValue(organization)
 	data.MemberId = types.StringValue(memberId)
 	data.Team = types.StringValue(team)
@@ -354,7 +355,7 @@ func (r *TeamMemberResource) Delete(ctx context.Context, req resource.DeleteRequ
 }
 
 func (r *TeamMemberResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	organization, team, memberId, err := splitThreePartID(req.ID, "organization", "team-slug", "member-id")
+	organization, team, memberId, err := tfutils.SplitThreePartId(req.ID, "organization", "team-slug", "member-id")
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewImportError(err))
 		return

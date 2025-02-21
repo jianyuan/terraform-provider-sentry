@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
+	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
 
 func TestAccNotificationActionResource(t *testing.T) {
@@ -53,7 +54,7 @@ func TestAccNotificationActionResource(t *testing.T) {
 					}
 					org := rs.Primary.Attributes["organization"]
 					actionId := rs.Primary.ID
-					return buildTwoPartID(org, actionId), nil
+					return tfutils.BuildTwoPartId(org, actionId), nil
 				},
 				ImportStateVerify: true,
 			},
