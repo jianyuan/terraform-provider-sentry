@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
@@ -75,27 +74,33 @@ func (r *ProjectSpikeProtectionResource) Create(ctx context.Context, req resourc
 	}
 
 	if data.Enabled.ValueBool() {
-		_, err := r.client.SpikeProtections.Enable(
+		httpResp, err := r.apiClient.EnableSpikeProtectionWithResponse(
 			ctx,
 			data.Organization.ValueString(),
-			&sentry.SpikeProtectionParams{
+			apiclient.EnableSpikeProtectionJSONRequestBody{
 				Projects: []string{data.Project.ValueString()},
 			},
 		)
 		if err != nil {
 			resp.Diagnostics.Append(diagutils.NewClientError("enable", err))
 			return
+		} else if httpResp.StatusCode() != http.StatusCreated {
+			resp.Diagnostics.Append(diagutils.NewClientStatusError("enable", httpResp.StatusCode(), httpResp.Body))
+			return
 		}
 	} else {
-		_, err := r.client.SpikeProtections.Disable(
+		httpResp, err := r.apiClient.DisableSpikeProtectionWithResponse(
 			ctx,
 			data.Organization.ValueString(),
-			&sentry.SpikeProtectionParams{
+			apiclient.DisableSpikeProtectionJSONRequestBody{
 				Projects: []string{data.Project.ValueString()},
 			},
 		)
 		if err != nil {
 			resp.Diagnostics.Append(diagutils.NewClientError("disable", err))
+			return
+		} else if httpResp.StatusCode() != http.StatusOK {
+			resp.Diagnostics.Append(diagutils.NewClientStatusError("disable", httpResp.StatusCode(), httpResp.Body))
 			return
 		}
 	}
@@ -150,27 +155,33 @@ func (r *ProjectSpikeProtectionResource) Update(ctx context.Context, req resourc
 	}
 
 	if data.Enabled.ValueBool() {
-		_, err := r.client.SpikeProtections.Enable(
+		httpResp, err := r.apiClient.EnableSpikeProtectionWithResponse(
 			ctx,
 			data.Organization.ValueString(),
-			&sentry.SpikeProtectionParams{
+			apiclient.EnableSpikeProtectionJSONRequestBody{
 				Projects: []string{data.Project.ValueString()},
 			},
 		)
 		if err != nil {
 			resp.Diagnostics.Append(diagutils.NewClientError("enable", err))
 			return
+		} else if httpResp.StatusCode() != http.StatusCreated {
+			resp.Diagnostics.Append(diagutils.NewClientStatusError("enable", httpResp.StatusCode(), httpResp.Body))
+			return
 		}
 	} else {
-		_, err := r.client.SpikeProtections.Disable(
+		httpResp, err := r.apiClient.DisableSpikeProtectionWithResponse(
 			ctx,
 			data.Organization.ValueString(),
-			&sentry.SpikeProtectionParams{
+			apiclient.DisableSpikeProtectionJSONRequestBody{
 				Projects: []string{data.Project.ValueString()},
 			},
 		)
 		if err != nil {
 			resp.Diagnostics.Append(diagutils.NewClientError("disable", err))
+			return
+		} else if httpResp.StatusCode() != http.StatusOK {
+			resp.Diagnostics.Append(diagutils.NewClientStatusError("disable", httpResp.StatusCode(), httpResp.Body))
 			return
 		}
 	}
@@ -187,18 +198,20 @@ func (r *ProjectSpikeProtectionResource) Delete(ctx context.Context, req resourc
 		return
 	}
 
-	apiResp, err := r.client.SpikeProtections.Disable(
+	httpResp, err := r.apiClient.DisableSpikeProtectionWithResponse(
 		ctx,
 		data.Organization.ValueString(),
-		&sentry.SpikeProtectionParams{
+		apiclient.DisableSpikeProtectionJSONRequestBody{
 			Projects: []string{data.Project.ValueString()},
 		},
 	)
-	if apiResp.StatusCode == http.StatusNotFound {
-		return
-	}
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("delete", err))
+		return
+	} else if httpResp.StatusCode() == http.StatusNotFound {
+		return
+	} else if httpResp.StatusCode() != http.StatusOK {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("delete", httpResp.StatusCode(), httpResp.Body))
 		return
 	}
 }
