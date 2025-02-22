@@ -2,12 +2,15 @@ package provider
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
 )
 
 type AllOrganizationMembersDataSourceMemberModel struct {
@@ -16,11 +19,10 @@ type AllOrganizationMembersDataSourceMemberModel struct {
 	Role  types.String `tfsdk:"role"`
 }
 
-func (m *AllOrganizationMembersDataSourceMemberModel) Fill(organization string, member sentry.OrganizationMember) error {
-	m.Id = types.StringValue(member.ID)
+func (m *AllOrganizationMembersDataSourceMemberModel) Fill(ctx context.Context, member apiclient.OrganizationMember) (diags diag.Diagnostics) {
+	m.Id = types.StringValue(member.Id)
 	m.Email = types.StringValue(member.Email)
 	m.Role = types.StringValue(member.OrgRole)
-
 	return nil
 }
 
@@ -29,18 +31,12 @@ type AllOrganizationMembersDataSourceModel struct {
 	Members      []AllOrganizationMembersDataSourceMemberModel `tfsdk:"members"`
 }
 
-func (m *AllOrganizationMembersDataSourceModel) Fill(organization string, members []sentry.OrganizationMember) error {
-	m.Organization = types.StringValue(organization)
-
-	for _, member := range members {
-		mm := AllOrganizationMembersDataSourceMemberModel{}
-		if err := mm.Fill(organization, member); err != nil {
-			return err
-		}
-		m.Members = append(m.Members, mm)
+func (m *AllOrganizationMembersDataSourceModel) Fill(ctx context.Context, members []apiclient.OrganizationMember) (diags diag.Diagnostics) {
+	m.Members = make([]AllOrganizationMembersDataSourceMemberModel, len(members))
+	for i, member := range members {
+		diags.Append(m.Members[i].Fill(ctx, member)...)
 	}
-
-	return nil
+	return
 }
 
 var _ datasource.DataSource = &AllOrganizationMembersDataSource{}
@@ -96,28 +92,29 @@ func (d *AllOrganizationMembersDataSource) Read(ctx context.Context, req datasou
 		return
 	}
 
-	var allMembers []sentry.OrganizationMember
-	params := &sentry.ListCursorParams{}
+	var allMembers []apiclient.OrganizationMember
+	params := &apiclient.ListOrganizationMembersParams{}
 
 	for {
-		members, apiResp, err := d.client.OrganizationMembers.List(ctx, data.Organization.ValueString(), params)
+		httpResp, err := d.apiClient.ListOrganizationMembersWithResponse(ctx, data.Organization.ValueString(), params)
 		if err != nil {
 			resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 			return
+		} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
+			resp.Diagnostics.Append(diagutils.NewClientStatusError("read", httpResp.StatusCode(), httpResp.Body))
+			return
 		}
 
-		for _, member := range members {
-			allMembers = append(allMembers, *member)
-		}
+		allMembers = append(allMembers, *httpResp.JSON200...)
 
-		if apiResp.Cursor == "" {
+		params.Cursor = sentryclient.ParseNextPaginationCursor(httpResp.HTTPResponse)
+		if params.Cursor == nil {
 			break
 		}
-		params.Cursor = apiResp.Cursor
 	}
 
-	if err := data.Fill(data.Organization.ValueString(), allMembers); err != nil {
-		resp.Diagnostics.Append(diagutils.NewFillError(err))
+	resp.Diagnostics.Append(data.Fill(ctx, allMembers)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 

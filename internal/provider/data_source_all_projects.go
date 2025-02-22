@@ -2,67 +2,57 @@ package provider
 
 import (
 	"context"
+	"net/http"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/go-utils/sliceutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
+	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 )
 
 type AllProjectsDataSourceProjectModel struct {
-	InternalId  types.String `tfsdk:"internal_id"`
-	Slug        types.String `tfsdk:"slug"`
-	Name        types.String `tfsdk:"name"`
-	Platform    types.String `tfsdk:"platform"`
-	DateCreated types.String `tfsdk:"date_created"`
-	Features    types.Set    `tfsdk:"features"`
-	Color       types.String `tfsdk:"color"`
+	InternalId  types.String                  `tfsdk:"internal_id"`
+	Slug        types.String                  `tfsdk:"slug"`
+	Name        types.String                  `tfsdk:"name"`
+	Platform    types.String                  `tfsdk:"platform"`
+	DateCreated types.String                  `tfsdk:"date_created"`
+	Features    supertypes.SetValueOf[string] `tfsdk:"features"`
+	Color       types.String                  `tfsdk:"color"`
 }
 
-func (m *AllProjectsDataSourceProjectModel) Fill(project sentry.Project) error {
-	m.InternalId = types.StringValue(project.ID)
+func (m *AllProjectsDataSourceProjectModel) Fill(ctx context.Context, project apiclient.Project) (diags diag.Diagnostics) {
+	m.InternalId = types.StringValue(project.Id)
 	m.Slug = types.StringValue(project.Slug)
 	m.Name = types.StringValue(project.Name)
-	m.Platform = types.StringValue(project.Platform)
+	m.Platform = types.StringPointerValue(project.Platform)
 	m.DateCreated = types.StringValue(project.DateCreated.String())
-
-	featureElements := []attr.Value{}
-	for _, feature := range project.Features {
-		featureElements = append(featureElements, types.StringValue(feature))
-	}
-	m.Features = types.SetValueMust(types.StringType, featureElements)
-
+	m.Features = supertypes.NewSetValueOfSlice(ctx, project.Features)
 	m.Color = types.StringValue(project.Color)
-
-	return nil
+	return
 }
 
 type AllProjectsDataSourceModel struct {
 	Organization types.String                        `tfsdk:"organization"`
-	ProjectSlugs types.Set                           `tfsdk:"project_slugs"`
+	ProjectSlugs supertypes.SetValueOf[string]       `tfsdk:"project_slugs"`
 	Projects     []AllProjectsDataSourceProjectModel `tfsdk:"projects"`
 }
 
-func (m *AllProjectsDataSourceModel) Fill(organization string, projects []sentry.Project) error {
-	m.Organization = types.StringValue(organization)
+func (m *AllProjectsDataSourceModel) Fill(ctx context.Context, projects []apiclient.Project) (diags diag.Diagnostics) {
+	projectSlugs := sliceutils.Map(func(project apiclient.Project) string {
+		return project.Slug
+	}, projects)
+	m.ProjectSlugs = supertypes.NewSetValueOfSlice(ctx, projectSlugs)
 
-	projectSlugElements := []attr.Value{}
-	for _, project := range projects {
-		projectSlugElements = append(projectSlugElements, types.StringValue(project.Slug))
+	m.Projects = make([]AllProjectsDataSourceProjectModel, len(projects))
+	for i, project := range projects {
+		diags.Append(m.Projects[i].Fill(ctx, project)...)
 	}
-	m.ProjectSlugs = types.SetValueMust(types.StringType, projectSlugElements)
-
-	for _, project := range projects {
-		p := AllProjectsDataSourceProjectModel{}
-		if err := p.Fill(project); err != nil {
-			return err
-		}
-		m.Projects = append(m.Projects, p)
-	}
-
-	return nil
+	return
 }
 
 var _ datasource.DataSource = &AllProjectsDataSource{}
@@ -88,8 +78,8 @@ func (d *AllProjectsDataSource) Schema(ctx context.Context, req datasource.Schem
 			"organization": DataSourceOrganizationAttribute(),
 			"project_slugs": schema.SetAttribute{
 				MarkdownDescription: "The slugs of the projects.",
+				CustomType:          supertypes.NewSetTypeOf[string](ctx),
 				Computed:            true,
-				ElementType:         types.StringType,
 			},
 			"projects": schema.SetNestedAttribute{
 				MarkdownDescription: "The list of projects.",
@@ -118,8 +108,8 @@ func (d *AllProjectsDataSource) Schema(ctx context.Context, req datasource.Schem
 						},
 						"features": schema.SetAttribute{
 							MarkdownDescription: "The features of this project.",
+							CustomType:          supertypes.NewSetTypeOf[string](ctx),
 							Computed:            true,
-							ElementType:         types.StringType,
 						},
 						"color": schema.StringAttribute{
 							MarkdownDescription: "The color of this project.",
@@ -140,28 +130,29 @@ func (d *AllProjectsDataSource) Read(ctx context.Context, req datasource.ReadReq
 		return
 	}
 
-	var allProjects []sentry.Project
-	params := &sentry.ListOrganizationProjectsParams{}
+	var allProjects []apiclient.Project
+	params := &apiclient.ListOrganizationProjectsParams{}
 
 	for {
-		projects, apiResp, err := d.client.OrganizationProjects.List(ctx, data.Organization.ValueString(), params)
+		httpResp, err := d.apiClient.ListOrganizationProjectsWithResponse(ctx, data.Organization.ValueString(), params)
 		if err != nil {
 			resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 			return
+		} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
+			resp.Diagnostics.Append(diagutils.NewClientStatusError("read", httpResp.StatusCode(), httpResp.Body))
+			return
 		}
 
-		for _, project := range projects {
-			allProjects = append(allProjects, *project)
-		}
+		allProjects = append(allProjects, *httpResp.JSON200...)
 
-		if apiResp.Cursor == "" {
+		params.Cursor = sentryclient.ParseNextPaginationCursor(httpResp.HTTPResponse)
+		if params.Cursor == nil {
 			break
 		}
-		params.Cursor = apiResp.Cursor
 	}
 
-	if err := data.Fill(data.Organization.ValueString(), allProjects); err != nil {
-		resp.Diagnostics.Append(diagutils.NewFillError(err))
+	resp.Diagnostics.Append(data.Fill(ctx, allProjects)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 

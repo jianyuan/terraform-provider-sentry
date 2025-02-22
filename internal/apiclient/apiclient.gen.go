@@ -190,6 +190,14 @@ type Organization struct {
 	Slug string `json:"slug"`
 }
 
+// OrganizationMember defines model for OrganizationMember.
+type OrganizationMember struct {
+	Email   string `json:"email"`
+	Id      string `json:"id"`
+	Name    string `json:"name"`
+	OrgRole string `json:"orgRole"`
+}
+
 // Project defines model for Project.
 type Project struct {
 	AllowedDomains       []string               `json:"allowedDomains"`
@@ -680,6 +688,11 @@ type ProjectIdOrSlug = string
 
 // TeamIdOrSlug defines model for team_id_or_slug.
 type TeamIdOrSlug = string
+
+// ListOrganizationMembersParams defines parameters for ListOrganizationMembers.
+type ListOrganizationMembersParams struct {
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+}
 
 // ListOrganizationProjectsParams defines parameters for ListOrganizationProjects.
 type ListOrganizationProjectsParams struct {
@@ -2034,6 +2047,9 @@ type ClientInterface interface {
 	// GetOrganization request
 	GetOrganization(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListOrganizationMembers request
+	ListOrganizationMembers(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationMembersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListOrganizationProjects request
 	ListOrganizationProjects(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationProjectsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -2119,6 +2135,18 @@ func (c *Client) HealthCheck(ctx context.Context, reqEditors ...RequestEditorFn)
 
 func (c *Client) GetOrganization(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetOrganizationRequest(c.Server, organizationIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListOrganizationMembers(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationMembersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListOrganizationMembersRequest(c.Server, organizationIdOrSlug, params)
 	if err != nil {
 		return nil, err
 	}
@@ -2492,6 +2520,62 @@ func NewGetOrganizationRequest(server string, organizationIdOrSlug OrganizationI
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListOrganizationMembersRequest generates requests for ListOrganizationMembers
+func NewListOrganizationMembersRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationMembersParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organization_id_or_slug", runtime.ParamLocationPath, organizationIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/members/", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "cursor", runtime.ParamLocationQuery, *params.Cursor); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
 	}
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
@@ -3504,6 +3588,9 @@ type ClientWithResponsesInterface interface {
 	// GetOrganizationWithResponse request
 	GetOrganizationWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*GetOrganizationResponse, error)
 
+	// ListOrganizationMembersWithResponse request
+	ListOrganizationMembersWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationMembersParams, reqEditors ...RequestEditorFn) (*ListOrganizationMembersResponse, error)
+
 	// ListOrganizationProjectsWithResponse request
 	ListOrganizationProjectsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationProjectsParams, reqEditors ...RequestEditorFn) (*ListOrganizationProjectsResponse, error)
 
@@ -3612,6 +3699,28 @@ func (r GetOrganizationResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetOrganizationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListOrganizationMembersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]OrganizationMember
+}
+
+// Status returns HTTPResponse.Status
+func (r ListOrganizationMembersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListOrganizationMembersResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -4030,6 +4139,15 @@ func (c *ClientWithResponses) GetOrganizationWithResponse(ctx context.Context, o
 	return ParseGetOrganizationResponse(rsp)
 }
 
+// ListOrganizationMembersWithResponse request returning *ListOrganizationMembersResponse
+func (c *ClientWithResponses) ListOrganizationMembersWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationMembersParams, reqEditors ...RequestEditorFn) (*ListOrganizationMembersResponse, error) {
+	rsp, err := c.ListOrganizationMembers(ctx, organizationIdOrSlug, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListOrganizationMembersResponse(rsp)
+}
+
 // ListOrganizationProjectsWithResponse request returning *ListOrganizationProjectsResponse
 func (c *ClientWithResponses) ListOrganizationProjectsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationProjectsParams, reqEditors ...RequestEditorFn) (*ListOrganizationProjectsResponse, error) {
 	rsp, err := c.ListOrganizationProjects(ctx, organizationIdOrSlug, params, reqEditors...)
@@ -4288,6 +4406,32 @@ func ParseGetOrganizationResponse(rsp *http.Response) (*GetOrganizationResponse,
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Organization
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListOrganizationMembersResponse parses an HTTP response from a ListOrganizationMembersWithResponse call
+func ParseListOrganizationMembersResponse(rsp *http.Response) (*ListOrganizationMembersResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListOrganizationMembersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []OrganizationMember
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

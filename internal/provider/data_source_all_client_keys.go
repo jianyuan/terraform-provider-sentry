@@ -177,8 +177,7 @@ func (d *AllClientKeysDataSource) Read(ctx context.Context, req datasource.ReadR
 		if err != nil {
 			resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 			return
-		}
-		if httpResp.StatusCode() != http.StatusOK {
+		} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
 			resp.Diagnostics.Append(diagutils.NewClientStatusError("read", httpResp.StatusCode(), httpResp.Body))
 			return
 		}

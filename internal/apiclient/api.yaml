@@ -34,6 +34,28 @@ paths:
           description: Forbidden
         "404":
           description: Not Found
+  /0/organizations/{organization_id_or_slug}/members/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+      - $ref: "#/components/parameters/cursor"
+    get:
+      summary: List Organization Members
+      operationId: listOrganizationMembers
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OrganizationMember"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
   /0/organizations/{organization_id_or_slug}/projects/:
     parameters:
       - $ref: "#/components/parameters/organization_id_or_slug"
@@ -243,8 +265,8 @@ paths:
           description: Forbidden
         "404":
           description: Not Found
-  /0/projects/{organization_id_or_slug}/{project_id_or_slug}/teams/{team_id_or_slug}/:
-    parameters:
+  ? /0/projects/{organization_id_or_slug}/{project_id_or_slug}/teams/{team_id_or_slug}/
+  : parameters:
       - $ref: "#/components/parameters/organization_id_or_slug"
       - $ref: "#/components/parameters/project_id_or_slug"
       - $ref: "#/components/parameters/team_id_or_slug"
@@ -621,6 +643,7 @@ paths:
           description: Forbidden
         "404":
           description: Not Found
+
 security:
   - bearerAuth: []
 components:
@@ -666,6 +689,22 @@ components:
         name:
           type: string
         slug:
+          type: string
+    OrganizationMember:
+      type: object
+      required:
+        - id
+        - email
+        - name
+        - orgRole
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+        orgRole:
           type: string
     Project:
       type: object

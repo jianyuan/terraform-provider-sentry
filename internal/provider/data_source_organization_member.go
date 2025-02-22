@@ -2,12 +2,15 @@ package provider
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
 )
 
 type OrganizationMemberDataSourceModel struct {
@@ -17,13 +20,11 @@ type OrganizationMemberDataSourceModel struct {
 	Role         types.String `tfsdk:"role"`
 }
 
-func (m *OrganizationMemberDataSourceModel) Fill(organization string, d sentry.OrganizationMember) error {
-	m.Id = types.StringValue(d.ID)
-	m.Organization = types.StringValue(organization)
-	m.Email = types.StringValue(d.Email)
-	m.Role = types.StringValue(d.OrgRole)
-
-	return nil
+func (m *OrganizationMemberDataSourceModel) Fill(ctx context.Context, member apiclient.OrganizationMember) (diags diag.Diagnostics) {
+	m.Id = types.StringValue(member.Id)
+	m.Email = types.StringValue(member.Email)
+	m.Role = types.StringValue(member.OrgRole)
+	return
 }
 
 var _ datasource.DataSource = &OrganizationMemberDataSource{}
@@ -71,28 +72,31 @@ func (d *OrganizationMemberDataSource) Read(ctx context.Context, req datasource.
 		return
 	}
 
-	var foundMember *sentry.OrganizationMember
-	params := &sentry.ListCursorParams{}
+	var foundMember *apiclient.OrganizationMember
+	params := &apiclient.ListOrganizationMembersParams{}
 
 out:
 	for {
-		members, apiResp, err := d.client.OrganizationMembers.List(ctx, data.Organization.ValueString(), params)
+		httpResp, err := d.apiClient.ListOrganizationMembersWithResponse(ctx, data.Organization.ValueString(), params)
 		if err != nil {
 			resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 			return
+		} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
+			resp.Diagnostics.Append(diagutils.NewClientStatusError("read", httpResp.StatusCode(), httpResp.Body))
+			return
 		}
 
-		for _, member := range members {
+		for _, member := range *httpResp.JSON200 {
 			if member.Email == data.Email.ValueString() {
-				foundMember = member
+				foundMember = &member
 				break out
 			}
 		}
 
-		if apiResp.Cursor == "" {
+		params.Cursor = sentryclient.ParseNextPaginationCursor(httpResp.HTTPResponse)
+		if params.Cursor == nil {
 			break
 		}
-		params.Cursor = apiResp.Cursor
 	}
 
 	if foundMember == nil {
@@ -100,8 +104,8 @@ out:
 		return
 	}
 
-	if err := data.Fill(data.Organization.ValueString(), *foundMember); err != nil {
-		resp.Diagnostics.Append(diagutils.NewFillError(err))
+	resp.Diagnostics.Append(data.Fill(ctx, *foundMember)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
