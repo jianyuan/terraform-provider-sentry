@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 )
 
 func TestAccSentryOrganizationMember_basic(t *testing.T) {
@@ -17,7 +18,7 @@ func TestAccSentryOrganizationMember_basic(t *testing.T) {
 	rn := "sentry_organization_member.john_doe"
 
 	check := func(role string) resource.TestCheckFunc {
-		var member sentry.OrganizationMember
+		var member apiclient.OrganizationMemberWithRoles
 		return resource.ComposeTestCheckFunc(
 			testAccCheckSentryOrganizationMemberExists(rn, &member),
 			resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
@@ -53,25 +54,22 @@ func testAccCheckSentryOrganizationMemberDestroy(s *terraform.State) error {
 		}
 
 		ctx := context.Background()
-		member, resp, err := acctest.SharedClient.OrganizationMembers.Get(
+		httpResp, err := acctest.SharedApiClient.GetOrganizationMemberWithResponse(
 			ctx,
 			rs.Primary.Attributes["organization"],
 			rs.Primary.ID,
 		)
-		if err == nil {
-			if member != nil {
-				return errors.New("organization member still exists")
-			}
-		}
-		if resp.StatusCode != 404 {
+		if err != nil {
 			return err
+		} else if httpResp.StatusCode() != http.StatusNotFound {
+			return errors.New("organization member still exists")
 		}
 		return nil
 	}
 	return nil
 }
 
-func testAccCheckSentryOrganizationMemberExists(n string, member *sentry.OrganizationMember) resource.TestCheckFunc {
+func testAccCheckSentryOrganizationMemberExists(n string, member *apiclient.OrganizationMemberWithRoles) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -87,12 +85,13 @@ func testAccCheckSentryOrganizationMemberExists(n string, member *sentry.Organiz
 			return err
 		}
 		ctx := context.Background()
-		gotMember, _, err := acctest.SharedClient.OrganizationMembers.Get(ctx, org, id)
-
+		httpResp, err := acctest.SharedApiClient.GetOrganizationMemberWithResponse(ctx, org, id)
 		if err != nil {
 			return err
+		} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
+			return fmt.Errorf("organization member not found")
 		}
-		*member = *gotMember
+		*member = *httpResp.JSON200
 		return nil
 	}
 }

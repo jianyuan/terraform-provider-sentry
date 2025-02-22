@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"context"
 	"fmt"
+	"net/http"
 	"slices"
 	"strings"
 	"sync"
@@ -17,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
@@ -95,15 +97,15 @@ func (r *TeamMemberResource) Schema(ctx context.Context, req resource.SchemaRequ
 	}
 }
 
-func getEffectiveOrgRole(memberOrgRoles []string, orgRoleList []sentry.OrganizationRoleListItem) *sentry.OrganizationRoleListItem {
+func getEffectiveOrgRole(memberOrgRoles []string, orgRoleList []apiclient.OrganizationRoleListItem) *apiclient.OrganizationRoleListItem {
 	orgRoleMap := make(map[string]struct {
 		index int
-		role  sentry.OrganizationRoleListItem
+		role  apiclient.OrganizationRoleListItem
 	}, len(orgRoleList))
 	for i, role := range orgRoleList {
-		orgRoleMap[role.ID] = struct {
+		orgRoleMap[role.Id] = struct {
 			index int
-			role  sentry.OrganizationRoleListItem
+			role  apiclient.OrganizationRoleListItem
 		}{
 			index: i,
 			role:  role,
@@ -125,13 +127,13 @@ func getEffectiveOrgRole(memberOrgRoles []string, orgRoleList []sentry.Organizat
 	return nil
 }
 
-func hasOrgRoleOverwrite(orgRole *sentry.OrganizationRoleListItem, orgRoleList []sentry.OrganizationRoleListItem, teamRoleList []sentry.TeamRoleListItem) bool {
+func hasOrgRoleOverwrite(orgRole *apiclient.OrganizationRoleListItem, orgRoleList []apiclient.OrganizationRoleListItem, teamRoleList []apiclient.TeamRoleListItem) bool {
 	if orgRole == nil {
 		return false
 	}
 
-	teamRoleIndex := slices.IndexFunc(teamRoleList, func(teamRole sentry.TeamRoleListItem) bool {
-		return teamRole.ID == orgRole.MinimumTeamRole
+	teamRoleIndex := slices.IndexFunc(teamRoleList, func(teamRole apiclient.TeamRoleListItem) bool {
+		return teamRole.Id == orgRole.MinimumTeamRole
 	})
 
 	return teamRoleIndex > 0
@@ -142,20 +144,26 @@ func (r *TeamMemberResource) getEffectiveTeamRole(ctx context.Context, organizat
 	r.roleMu.Lock()
 	defer r.roleMu.Unlock()
 
-	org, _, err := r.client.Organizations.Get(ctx, organization)
+	orgHttpResp, err := r.apiClient.GetOrganizationWithResponse(ctx, organization)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read organization, got error: %s", err)
+	} else if orgHttpResp.StatusCode() != http.StatusOK || orgHttpResp.JSON200 == nil {
+		return nil, fmt.Errorf("unable to read organization, got status code: %d", orgHttpResp.StatusCode())
 	}
+	org := orgHttpResp.JSON200
 
 	team, _, err := r.client.Teams.Get(ctx, organization, teamSlug)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read team, got error: %s", err)
 	}
 
-	member, _, err := r.client.OrganizationMembers.Get(ctx, organization, memberId)
+	memberHttpResp, err := r.apiClient.GetOrganizationMemberWithResponse(ctx, organization, memberId)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read organization member, got error: %s", err)
+	} else if memberHttpResp.StatusCode() != http.StatusOK || memberHttpResp.JSON200 == nil {
+		return nil, fmt.Errorf("unable to read organization member, got status code: %d", memberHttpResp.StatusCode())
 	}
+	member := memberHttpResp.JSON200
 
 	possibleOrgRoles := []string{member.OrgRole}
 	if team.OrgRole != nil {
@@ -165,16 +173,16 @@ func (r *TeamMemberResource) getEffectiveTeamRole(ctx context.Context, organizat
 	effectiveOrgRole := getEffectiveOrgRole(possibleOrgRoles, org.OrgRoleList)
 
 	if hasOrgRoleOverwrite(effectiveOrgRole, org.OrgRoleList, org.TeamRoleList) {
-		teamRoleIndex := slices.IndexFunc(org.TeamRoleList, func(teamRole sentry.TeamRoleListItem) bool {
-			return teamRole.ID == effectiveOrgRole.MinimumTeamRole
+		teamRoleIndex := slices.IndexFunc(org.TeamRoleList, func(teamRole apiclient.TeamRoleListItem) bool {
+			return teamRole.Id == effectiveOrgRole.MinimumTeamRole
 		})
 		if teamRoleIndex != -1 {
 			teamRole := org.TeamRoleList[teamRoleIndex]
-			return &teamRole.ID, nil
+			return &teamRole.Id, nil
 		}
 	}
 
-	teamRoleIndex := slices.IndexFunc(member.TeamRoles, func(teamRole sentry.TeamRole) bool {
+	teamRoleIndex := slices.IndexFunc(member.TeamRoles, func(teamRole apiclient.TeamRole) bool {
 		return teamRole.TeamSlug == teamSlug
 	})
 	if teamRoleIndex != -1 {
@@ -185,7 +193,7 @@ func (r *TeamMemberResource) getEffectiveTeamRole(ctx context.Context, organizat
 	}
 
 	teamRole := member.TeamRoleList[0]
-	return &teamRole.ID, nil
+	return &teamRole.Id, nil
 }
 
 func (r *TeamMemberResource) updateRole(ctx context.Context, organization string, memberId string, team string, role string) (*string, error) {

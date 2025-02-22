@@ -2,13 +2,16 @@ package sentry
 
 import (
 	"context"
+	"fmt"
+	"net/http"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/go-utils/ptr"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
@@ -71,30 +74,33 @@ func resourceSentryOrganizationMember() *schema.Resource {
 }
 
 func resourceSentryOrganizationMemberCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*providerdata.ProviderData).Client
+	apiClient := meta.(*providerdata.ProviderData).ApiClient
 
 	org := d.Get("organization").(string)
-	params := &sentry.CreateOrganizationMemberParams{
-		Email: d.Get("email").(string),
-		Role:  d.Get("role").(string),
-		Teams: []string{},
+	params := apiclient.CreateOrganizationMemberJSONRequestBody{
+		Email:   d.Get("email").(string),
+		OrgRole: d.Get("role").(string),
 	}
 
 	tflog.Debug(ctx, "Inviting organization member", map[string]interface{}{
 		"email": params.Email,
 		"org":   org,
 	})
-	member, _, err := client.OrganizationMembers.Create(ctx, org, params)
+	httpResp, err := apiClient.CreateOrganizationMemberWithResponse(ctx, org, params)
 	if err != nil {
 		return diag.FromErr(err)
+	} else if httpResp.StatusCode() != http.StatusCreated || httpResp.JSON201 == nil {
+		return diag.FromErr(fmt.Errorf("unexpected status code: %d", httpResp.StatusCode()))
 	}
 
-	d.SetId(tfutils.BuildTwoPartId(org, member.ID))
+	member := httpResp.JSON201
+
+	d.SetId(tfutils.BuildTwoPartId(org, member.Id))
 	return resourceSentryOrganizationMemberRead(ctx, d, meta)
 }
 
 func resourceSentryOrganizationMemberRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*providerdata.ProviderData).Client
+	apiClient := meta.(*providerdata.ProviderData).ApiClient
 
 	org, memberID, err := splitSentryOrganizationMemberID(d.Id())
 	if err != nil {
@@ -105,19 +111,22 @@ func resourceSentryOrganizationMemberRead(ctx context.Context, d *schema.Resourc
 		"org":      org,
 		"memberID": memberID,
 	})
-	member, resp, err := client.OrganizationMembers.Get(ctx, org, memberID)
-	if found, err := checkClientGet(resp, err, d); !found {
-		tflog.Info(ctx, "Removed organization membership from state because it no longer exists in Sentry", map[string]interface{}{
-			"org":      org,
-			"memberID": memberID,
-		})
+	httpResp, err := apiClient.GetOrganizationMemberWithResponse(ctx, org, memberID)
+	if err != nil {
 		return diag.FromErr(err)
+	} else if httpResp.StatusCode() == http.StatusNotFound {
+		d.SetId("")
+		return nil
+	} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
+		return diag.FromErr(fmt.Errorf("unexpected status code: %d", httpResp.StatusCode()))
 	}
 
-	d.SetId(tfutils.BuildTwoPartId(org, member.ID))
+	member := httpResp.JSON200
+
+	d.SetId(tfutils.BuildTwoPartId(org, member.Id))
 	retErr := multierror.Append(
 		d.Set("organization", org),
-		d.Set("internal_id", member.ID),
+		d.Set("internal_id", member.Id),
 		d.Set("email", member.Email),
 		d.Set("role", member.OrgRole),
 		d.Set("expired", member.Expired),
@@ -127,41 +136,55 @@ func resourceSentryOrganizationMemberRead(ctx context.Context, d *schema.Resourc
 }
 
 func resourceSentryOrganizationMemberUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*providerdata.ProviderData).Client
+	apiClient := meta.(*providerdata.ProviderData).ApiClient
 
 	org, memberID, err := splitSentryOrganizationMemberID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	orgMember, _, err := client.OrganizationMembers.Get(ctx, org, memberID)
+	getHttpResp, err := apiClient.GetOrganizationMemberWithResponse(ctx, org, memberID)
 	if err != nil {
 		return diag.FromErr(err)
+	} else if getHttpResp.StatusCode() != http.StatusOK || getHttpResp.JSON200 == nil {
+		return diag.FromErr(fmt.Errorf("unexpected status code: %d", getHttpResp.StatusCode()))
 	}
+	orgMember := getHttpResp.JSON200
 
-	params := &sentry.UpdateOrganizationMemberParams{
-		OrganizationRole: d.Get("role").(string),
-		TeamRoles:        orgMember.TeamRoles,
+	teamRoles := make([]apiclient.TeamRole, len(orgMember.TeamRoles))
+	for i, teamRole := range orgMember.TeamRoles {
+		teamRoles[i] = apiclient.TeamRole{
+			TeamSlug: teamRole.TeamSlug,
+			Role:     teamRole.Role,
+		}
+	}
+	params := apiclient.UpdateOrganizationMemberJSONRequestBody{
+		OrgRole:   ptr.Ptr(d.Get("role").(string)),
+		TeamRoles: &teamRoles,
 	}
 
 	tflog.Debug(ctx, "Updating organization member", map[string]interface{}{
 		"email": d.Get("email"),
-		"role":  params.OrganizationRole,
+		"role":  params.OrgRole,
 		"id":    memberID,
 		"org":   org,
 	})
 
-	member, _, err := client.OrganizationMembers.Update(ctx, org, memberID, params)
+	httpResp, err := apiClient.UpdateOrganizationMemberWithResponse(ctx, org, memberID, params)
 	if err != nil {
 		return diag.FromErr(err)
+	} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
+		return diag.FromErr(fmt.Errorf("unexpected status code: %d", httpResp.StatusCode()))
 	}
 
-	d.SetId(tfutils.BuildTwoPartId(org, member.ID))
+	member := httpResp.JSON200
+
+	d.SetId(tfutils.BuildTwoPartId(org, member.Id))
 	return resourceSentryOrganizationMemberRead(ctx, d, meta)
 }
 
 func resourceSentryOrganizationMemberDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*providerdata.ProviderData).Client
+	apiClient := meta.(*providerdata.ProviderData).ApiClient
 
 	org, memberID, err := splitSentryOrganizationMemberID(d.Id())
 	if err != nil {
@@ -172,8 +195,14 @@ func resourceSentryOrganizationMemberDelete(ctx context.Context, d *schema.Resou
 		"org":      org,
 		"memberID": memberID,
 	})
-	_, err = client.OrganizationMembers.Delete(ctx, org, memberID)
-	return diag.FromErr(err)
+	httpResp, err := apiClient.DeleteOrganizationMemberWithResponse(ctx, org, memberID)
+	if err != nil {
+		return diag.FromErr(err)
+	} else if httpResp.StatusCode() != http.StatusNoContent {
+		return diag.FromErr(fmt.Errorf("unexpected status code: %d", httpResp.StatusCode()))
+	}
+
+	return nil
 }
 
 func splitSentryOrganizationMemberID(id string) (org string, memberID string, err error) {
