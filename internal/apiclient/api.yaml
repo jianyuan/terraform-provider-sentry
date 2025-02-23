@@ -870,6 +870,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/TeamRoleListItem"
+        features:
+          type: array
+          items:
+            type: string
     OrganizationMember:
       type: object
       required:

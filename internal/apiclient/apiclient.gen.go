@@ -195,6 +195,7 @@ const (
 
 // Organization defines model for Organization.
 type Organization struct {
+	Features     *[]string                  `json:"features,omitempty"`
 	Id           string                     `json:"id"`
 	Name         string                     `json:"name"`
 	OrgRoleList  []OrganizationRoleListItem `json:"orgRoleList"`

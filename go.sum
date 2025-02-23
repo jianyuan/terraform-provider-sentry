@@ -195,6 +195,8 @@ github.com/jianyuan/go-sentry/v2 v2.8.4 h1:aXOJSatfg6ygdI/2dxt0Ur2tWZJtuf5W/Qxlk
 github.com/jianyuan/go-sentry/v2 v2.8.4/go.mod h1:ZMSSWRuXbIwtoH4jg2ka9ZA8x3o3zC8nkTeeqq97G7g=
 github.com/jianyuan/go-utils v0.0.0-20241210005310-ec4088c3adbd h1:RB+XeSesQXve04fqa/CcenQ7rZAPxUS8LKDfBpxf5Sw=
 github.com/jianyuan/go-utils v0.0.0-20241210005310-ec4088c3adbd/go.mod h1:D1O+WiG+p0g3LExvWtPEn6+UDTKJoUxTfJxyM6Ya6+k=
+github.com/jianyuan/go-utils v0.0.0-20250223213401-62c93a9e0b6c h1:VG+sd6t1wnle1Rc9Z52CmsYuwhBkXcW+aPIHqcw9e0I=
+github.com/jianyuan/go-utils v0.0.0-20250223213401-62c93a9e0b6c/go.mod h1:D1O+WiG+p0g3LExvWtPEn6+UDTKJoUxTfJxyM6Ya6+k=
 github.com/josharian/intern v1.0.0 h1:vlS4z54oSdjm0bgjRigI+G1HpF+tI+9rE5LLzOg8HmY=
 github.com/josharian/intern v1.0.0/go.mod h1:5DoeVV0s6jJacbCEi61lwdGj/aVlrQvzHFFd8Hwg//Y=
 github.com/juju/gnuflag v0.0.0-20171113085948-2ce1bb71843d/go.mod h1:2PavIy+JPciBPrBUjwbNvtwB6RQlve+hkpll6QSNmOE=

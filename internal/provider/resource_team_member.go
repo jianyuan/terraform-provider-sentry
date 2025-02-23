@@ -1,7 +1,6 @@
 package provider
 
 import (
-	"cmp"
 	"context"
 	"fmt"
 	"net/http"
@@ -18,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/go-utils/sliceutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
@@ -97,36 +97,6 @@ func (r *TeamMemberResource) Schema(ctx context.Context, req resource.SchemaRequ
 	}
 }
 
-func getEffectiveOrgRole(memberOrgRoles []string, orgRoleList []apiclient.OrganizationRoleListItem) *apiclient.OrganizationRoleListItem {
-	orgRoleMap := make(map[string]struct {
-		index int
-		role  apiclient.OrganizationRoleListItem
-	}, len(orgRoleList))
-	for i, role := range orgRoleList {
-		orgRoleMap[role.Id] = struct {
-			index int
-			role  apiclient.OrganizationRoleListItem
-		}{
-			index: i,
-			role:  role,
-		}
-	}
-	memberOrgRolesCopy := make([]string, len(memberOrgRoles))
-	copy(memberOrgRolesCopy, memberOrgRoles)
-
-	slices.SortFunc(memberOrgRolesCopy, func(i, j string) int {
-		return cmp.Compare(orgRoleMap[j].index, orgRoleMap[i].index)
-	})
-
-	if len(memberOrgRolesCopy) > 0 {
-		if orgRoleMap, ok := orgRoleMap[memberOrgRolesCopy[0]]; ok {
-			return &orgRoleMap.role
-		}
-	}
-
-	return nil
-}
-
 func hasOrgRoleOverwrite(orgRole *apiclient.OrganizationRoleListItem, orgRoleList []apiclient.OrganizationRoleListItem, teamRoleList []apiclient.TeamRoleListItem) bool {
 	if orgRole == nil {
 		return false
@@ -152,11 +122,6 @@ func (r *TeamMemberResource) getEffectiveTeamRole(ctx context.Context, organizat
 	}
 	org := orgHttpResp.JSON200
 
-	team, _, err := r.client.Teams.Get(ctx, organization, teamSlug)
-	if err != nil {
-		return nil, fmt.Errorf("unable to read team, got error: %s", err)
-	}
-
 	memberHttpResp, err := r.apiClient.GetOrganizationMemberWithResponse(ctx, organization, memberId)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read organization member, got error: %s", err)
@@ -165,35 +130,32 @@ func (r *TeamMemberResource) getEffectiveTeamRole(ctx context.Context, organizat
 	}
 	member := memberHttpResp.JSON200
 
-	possibleOrgRoles := []string{member.OrgRole}
-	if team.OrgRole != nil {
-		possibleOrgRoles = append(possibleOrgRoles, sentry.StringValue(team.OrgRole))
+	memberOrgRole := sliceutils.Find(func(orgRole apiclient.OrganizationRoleListItem) bool {
+		return orgRole.Id == member.OrgRole
+	}, org.OrgRoleList)
+
+	if hasOrgRoleOverwrite(memberOrgRole, org.OrgRoleList, org.TeamRoleList) {
+		effectiveTeamRole := sliceutils.Find(func(teamRole apiclient.TeamRoleListItem) bool {
+			return teamRole.Id == memberOrgRole.MinimumTeamRole
+		}, org.TeamRoleList)
+		if effectiveTeamRole != nil {
+			return &effectiveTeamRole.Id, nil
+		}
 	}
 
-	effectiveOrgRole := getEffectiveOrgRole(possibleOrgRoles, org.OrgRoleList)
-
-	if hasOrgRoleOverwrite(effectiveOrgRole, org.OrgRoleList, org.TeamRoleList) {
-		teamRoleIndex := slices.IndexFunc(org.TeamRoleList, func(teamRole apiclient.TeamRoleListItem) bool {
-			return teamRole.Id == effectiveOrgRole.MinimumTeamRole
-		})
-		if teamRoleIndex != -1 {
-			teamRole := org.TeamRoleList[teamRoleIndex]
+	teamRoleId := sliceutils.Find(func(teamRole apiclient.TeamRole) bool {
+		return teamRole.TeamSlug == teamSlug
+	}, member.TeamRoles)
+	if teamRoleId != nil && teamRoleId.Role != nil {
+		teamRole := sliceutils.Find(func(teamRole apiclient.TeamRoleListItem) bool {
+			return teamRole.Id == *teamRoleId.Role
+		}, org.TeamRoleList)
+		if teamRole != nil {
 			return &teamRole.Id, nil
 		}
 	}
 
-	teamRoleIndex := slices.IndexFunc(member.TeamRoles, func(teamRole apiclient.TeamRole) bool {
-		return teamRole.TeamSlug == teamSlug
-	})
-	if teamRoleIndex != -1 {
-		teamRole := member.TeamRoles[teamRoleIndex]
-		if teamRole.Role != nil {
-			return teamRole.Role, nil
-		}
-	}
-
-	teamRole := member.TeamRoleList[0]
-	return &teamRole.Id, nil
+	return &member.TeamRoleList[0].Id, nil
 }
 
 func (r *TeamMemberResource) updateRole(ctx context.Context, organization string, memberId string, team string, role string) (*string, error) {
