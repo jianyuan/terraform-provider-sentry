@@ -34,6 +34,70 @@ paths:
           description: Forbidden
         "404":
           description: Not Found
+  /0/organizations/{organization_id_or_slug}/integrations/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+    get:
+      summary: List Organization Integrations
+      operationId: listOrganizationIntegrations
+      parameters:
+        - $ref: "#/components/parameters/cursor"
+        - name: provider_key
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OrganizationIntegration"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+  /0/organizations/{organization_id_or_slug}/integrations/{integration_id}/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+      - $ref: "#/components/parameters/integration_id"
+    get:
+      summary: Retrieve an Organization Integration
+      operationId: getOrganizationIntegration
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrganizationIntegration"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+    post:
+      summary: Update an Organization Integration
+      operationId: updateOrganizationIntegration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/OrganizationIntegration_Opsgenie_ConfigData"
+                - $ref: "#/components/schemas/OrganizationIntegration_PagerDuty_ConfigData"
+      responses:
+        "200":
+          description: OK
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
   /0/organizations/{organization_id_or_slug}/members/:
     parameters:
       - $ref: "#/components/parameters/organization_id_or_slug"
@@ -770,6 +834,12 @@ components:
       required: true
       schema:
         type: string
+    integration_id:
+      name: integration_id
+      in: path
+      required: true
+      schema:
+        type: string
     cursor:
       name: cursor
       in: query
@@ -925,6 +995,141 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/TeamRoleListItem"
+    OrganizationIntegration:
+      type: object
+      required:
+        - id
+        - name
+        - icon
+        - domainName
+        - accountType
+        - scopes
+        - status
+        - provider
+        - configOrganization
+        - configData
+        - organizationId
+        - organizationIntegrationStatus
+        - gracePeriodEnd
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        icon:
+          type: string
+          nullable: true
+        domainName:
+          type: string
+          nullable: true
+        accountType:
+          type: string
+          nullable: true
+        scopes:
+          type: array
+          items:
+            type: string
+          nullable: true
+        status:
+          type: string
+        provider:
+          type: object
+          required:
+            - key
+          properties:
+            key:
+              type: string
+        configData: {}
+        configOrganization: {}
+        organizationId:
+          type: integer
+        organizationIntegrationStatus:
+          type: string
+        gracePeriodEnd:
+          type: string
+          nullable: true
+      oneOf:
+        - $ref: "#/components/schemas/OrganizationIntegration_Opsgenie"
+        - $ref: "#/components/schemas/OrganizationIntegration_PagerDuty"
+    OrganizationIntegration_Opsgenie:
+      type: object
+      required:
+        - provider
+        - configData
+      properties:
+        provider:
+          type: object
+          required:
+            - key
+          properties:
+            key:
+              type: string
+              enum:
+                - opsgenie
+        configData:
+          $ref: "#/components/schemas/OrganizationIntegration_Opsgenie_ConfigData"
+    OrganizationIntegration_Opsgenie_ConfigData:
+      type: object
+      required:
+        - team_table
+      properties:
+        team_table:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrganizationIntegration_Opsgenie_TeamTableItem"
+    OrganizationIntegration_Opsgenie_TeamTableItem:
+      type: object
+      required:
+        - team
+        - integration_key
+        - id
+      properties:
+        team:
+          type: string
+        integration_key:
+          type: string
+        id:
+          type: string
+    OrganizationIntegration_PagerDuty:
+      type: object
+      required:
+        - provider
+        - configData
+      properties:
+        provider:
+          type: object
+          required:
+            - key
+          properties:
+            key:
+              type: string
+              enum:
+                - pagerduty
+        configData:
+          $ref: "#/components/schemas/OrganizationIntegration_PagerDuty_ConfigData"
+    OrganizationIntegration_PagerDuty_ConfigData:
+      type: object
+      required:
+        - service_table
+      properties:
+        service_table:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrganizationIntegration_PagerDuty_ServiceTableItem"
+    OrganizationIntegration_PagerDuty_ServiceTableItem:
+      type: object
+      required:
+        - service
+        - integration_key
+        - id
+      properties:
+        service:
+          type: string
+        integration_key:
+          type: string
+        id:
+          type: integer
+          x-go-type: json.Number
     Project:
       type: object
       required:

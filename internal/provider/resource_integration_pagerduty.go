@@ -1,14 +1,17 @@
 package provider
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
@@ -21,14 +24,11 @@ type IntegrationPagerDutyModel struct {
 	IntegrationKey types.String `tfsdk:"integration_key"`
 }
 
-func (m *IntegrationPagerDutyModel) Fill(organization string, integrationId string, item IntegrationPagerDutyConfigDataServiceTableItem) error {
+func (m *IntegrationPagerDutyModel) Fill(ctx context.Context, item apiclient.OrganizationIntegrationPagerDutyServiceTableItem) (diags diag.Diagnostics) {
 	m.Id = types.StringValue(item.Id.String())
-	m.Organization = types.StringValue(organization)
-	m.IntegrationId = types.StringValue(integrationId)
 	m.Service = types.StringValue(item.Service)
 	m.IntegrationKey = types.StringValue(item.IntegrationKey)
-
-	return nil
+	return
 }
 
 type IntegrationPagerDutyConfigDataServiceTableItem struct {
@@ -88,68 +88,80 @@ func (r *IntegrationPagerDuty) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	integration, apiResp, err := r.client.OrganizationIntegrations.Get(ctx, data.Organization.ValueString(), data.IntegrationId.ValueString())
-	if apiResp.StatusCode == http.StatusNotFound {
-		resp.Diagnostics.Append(diagutils.NewNotFoundError("integration"))
-		return
-	}
+	getHttpResp, err := r.apiClient.GetOrganizationIntegrationWithResponse(ctx, data.Organization.ValueString(), data.IntegrationId.ValueString())
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 		return
+	} else if getHttpResp.StatusCode() == http.StatusNotFound {
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("integration"))
+		return
+	} else if getHttpResp.StatusCode() != http.StatusOK || getHttpResp.JSON200 == nil {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("read", getHttpResp.StatusCode(), getHttpResp.Body))
+		return
 	}
 
-	var configData IntegrationPagerDutyConfigData
-	if err := json.Unmarshal(integration.ConfigData, &configData); err != nil {
+	integration := *getHttpResp.JSON200
+
+	specificIntegration, err := integration.AsOrganizationIntegrationPagerDuty()
+	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("unmarshal", err))
 		return
 	}
 
 	idsSeen := map[json.Number]struct{}{}
-	for _, item := range configData.ServiceTable {
+	for _, item := range specificIntegration.ConfigData.ServiceTable {
 		idsSeen[item.Id] = struct{}{}
 	}
 
-	configData.ServiceTable = append(configData.ServiceTable, IntegrationPagerDutyConfigDataServiceTableItem{
+	specificIntegration.ConfigData.ServiceTable = append(specificIntegration.ConfigData.ServiceTable, apiclient.OrganizationIntegrationPagerDutyServiceTableItem{
 		Service:        data.Service.ValueString(),
 		IntegrationKey: data.IntegrationKey.ValueString(),
 		Id:             json.Number("0"),
 	})
 
-	configDataJSON, err := json.Marshal(configData)
+	configDataJSON, err := json.Marshal(specificIntegration.ConfigData)
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("marshal", err))
 		return
 	}
 
-	params := json.RawMessage(configDataJSON)
-	_, err = r.client.OrganizationIntegrations.UpdateConfig(
+	updateHttpResp, err := r.apiClient.UpdateOrganizationIntegrationWithBodyWithResponse(
 		ctx,
 		data.Organization.ValueString(),
 		data.IntegrationId.ValueString(),
-		&params,
+		"application/json",
+		bytes.NewReader(configDataJSON),
 	)
 	if err != nil {
-		resp.Diagnostics.Append(diagutils.NewClientError("create", err))
+		resp.Diagnostics.Append(diagutils.NewClientError("update", err))
+		return
+	} else if updateHttpResp.StatusCode() != http.StatusOK {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("update", updateHttpResp.StatusCode(), updateHttpResp.Body))
 		return
 	}
 
-	integration, apiResp, err = r.client.OrganizationIntegrations.Get(ctx, data.Organization.ValueString(), data.IntegrationId.ValueString())
-	if apiResp.StatusCode == http.StatusNotFound {
-		resp.Diagnostics.Append(diagutils.NewNotFoundError("integration"))
-		return
-	}
+	getHttpResp, err = r.apiClient.GetOrganizationIntegrationWithResponse(ctx, data.Organization.ValueString(), data.IntegrationId.ValueString())
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 		return
+	} else if getHttpResp.StatusCode() == http.StatusNotFound {
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("integration"))
+		return
+	} else if getHttpResp.StatusCode() != http.StatusOK || getHttpResp.JSON200 == nil {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("read", getHttpResp.StatusCode(), getHttpResp.Body))
+		return
 	}
 
-	if err := json.Unmarshal(integration.ConfigData, &configData); err != nil {
+	integration = *getHttpResp.JSON200
+
+	specificIntegration, err = integration.AsOrganizationIntegrationPagerDuty()
+	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("unmarshal", err))
 		return
 	}
 
-	var found *IntegrationPagerDutyConfigDataServiceTableItem
-	for _, item := range configData.ServiceTable {
+	var found *apiclient.OrganizationIntegrationPagerDutyServiceTableItem
+	for _, item := range specificIntegration.ConfigData.ServiceTable {
 		if item.Service == data.Service.ValueString() && item.IntegrationKey == data.IntegrationKey.ValueString() {
 			if _, ok := idsSeen[item.Id]; !ok {
 				found = &item
@@ -163,8 +175,8 @@ func (r *IntegrationPagerDuty) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	if err := data.Fill(data.Organization.ValueString(), data.IntegrationId.ValueString(), configData.ServiceTable[len(configData.ServiceTable)-1]); err != nil {
-		resp.Diagnostics.Append(diagutils.NewFillError(err))
+	resp.Diagnostics.Append(data.Fill(ctx, *found)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -179,38 +191,43 @@ func (r *IntegrationPagerDuty) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 
-	integration, apiResp, err := r.client.OrganizationIntegrations.Get(ctx, data.Organization.ValueString(), data.IntegrationId.ValueString())
-	if apiResp.StatusCode == http.StatusNotFound {
-		resp.Diagnostics.Append(diagutils.NewNotFoundError("integration"))
-		resp.State.RemoveResource(ctx)
-		return
-	}
+	httpResp, err := r.apiClient.GetOrganizationIntegrationWithResponse(ctx, data.Organization.ValueString(), data.IntegrationId.ValueString())
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 		return
+	} else if httpResp.StatusCode() == http.StatusNotFound {
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("integration"))
+		resp.State.RemoveResource(ctx)
+		return
+	} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("read", httpResp.StatusCode(), httpResp.Body))
+		return
 	}
 
-	var configData IntegrationPagerDutyConfigData
-	if err := json.Unmarshal(integration.ConfigData, &configData); err != nil {
+	integration := *httpResp.JSON200
+
+	specificIntegration, err := integration.AsOrganizationIntegrationPagerDuty()
+	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("unmarshal", err))
 		return
 	}
 
-	var found *IntegrationPagerDutyConfigDataServiceTableItem
-	for _, i := range configData.ServiceTable {
+	var found *apiclient.OrganizationIntegrationPagerDutyServiceTableItem
+	for _, i := range specificIntegration.ConfigData.ServiceTable {
 		if i.Id.String() == data.Id.ValueString() {
 			found = &i
 			break
 		}
 	}
+
 	if found == nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("read", fmt.Errorf("service table item not found: %s", data.IntegrationId.ValueString())))
 		resp.State.RemoveResource(ctx)
 		return
 	}
 
-	if err := data.Fill(data.Organization.ValueString(), data.IntegrationId.ValueString(), *found); err != nil {
-		resp.Diagnostics.Append(diagutils.NewFillError(err))
+	resp.Diagnostics.Append(data.Fill(ctx, *found)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -225,25 +242,31 @@ func (r *IntegrationPagerDuty) Update(ctx context.Context, req resource.UpdateRe
 		return
 	}
 
-	integration, apiResp, err := r.client.OrganizationIntegrations.Get(ctx, data.Organization.ValueString(), data.IntegrationId.ValueString())
-	if apiResp.StatusCode == http.StatusNotFound {
-		return
-	}
+	httpResp, err := r.apiClient.GetOrganizationIntegrationWithResponse(ctx, data.Organization.ValueString(), data.IntegrationId.ValueString())
 	if err != nil {
-		resp.Diagnostics.Append(diagutils.NewClientError("update", err))
+		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
+		return
+	} else if httpResp.StatusCode() == http.StatusNotFound {
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("integration"))
+		resp.State.RemoveResource(ctx)
+		return
+	} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("read", httpResp.StatusCode(), httpResp.Body))
 		return
 	}
 
-	var configData IntegrationPagerDutyConfigData
-	if err := json.Unmarshal(integration.ConfigData, &configData); err != nil {
+	integration := *httpResp.JSON200
+
+	specificIntegration, err := integration.AsOrganizationIntegrationPagerDuty()
+	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("unmarshal", err))
 		return
 	}
 
-	var found *IntegrationPagerDutyConfigDataServiceTableItem
-	for i, item := range configData.ServiceTable {
+	var found *apiclient.OrganizationIntegrationPagerDutyServiceTableItem
+	for i, item := range specificIntegration.ConfigData.ServiceTable {
 		if item.Id.String() == data.Id.ValueString() {
-			found = &configData.ServiceTable[i]
+			found = &specificIntegration.ConfigData.ServiceTable[i]
 			break
 		}
 	}
@@ -257,55 +280,68 @@ func (r *IntegrationPagerDuty) Update(ctx context.Context, req resource.UpdateRe
 	found.Service = data.Service.ValueString()
 	found.IntegrationKey = data.IntegrationKey.ValueString()
 
-	configDataJSON, err := json.Marshal(configData)
+	configDataJSON, err := json.Marshal(specificIntegration.ConfigData)
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("marshal", err))
 		return
 	}
 
-	params := json.RawMessage(configDataJSON)
-	_, err = r.client.OrganizationIntegrations.UpdateConfig(
+	updateHttpResp, err := r.apiClient.UpdateOrganizationIntegrationWithBodyWithResponse(
 		ctx,
 		data.Organization.ValueString(),
 		data.IntegrationId.ValueString(),
-		&params,
+		"application/json",
+		bytes.NewReader(configDataJSON),
 	)
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("update", err))
 		return
-	}
-
-	integration, apiResp, err = r.client.OrganizationIntegrations.Get(ctx, data.Organization.ValueString(), data.IntegrationId.ValueString())
-	if apiResp.StatusCode == http.StatusNotFound {
+	} else if httpResp.StatusCode() == http.StatusNotFound {
 		resp.Diagnostics.Append(diagutils.NewNotFoundError("integration"))
 		resp.State.RemoveResource(ctx)
 		return
-	}
-	if err != nil {
-		resp.Diagnostics.Append(diagutils.NewClientError("update", err))
+	} else if updateHttpResp.StatusCode() != http.StatusOK {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("update", updateHttpResp.StatusCode(), updateHttpResp.Body))
 		return
 	}
 
-	if err := json.Unmarshal(integration.ConfigData, &configData); err != nil {
+	httpResp, err = r.apiClient.GetOrganizationIntegrationWithResponse(ctx, data.Organization.ValueString(), data.IntegrationId.ValueString())
+	if err != nil {
+		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
+		return
+	} else if httpResp.StatusCode() == http.StatusNotFound {
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("integration"))
+		resp.State.RemoveResource(ctx)
+		return
+	} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("read", httpResp.StatusCode(), httpResp.Body))
+		return
+	}
+
+	integration = *httpResp.JSON200
+
+	specificIntegration, err = integration.AsOrganizationIntegrationPagerDuty()
+	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("unmarshal", err))
 		return
 	}
 
 	found = nil
-	for _, item := range configData.ServiceTable {
+	for _, item := range specificIntegration.ConfigData.ServiceTable {
 		if item.Id.String() == data.Id.ValueString() {
 			found = &item
 			break
 		}
 	}
+
 	if found == nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("update", fmt.Errorf("service table item not found: %s", data.IntegrationId.ValueString())))
 		resp.State.RemoveResource(ctx)
 		return
 	}
 
-	if err := data.Fill(data.Organization.ValueString(), data.IntegrationId.ValueString(), *found); err != nil {
-		resp.Diagnostics.Append(diagutils.NewFillError(err))
+	resp.Diagnostics.Append(data.Fill(ctx, *found)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -320,25 +356,29 @@ func (r *IntegrationPagerDuty) Delete(ctx context.Context, req resource.DeleteRe
 		return
 	}
 
-	integration, apiResp, err := r.client.OrganizationIntegrations.Get(ctx, data.Organization.ValueString(), data.IntegrationId.ValueString())
-	if apiResp.StatusCode == http.StatusNotFound {
-		return
-	}
+	httpResp, err := r.apiClient.GetOrganizationIntegrationWithResponse(ctx, data.Organization.ValueString(), data.IntegrationId.ValueString())
 	if err != nil {
-		resp.Diagnostics.Append(diagutils.NewClientError("delete", err))
+		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
+		return
+	} else if httpResp.StatusCode() == http.StatusNotFound {
+		return
+	} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("read", httpResp.StatusCode(), httpResp.Body))
 		return
 	}
 
-	var configData IntegrationPagerDutyConfigData
-	if err := json.Unmarshal(integration.ConfigData, &configData); err != nil {
+	integration := *httpResp.JSON200
+
+	specificIntegration, err := integration.AsOrganizationIntegrationPagerDuty()
+	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("unmarshal", err))
 		return
 	}
 
 	var found bool
-	for i, item := range configData.ServiceTable {
+	for i, item := range specificIntegration.ConfigData.ServiceTable {
 		if item.Id.String() == data.Id.ValueString() {
-			configData.ServiceTable = append(configData.ServiceTable[:i], configData.ServiceTable[i+1:]...)
+			specificIntegration.ConfigData.ServiceTable = append(specificIntegration.ConfigData.ServiceTable[:i], specificIntegration.ConfigData.ServiceTable[i+1:]...)
 			found = true
 			break
 		}
@@ -348,21 +388,24 @@ func (r *IntegrationPagerDuty) Delete(ctx context.Context, req resource.DeleteRe
 		return
 	}
 
-	configDataJSON, err := json.Marshal(configData)
+	configDataJSON, err := json.Marshal(specificIntegration.ConfigData)
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("marshal", err))
 		return
 	}
 
-	params := json.RawMessage(configDataJSON)
-	_, err = r.client.OrganizationIntegrations.UpdateConfig(
+	updateHttpResp, err := r.apiClient.UpdateOrganizationIntegrationWithBodyWithResponse(
 		ctx,
 		data.Organization.ValueString(),
 		data.IntegrationId.ValueString(),
-		&params,
+		"application/json",
+		bytes.NewReader(configDataJSON),
 	)
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("delete", err))
+		return
+	} else if updateHttpResp.StatusCode() != http.StatusOK {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("delete", updateHttpResp.StatusCode(), updateHttpResp.Body))
 		return
 	}
 }

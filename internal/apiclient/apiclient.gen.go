@@ -22,6 +22,16 @@ const (
 	BearerAuthScopes = "bearerAuth.Scopes"
 )
 
+// Defines values for OrganizationIntegrationOpsgenieProviderKey.
+const (
+	Opsgenie OrganizationIntegrationOpsgenieProviderKey = "opsgenie"
+)
+
+// Defines values for OrganizationIntegrationPagerDutyProviderKey.
+const (
+	Pagerduty OrganizationIntegrationPagerDutyProviderKey = "pagerduty"
+)
+
 // Defines values for ProjectRuleActionAzureDevopsCreateTicketId.
 const (
 	SentryIntegrationsVstsNotifyActionAzureDevopsCreateTicketAction ProjectRuleActionAzureDevopsCreateTicketId = "sentry.integrations.vsts.notify_action.AzureDevopsCreateTicketAction"
@@ -190,6 +200,72 @@ type Organization struct {
 	OrgRoleList  []OrganizationRoleListItem `json:"orgRoleList"`
 	Slug         string                     `json:"slug"`
 	TeamRoleList []TeamRoleListItem         `json:"teamRoleList"`
+}
+
+// OrganizationIntegration defines model for OrganizationIntegration.
+type OrganizationIntegration struct {
+	AccountType                   *string     `json:"accountType"`
+	ConfigData                    interface{} `json:"configData"`
+	ConfigOrganization            interface{} `json:"configOrganization"`
+	DomainName                    *string     `json:"domainName"`
+	GracePeriodEnd                *string     `json:"gracePeriodEnd"`
+	Icon                          *string     `json:"icon"`
+	Id                            string      `json:"id"`
+	Name                          string      `json:"name"`
+	OrganizationId                int         `json:"organizationId"`
+	OrganizationIntegrationStatus string      `json:"organizationIntegrationStatus"`
+	Provider                      struct {
+		Key string `json:"key"`
+	} `json:"provider"`
+	Scopes *[]string `json:"scopes"`
+	Status string    `json:"status"`
+	union  json.RawMessage
+}
+
+// OrganizationIntegrationOpsgenie defines model for OrganizationIntegration_Opsgenie.
+type OrganizationIntegrationOpsgenie struct {
+	ConfigData OrganizationIntegrationOpsgenieConfigData `json:"configData"`
+	Provider   struct {
+		Key OrganizationIntegrationOpsgenieProviderKey `json:"key"`
+	} `json:"provider"`
+}
+
+// OrganizationIntegrationOpsgenieProviderKey defines model for OrganizationIntegrationOpsgenie.Provider.Key.
+type OrganizationIntegrationOpsgenieProviderKey string
+
+// OrganizationIntegrationOpsgenieConfigData defines model for OrganizationIntegration_Opsgenie_ConfigData.
+type OrganizationIntegrationOpsgenieConfigData struct {
+	TeamTable []OrganizationIntegrationOpsgenieTeamTableItem `json:"team_table"`
+}
+
+// OrganizationIntegrationOpsgenieTeamTableItem defines model for OrganizationIntegration_Opsgenie_TeamTableItem.
+type OrganizationIntegrationOpsgenieTeamTableItem struct {
+	Id             string `json:"id"`
+	IntegrationKey string `json:"integration_key"`
+	Team           string `json:"team"`
+}
+
+// OrganizationIntegrationPagerDuty defines model for OrganizationIntegration_PagerDuty.
+type OrganizationIntegrationPagerDuty struct {
+	ConfigData OrganizationIntegrationPagerDutyConfigData `json:"configData"`
+	Provider   struct {
+		Key OrganizationIntegrationPagerDutyProviderKey `json:"key"`
+	} `json:"provider"`
+}
+
+// OrganizationIntegrationPagerDutyProviderKey defines model for OrganizationIntegrationPagerDuty.Provider.Key.
+type OrganizationIntegrationPagerDutyProviderKey string
+
+// OrganizationIntegrationPagerDutyConfigData defines model for OrganizationIntegration_PagerDuty_ConfigData.
+type OrganizationIntegrationPagerDutyConfigData struct {
+	ServiceTable []OrganizationIntegrationPagerDutyServiceTableItem `json:"service_table"`
+}
+
+// OrganizationIntegrationPagerDutyServiceTableItem defines model for OrganizationIntegration_PagerDuty_ServiceTableItem.
+type OrganizationIntegrationPagerDutyServiceTableItem struct {
+	Id             json.Number `json:"id"`
+	IntegrationKey string      `json:"integration_key"`
+	Service        string      `json:"service"`
 }
 
 // OrganizationMember defines model for OrganizationMember.
@@ -726,6 +802,9 @@ type TeamRoleListItem struct {
 // Cursor defines model for cursor.
 type Cursor = string
 
+// IntegrationId defines model for integration_id.
+type IntegrationId = string
+
 // MemberId defines model for member_id.
 type MemberId = string
 
@@ -737,6 +816,17 @@ type ProjectIdOrSlug = string
 
 // TeamIdOrSlug defines model for team_id_or_slug.
 type TeamIdOrSlug = string
+
+// ListOrganizationIntegrationsParams defines parameters for ListOrganizationIntegrations.
+type ListOrganizationIntegrationsParams struct {
+	Cursor      *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+	ProviderKey *string `form:"provider_key,omitempty" json:"provider_key,omitempty"`
+}
+
+// UpdateOrganizationIntegrationJSONBody defines parameters for UpdateOrganizationIntegration.
+type UpdateOrganizationIntegrationJSONBody struct {
+	union json.RawMessage
+}
 
 // ListOrganizationMembersParams defines parameters for ListOrganizationMembers.
 type ListOrganizationMembersParams struct {
@@ -865,6 +955,9 @@ type CreateOrganizationTeamProjectJSONBody struct {
 	Slug         *string `json:"slug,omitempty"`
 }
 
+// UpdateOrganizationIntegrationJSONRequestBody defines body for UpdateOrganizationIntegration for application/json ContentType.
+type UpdateOrganizationIntegrationJSONRequestBody UpdateOrganizationIntegrationJSONBody
+
 // CreateOrganizationMemberJSONRequestBody defines body for CreateOrganizationMember for application/json ContentType.
 type CreateOrganizationMemberJSONRequestBody CreateOrganizationMemberJSONBody
 
@@ -894,6 +987,245 @@ type UpdateProjectRuleJSONRequestBody UpdateProjectRuleJSONBody
 
 // CreateOrganizationTeamProjectJSONRequestBody defines body for CreateOrganizationTeamProject for application/json ContentType.
 type CreateOrganizationTeamProjectJSONRequestBody CreateOrganizationTeamProjectJSONBody
+
+// AsOrganizationIntegrationOpsgenie returns the union data inside the OrganizationIntegration as a OrganizationIntegrationOpsgenie
+func (t OrganizationIntegration) AsOrganizationIntegrationOpsgenie() (OrganizationIntegrationOpsgenie, error) {
+	var body OrganizationIntegrationOpsgenie
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationIntegrationOpsgenie overwrites any union data inside the OrganizationIntegration as the provided OrganizationIntegrationOpsgenie
+func (t *OrganizationIntegration) FromOrganizationIntegrationOpsgenie(v OrganizationIntegrationOpsgenie) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationIntegrationOpsgenie performs a merge with any union data inside the OrganizationIntegration, using the provided OrganizationIntegrationOpsgenie
+func (t *OrganizationIntegration) MergeOrganizationIntegrationOpsgenie(v OrganizationIntegrationOpsgenie) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationIntegrationPagerDuty returns the union data inside the OrganizationIntegration as a OrganizationIntegrationPagerDuty
+func (t OrganizationIntegration) AsOrganizationIntegrationPagerDuty() (OrganizationIntegrationPagerDuty, error) {
+	var body OrganizationIntegrationPagerDuty
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationIntegrationPagerDuty overwrites any union data inside the OrganizationIntegration as the provided OrganizationIntegrationPagerDuty
+func (t *OrganizationIntegration) FromOrganizationIntegrationPagerDuty(v OrganizationIntegrationPagerDuty) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationIntegrationPagerDuty performs a merge with any union data inside the OrganizationIntegration, using the provided OrganizationIntegrationPagerDuty
+func (t *OrganizationIntegration) MergeOrganizationIntegrationPagerDuty(v OrganizationIntegrationPagerDuty) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t OrganizationIntegration) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	object := make(map[string]json.RawMessage)
+	if t.union != nil {
+		err = json.Unmarshal(b, &object)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	object["accountType"], err = json.Marshal(t.AccountType)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'accountType': %w", err)
+	}
+
+	object["configData"], err = json.Marshal(t.ConfigData)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'configData': %w", err)
+	}
+
+	object["configOrganization"], err = json.Marshal(t.ConfigOrganization)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'configOrganization': %w", err)
+	}
+
+	object["domainName"], err = json.Marshal(t.DomainName)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'domainName': %w", err)
+	}
+
+	object["gracePeriodEnd"], err = json.Marshal(t.GracePeriodEnd)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'gracePeriodEnd': %w", err)
+	}
+
+	object["icon"], err = json.Marshal(t.Icon)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'icon': %w", err)
+	}
+
+	object["id"], err = json.Marshal(t.Id)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'id': %w", err)
+	}
+
+	object["name"], err = json.Marshal(t.Name)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'name': %w", err)
+	}
+
+	object["organizationId"], err = json.Marshal(t.OrganizationId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'organizationId': %w", err)
+	}
+
+	object["organizationIntegrationStatus"], err = json.Marshal(t.OrganizationIntegrationStatus)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'organizationIntegrationStatus': %w", err)
+	}
+
+	object["provider"], err = json.Marshal(t.Provider)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'provider': %w", err)
+	}
+
+	object["scopes"], err = json.Marshal(t.Scopes)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'scopes': %w", err)
+	}
+
+	object["status"], err = json.Marshal(t.Status)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'status': %w", err)
+	}
+
+	b, err = json.Marshal(object)
+	return b, err
+}
+
+func (t *OrganizationIntegration) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	if err != nil {
+		return err
+	}
+	object := make(map[string]json.RawMessage)
+	err = json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["accountType"]; found {
+		err = json.Unmarshal(raw, &t.AccountType)
+		if err != nil {
+			return fmt.Errorf("error reading 'accountType': %w", err)
+		}
+	}
+
+	if raw, found := object["configData"]; found {
+		err = json.Unmarshal(raw, &t.ConfigData)
+		if err != nil {
+			return fmt.Errorf("error reading 'configData': %w", err)
+		}
+	}
+
+	if raw, found := object["configOrganization"]; found {
+		err = json.Unmarshal(raw, &t.ConfigOrganization)
+		if err != nil {
+			return fmt.Errorf("error reading 'configOrganization': %w", err)
+		}
+	}
+
+	if raw, found := object["domainName"]; found {
+		err = json.Unmarshal(raw, &t.DomainName)
+		if err != nil {
+			return fmt.Errorf("error reading 'domainName': %w", err)
+		}
+	}
+
+	if raw, found := object["gracePeriodEnd"]; found {
+		err = json.Unmarshal(raw, &t.GracePeriodEnd)
+		if err != nil {
+			return fmt.Errorf("error reading 'gracePeriodEnd': %w", err)
+		}
+	}
+
+	if raw, found := object["icon"]; found {
+		err = json.Unmarshal(raw, &t.Icon)
+		if err != nil {
+			return fmt.Errorf("error reading 'icon': %w", err)
+		}
+	}
+
+	if raw, found := object["id"]; found {
+		err = json.Unmarshal(raw, &t.Id)
+		if err != nil {
+			return fmt.Errorf("error reading 'id': %w", err)
+		}
+	}
+
+	if raw, found := object["name"]; found {
+		err = json.Unmarshal(raw, &t.Name)
+		if err != nil {
+			return fmt.Errorf("error reading 'name': %w", err)
+		}
+	}
+
+	if raw, found := object["organizationId"]; found {
+		err = json.Unmarshal(raw, &t.OrganizationId)
+		if err != nil {
+			return fmt.Errorf("error reading 'organizationId': %w", err)
+		}
+	}
+
+	if raw, found := object["organizationIntegrationStatus"]; found {
+		err = json.Unmarshal(raw, &t.OrganizationIntegrationStatus)
+		if err != nil {
+			return fmt.Errorf("error reading 'organizationIntegrationStatus': %w", err)
+		}
+	}
+
+	if raw, found := object["provider"]; found {
+		err = json.Unmarshal(raw, &t.Provider)
+		if err != nil {
+			return fmt.Errorf("error reading 'provider': %w", err)
+		}
+	}
+
+	if raw, found := object["scopes"]; found {
+		err = json.Unmarshal(raw, &t.Scopes)
+		if err != nil {
+			return fmt.Errorf("error reading 'scopes': %w", err)
+		}
+	}
+
+	if raw, found := object["status"]; found {
+		err = json.Unmarshal(raw, &t.Status)
+		if err != nil {
+			return fmt.Errorf("error reading 'status': %w", err)
+		}
+	}
+
+	return err
+}
 
 // AsProjectRuleActionNotifyEmail returns the union data inside the ProjectRuleAction as a ProjectRuleActionNotifyEmail
 func (t ProjectRuleAction) AsProjectRuleActionNotifyEmail() (ProjectRuleActionNotifyEmail, error) {
@@ -2115,6 +2447,17 @@ type ClientInterface interface {
 	// GetOrganization request
 	GetOrganization(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListOrganizationIntegrations request
+	ListOrganizationIntegrations(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationIntegrationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetOrganizationIntegration request
+	GetOrganizationIntegration(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, integrationId IntegrationId, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateOrganizationIntegrationWithBody request with any body
+	UpdateOrganizationIntegrationWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, integrationId IntegrationId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateOrganizationIntegration(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, integrationId IntegrationId, body UpdateOrganizationIntegrationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListOrganizationMembers request
 	ListOrganizationMembers(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationMembersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -2219,6 +2562,54 @@ func (c *Client) HealthCheck(ctx context.Context, reqEditors ...RequestEditorFn)
 
 func (c *Client) GetOrganization(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetOrganizationRequest(c.Server, organizationIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListOrganizationIntegrations(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationIntegrationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListOrganizationIntegrationsRequest(c.Server, organizationIdOrSlug, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetOrganizationIntegration(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, integrationId IntegrationId, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetOrganizationIntegrationRequest(c.Server, organizationIdOrSlug, integrationId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateOrganizationIntegrationWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, integrationId IntegrationId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateOrganizationIntegrationRequestWithBody(c.Server, organizationIdOrSlug, integrationId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateOrganizationIntegration(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, integrationId IntegrationId, body UpdateOrganizationIntegrationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateOrganizationIntegrationRequest(c.Server, organizationIdOrSlug, integrationId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2682,6 +3073,173 @@ func NewGetOrganizationRequest(server string, organizationIdOrSlug OrganizationI
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewListOrganizationIntegrationsRequest generates requests for ListOrganizationIntegrations
+func NewListOrganizationIntegrationsRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationIntegrationsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organization_id_or_slug", runtime.ParamLocationPath, organizationIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/integrations/", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "cursor", runtime.ParamLocationQuery, *params.Cursor); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.ProviderKey != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "provider_key", runtime.ParamLocationQuery, *params.ProviderKey); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetOrganizationIntegrationRequest generates requests for GetOrganizationIntegration
+func NewGetOrganizationIntegrationRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, integrationId IntegrationId) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organization_id_or_slug", runtime.ParamLocationPath, organizationIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "integration_id", runtime.ParamLocationPath, integrationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/integrations/%s/", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateOrganizationIntegrationRequest calls the generic UpdateOrganizationIntegration builder with application/json body
+func NewUpdateOrganizationIntegrationRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, integrationId IntegrationId, body UpdateOrganizationIntegrationJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateOrganizationIntegrationRequestWithBody(server, organizationIdOrSlug, integrationId, "application/json", bodyReader)
+}
+
+// NewUpdateOrganizationIntegrationRequestWithBody generates requests for UpdateOrganizationIntegration with any type of body
+func NewUpdateOrganizationIntegrationRequestWithBody(server string, organizationIdOrSlug OrganizationIdOrSlug, integrationId IntegrationId, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organization_id_or_slug", runtime.ParamLocationPath, organizationIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "integration_id", runtime.ParamLocationPath, integrationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/integrations/%s/", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -3927,6 +4485,17 @@ type ClientWithResponsesInterface interface {
 	// GetOrganizationWithResponse request
 	GetOrganizationWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*GetOrganizationResponse, error)
 
+	// ListOrganizationIntegrationsWithResponse request
+	ListOrganizationIntegrationsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationIntegrationsParams, reqEditors ...RequestEditorFn) (*ListOrganizationIntegrationsResponse, error)
+
+	// GetOrganizationIntegrationWithResponse request
+	GetOrganizationIntegrationWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, integrationId IntegrationId, reqEditors ...RequestEditorFn) (*GetOrganizationIntegrationResponse, error)
+
+	// UpdateOrganizationIntegrationWithBodyWithResponse request with any body
+	UpdateOrganizationIntegrationWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, integrationId IntegrationId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateOrganizationIntegrationResponse, error)
+
+	UpdateOrganizationIntegrationWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, integrationId IntegrationId, body UpdateOrganizationIntegrationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateOrganizationIntegrationResponse, error)
+
 	// ListOrganizationMembersWithResponse request
 	ListOrganizationMembersWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationMembersParams, reqEditors ...RequestEditorFn) (*ListOrganizationMembersResponse, error)
 
@@ -4054,6 +4623,71 @@ func (r GetOrganizationResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetOrganizationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListOrganizationIntegrationsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]OrganizationIntegration
+}
+
+// Status returns HTTPResponse.Status
+func (r ListOrganizationIntegrationsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListOrganizationIntegrationsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetOrganizationIntegrationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *OrganizationIntegration
+}
+
+// Status returns HTTPResponse.Status
+func (r GetOrganizationIntegrationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetOrganizationIntegrationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateOrganizationIntegrationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateOrganizationIntegrationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateOrganizationIntegrationResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -4581,6 +5215,41 @@ func (c *ClientWithResponses) GetOrganizationWithResponse(ctx context.Context, o
 	return ParseGetOrganizationResponse(rsp)
 }
 
+// ListOrganizationIntegrationsWithResponse request returning *ListOrganizationIntegrationsResponse
+func (c *ClientWithResponses) ListOrganizationIntegrationsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationIntegrationsParams, reqEditors ...RequestEditorFn) (*ListOrganizationIntegrationsResponse, error) {
+	rsp, err := c.ListOrganizationIntegrations(ctx, organizationIdOrSlug, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListOrganizationIntegrationsResponse(rsp)
+}
+
+// GetOrganizationIntegrationWithResponse request returning *GetOrganizationIntegrationResponse
+func (c *ClientWithResponses) GetOrganizationIntegrationWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, integrationId IntegrationId, reqEditors ...RequestEditorFn) (*GetOrganizationIntegrationResponse, error) {
+	rsp, err := c.GetOrganizationIntegration(ctx, organizationIdOrSlug, integrationId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetOrganizationIntegrationResponse(rsp)
+}
+
+// UpdateOrganizationIntegrationWithBodyWithResponse request with arbitrary body returning *UpdateOrganizationIntegrationResponse
+func (c *ClientWithResponses) UpdateOrganizationIntegrationWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, integrationId IntegrationId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateOrganizationIntegrationResponse, error) {
+	rsp, err := c.UpdateOrganizationIntegrationWithBody(ctx, organizationIdOrSlug, integrationId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateOrganizationIntegrationResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateOrganizationIntegrationWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, integrationId IntegrationId, body UpdateOrganizationIntegrationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateOrganizationIntegrationResponse, error) {
+	rsp, err := c.UpdateOrganizationIntegration(ctx, organizationIdOrSlug, integrationId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateOrganizationIntegrationResponse(rsp)
+}
+
 // ListOrganizationMembersWithResponse request returning *ListOrganizationMembersResponse
 func (c *ClientWithResponses) ListOrganizationMembersWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationMembersParams, reqEditors ...RequestEditorFn) (*ListOrganizationMembersResponse, error) {
 	rsp, err := c.ListOrganizationMembers(ctx, organizationIdOrSlug, params, reqEditors...)
@@ -4905,6 +5574,74 @@ func ParseGetOrganizationResponse(rsp *http.Response) (*GetOrganizationResponse,
 		}
 		response.JSON200 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseListOrganizationIntegrationsResponse parses an HTTP response from a ListOrganizationIntegrationsWithResponse call
+func ParseListOrganizationIntegrationsResponse(rsp *http.Response) (*ListOrganizationIntegrationsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListOrganizationIntegrationsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []OrganizationIntegration
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetOrganizationIntegrationResponse parses an HTTP response from a GetOrganizationIntegrationWithResponse call
+func ParseGetOrganizationIntegrationResponse(rsp *http.Response) (*GetOrganizationIntegrationResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetOrganizationIntegrationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest OrganizationIntegration
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateOrganizationIntegrationResponse parses an HTTP response from a UpdateOrganizationIntegrationWithResponse call
+func ParseUpdateOrganizationIntegrationResponse(rsp *http.Response) (*UpdateOrganizationIntegrationResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateOrganizationIntegrationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil

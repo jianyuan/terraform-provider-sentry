@@ -2,12 +2,15 @@ package provider
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
 )
 
 type OrganizationIntegrationDataSourceModel struct {
@@ -18,14 +21,12 @@ type OrganizationIntegrationDataSourceModel struct {
 	Name         types.String `tfsdk:"name"`
 }
 
-func (m *OrganizationIntegrationDataSourceModel) Fill(organizationSlug string, d sentry.OrganizationIntegration) error {
-	m.Id = types.StringValue(d.ID)
-	m.InternalId = types.StringValue(d.ID)
-	m.Organization = types.StringValue(organizationSlug)
+func (m *OrganizationIntegrationDataSourceModel) Fill(ctx context.Context, d apiclient.OrganizationIntegration) (diags diag.Diagnostics) {
+	m.Id = types.StringValue(d.Id)
+	m.InternalId = types.StringValue(d.Id)
 	m.ProviderKey = types.StringValue(d.Provider.Key)
 	m.Name = types.StringValue(d.Name)
-
-	return nil
+	return
 }
 
 var _ datasource.DataSource = &OrganizationIntegrationDataSource{}
@@ -78,28 +79,31 @@ func (d *OrganizationIntegrationDataSource) Read(ctx context.Context, req dataso
 		return
 	}
 
-	var matchedIntegrations []*sentry.OrganizationIntegration
-	params := &sentry.ListOrganizationIntegrationsParams{
-		ListCursorParams: sentry.ListCursorParams{},
-		ProviderKey:      data.ProviderKey.ValueString(),
+	var matchedIntegrations []apiclient.OrganizationIntegration
+	params := &apiclient.ListOrganizationIntegrationsParams{
+		ProviderKey: data.ProviderKey.ValueStringPointer(),
 	}
+
 	for {
-		integrations, apiResp, err := d.client.OrganizationIntegrations.List(ctx, data.Organization.ValueString(), params)
+		httpResp, err := d.apiClient.ListOrganizationIntegrationsWithResponse(ctx, data.Organization.ValueString(), params)
 		if err != nil {
 			resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 			return
+		} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
+			resp.Diagnostics.Append(diagutils.NewClientStatusError("read", httpResp.StatusCode(), httpResp.Body))
+			return
 		}
 
-		for _, integration := range integrations {
+		for _, integration := range *httpResp.JSON200 {
 			if integration.Name == data.Name.ValueString() {
 				matchedIntegrations = append(matchedIntegrations, integration)
 			}
 		}
 
-		if apiResp.Cursor == "" {
+		params.Cursor = sentryclient.ParseNextPaginationCursor(httpResp.HTTPResponse)
+		if params.Cursor == nil {
 			break
 		}
-		params.ListCursorParams.Cursor = apiResp.Cursor
 	}
 
 	if len(matchedIntegrations) == 0 {
@@ -110,8 +114,8 @@ func (d *OrganizationIntegrationDataSource) Read(ctx context.Context, req dataso
 		return
 	}
 
-	if err := data.Fill(data.Organization.ValueString(), *matchedIntegrations[0]); err != nil {
-		resp.Diagnostics.Append(diagutils.NewFillError(err))
+	resp.Diagnostics.Append(data.Fill(ctx, matchedIntegrations[0])...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 

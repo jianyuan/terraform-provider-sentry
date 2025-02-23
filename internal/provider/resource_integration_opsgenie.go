@@ -1,14 +1,17 @@
 package provider
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
@@ -21,24 +24,11 @@ type IntegrationOpsgenieModel struct {
 	IntegrationKey types.String `tfsdk:"integration_key"`
 }
 
-func (m *IntegrationOpsgenieModel) Fill(organization string, integrationId string, item IntegrationOpsgenieConfigDataTeamTableItem) error {
+func (m *IntegrationOpsgenieModel) Fill(ctx context.Context, item apiclient.OrganizationIntegrationOpsgenieTeamTableItem) (diags diag.Diagnostics) {
 	m.Id = types.StringValue(item.Id)
-	m.Organization = types.StringValue(organization)
-	m.IntegrationId = types.StringValue(integrationId)
 	m.Team = types.StringValue(item.Team)
 	m.IntegrationKey = types.StringValue(item.IntegrationKey)
-
-	return nil
-}
-
-type IntegrationOpsgenieConfigDataTeamTableItem struct {
-	Team           string `json:"team"`
-	IntegrationKey string `json:"integration_key"`
-	Id             string `json:"id"`
-}
-
-type IntegrationOpsgenieConfigData struct {
-	TeamTable []IntegrationOpsgenieConfigDataTeamTableItem `json:"team_table"`
+	return
 }
 
 var _ resource.Resource = &IntegrationOpsgenie{}
@@ -88,68 +78,80 @@ func (r *IntegrationOpsgenie) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	integration, apiResp, err := r.client.OrganizationIntegrations.Get(ctx, data.Organization.ValueString(), data.IntegrationId.ValueString())
-	if apiResp.StatusCode == http.StatusNotFound {
-		resp.Diagnostics.Append(diagutils.NewNotFoundError("integration"))
-		return
-	}
+	getHttpResp, err := r.apiClient.GetOrganizationIntegrationWithResponse(ctx, data.Organization.ValueString(), data.IntegrationId.ValueString())
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 		return
+	} else if getHttpResp.StatusCode() == http.StatusNotFound {
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("integration"))
+		return
+	} else if getHttpResp.StatusCode() != http.StatusOK || getHttpResp.JSON200 == nil {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("read", getHttpResp.StatusCode(), getHttpResp.Body))
+		return
 	}
 
-	var configData IntegrationOpsgenieConfigData
-	if err := json.Unmarshal(integration.ConfigData, &configData); err != nil {
+	integration := *getHttpResp.JSON200
+
+	specificIntegration, err := integration.AsOrganizationIntegrationOpsgenie()
+	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("unmarshal", err))
 		return
 	}
 
 	idsSeen := map[string]struct{}{}
-	for _, item := range configData.TeamTable {
+	for _, item := range specificIntegration.ConfigData.TeamTable {
 		idsSeen[item.Id] = struct{}{}
 	}
 
-	configData.TeamTable = append(configData.TeamTable, IntegrationOpsgenieConfigDataTeamTableItem{
+	specificIntegration.ConfigData.TeamTable = append(specificIntegration.ConfigData.TeamTable, apiclient.OrganizationIntegrationOpsgenieTeamTableItem{
 		Team:           data.Team.ValueString(),
 		IntegrationKey: data.IntegrationKey.ValueString(),
 		Id:             "",
 	})
 
-	configDataJSON, err := json.Marshal(configData)
+	configDataJSON, err := json.Marshal(specificIntegration.ConfigData)
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("marshal", err))
 		return
 	}
 
-	params := json.RawMessage(configDataJSON)
-	_, err = r.client.OrganizationIntegrations.UpdateConfig(
+	updateHttpResp, err := r.apiClient.UpdateOrganizationIntegrationWithBodyWithResponse(
 		ctx,
 		data.Organization.ValueString(),
 		data.IntegrationId.ValueString(),
-		&params,
+		"application/json",
+		bytes.NewReader(configDataJSON),
 	)
 	if err != nil {
-		resp.Diagnostics.Append(diagutils.NewClientError("create", err))
+		resp.Diagnostics.Append(diagutils.NewClientError("update", err))
+		return
+	} else if updateHttpResp.StatusCode() != http.StatusOK {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("update", updateHttpResp.StatusCode(), updateHttpResp.Body))
 		return
 	}
 
-	integration, apiResp, err = r.client.OrganizationIntegrations.Get(ctx, data.Organization.ValueString(), data.IntegrationId.ValueString())
-	if apiResp.StatusCode == http.StatusNotFound {
-		resp.Diagnostics.Append(diagutils.NewNotFoundError("integration"))
-		return
-	}
+	getHttpResp, err = r.apiClient.GetOrganizationIntegrationWithResponse(ctx, data.Organization.ValueString(), data.IntegrationId.ValueString())
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 		return
+	} else if getHttpResp.StatusCode() == http.StatusNotFound {
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("integration"))
+		return
+	} else if getHttpResp.StatusCode() != http.StatusOK || getHttpResp.JSON200 == nil {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("read", getHttpResp.StatusCode(), getHttpResp.Body))
+		return
 	}
 
-	if err := json.Unmarshal(integration.ConfigData, &configData); err != nil {
+	integration = *getHttpResp.JSON200
+
+	specificIntegration, err = integration.AsOrganizationIntegrationOpsgenie()
+	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("unmarshal", err))
 		return
 	}
 
-	var found *IntegrationOpsgenieConfigDataTeamTableItem
-	for _, item := range configData.TeamTable {
+	var found *apiclient.OrganizationIntegrationOpsgenieTeamTableItem
+	for _, item := range specificIntegration.ConfigData.TeamTable {
 		if item.Team == data.Team.ValueString() && item.IntegrationKey == data.IntegrationKey.ValueString() {
 			if _, ok := idsSeen[item.Id]; !ok {
 				found = &item
@@ -159,12 +161,12 @@ func (r *IntegrationOpsgenie) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	if found == nil {
-		resp.Diagnostics.Append(diagutils.NewClientError("create", fmt.Errorf("service table item not found: %s", data.IntegrationId.ValueString())))
+		resp.Diagnostics.Append(diagutils.NewClientError("create", fmt.Errorf("team table item not found: %s", data.IntegrationId.ValueString())))
 		return
 	}
 
-	if err := data.Fill(data.Organization.ValueString(), data.IntegrationId.ValueString(), configData.TeamTable[len(configData.TeamTable)-1]); err != nil {
-		resp.Diagnostics.Append(diagutils.NewFillError(err))
+	resp.Diagnostics.Append(data.Fill(ctx, *found)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -179,38 +181,43 @@ func (r *IntegrationOpsgenie) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	integration, apiResp, err := r.client.OrganizationIntegrations.Get(ctx, data.Organization.ValueString(), data.IntegrationId.ValueString())
-	if apiResp.StatusCode == http.StatusNotFound {
-		resp.Diagnostics.Append(diagutils.NewNotFoundError("integration"))
-		resp.State.RemoveResource(ctx)
-		return
-	}
+	httpResp, err := r.apiClient.GetOrganizationIntegrationWithResponse(ctx, data.Organization.ValueString(), data.IntegrationId.ValueString())
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 		return
+	} else if httpResp.StatusCode() == http.StatusNotFound {
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("integration"))
+		resp.State.RemoveResource(ctx)
+		return
+	} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("read", httpResp.StatusCode(), httpResp.Body))
+		return
 	}
 
-	var configData IntegrationOpsgenieConfigData
-	if err := json.Unmarshal(integration.ConfigData, &configData); err != nil {
+	integration := *httpResp.JSON200
+
+	specificIntegration, err := integration.AsOrganizationIntegrationOpsgenie()
+	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("unmarshal", err))
 		return
 	}
 
-	var found *IntegrationOpsgenieConfigDataTeamTableItem
-	for _, i := range configData.TeamTable {
-		if i.Id == data.Id.ValueString() {
-			found = &i
+	var found *apiclient.OrganizationIntegrationOpsgenieTeamTableItem
+	for _, item := range specificIntegration.ConfigData.TeamTable {
+		if item.Id == data.Id.ValueString() {
+			found = &item
 			break
 		}
 	}
+
 	if found == nil {
-		resp.Diagnostics.Append(diagutils.NewClientError("read", fmt.Errorf("service table item not found: %s", data.IntegrationId.ValueString())))
+		resp.Diagnostics.Append(diagutils.NewClientError("read", fmt.Errorf("team table item not found: %s", data.IntegrationId.ValueString())))
 		resp.State.RemoveResource(ctx)
 		return
 	}
 
-	if err := data.Fill(data.Organization.ValueString(), data.IntegrationId.ValueString(), *found); err != nil {
-		resp.Diagnostics.Append(diagutils.NewFillError(err))
+	resp.Diagnostics.Append(data.Fill(ctx, *found)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -225,31 +232,37 @@ func (r *IntegrationOpsgenie) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	integration, apiResp, err := r.client.OrganizationIntegrations.Get(ctx, data.Organization.ValueString(), data.IntegrationId.ValueString())
-	if apiResp.StatusCode == http.StatusNotFound {
-		return
-	}
+	httpResp, err := r.apiClient.GetOrganizationIntegrationWithResponse(ctx, data.Organization.ValueString(), data.IntegrationId.ValueString())
 	if err != nil {
-		resp.Diagnostics.Append(diagutils.NewClientError("update", err))
+		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
+		return
+	} else if httpResp.StatusCode() == http.StatusNotFound {
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("integration"))
+		resp.State.RemoveResource(ctx)
+		return
+	} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("read", httpResp.StatusCode(), httpResp.Body))
 		return
 	}
 
-	var configData IntegrationOpsgenieConfigData
-	if err := json.Unmarshal(integration.ConfigData, &configData); err != nil {
+	integration := *httpResp.JSON200
+
+	specificIntegration, err := integration.AsOrganizationIntegrationOpsgenie()
+	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("unmarshal", err))
 		return
 	}
 
-	var found *IntegrationOpsgenieConfigDataTeamTableItem
-	for i, item := range configData.TeamTable {
+	var found *apiclient.OrganizationIntegrationOpsgenieTeamTableItem
+	for i, item := range specificIntegration.ConfigData.TeamTable {
 		if item.Id == data.Id.ValueString() {
-			found = &configData.TeamTable[i]
+			found = &specificIntegration.ConfigData.TeamTable[i]
 			break
 		}
 	}
 
 	if found == nil {
-		resp.Diagnostics.Append(diagutils.NewClientError("update", fmt.Errorf("service table item not found: %s", data.IntegrationId.ValueString())))
+		resp.Diagnostics.Append(diagutils.NewClientError("update", fmt.Errorf("team table item not found: %s", data.IntegrationId.ValueString())))
 		resp.State.RemoveResource(ctx)
 		return
 	}
@@ -257,55 +270,68 @@ func (r *IntegrationOpsgenie) Update(ctx context.Context, req resource.UpdateReq
 	found.Team = data.Team.ValueString()
 	found.IntegrationKey = data.IntegrationKey.ValueString()
 
-	configDataJSON, err := json.Marshal(configData)
+	configDataJSON, err := json.Marshal(specificIntegration.ConfigData)
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("marshal", err))
 		return
 	}
 
-	params := json.RawMessage(configDataJSON)
-	_, err = r.client.OrganizationIntegrations.UpdateConfig(
+	updateHttpResp, err := r.apiClient.UpdateOrganizationIntegrationWithBodyWithResponse(
 		ctx,
 		data.Organization.ValueString(),
 		data.IntegrationId.ValueString(),
-		&params,
+		"application/json",
+		bytes.NewReader(configDataJSON),
 	)
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("update", err))
 		return
-	}
-
-	integration, apiResp, err = r.client.OrganizationIntegrations.Get(ctx, data.Organization.ValueString(), data.IntegrationId.ValueString())
-	if apiResp.StatusCode == http.StatusNotFound {
+	} else if httpResp.StatusCode() == http.StatusNotFound {
 		resp.Diagnostics.Append(diagutils.NewNotFoundError("integration"))
 		resp.State.RemoveResource(ctx)
 		return
-	}
-	if err != nil {
-		resp.Diagnostics.Append(diagutils.NewClientError("update", err))
+	} else if updateHttpResp.StatusCode() != http.StatusOK {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("update", updateHttpResp.StatusCode(), updateHttpResp.Body))
 		return
 	}
 
-	if err := json.Unmarshal(integration.ConfigData, &configData); err != nil {
+	httpResp, err = r.apiClient.GetOrganizationIntegrationWithResponse(ctx, data.Organization.ValueString(), data.IntegrationId.ValueString())
+	if err != nil {
+		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
+		return
+	} else if httpResp.StatusCode() == http.StatusNotFound {
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("integration"))
+		resp.State.RemoveResource(ctx)
+		return
+	} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("read", httpResp.StatusCode(), httpResp.Body))
+		return
+	}
+
+	integration = *httpResp.JSON200
+
+	specificIntegration, err = integration.AsOrganizationIntegrationOpsgenie()
+	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("unmarshal", err))
 		return
 	}
 
 	found = nil
-	for _, item := range configData.TeamTable {
+	for _, item := range specificIntegration.ConfigData.TeamTable {
 		if item.Id == data.Id.ValueString() {
 			found = &item
 			break
 		}
 	}
+
 	if found == nil {
-		resp.Diagnostics.Append(diagutils.NewClientError("update", fmt.Errorf("service table item not found: %s", data.IntegrationId.ValueString())))
+		resp.Diagnostics.Append(diagutils.NewClientError("read", fmt.Errorf("team table item not found: %s", data.IntegrationId.ValueString())))
 		resp.State.RemoveResource(ctx)
 		return
 	}
 
-	if err := data.Fill(data.Organization.ValueString(), data.IntegrationId.ValueString(), *found); err != nil {
-		resp.Diagnostics.Append(diagutils.NewFillError(err))
+	resp.Diagnostics.Append(data.Fill(ctx, *found)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -320,25 +346,29 @@ func (r *IntegrationOpsgenie) Delete(ctx context.Context, req resource.DeleteReq
 		return
 	}
 
-	integration, apiResp, err := r.client.OrganizationIntegrations.Get(ctx, data.Organization.ValueString(), data.IntegrationId.ValueString())
-	if apiResp.StatusCode == http.StatusNotFound {
-		return
-	}
+	httpResp, err := r.apiClient.GetOrganizationIntegrationWithResponse(ctx, data.Organization.ValueString(), data.IntegrationId.ValueString())
 	if err != nil {
-		resp.Diagnostics.Append(diagutils.NewClientError("delete", err))
+		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
+		return
+	} else if httpResp.StatusCode() == http.StatusNotFound {
+		return
+	} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("read", httpResp.StatusCode(), httpResp.Body))
 		return
 	}
 
-	var configData IntegrationOpsgenieConfigData
-	if err := json.Unmarshal(integration.ConfigData, &configData); err != nil {
+	integration := *httpResp.JSON200
+
+	specificIntegration, err := integration.AsOrganizationIntegrationOpsgenie()
+	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("unmarshal", err))
 		return
 	}
 
 	var found bool
-	for i, item := range configData.TeamTable {
+	for i, item := range specificIntegration.ConfigData.TeamTable {
 		if item.Id == data.Id.ValueString() {
-			configData.TeamTable = append(configData.TeamTable[:i], configData.TeamTable[i+1:]...)
+			specificIntegration.ConfigData.TeamTable = append(specificIntegration.ConfigData.TeamTable[:i], specificIntegration.ConfigData.TeamTable[i+1:]...)
 			found = true
 			break
 		}
@@ -348,21 +378,24 @@ func (r *IntegrationOpsgenie) Delete(ctx context.Context, req resource.DeleteReq
 		return
 	}
 
-	configDataJSON, err := json.Marshal(configData)
+	configDataJSON, err := json.Marshal(specificIntegration.ConfigData)
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("marshal", err))
 		return
 	}
 
-	params := json.RawMessage(configDataJSON)
-	_, err = r.client.OrganizationIntegrations.UpdateConfig(
+	updateHttpResp, err := r.apiClient.UpdateOrganizationIntegrationWithBodyWithResponse(
 		ctx,
 		data.Organization.ValueString(),
 		data.IntegrationId.ValueString(),
-		&params,
+		"application/json",
+		bytes.NewReader(configDataJSON),
 	)
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("delete", err))
+		return
+	} else if updateHttpResp.StatusCode() != http.StatusOK {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("delete", updateHttpResp.StatusCode(), updateHttpResp.Body))
 		return
 	}
 }

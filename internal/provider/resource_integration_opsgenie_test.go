@@ -2,8 +2,8 @@ package provider
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+	"net/http"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -38,24 +38,28 @@ func TestAccIntegrationOpsgenieResource(t *testing.T) {
 				}
 
 				ctx := context.Background()
-				integration, apiResp, err := acctest.SharedClient.OrganizationIntegrations.Get(
+				httpResp, err := acctest.SharedApiClient.GetOrganizationIntegrationWithResponse(
 					ctx,
 					rs.Primary.Attributes["organization"],
 					rs.Primary.Attributes["integration_id"],
 				)
 
-				if apiResp.StatusCode == 404 {
+				if err != nil {
+					return err
+				} else if httpResp.StatusCode() == http.StatusNotFound {
 					return nil
+				} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
+					return fmt.Errorf("failed to read Opsgenie integration: %s", httpResp.Status())
 				}
+
+				integration := *httpResp.JSON200
+
+				specificIntegration, err := integration.AsOrganizationIntegrationOpsgenie()
 				if err != nil {
 					return err
 				}
-				var configData IntegrationOpsgenieConfigData
-				if err := json.Unmarshal(integration.ConfigData, &configData); err != nil {
-					return err
-				}
 
-				for _, i := range configData.TeamTable {
+				for _, i := range specificIntegration.ConfigData.TeamTable {
 					if i.Id == rs.Primary.ID {
 						return fmt.Errorf("Opsgenie service %q still exists", rs.Primary.ID)
 					}
