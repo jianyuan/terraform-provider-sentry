@@ -184,7 +184,7 @@ var DashboardWidgetDisplayTypes = []string{
 	"top_n",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/models/project.py#L60-L163
+// https://github.com/getsentry/sentry/blob/master/src/sentry/models/project.py#L60-L164
 var Platforms = []string{
 	"other",
 	"android",
@@ -218,6 +218,7 @@ var Platforms = []string{
 	"go-iris",
 	"go-martini",
 	"go-negroni",
+	"godot",
 	"ionic",
 	"java",
 	"java-log4j2",
