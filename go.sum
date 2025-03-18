@@ -272,6 +272,8 @@ github.com/orange-cloudavenue/terraform-plugin-framework-superschema v1.9.1 h1:P
 github.com/orange-cloudavenue/terraform-plugin-framework-superschema v1.9.1/go.mod h1:uizCb9NCH5lJ8nmnnTykkRxsA2GaiN5S7TpZHjiSlfQ=
 github.com/orange-cloudavenue/terraform-plugin-framework-superschema v1.10.1 h1:TFUABGDZLZ8EZcDYsdXLfyOVsWGR8yGo8yXggTaEZ3s=
 github.com/orange-cloudavenue/terraform-plugin-framework-superschema v1.10.1/go.mod h1:2R4+FiimXRb6we3IP4Jy4XwkmPG17isxcjUfYEWLJ44=
+github.com/orange-cloudavenue/terraform-plugin-framework-superschema v1.11.0 h1:uezhiY+wp4khq2i9z2jbr26e816BQYKFolCjsZlLIzU=
+github.com/orange-cloudavenue/terraform-plugin-framework-superschema v1.11.0/go.mod h1:2R4+FiimXRb6we3IP4Jy4XwkmPG17isxcjUfYEWLJ44=
 github.com/orange-cloudavenue/terraform-plugin-framework-supertypes v0.5.0 h1:0rogLDkZ5gbdEs0zNQ3orqLaLk5gwwF+8LxsnqWCcN8=
 github.com/orange-cloudavenue/terraform-plugin-framework-supertypes v0.5.0/go.mod h1:16/Jv7sxRN3PhKkb7I2LAi7gtpQju65Kd+jmlE2st04=
 github.com/orange-cloudavenue/terraform-plugin-framework-supertypes v1.0.0 h1:HvbMI4JHsl1HmTIVU2N50t7H4qbIXpM7y2ljl3oOKyE=
