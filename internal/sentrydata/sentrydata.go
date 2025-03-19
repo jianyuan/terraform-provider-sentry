@@ -184,7 +184,7 @@ var DashboardWidgetDisplayTypes = []string{
 	"top_n",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/models/project.py#L60-L164
+// https://github.com/getsentry/sentry/blob/master/src/sentry/models/project.py#L60-L165
 var Platforms = []string{
 	"other",
 	"android",
@@ -237,6 +237,7 @@ var Platforms = []string{
 	"javascript-solidstart",
 	"javascript-svelte",
 	"javascript-sveltekit",
+	"javascript-tanstackstart-react",
 	"javascript-nuxt",
 	"javascript-vue",
 	"kotlin",
