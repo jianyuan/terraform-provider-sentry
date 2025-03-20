@@ -276,6 +276,8 @@ github.com/orange-cloudavenue/terraform-plugin-framework-supertypes v0.5.0 h1:0r
 github.com/orange-cloudavenue/terraform-plugin-framework-supertypes v0.5.0/go.mod h1:16/Jv7sxRN3PhKkb7I2LAi7gtpQju65Kd+jmlE2st04=
 github.com/orange-cloudavenue/terraform-plugin-framework-supertypes v1.0.0 h1:HvbMI4JHsl1HmTIVU2N50t7H4qbIXpM7y2ljl3oOKyE=
 github.com/orange-cloudavenue/terraform-plugin-framework-supertypes v1.0.0/go.mod h1:iIp5TGuiJnDvcSCYq7mWYIn4HSmjntHv+IJGMK0MsZw=
+github.com/orange-cloudavenue/terraform-plugin-framework-supertypes v1.1.1 h1:5r0bXWxmY/p8YtYsS0ZQNE+fJ5BhUVSVGtVbvENad1c=
+github.com/orange-cloudavenue/terraform-plugin-framework-supertypes v1.1.1/go.mod h1:iIp5TGuiJnDvcSCYq7mWYIn4HSmjntHv+IJGMK0MsZw=
 github.com/perimeterx/marshmallow v1.1.5 h1:a2LALqQ1BlHM8PZblsDdidgv1mWi1DgC2UmX50IvK2s=
 github.com/perimeterx/marshmallow v1.1.5/go.mod h1:dsXbUu8CRzfYP5a87xpp0xq9S3u0Vchtcl8we9tYaXw=
 github.com/peterhellberg/link v1.2.0 h1:UA5pg3Gp/E0F2WdX7GERiNrPQrM1K6CVJUUWfHa4t6c=
