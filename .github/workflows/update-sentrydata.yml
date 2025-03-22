@@ -23,8 +23,10 @@ jobs:
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_wrapper: false
-      - run: make generate
-      - run: make generate
+      - name: Update spec
+        run: make generate
+      - name: Update docs
+        run: make generate
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
