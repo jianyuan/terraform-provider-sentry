@@ -352,6 +352,16 @@ type ProjectKey struct {
 	Secret string `json:"secret"`
 }
 
+// ProjectOwnership defines model for ProjectOwnership.
+type ProjectOwnership struct {
+	AutoAssignment     string    `json:"autoAssignment"`
+	CodeownersAutoSync bool      `json:"codeownersAutoSync"`
+	DateCreated        time.Time `json:"dateCreated"`
+	Fallthrough        bool      `json:"fallthrough"`
+	LastUpdated        time.Time `json:"lastUpdated"`
+	Raw                string    `json:"raw"`
+}
+
 // ProjectRule defines model for ProjectRule.
 type ProjectRule struct {
 	ActionMatch string                 `json:"actionMatch"`
@@ -920,6 +930,14 @@ type UpdateProjectClientKeyJSONBody struct {
 	} `json:"rateLimit,omitempty"`
 }
 
+// UpdateProjectOwnershipJSONBody defines parameters for UpdateProjectOwnership.
+type UpdateProjectOwnershipJSONBody struct {
+	AutoAssignment     string `json:"autoAssignment"`
+	CodeownersAutoSync bool   `json:"codeownersAutoSync"`
+	Fallthrough        bool   `json:"fallthrough"`
+	Raw                string `json:"raw"`
+}
+
 // CreateProjectRuleJSONBody defines parameters for CreateProjectRule.
 type CreateProjectRuleJSONBody struct {
 	ActionMatch string                 `json:"actionMatch"`
@@ -979,6 +997,9 @@ type CreateProjectClientKeyJSONRequestBody CreateProjectClientKeyJSONBody
 
 // UpdateProjectClientKeyJSONRequestBody defines body for UpdateProjectClientKey for application/json ContentType.
 type UpdateProjectClientKeyJSONRequestBody UpdateProjectClientKeyJSONBody
+
+// UpdateProjectOwnershipJSONRequestBody defines body for UpdateProjectOwnership for application/json ContentType.
+type UpdateProjectOwnershipJSONRequestBody UpdateProjectOwnershipJSONBody
 
 // CreateProjectRuleJSONRequestBody defines body for CreateProjectRule for application/json ContentType.
 type CreateProjectRuleJSONRequestBody CreateProjectRuleJSONBody
@@ -2521,6 +2542,14 @@ type ClientInterface interface {
 
 	UpdateProjectClientKey(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, keyId string, body UpdateProjectClientKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetProjectOwnership request
+	GetProjectOwnership(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateProjectOwnershipWithBody request with any body
+	UpdateProjectOwnershipWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateProjectOwnership(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body UpdateProjectOwnershipJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateProjectRuleWithBody request with any body
 	CreateProjectRuleWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -2887,6 +2916,42 @@ func (c *Client) UpdateProjectClientKeyWithBody(ctx context.Context, organizatio
 
 func (c *Client) UpdateProjectClientKey(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, keyId string, body UpdateProjectClientKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateProjectClientKeyRequest(c.Server, organizationIdOrSlug, projectIdOrSlug, keyId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetProjectOwnership(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetProjectOwnershipRequest(c.Server, organizationIdOrSlug, projectIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateProjectOwnershipWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateProjectOwnershipRequestWithBody(c.Server, organizationIdOrSlug, projectIdOrSlug, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateProjectOwnership(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body UpdateProjectOwnershipJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateProjectOwnershipRequest(c.Server, organizationIdOrSlug, projectIdOrSlug, body)
 	if err != nil {
 		return nil, err
 	}
@@ -4076,6 +4141,101 @@ func NewUpdateProjectClientKeyRequestWithBody(server string, organizationIdOrSlu
 	return req, nil
 }
 
+// NewGetProjectOwnershipRequest generates requests for GetProjectOwnership
+func NewGetProjectOwnershipRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organization_id_or_slug", runtime.ParamLocationPath, organizationIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "project_id_or_slug", runtime.ParamLocationPath, projectIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/projects/%s/%s/ownership", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateProjectOwnershipRequest calls the generic UpdateProjectOwnership builder with application/json body
+func NewUpdateProjectOwnershipRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body UpdateProjectOwnershipJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateProjectOwnershipRequestWithBody(server, organizationIdOrSlug, projectIdOrSlug, "application/json", bodyReader)
+}
+
+// NewUpdateProjectOwnershipRequestWithBody generates requests for UpdateProjectOwnership with any type of body
+func NewUpdateProjectOwnershipRequestWithBody(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organization_id_or_slug", runtime.ParamLocationPath, organizationIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "project_id_or_slug", runtime.ParamLocationPath, projectIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/projects/%s/%s/ownership", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewCreateProjectRuleRequest calls the generic CreateProjectRule builder with application/json body
 func NewCreateProjectRuleRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body CreateProjectRuleJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -4558,6 +4718,14 @@ type ClientWithResponsesInterface interface {
 	UpdateProjectClientKeyWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, keyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProjectClientKeyResponse, error)
 
 	UpdateProjectClientKeyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, keyId string, body UpdateProjectClientKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectClientKeyResponse, error)
+
+	// GetProjectOwnershipWithResponse request
+	GetProjectOwnershipWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, reqEditors ...RequestEditorFn) (*GetProjectOwnershipResponse, error)
+
+	// UpdateProjectOwnershipWithBodyWithResponse request with any body
+	UpdateProjectOwnershipWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProjectOwnershipResponse, error)
+
+	UpdateProjectOwnershipWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body UpdateProjectOwnershipJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectOwnershipResponse, error)
 
 	// CreateProjectRuleWithBodyWithResponse request with any body
 	CreateProjectRuleWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateProjectRuleResponse, error)
@@ -5042,6 +5210,50 @@ func (r UpdateProjectClientKeyResponse) StatusCode() int {
 	return 0
 }
 
+type GetProjectOwnershipResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ProjectOwnership
+}
+
+// Status returns HTTPResponse.Status
+func (r GetProjectOwnershipResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetProjectOwnershipResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateProjectOwnershipResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ProjectRule
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateProjectOwnershipResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateProjectOwnershipResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateProjectRuleResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -5449,6 +5661,32 @@ func (c *ClientWithResponses) UpdateProjectClientKeyWithResponse(ctx context.Con
 		return nil, err
 	}
 	return ParseUpdateProjectClientKeyResponse(rsp)
+}
+
+// GetProjectOwnershipWithResponse request returning *GetProjectOwnershipResponse
+func (c *ClientWithResponses) GetProjectOwnershipWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, reqEditors ...RequestEditorFn) (*GetProjectOwnershipResponse, error) {
+	rsp, err := c.GetProjectOwnership(ctx, organizationIdOrSlug, projectIdOrSlug, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetProjectOwnershipResponse(rsp)
+}
+
+// UpdateProjectOwnershipWithBodyWithResponse request with arbitrary body returning *UpdateProjectOwnershipResponse
+func (c *ClientWithResponses) UpdateProjectOwnershipWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProjectOwnershipResponse, error) {
+	rsp, err := c.UpdateProjectOwnershipWithBody(ctx, organizationIdOrSlug, projectIdOrSlug, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateProjectOwnershipResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateProjectOwnershipWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body UpdateProjectOwnershipJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectOwnershipResponse, error) {
+	rsp, err := c.UpdateProjectOwnership(ctx, organizationIdOrSlug, projectIdOrSlug, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateProjectOwnershipResponse(rsp)
 }
 
 // CreateProjectRuleWithBodyWithResponse request with arbitrary body returning *CreateProjectRuleResponse
@@ -6004,6 +6242,58 @@ func ParseUpdateProjectClientKeyResponse(rsp *http.Response) (*UpdateProjectClie
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest ProjectKey
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetProjectOwnershipResponse parses an HTTP response from a GetProjectOwnershipWithResponse call
+func ParseGetProjectOwnershipResponse(rsp *http.Response) (*GetProjectOwnershipResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetProjectOwnershipResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProjectOwnership
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateProjectOwnershipResponse parses an HTTP response from a UpdateProjectOwnershipWithResponse call
+func ParseUpdateProjectOwnershipResponse(rsp *http.Response) (*UpdateProjectOwnershipResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateProjectOwnershipResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProjectRule
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
