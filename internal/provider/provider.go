@@ -148,6 +148,7 @@ func (p *SentryProvider) Resources(ctx context.Context) []func() resource.Resour
 		NewProjectResource,
 		NewProjectSpikeProtectionResource,
 		NewProjectSymbolSourcesResource,
+		NewProjectOwnershipResource,
 		NewTeamMemberResource,
 	}
 }
