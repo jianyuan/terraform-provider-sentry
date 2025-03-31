@@ -242,7 +242,7 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 				},
 			},
 			"default_key": schema.BoolAttribute{
-				Description: "Whether to create a default key. By default, Sentry will create a key for you. If you wish to manage keys manually, set this to false and create keys using the `sentry_key` resource.",
+				Description: "Whether to create a default key on project creation. By default, Sentry will create a key for you. If you wish to manage keys manually, set this to false and create keys using the `sentry_key` resource. Note that this only takes effect on project creation, not on project update.",
 				Optional:    true,
 				PlanModifiers: []planmodifier.Bool{
 					boolplanmodifier.UseStateForUnknown(),
@@ -791,14 +791,6 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 	} else if httpRespUpdate.StatusCode() != http.StatusOK || httpRespUpdate.JSON200 == nil {
 		resp.Diagnostics.Append(diagutils.NewClientStatusError("update", httpRespUpdate.StatusCode(), httpRespUpdate.Body))
 		return
-	}
-
-	// If the default key is set to false, remove the default key
-	if !plan.DefaultKey.IsNull() && !plan.DefaultKey.ValueBool() {
-		if err := r.removeDefaultKey(ctx, plan.Organization.ValueString(), *httpRespUpdate.JSON200); err != nil {
-			resp.Diagnostics.Append(diagutils.NewClientError("remove default key", err))
-			return
-		}
 	}
 
 	// Update teams

@@ -59,7 +59,7 @@ resource "sentry_project" "default" {
 ### Optional
 
 - `client_security` (Attributes) Configure origin URLs which Sentry should accept events from. This is used for communication with clients like [sentry-javascript](https://github.com/getsentry/sentry-javascript). (see [below for nested schema](#nestedatt--client_security))
-- `default_key` (Boolean) Whether to create a default key. By default, Sentry will create a key for you. If you wish to manage keys manually, set this to false and create keys using the `sentry_key` resource.
+- `default_key` (Boolean) Whether to create a default key on project creation. By default, Sentry will create a key for you. If you wish to manage keys manually, set this to false and create keys using the `sentry_key` resource. Note that this only takes effect on project creation, not on project update.
 - `default_rules` (Boolean) Whether to create a default issue alert. Defaults to true where the behavior is to alert the user on every new issue.
 - `digests_max_delay` (Number) The maximum amount of time (in seconds) to wait between scheduling digests for delivery.
 - `digests_min_delay` (Number) The minimum amount of time (in seconds) to wait between scheduling digests for delivery after the initial scheduling.
