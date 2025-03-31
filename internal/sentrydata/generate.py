@@ -143,7 +143,9 @@ def parse_issues_grouptype() -> dict[str, ResultData[Any]]:
                         case ast.Assign(
                             targets=[ast.Name(id=id)],
                             value=ast.Constant(value=value),
-                        ) if id.upper() == id:
+                        ) if (
+                            id.upper() == id
+                        ):
                             name = id.replace("_", " ").title().replace(" ", "_")
                             out["IssueGroupCategories"].result.append(name)
                             out["IssueGroupCategoryNameToId"].result[name] = str(value)
@@ -160,8 +162,8 @@ def parse_rules_conditions_event_attribute() -> dict[str, ResultData[Any]]:
     out: dict[str, ResultData[Any]] = {}
     for node in ast.walk(data.tree):
         match node:
-            case ast.Assign(
-                targets=[ast.Name(id="ATTR_CHOICES")],
+            case ast.AnnAssign(
+                target=ast.Name(id="ATTR_CHOICES"),
                 value=ast.Dict(keys=keys),
             ):
                 out["EventAttributes"] = ResultData(
@@ -199,7 +201,9 @@ def parse_rules_match() -> dict[str, ResultData[Any]]:
                         case ast.Assign(
                             targets=[ast.Name(id=id)],
                             value=ast.Constant(value=value),
-                        ) if id.upper() == id:
+                        ) if (
+                            id.upper() == id
+                        ):
                             out["MatchTypes"].result.append(id)
                             out["MatchTypeNameToId"].result[id] = value
                             out["MatchTypeIdToName"].result[value] = id
@@ -234,7 +238,7 @@ def parse_models_dashboard_widget() -> dict[str, ResultData[Any]]:
                         match elt:
                             case ast.Tuple(
                                 elts=[ast.Name(id=id), ast.Constant(value=value)]
-                            ) if id.upper() == id:
+                            ) if (id.upper() == id):
                                 out.append(value)
                             case _:
                                 pass
