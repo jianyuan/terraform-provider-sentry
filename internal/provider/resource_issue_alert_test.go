@@ -127,6 +127,7 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")
 	alert := acctest.RandomWithPrefix("tf-issue-alert")
+	opsgenieTeamName := acctest.RandomWithPrefix("tf-opsgenie")
 
 	checks := []statecheck.StateCheck{
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
@@ -271,8 +272,8 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 					resource "sentry_integration_opsgenie" "opsgenie" {
 						organization    = data.sentry_organization_integration.opsgenie.organization
 						integration_id  = data.sentry_organization_integration.opsgenie.id
-						team            = "issue-alert-team"
 						integration_key = "%[1]s"
+						team            = "%[2]s"
 					}
 
 					# PagerDuty
@@ -316,7 +317,7 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 						provider_key = "vsts"
 						name         = "jianyuanlee"
 					}
-				`, acctest.TestOpsgenieIntegrationKey),
+				`, acctest.TestOpsgenieIntegrationKey, opsgenieTeamName),
 				ConfigStateChecks: append(
 					checks,
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(alert)),
