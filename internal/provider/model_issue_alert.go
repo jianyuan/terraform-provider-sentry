@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -27,9 +28,9 @@ func (m *IssueAlertConditionFirstSeenEventModel) Fill(ctx context.Context, condi
 	return
 }
 
-func (m IssueAlertConditionFirstSeenEventModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleCondition, diag.Diagnostics) {
+func (m IssueAlertConditionFirstSeenEventModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleConditionToApi, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	var v apiclient.ProjectRuleCondition
+	var v apiclient.ProjectRuleConditionToApi
 	err := v.FromProjectRuleConditionFirstSeenEvent(apiclient.ProjectRuleConditionFirstSeenEvent{
 		Name: m.Name.ValueStringPointer(),
 	})
@@ -49,9 +50,9 @@ func (m *IssueAlertConditionRegressionEventModel) Fill(ctx context.Context, cond
 	return
 }
 
-func (m IssueAlertConditionRegressionEventModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleCondition, diag.Diagnostics) {
+func (m IssueAlertConditionRegressionEventModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleConditionToApi, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	var v apiclient.ProjectRuleCondition
+	var v apiclient.ProjectRuleConditionToApi
 	err := v.FromProjectRuleConditionRegressionEvent(apiclient.ProjectRuleConditionRegressionEvent{
 		Name: m.Name.ValueStringPointer(),
 	})
@@ -71,9 +72,9 @@ func (m *IssueAlertConditionReappearedEventModel) Fill(ctx context.Context, cond
 	return
 }
 
-func (m IssueAlertConditionReappearedEventModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleCondition, diag.Diagnostics) {
+func (m IssueAlertConditionReappearedEventModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleConditionToApi, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	var v apiclient.ProjectRuleCondition
+	var v apiclient.ProjectRuleConditionToApi
 	err := v.FromProjectRuleConditionReappearedEvent(apiclient.ProjectRuleConditionReappearedEvent{
 		Name: m.Name.ValueStringPointer(),
 	})
@@ -93,9 +94,9 @@ func (m *IssueAlertConditionNewHighPriorityIssueModel) Fill(ctx context.Context,
 	return
 }
 
-func (m IssueAlertConditionNewHighPriorityIssueModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleCondition, diag.Diagnostics) {
+func (m IssueAlertConditionNewHighPriorityIssueModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleConditionToApi, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	var v apiclient.ProjectRuleCondition
+	var v apiclient.ProjectRuleConditionToApi
 	err := v.FromProjectRuleConditionNewHighPriorityIssue(apiclient.ProjectRuleConditionNewHighPriorityIssue{
 		Name: m.Name.ValueStringPointer(),
 	})
@@ -115,9 +116,9 @@ func (m *IssueAlertConditionExistingHighPriorityIssueModel) Fill(ctx context.Con
 	return
 }
 
-func (m IssueAlertConditionExistingHighPriorityIssueModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleCondition, diag.Diagnostics) {
+func (m IssueAlertConditionExistingHighPriorityIssueModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleConditionToApi, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	var v apiclient.ProjectRuleCondition
+	var v apiclient.ProjectRuleConditionToApi
 	err := v.FromProjectRuleConditionExistingHighPriorityIssue(apiclient.ProjectRuleConditionExistingHighPriorityIssue{
 		Name: m.Name.ValueStringPointer(),
 	})
@@ -145,14 +146,15 @@ func (m *IssueAlertConditionEventFrequencyModel) Fill(ctx context.Context, condi
 	return
 }
 
-func (m IssueAlertConditionEventFrequencyModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleCondition, diag.Diagnostics) {
+func (m IssueAlertConditionEventFrequencyModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleConditionToApi, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	var v apiclient.ProjectRuleCondition
-	err := v.FromProjectRuleConditionEventFrequency(apiclient.ProjectRuleConditionEventFrequency{
+	var v apiclient.ProjectRuleConditionToApi
+	value := strconv.FormatInt(m.Value.ValueInt64(), 10)
+	err := v.FromProjectRuleConditionEventFrequencyToApi(apiclient.ProjectRuleConditionEventFrequencyToApi{
 		Name:               m.Name.ValueStringPointer(),
 		ComparisonType:     m.ComparisonType.ValueString(),
 		ComparisonInterval: m.ComparisonInterval.ValueStringPointer(),
-		Value:              m.Value.ValueInt64(),
+		Value:              value,
 		Interval:           m.Interval.ValueString(),
 	})
 	if err != nil {
@@ -179,14 +181,14 @@ func (m *IssueAlertConditionEventUniqueUserFrequencyModel) Fill(ctx context.Cont
 	return
 }
 
-func (m IssueAlertConditionEventUniqueUserFrequencyModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleCondition, diag.Diagnostics) {
+func (m IssueAlertConditionEventUniqueUserFrequencyModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleConditionToApi, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	var v apiclient.ProjectRuleCondition
-	err := v.FromProjectRuleConditionEventUniqueUserFrequency(apiclient.ProjectRuleConditionEventUniqueUserFrequency{
+	var v apiclient.ProjectRuleConditionToApi
+	err := v.FromProjectRuleConditionEventUniqueUserFrequencyToApi(apiclient.ProjectRuleConditionEventUniqueUserFrequencyToApi{
 		Name:               m.Name.ValueStringPointer(),
 		ComparisonType:     m.ComparisonType.ValueString(),
 		ComparisonInterval: m.ComparisonInterval.ValueStringPointer(),
-		Value:              m.Value.ValueInt64(),
+		Value:              strconv.FormatInt(m.Value.ValueInt64(), 10),
 		Interval:           m.Interval.ValueString(),
 	})
 	if err != nil {
@@ -213,14 +215,14 @@ func (m *IssueAlertConditionEventFrequencyPercentModel) Fill(ctx context.Context
 	return
 }
 
-func (m IssueAlertConditionEventFrequencyPercentModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleCondition, diag.Diagnostics) {
+func (m IssueAlertConditionEventFrequencyPercentModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleConditionToApi, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	var v apiclient.ProjectRuleCondition
-	err := v.FromProjectRuleConditionEventFrequencyPercent(apiclient.ProjectRuleConditionEventFrequencyPercent{
+	var v apiclient.ProjectRuleConditionToApi
+	err := v.FromProjectRuleConditionEventFrequencyPercentToApi(apiclient.ProjectRuleConditionEventFrequencyPercentToApi{
 		Name:               m.Name.ValueStringPointer(),
 		ComparisonType:     m.ComparisonType.ValueString(),
 		ComparisonInterval: m.ComparisonInterval.ValueStringPointer(),
-		Value:              m.Value.ValueFloat64(),
+		Value:              strconv.FormatFloat(m.Value.ValueFloat64(), 'f', -1, 64),
 		Interval:           m.Interval.ValueString(),
 	})
 	if err != nil {
@@ -241,7 +243,7 @@ type IssueAlertConditionModel struct {
 	EventFrequencyPercent     *IssueAlertConditionEventFrequencyPercentModel     `tfsdk:"event_frequency_percent"`
 }
 
-func (m IssueAlertConditionModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleCondition, diag.Diagnostics) {
+func (m IssueAlertConditionModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleConditionToApi, diag.Diagnostics) {
 	if m.FirstSeenEvent != nil {
 		return m.FirstSeenEvent.ToApi(ctx)
 	} else if m.RegressionEvent != nil {

@@ -754,6 +754,108 @@ func TestAccIssueAlertResource_emptyArray(t *testing.T) {
 	})
 }
 
+// TestAccIssueAlertResource_zeroValues tests that 0 values in conditions work. There is arguably a bug in the Sentry API where integer values of 0 will be stripped from submitted payload objects because of Python's implicity bool conversions. These values can successfully be submitted as strings. When these objects are retrieved from the API, the values are integers.
+func TestAccIssueAlertResource_zeroValues(t *testing.T) {
+	rn := "sentry_issue_alert.test"
+	team := acctest.RandomWithPrefix("tf-team")
+	project := acctest.RandomWithPrefix("tf-project")
+	alert := acctest.RandomWithPrefix("tf-issue-alert")
+	var alertId string
+
+	check := func(alert string) resource.TestCheckFunc {
+		return resource.ComposeTestCheckFunc(
+			testAccCheckIssueAlertExists(rn, &alertId),
+			resource.TestCheckResourceAttrWith(rn, "id", func(value string) error {
+				if alertId != value {
+					return fmt.Errorf("expected %s, got %s", alertId, value)
+				}
+				return nil
+			}),
+		)
+	}
+
+	checks := []statecheck.StateCheck{
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("project"), knownvalue.StringExact(project)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("action_match"), knownvalue.StringExact("any")),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filter_match"), knownvalue.StringExact("any")),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("frequency"), knownvalue.Int64Exact(30)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("environment"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("owner"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("conditions"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("actions"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("conditions_v2"), knownvalue.ListSizeExact(6)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters_v2"), knownvalue.Null()),
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckIssueAlertDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccIssueAlertConfig(team, project, alert, `
+					conditions_v2 = [
+						{ event_frequency = { comparison_type = "count", value = 0, interval = "1h" } },
+						{ event_frequency = { comparison_type = "percent", comparison_interval = "1w", value = 0, interval = "1h" } },
+						{ event_unique_user_frequency = { comparison_type = "count", value = 0, interval = "1h" } },
+						{ event_unique_user_frequency = { comparison_type = "percent", comparison_interval = "1w", value = 0, interval = "1h" } },
+						{ event_frequency_percent = { comparison_type = "count", value = 0, interval = "1h" } },
+						{ event_frequency_percent = { comparison_type = "percent", comparison_interval = "1w", value = 0, interval = "1h" } },
+					]
+
+					actions = <<EOT
+					[
+						{
+							"id": "sentry.mail.actions.NotifyEmailAction",
+							"targetType": "IssueOwners"
+						}
+					]
+					EOT
+				`),
+				Check: check(alert),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(alert)),
+				),
+			},
+			{
+				Config: testAccIssueAlertConfig(team, project, alert+`updated`, `
+					conditions_v2 = [
+						{ event_frequency = { comparison_type = "count", value = 0, interval = "1h" } },
+						{ event_frequency = { comparison_type = "percent", comparison_interval = "1w", value = 0, interval = "1h" } },
+						{ event_unique_user_frequency = { comparison_type = "count", value = 0, interval = "1h" } },
+						{ event_unique_user_frequency = { comparison_type = "percent", comparison_interval = "1w", value = 0, interval = "1h" } },
+						{ event_frequency_percent = { comparison_type = "count", value = 0, interval = "1h" } },
+						{ event_frequency_percent = { comparison_type = "percent", comparison_interval = "1w", value = 0, interval = "1h" } },
+					]
+
+					actions = <<EOT
+					[
+						{
+							"id": "sentry.mail.actions.NotifyEmailAction",
+							"targetType": "IssueOwners"
+						}
+					]
+					EOT
+				`),
+				Check: check(alert + "-updated"),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(alert+"updated")),
+				),
+			},
+			{
+				ResourceName:      rn,
+				ImportState:       true,
+				ImportStateIdFunc: acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
+			},
+		},
+	})
+}
+
 func TestAccIssueAlertResource_jsonValues(t *testing.T) {
 	rn := "sentry_issue_alert.test"
 	team := acctest.RandomWithPrefix("tf-team")
