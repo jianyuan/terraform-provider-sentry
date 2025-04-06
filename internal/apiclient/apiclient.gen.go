@@ -22,6 +22,11 @@ const (
 	BearerAuthScopes = "bearerAuth.Scopes"
 )
 
+// Defines values for MonitorRequestType.
+const (
+	CronJob MonitorRequestType = "cron_job"
+)
+
 // Defines values for OrganizationIntegrationOpsgenieProviderKey.
 const (
 	Opsgenie OrganizationIntegrationOpsgenieProviderKey = "opsgenie"
@@ -192,6 +197,37 @@ const (
 	Active   ListProjectClientKeysParamsStatus = "active"
 	Inactive ListProjectClientKeysParamsStatus = "inactive"
 )
+
+// Monitor defines model for Monitor.
+type Monitor struct {
+	Config       *map[string]interface{} `json:"config,omitempty"`
+	CreatedAt    *string                 `json:"created_at,omitempty"`
+	Id           *string                 `json:"id,omitempty"`
+	LastCheckIn  *string                 `json:"last_check_in,omitempty"`
+	Name         *string                 `json:"name,omitempty"`
+	Organization *string                 `json:"organization,omitempty"`
+	Project      *string                 `json:"project,omitempty"`
+	Slug         *string                 `json:"slug,omitempty"`
+	Status       *string                 `json:"status,omitempty"`
+	Type         *string                 `json:"type,omitempty"`
+}
+
+// MonitorRequest defines model for MonitorRequest.
+type MonitorRequest struct {
+	Config struct {
+		CheckinMargin         *int   `json:"checkin_margin,omitempty"`
+		FailureIssueThreshold *int   `json:"failure_issue_threshold,omitempty"`
+		MaxRuntime            *int   `json:"max_runtime,omitempty"`
+		RecoveryThreshold     *int   `json:"recovery_threshold,omitempty"`
+		Schedule              string `json:"schedule"`
+		Timezone              string `json:"timezone"`
+	} `json:"config"`
+	Name string             `json:"name"`
+	Type MonitorRequestType `json:"type"`
+}
+
+// MonitorRequestType defines model for MonitorRequest.Type.
+type MonitorRequestType string
 
 // Organization defines model for Organization.
 type Organization struct {
@@ -988,6 +1024,12 @@ type UpdateProjectRuleJSONRequestBody UpdateProjectRuleJSONBody
 
 // CreateOrganizationTeamProjectJSONRequestBody defines body for CreateOrganizationTeamProject for application/json ContentType.
 type CreateOrganizationTeamProjectJSONRequestBody CreateOrganizationTeamProjectJSONBody
+
+// CreateMonitorJSONRequestBody defines body for CreateMonitor for application/json ContentType.
+type CreateMonitorJSONRequestBody = MonitorRequest
+
+// UpdateMonitorJSONRequestBody defines body for UpdateMonitor for application/json ContentType.
+type UpdateMonitorJSONRequestBody = MonitorRequest
 
 // AsOrganizationIntegrationOpsgenie returns the union data inside the OrganizationIntegration as a OrganizationIntegrationOpsgenie
 func (t OrganizationIntegration) AsOrganizationIntegrationOpsgenie() (OrganizationIntegrationOpsgenie, error) {
@@ -2547,6 +2589,25 @@ type ClientInterface interface {
 	CreateOrganizationTeamProjectWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	CreateOrganizationTeamProject(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, body CreateOrganizationTeamProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListMonitors request
+	ListMonitors(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateMonitorWithBody request with any body
+	CreateMonitorWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateMonitor(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body CreateMonitorJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteMonitor request
+	DeleteMonitor(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, monitorSlug string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetMonitor request
+	GetMonitor(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, monitorSlug string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateMonitorWithBody request with any body
+	UpdateMonitorWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, monitorSlug string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateMonitor(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, monitorSlug string, body UpdateMonitorJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) HealthCheck(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -3007,6 +3068,90 @@ func (c *Client) CreateOrganizationTeamProjectWithBody(ctx context.Context, orga
 
 func (c *Client) CreateOrganizationTeamProject(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, body CreateOrganizationTeamProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateOrganizationTeamProjectRequest(c.Server, organizationIdOrSlug, teamIdOrSlug, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListMonitors(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListMonitorsRequest(c.Server, organizationIdOrSlug, projectIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateMonitorWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateMonitorRequestWithBody(c.Server, organizationIdOrSlug, projectIdOrSlug, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateMonitor(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body CreateMonitorJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateMonitorRequest(c.Server, organizationIdOrSlug, projectIdOrSlug, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteMonitor(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, monitorSlug string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteMonitorRequest(c.Server, organizationIdOrSlug, projectIdOrSlug, monitorSlug)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetMonitor(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, monitorSlug string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetMonitorRequest(c.Server, organizationIdOrSlug, projectIdOrSlug, monitorSlug)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateMonitorWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, monitorSlug string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateMonitorRequestWithBody(c.Server, organizationIdOrSlug, projectIdOrSlug, monitorSlug, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateMonitor(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, monitorSlug string, body UpdateMonitorJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateMonitorRequest(c.Server, organizationIdOrSlug, projectIdOrSlug, monitorSlug, body)
 	if err != nil {
 		return nil, err
 	}
@@ -4437,6 +4582,258 @@ func NewCreateOrganizationTeamProjectRequestWithBody(server string, organization
 	return req, nil
 }
 
+// NewListMonitorsRequest generates requests for ListMonitors
+func NewListMonitorsRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organization_id_or_slug", runtime.ParamLocationPath, organizationIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "project_id_or_slug", runtime.ParamLocationPath, projectIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/0/projects/%s/%s/monitors/", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateMonitorRequest calls the generic CreateMonitor builder with application/json body
+func NewCreateMonitorRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body CreateMonitorJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateMonitorRequestWithBody(server, organizationIdOrSlug, projectIdOrSlug, "application/json", bodyReader)
+}
+
+// NewCreateMonitorRequestWithBody generates requests for CreateMonitor with any type of body
+func NewCreateMonitorRequestWithBody(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organization_id_or_slug", runtime.ParamLocationPath, organizationIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "project_id_or_slug", runtime.ParamLocationPath, projectIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/0/projects/%s/%s/monitors/", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteMonitorRequest generates requests for DeleteMonitor
+func NewDeleteMonitorRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, monitorSlug string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organization_id_or_slug", runtime.ParamLocationPath, organizationIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "project_id_or_slug", runtime.ParamLocationPath, projectIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam2 string
+
+	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "monitor_slug", runtime.ParamLocationPath, monitorSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/0/projects/%s/%s/monitors/%s/", pathParam0, pathParam1, pathParam2)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetMonitorRequest generates requests for GetMonitor
+func NewGetMonitorRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, monitorSlug string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organization_id_or_slug", runtime.ParamLocationPath, organizationIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "project_id_or_slug", runtime.ParamLocationPath, projectIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam2 string
+
+	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "monitor_slug", runtime.ParamLocationPath, monitorSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/0/projects/%s/%s/monitors/%s/", pathParam0, pathParam1, pathParam2)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateMonitorRequest calls the generic UpdateMonitor builder with application/json body
+func NewUpdateMonitorRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, monitorSlug string, body UpdateMonitorJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateMonitorRequestWithBody(server, organizationIdOrSlug, projectIdOrSlug, monitorSlug, "application/json", bodyReader)
+}
+
+// NewUpdateMonitorRequestWithBody generates requests for UpdateMonitor with any type of body
+func NewUpdateMonitorRequestWithBody(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, monitorSlug string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organization_id_or_slug", runtime.ParamLocationPath, organizationIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "project_id_or_slug", runtime.ParamLocationPath, projectIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam2 string
+
+	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "monitor_slug", runtime.ParamLocationPath, monitorSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/0/projects/%s/%s/monitors/%s/", pathParam0, pathParam1, pathParam2)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -4585,6 +4982,25 @@ type ClientWithResponsesInterface interface {
 	CreateOrganizationTeamProjectWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOrganizationTeamProjectResponse, error)
 
 	CreateOrganizationTeamProjectWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, body CreateOrganizationTeamProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateOrganizationTeamProjectResponse, error)
+
+	// ListMonitorsWithResponse request
+	ListMonitorsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, reqEditors ...RequestEditorFn) (*ListMonitorsResponse, error)
+
+	// CreateMonitorWithBodyWithResponse request with any body
+	CreateMonitorWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateMonitorResponse, error)
+
+	CreateMonitorWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body CreateMonitorJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateMonitorResponse, error)
+
+	// DeleteMonitorWithResponse request
+	DeleteMonitorWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, monitorSlug string, reqEditors ...RequestEditorFn) (*DeleteMonitorResponse, error)
+
+	// GetMonitorWithResponse request
+	GetMonitorWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, monitorSlug string, reqEditors ...RequestEditorFn) (*GetMonitorResponse, error)
+
+	// UpdateMonitorWithBodyWithResponse request with any body
+	UpdateMonitorWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, monitorSlug string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateMonitorResponse, error)
+
+	UpdateMonitorWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, monitorSlug string, body UpdateMonitorJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateMonitorResponse, error)
 }
 
 type HealthCheckResponse struct {
@@ -5198,6 +5614,115 @@ func (r CreateOrganizationTeamProjectResponse) StatusCode() int {
 	return 0
 }
 
+type ListMonitorsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]Monitor
+}
+
+// Status returns HTTPResponse.Status
+func (r ListMonitorsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListMonitorsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateMonitorResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Monitor
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateMonitorResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateMonitorResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteMonitorResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteMonitorResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteMonitorResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetMonitorResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Monitor
+}
+
+// Status returns HTTPResponse.Status
+func (r GetMonitorResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetMonitorResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateMonitorResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Monitor
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateMonitorResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateMonitorResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 // HealthCheckWithResponse request returning *HealthCheckResponse
 func (c *ClientWithResponses) HealthCheckWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*HealthCheckResponse, error) {
 	rsp, err := c.HealthCheck(ctx, reqEditors...)
@@ -5536,6 +6061,67 @@ func (c *ClientWithResponses) CreateOrganizationTeamProjectWithResponse(ctx cont
 		return nil, err
 	}
 	return ParseCreateOrganizationTeamProjectResponse(rsp)
+}
+
+// ListMonitorsWithResponse request returning *ListMonitorsResponse
+func (c *ClientWithResponses) ListMonitorsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, reqEditors ...RequestEditorFn) (*ListMonitorsResponse, error) {
+	rsp, err := c.ListMonitors(ctx, organizationIdOrSlug, projectIdOrSlug, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListMonitorsResponse(rsp)
+}
+
+// CreateMonitorWithBodyWithResponse request with arbitrary body returning *CreateMonitorResponse
+func (c *ClientWithResponses) CreateMonitorWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateMonitorResponse, error) {
+	rsp, err := c.CreateMonitorWithBody(ctx, organizationIdOrSlug, projectIdOrSlug, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateMonitorResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateMonitorWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body CreateMonitorJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateMonitorResponse, error) {
+	rsp, err := c.CreateMonitor(ctx, organizationIdOrSlug, projectIdOrSlug, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateMonitorResponse(rsp)
+}
+
+// DeleteMonitorWithResponse request returning *DeleteMonitorResponse
+func (c *ClientWithResponses) DeleteMonitorWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, monitorSlug string, reqEditors ...RequestEditorFn) (*DeleteMonitorResponse, error) {
+	rsp, err := c.DeleteMonitor(ctx, organizationIdOrSlug, projectIdOrSlug, monitorSlug, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteMonitorResponse(rsp)
+}
+
+// GetMonitorWithResponse request returning *GetMonitorResponse
+func (c *ClientWithResponses) GetMonitorWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, monitorSlug string, reqEditors ...RequestEditorFn) (*GetMonitorResponse, error) {
+	rsp, err := c.GetMonitor(ctx, organizationIdOrSlug, projectIdOrSlug, monitorSlug, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetMonitorResponse(rsp)
+}
+
+// UpdateMonitorWithBodyWithResponse request with arbitrary body returning *UpdateMonitorResponse
+func (c *ClientWithResponses) UpdateMonitorWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, monitorSlug string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateMonitorResponse, error) {
+	rsp, err := c.UpdateMonitorWithBody(ctx, organizationIdOrSlug, projectIdOrSlug, monitorSlug, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateMonitorResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateMonitorWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, monitorSlug string, body UpdateMonitorJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateMonitorResponse, error) {
+	rsp, err := c.UpdateMonitor(ctx, organizationIdOrSlug, projectIdOrSlug, monitorSlug, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateMonitorResponse(rsp)
 }
 
 // ParseHealthCheckResponse parses an HTTP response from a HealthCheckWithResponse call
@@ -6189,6 +6775,126 @@ func ParseCreateOrganizationTeamProjectResponse(rsp *http.Response) (*CreateOrga
 			return nil, err
 		}
 		response.JSON201 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListMonitorsResponse parses an HTTP response from a ListMonitorsWithResponse call
+func ParseListMonitorsResponse(rsp *http.Response) (*ListMonitorsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListMonitorsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []Monitor
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateMonitorResponse parses an HTTP response from a CreateMonitorWithResponse call
+func ParseCreateMonitorResponse(rsp *http.Response) (*CreateMonitorResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateMonitorResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Monitor
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteMonitorResponse parses an HTTP response from a DeleteMonitorWithResponse call
+func ParseDeleteMonitorResponse(rsp *http.Response) (*DeleteMonitorResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteMonitorResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetMonitorResponse parses an HTTP response from a GetMonitorWithResponse call
+func ParseGetMonitorResponse(rsp *http.Response) (*GetMonitorResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetMonitorResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Monitor
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateMonitorResponse parses an HTTP response from a UpdateMonitorWithResponse call
+func ParseUpdateMonitorResponse(rsp *http.Response) (*UpdateMonitorResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateMonitorResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Monitor
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
 
 	}
 

@@ -801,6 +801,93 @@ paths:
           description: Forbidden
         "404":
           description: Not Found
+  /api/0/projects/{organization_id_or_slug}/{project_id_or_slug}/monitors/:
+    get:
+      operationId: listMonitors
+      parameters:
+        - $ref: "#/components/parameters/organization_id_or_slug"
+        - $ref: "#/components/parameters/project_id_or_slug"
+      responses:
+        "200":
+          description: A list of monitors
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Monitor"
+    post:
+      operationId: createMonitor
+      parameters:
+        - $ref: "#/components/parameters/organization_id_or_slug"
+        - $ref: "#/components/parameters/project_id_or_slug"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MonitorRequest"
+      responses:
+        "200":
+          description: The created monitor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Monitor"
+  /api/0/projects/{organization_id_or_slug}/{project_id_or_slug}/monitors/{monitor_slug}/:
+    get:
+      operationId: getMonitor
+      parameters:
+        - $ref: "#/components/parameters/organization_id_or_slug"
+        - $ref: "#/components/parameters/project_id_or_slug"
+        - name: monitor_slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: A monitor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Monitor"
+    put:
+      operationId: updateMonitor
+      parameters:
+        - $ref: "#/components/parameters/organization_id_or_slug"
+        - $ref: "#/components/parameters/project_id_or_slug"
+        - name: monitor_slug
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MonitorRequest"
+      responses:
+        "200":
+          description: Updated monitor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Monitor"
+    delete:
+      operationId: deleteMonitor
+      parameters:
+        - $ref: "#/components/parameters/organization_id_or_slug"
+        - $ref: "#/components/parameters/project_id_or_slug"
+        - name: monitor_slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted successfully
 
 security:
   - bearerAuth: []
@@ -2031,3 +2118,58 @@ components:
           type: string
         name:
           type: string
+    Monitor:
+      type: object
+      properties:
+        id:
+          type: string
+        slug:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+        config:
+          type: object
+          additionalProperties: true
+        status:
+          type: string
+        created_at:
+          type: string
+        last_check_in:
+          type: string
+        project:
+          type: string
+        organization:
+          type: string
+    MonitorRequest:
+      type: object
+      required:
+        - name
+        - type
+        - config
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: [cron_job]
+        config:
+          type: object
+          required:
+            - schedule
+            - timezone
+          properties:
+            schedule:
+              type: string
+              example: "0 * * * *"
+            timezone:
+              type: string
+            checkin_margin:
+              type: integer
+            max_runtime:
+              type: integer
+            failure_issue_threshold:
+              type: integer
+            recovery_threshold:
+              type: integer
