@@ -670,7 +670,7 @@ paths:
                 conditions:
                   type: array
                   items:
-                    $ref: "#/components/schemas/ProjectRuleCondition"
+                    $ref: "#/components/schemas/ProjectRuleConditionToApi"
                 filters:
                   type: array
                   items:
@@ -767,7 +767,7 @@ paths:
                 conditions:
                   type: array
                   items:
-                    $ref: "#/components/schemas/ProjectRuleCondition"
+                    $ref: "#/components/schemas/ProjectRuleConditionToApi"
                 filters:
                   type: array
                   items:
@@ -1327,6 +1327,14 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ProjectRuleAction"
+
+    # There is arguably a bug in the Sentry API where integer values of 0 will
+    # be stripped from submitted payload objects because of Python's implicit
+    # bool conversions. These values can successfully be submitted as strings.
+    # When these objects are retrieved from the API, the values are integers.
+    # To model this, we have two different schemas for rule conditions based
+    # based on whether we're sending them to the API or retriving them from
+    # the API: ProjectRuleCondition and ProjectRuleConditionToApi.
     ProjectRuleCondition:
       oneOf:
         - $ref: "#/components/schemas/ProjectRuleConditionFirstSeenEvent"
@@ -1348,6 +1356,28 @@ components:
           "sentry.rules.conditions.event_frequency.EventFrequencyCondition": "#/components/schemas/ProjectRuleConditionEventFrequency"
           "sentry.rules.conditions.event_frequency.EventUniqueUserFrequencyCondition": "#/components/schemas/ProjectRuleConditionEventUniqueUserFrequency"
           "sentry.rules.conditions.event_frequency.EventFrequencyPercentCondition": "#/components/schemas/ProjectRuleConditionEventFrequencyPercent"
+
+    ProjectRuleConditionToApi:
+      oneOf:
+        - $ref: "#/components/schemas/ProjectRuleConditionFirstSeenEvent"
+        - $ref: "#/components/schemas/ProjectRuleConditionRegressionEvent"
+        - $ref: "#/components/schemas/ProjectRuleConditionReappearedEvent"
+        - $ref: "#/components/schemas/ProjectRuleConditionNewHighPriorityIssue"
+        - $ref: "#/components/schemas/ProjectRuleConditionExistingHighPriorityIssue"
+        - $ref: "#/components/schemas/ProjectRuleConditionEventFrequencyToApi"
+        - $ref: "#/components/schemas/ProjectRuleConditionEventUniqueUserFrequencyToApi"
+        - $ref: "#/components/schemas/ProjectRuleConditionEventFrequencyPercentToApi"
+      discriminator:
+        propertyName: id
+        mapping:
+          "sentry.rules.conditions.first_seen_event.FirstSeenEventCondition": "#/components/schemas/ProjectRuleConditionFirstSeenEvent"
+          "sentry.rules.conditions.regression_event.RegressionEventCondition": "#/components/schemas/ProjectRuleConditionRegressionEvent"
+          "sentry.rules.conditions.reappeared_event.ReappearedEventCondition": "#/components/schemas/ProjectRuleConditionReappearedEvent"
+          "sentry.rules.conditions.high_priority_issue.NewHighPriorityIssueCondition": "#/components/schemas/ProjectRuleConditionNewHighPriorityIssue"
+          "sentry.rules.conditions.high_priority_issue.ExistingHighPriorityIssueCondition": "#/components/schemas/ProjectRuleConditionExistingHighPriorityIssue"
+          "sentry.rules.conditions.event_frequency.EventFrequencyCondition": "#/components/schemas/ProjectRuleConditionEventFrequencyToApi"
+          "sentry.rules.conditions.event_frequency.EventUniqueUserFrequencyCondition": "#/components/schemas/ProjectRuleConditionEventUniqueUserFrequencyToApi"
+          "sentry.rules.conditions.event_frequency.EventFrequencyPercentCondition": "#/components/schemas/ProjectRuleConditionEventFrequencyPercentToApi"
     ProjectRuleConditionFirstSeenEvent:
       type: object
       required:
@@ -1426,6 +1456,28 @@ components:
           format: int64
         interval:
           type: string
+    ProjectRuleConditionEventFrequencyToApi:
+      type: object
+      required:
+        - id
+        - comparisonType
+        - value
+        - interval
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.conditions.event_frequency.EventFrequencyCondition"
+        name:
+          type: string
+        comparisonType:
+          type: string
+        comparisonInterval:
+          type: string
+        value:
+          type: string
+        interval:
+          type: string
     ProjectRuleConditionEventUniqueUserFrequency:
       type: object
       required:
@@ -1449,6 +1501,28 @@ components:
           format: int64
         interval:
           type: string
+    ProjectRuleConditionEventUniqueUserFrequencyToApi:
+      type: object
+      required:
+        - id
+        - comparisonType
+        - value
+        - interval
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.conditions.event_frequency.EventUniqueUserFrequencyCondition"
+        name:
+          type: string
+        comparisonType:
+          type: string
+        comparisonInterval:
+          type: string
+        value:
+          type: string
+        interval:
+          type: string
     ProjectRuleConditionEventFrequencyPercent:
       type: object
       required:
@@ -1470,6 +1544,28 @@ components:
         value:
           type: number
           format: double
+        interval:
+          type: string
+    ProjectRuleConditionEventFrequencyPercentToApi:
+      type: object
+      required:
+        - id
+        - comparisonType
+        - value
+        - interval
+      properties:
+        id:
+          type: string
+          enum:
+            - "sentry.rules.conditions.event_frequency.EventFrequencyPercentCondition"
+        name:
+          type: string
+        comparisonType:
+          type: string
+        comparisonInterval:
+          type: string
+        value:
+          type: string
         interval:
           type: string
     ProjectRuleFilter:

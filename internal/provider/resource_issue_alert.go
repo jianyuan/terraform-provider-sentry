@@ -712,7 +712,7 @@ func (r *IssueAlertResource) Create(ctx context.Context, req resource.CreateRequ
 	if !data.Conditions.IsNull() {
 		resp.Diagnostics.Append(data.Conditions.Unmarshal(&body.Conditions)...)
 	} else if data.ConditionsV2 != nil {
-		body.Conditions = []apiclient.ProjectRuleCondition{}
+		body.Conditions = []apiclient.ProjectRuleConditionToApi{}
 		for i, item := range *data.ConditionsV2 {
 			condition, diags := item.ToApi(ctx)
 			if diags.HasError() {
@@ -726,7 +726,7 @@ func (r *IssueAlertResource) Create(ctx context.Context, req resource.CreateRequ
 			body.Conditions = append(body.Conditions, *condition)
 		}
 	} else {
-		body.Conditions = []apiclient.ProjectRuleCondition{}
+		body.Conditions = []apiclient.ProjectRuleConditionToApi{}
 	}
 
 	if !data.Filters.IsNull() {
@@ -850,7 +850,7 @@ func (r *IssueAlertResource) Update(ctx context.Context, req resource.UpdateRequ
 	if !data.Conditions.IsNull() {
 		resp.Diagnostics.Append(data.Conditions.Unmarshal(&body.Conditions)...)
 	} else if data.ConditionsV2 != nil {
-		body.Conditions = []apiclient.ProjectRuleCondition{}
+		body.Conditions = []apiclient.ProjectRuleConditionToApi{}
 		for i, item := range *data.ConditionsV2 {
 			condition, diags := item.ToApi(ctx)
 			if diags.HasError() {
@@ -864,7 +864,7 @@ func (r *IssueAlertResource) Update(ctx context.Context, req resource.UpdateRequ
 			body.Conditions = append(body.Conditions, *condition)
 		}
 	} else {
-		body.Conditions = []apiclient.ProjectRuleCondition{}
+		body.Conditions = []apiclient.ProjectRuleConditionToApi{}
 	}
 
 	if !data.Filters.IsNull() {
