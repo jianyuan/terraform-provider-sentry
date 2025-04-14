@@ -21,6 +21,7 @@ require (
 	github.com/orange-cloudavenue/terraform-plugin-framework-superschema v1.11.0
 	github.com/orange-cloudavenue/terraform-plugin-framework-supertypes v1.1.1
 	github.com/peterhellberg/link v1.2.0
+	github.com/stretchr/testify v1.10.0
 	golang.org/x/sync v0.13.0
 )
 
@@ -38,6 +39,7 @@ require (
 	github.com/bgentry/speakeasy v0.1.0 // indirect
 	github.com/bmatcuk/doublestar/v4 v4.8.1 // indirect
 	github.com/cloudflare/circl v1.3.7 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dprotaso/go-yit v0.0.0-20220510233725-9ba8df137936 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/getkin/kin-openapi v0.127.0 // indirect
@@ -81,6 +83,7 @@ require (
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 	github.com/oklog/run v1.1.0 // indirect
 	github.com/perimeterx/marshmallow v1.1.5 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/posener/complete v1.2.3 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/speakeasy-api/openapi-overlay v0.9.0 // indirect
