@@ -115,6 +115,10 @@ func dataSourceSentryMetricAlert() *schema.Resource {
 										Type:     schema.TypeInt,
 										Computed: true,
 									},
+									"priority": {
+										Type:     schema.TypeString,
+										Optional: true,
+									},
 								},
 							},
 						},
