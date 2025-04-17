@@ -30,7 +30,7 @@ var LogLevelIdToName = map[string]string{
 	"50": "fatal",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/issues/grouptype.py#L31-L39
+// https://github.com/getsentry/sentry/blob/master/src/sentry/issues/grouptype.py#L30-L38
 var IssueGroupCategories = []string{
 	"Error",
 	"Performance",
@@ -42,7 +42,7 @@ var IssueGroupCategories = []string{
 	"Metric_Alert",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/issues/grouptype.py#L31-L39
+// https://github.com/getsentry/sentry/blob/master/src/sentry/issues/grouptype.py#L30-L38
 var IssueGroupCategoryNameToId = map[string]string{
 	"Error":        "1",
 	"Performance":  "2",
@@ -54,7 +54,7 @@ var IssueGroupCategoryNameToId = map[string]string{
 	"Metric_Alert": "8",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/issues/grouptype.py#L31-L39
+// https://github.com/getsentry/sentry/blob/master/src/sentry/issues/grouptype.py#L30-L38
 var IssueGroupCategoryIdToName = map[string]string{
 	"1": "Error",
 	"2": "Performance",
