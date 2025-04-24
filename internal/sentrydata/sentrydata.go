@@ -30,7 +30,7 @@ var LogLevelIdToName = map[string]string{
 	"50": "fatal",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/issues/grouptype.py#L31-L39
+// https://github.com/getsentry/sentry/blob/master/src/sentry/issues/grouptype.py#L30-L66
 var IssueGroupCategories = []string{
 	"Error",
 	"Performance",
@@ -40,33 +40,50 @@ var IssueGroupCategories = []string{
 	"Feedback",
 	"Uptime",
 	"Metric_Alert",
+	"Test_Notification",
+	"Outage",
+	"Performance_Regression",
+	"User_Experience",
+	"Responsiveness",
+	"Performance_Best_Practice",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/issues/grouptype.py#L31-L39
+// https://github.com/getsentry/sentry/blob/master/src/sentry/issues/grouptype.py#L30-L66
 var IssueGroupCategoryNameToId = map[string]string{
-	"Error":        "1",
-	"Performance":  "2",
-	"Profile":      "3",
-	"Cron":         "4",
-	"Replay":       "5",
-	"Feedback":     "6",
-	"Uptime":       "7",
-	"Metric_Alert": "8",
+	"Error":                     "1",
+	"Performance":               "2",
+	"Profile":                   "3",
+	"Cron":                      "4",
+	"Replay":                    "5",
+	"Feedback":                  "6",
+	"Uptime":                    "7",
+	"Metric_Alert":              "8",
+	"Test_Notification":         "9",
+	"Outage":                    "9",
+	"Performance_Regression":    "10",
+	"User_Experience":           "11",
+	"Responsiveness":            "12",
+	"Performance_Best_Practice": "13",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/issues/grouptype.py#L31-L39
+// https://github.com/getsentry/sentry/blob/master/src/sentry/issues/grouptype.py#L30-L66
 var IssueGroupCategoryIdToName = map[string]string{
-	"1": "Error",
-	"2": "Performance",
-	"3": "Profile",
-	"4": "Cron",
-	"5": "Replay",
-	"6": "Feedback",
-	"7": "Uptime",
-	"8": "Metric_Alert",
+	"1":  "Error",
+	"2":  "Performance",
+	"3":  "Profile",
+	"4":  "Cron",
+	"5":  "Replay",
+	"6":  "Feedback",
+	"7":  "Uptime",
+	"8":  "Metric_Alert",
+	"9":  "Outage",
+	"10": "Performance_Regression",
+	"11": "User_Experience",
+	"12": "Responsiveness",
+	"13": "Performance_Best_Practice",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/rules/conditions/event_attribute.py#L41-L68
+// https://github.com/getsentry/sentry/blob/master/src/sentry/rules/conditions/event_attribute.py#L41-L69
 var EventAttributes = []string{
 	"message",
 	"platform",
@@ -94,6 +111,7 @@ var EventAttributes = []string{
 	"app.in_foreground",
 	"os.distribution_name",
 	"os.distribution_version",
+	"symbolicated_in_app",
 }
 
 // https://github.com/getsentry/sentry/blob/master/src/sentry/rules/match.py#L6-L22
