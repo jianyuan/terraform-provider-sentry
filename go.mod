@@ -19,7 +19,7 @@ require (
 	github.com/oapi-codegen/oapi-codegen/v2 v2.4.1
 	github.com/oapi-codegen/runtime v1.1.1
 	github.com/orange-cloudavenue/terraform-plugin-framework-superschema v1.11.0
-	github.com/orange-cloudavenue/terraform-plugin-framework-supertypes v1.1.1
+	github.com/orange-cloudavenue/terraform-plugin-framework-supertypes v1.2.0
 	github.com/peterhellberg/link v1.2.0
 	golang.org/x/sync v0.13.0
 )
