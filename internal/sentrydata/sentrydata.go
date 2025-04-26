@@ -1,6 +1,6 @@
 package sentrydata
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/constants.py#L223-L230
+// https://github.com/getsentry/sentry/blob/master/src/sentry/constants.py#L222-L229
 var LogLevels = []string{
 	"sample",
 	"debug",
@@ -10,7 +10,7 @@ var LogLevels = []string{
 	"fatal",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/constants.py#L223-L230
+// https://github.com/getsentry/sentry/blob/master/src/sentry/constants.py#L222-L229
 var LogLevelNameToId = map[string]string{
 	"sample":  "0",
 	"debug":   "10",
@@ -20,7 +20,7 @@ var LogLevelNameToId = map[string]string{
 	"fatal":   "50",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/constants.py#L223-L230
+// https://github.com/getsentry/sentry/blob/master/src/sentry/constants.py#L222-L229
 var LogLevelIdToName = map[string]string{
 	"0":  "sample",
 	"10": "debug",
@@ -59,11 +59,11 @@ var IssueGroupCategoryNameToId = map[string]string{
 	"Uptime":                    "7",
 	"Metric_Alert":              "8",
 	"Test_Notification":         "9",
-	"Outage":                    "9",
-	"Performance_Regression":    "10",
-	"User_Experience":           "11",
-	"Responsiveness":            "12",
-	"Performance_Best_Practice": "13",
+	"Outage":                    "10",
+	"Performance_Regression":    "11",
+	"User_Experience":           "12",
+	"Responsiveness":            "13",
+	"Performance_Best_Practice": "14",
 }
 
 // https://github.com/getsentry/sentry/blob/master/src/sentry/issues/grouptype.py#L30-L66
@@ -76,11 +76,12 @@ var IssueGroupCategoryIdToName = map[string]string{
 	"6":  "Feedback",
 	"7":  "Uptime",
 	"8":  "Metric_Alert",
-	"9":  "Outage",
-	"10": "Performance_Regression",
-	"11": "User_Experience",
-	"12": "Responsiveness",
-	"13": "Performance_Best_Practice",
+	"9":  "Test_Notification",
+	"10": "Outage",
+	"11": "Performance_Regression",
+	"12": "User_Experience",
+	"13": "Responsiveness",
+	"14": "Performance_Best_Practice",
 }
 
 // https://github.com/getsentry/sentry/blob/master/src/sentry/rules/conditions/event_attribute.py#L41-L69
@@ -181,7 +182,7 @@ var LevelMatchTypes = []string{
 	"LESS_OR_EQUAL",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/models/dashboard_widget.py#L49-L78
+// https://github.com/getsentry/sentry/blob/master/src/sentry/models/dashboard_widget.py#L50-L79
 var DashboardWidgetTypes = []string{
 	"discover",
 	"issue",
@@ -191,7 +192,7 @@ var DashboardWidgetTypes = []string{
 	"spans",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/models/dashboard_widget.py#L128-L145
+// https://github.com/getsentry/sentry/blob/master/src/sentry/models/dashboard_widget.py#L129-L146
 var DashboardWidgetDisplayTypes = []string{
 	"line",
 	"area",
