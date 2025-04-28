@@ -54,7 +54,7 @@ jobs:
           go-version-file: "go.mod"
           cache: true
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v6
       # We need the latest version of Terraform for our documentation generation to use
       - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
         with:
