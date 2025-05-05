@@ -84,7 +84,7 @@ var IssueGroupCategoryIdToName = map[string]string{
 	"14": "Performance_Best_Practice",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/rules/conditions/event_attribute.py#L41-L69
+// https://github.com/getsentry/sentry/blob/master/src/sentry/rules/conditions/event_attribute.py#L41-L72
 var EventAttributes = []string{
 	"message",
 	"platform",
@@ -113,6 +113,9 @@ var EventAttributes = []string{
 	"os.distribution_name",
 	"os.distribution_version",
 	"symbolicated_in_app",
+	"ota_updates.channel",
+	"ota_updates.runtime_version",
+	"ota_updates.update_id",
 }
 
 // https://github.com/getsentry/sentry/blob/master/src/sentry/rules/match.py#L6-L22
