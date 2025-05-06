@@ -30,7 +30,7 @@ var LogLevelIdToName = map[string]string{
 	"50": "fatal",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/issues/grouptype.py#L30-L66
+// https://github.com/getsentry/sentry/blob/master/src/sentry/issues/grouptype.py#L30-L67
 var IssueGroupCategories = []string{
 	"Error",
 	"Performance",
@@ -42,31 +42,33 @@ var IssueGroupCategories = []string{
 	"Metric_Alert",
 	"Test_Notification",
 	"Outage",
-	"Performance_Regression",
-	"User_Experience",
-	"Responsiveness",
-	"Performance_Best_Practice",
+	"Metric",
+	"Db_Query",
+	"Http_Client",
+	"Frontend",
+	"Mobile",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/issues/grouptype.py#L30-L66
+// https://github.com/getsentry/sentry/blob/master/src/sentry/issues/grouptype.py#L30-L67
 var IssueGroupCategoryNameToId = map[string]string{
-	"Error":                     "1",
-	"Performance":               "2",
-	"Profile":                   "3",
-	"Cron":                      "4",
-	"Replay":                    "5",
-	"Feedback":                  "6",
-	"Uptime":                    "7",
-	"Metric_Alert":              "8",
-	"Test_Notification":         "9",
-	"Outage":                    "10",
-	"Performance_Regression":    "11",
-	"User_Experience":           "12",
-	"Responsiveness":            "13",
-	"Performance_Best_Practice": "14",
+	"Error":             "1",
+	"Performance":       "2",
+	"Profile":           "3",
+	"Cron":              "4",
+	"Replay":            "5",
+	"Feedback":          "6",
+	"Uptime":            "7",
+	"Metric_Alert":      "8",
+	"Test_Notification": "9",
+	"Outage":            "10",
+	"Metric":            "11",
+	"Db_Query":          "12",
+	"Http_Client":       "13",
+	"Frontend":          "14",
+	"Mobile":            "15",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/issues/grouptype.py#L30-L66
+// https://github.com/getsentry/sentry/blob/master/src/sentry/issues/grouptype.py#L30-L67
 var IssueGroupCategoryIdToName = map[string]string{
 	"1":  "Error",
 	"2":  "Performance",
@@ -78,10 +80,11 @@ var IssueGroupCategoryIdToName = map[string]string{
 	"8":  "Metric_Alert",
 	"9":  "Test_Notification",
 	"10": "Outage",
-	"11": "Performance_Regression",
-	"12": "User_Experience",
-	"13": "Responsiveness",
-	"14": "Performance_Best_Practice",
+	"11": "Metric",
+	"12": "Db_Query",
+	"13": "Http_Client",
+	"14": "Frontend",
+	"15": "Mobile",
 }
 
 // https://github.com/getsentry/sentry/blob/master/src/sentry/rules/conditions/event_attribute.py#L41-L72
