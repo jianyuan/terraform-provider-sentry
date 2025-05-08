@@ -71,7 +71,7 @@ func (r *ProjectOwnershipResource) Schema(ctx context.Context, req resource.Sche
 				Required:    true,
 			},
 			"auto_assignment": schema.StringAttribute{
-				Description: "The auto-assignment mode. The options are: `none` - No auto-assignment, `all` - Assign all issues, `unhandled` - Assign unhandled issues.",
+				Description: "The auto-assignment mode. The options are: `Auto Assign to Issue Owner`, `Auto Assign to Suspect Commits`, and `Turn off Auto-Assignment`.",
 				Required:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOf(

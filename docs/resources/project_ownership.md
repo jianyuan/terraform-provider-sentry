@@ -17,7 +17,7 @@ Sentry Project Ownership. See the [Sentry documentation](https://docs.sentry.io/
 
 ### Required
 
-- `auto_assignment` (String) The auto-assignment mode. The options are: `none` - No auto-assignment, `all` - Assign all issues, `unhandled` - Assign unhandled issues.
+- `auto_assignment` (String) The auto-assignment mode. The options are: `Auto Assign to Issue Owner`, `Auto Assign to Suspect Commits`, and `Turn off Auto-Assignment`.
 - `codeowners_auto_sync` (Boolean) Whether to automatically sync codeowners.
 - `fallthrough` (Boolean) Whether to fall through to the default ownership rules.
 - `organization` (String) The organization of this resource.
