@@ -926,7 +926,7 @@ Read-Only:
 
 Required:
 
-- `value` (String) Valid values are: `Error`, `Performance`, `Profile`, `Cron`, `Replay`, `Feedback`, `Uptime`, `Metric_Alert`, `Test_Notification`, `Outage`, `Performance_Regression`, `User_Experience`, `Responsiveness`, and `Performance_Best_Practice`.
+- `value` (String) Valid values are: `Error`, `Performance`, `Profile`, `Cron`, `Replay`, `Feedback`, `Uptime`, `Metric_Alert`, `Test_Notification`, `Outage`, `Metric`, `Db_Query`, `Http_Client`, `Frontend`, and `Mobile`.
 
 Read-Only:
 
