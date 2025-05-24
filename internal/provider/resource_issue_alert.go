@@ -20,6 +20,7 @@ import (
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
+	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 )
 
 var _ resource.Resource = &IssueAlertResource{}
@@ -96,6 +97,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 						"first_seen_event": {
 							MarkdownDescription: "A new issue is created.",
 							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[IssueAlertConditionFirstSeenEventModel](ctx),
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
 							},
@@ -103,6 +105,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 						"regression_event": {
 							MarkdownDescription: "The issue changes state from resolved to unresolved.",
 							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[IssueAlertConditionRegressionEventModel](ctx),
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
 							},
@@ -110,6 +113,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 						"reappeared_event": {
 							MarkdownDescription: "The issue changes state from ignored to unresolved.",
 							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[IssueAlertConditionReappearedEventModel](ctx),
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
 							},
@@ -117,6 +121,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 						"new_high_priority_issue": {
 							MarkdownDescription: "Sentry marks a new issue as high priority.",
 							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[IssueAlertConditionNewHighPriorityIssueModel](ctx),
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
 							},
@@ -124,6 +129,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 						"existing_high_priority_issue": {
 							MarkdownDescription: "Sentry marks an existing issue as high priority.",
 							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[IssueAlertConditionExistingHighPriorityIssueModel](ctx),
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
 							},
@@ -131,6 +137,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 						"event_frequency": {
 							MarkdownDescription: "When the `comparison_type` is `count`, the number of events in an issue is more than `value` in `interval`. When the `comparison_type` is `percent`, the number of events in an issue is `value` % higher in `interval` compared to `comparison_interval` ago.",
 							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[IssueAlertConditionEventFrequencyModel](ctx),
 							Attributes: map[string]schema.Attribute{
 								"name":                nameStringAttribute,
 								"comparison_type":     conditionComparisonTypeStringAttribute,
@@ -144,6 +151,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 						"event_unique_user_frequency": {
 							MarkdownDescription: "When the `comparison_type` is `count`, the number of users affected by an issue is more than `value` in `interval`. When the `comparison_type` is `percent`, the number of users affected by an issue is `value` % higher in `interval` compared to `comparison_interval` ago.",
 							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[IssueAlertConditionEventUniqueUserFrequencyModel](ctx),
 							Attributes: map[string]schema.Attribute{
 								"name":                nameStringAttribute,
 								"comparison_type":     conditionComparisonTypeStringAttribute,
@@ -157,6 +165,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 						"event_frequency_percent": {
 							MarkdownDescription: "When the `comparison_type` is `count`, the percent of sessions affected by an issue is more than `value` in `interval`. When the `comparison_type` is `percent`, the percent of sessions affected by an issue is `value` % higher in `interval` compared to `comparison_interval` ago.",
 							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[IssueAlertConditionEventFrequencyPercentModel](ctx),
 							Attributes: map[string]schema.Attribute{
 								"name":                nameStringAttribute,
 								"comparison_type":     conditionComparisonTypeStringAttribute,

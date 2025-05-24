@@ -14,6 +14,7 @@ import (
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
+	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 )
 
 // Conditions
@@ -231,33 +232,33 @@ func (m IssueAlertConditionEventFrequencyPercentModel) ToApi(ctx context.Context
 }
 
 type IssueAlertConditionModel struct {
-	FirstSeenEvent            *IssueAlertConditionFirstSeenEventModel            `tfsdk:"first_seen_event"`
-	RegressionEvent           *IssueAlertConditionRegressionEventModel           `tfsdk:"regression_event"`
-	ReappearedEvent           *IssueAlertConditionReappearedEventModel           `tfsdk:"reappeared_event"`
-	NewHighPriorityIssue      *IssueAlertConditionNewHighPriorityIssueModel      `tfsdk:"new_high_priority_issue"`
-	ExistingHighPriorityIssue *IssueAlertConditionExistingHighPriorityIssueModel `tfsdk:"existing_high_priority_issue"`
-	EventFrequency            *IssueAlertConditionEventFrequencyModel            `tfsdk:"event_frequency"`
-	EventUniqueUserFrequency  *IssueAlertConditionEventUniqueUserFrequencyModel  `tfsdk:"event_unique_user_frequency"`
-	EventFrequencyPercent     *IssueAlertConditionEventFrequencyPercentModel     `tfsdk:"event_frequency_percent"`
+	FirstSeenEvent            supertypes.SingleNestedObjectValueOf[IssueAlertConditionFirstSeenEventModel]            `tfsdk:"first_seen_event"`
+	RegressionEvent           supertypes.SingleNestedObjectValueOf[IssueAlertConditionRegressionEventModel]           `tfsdk:"regression_event"`
+	ReappearedEvent           supertypes.SingleNestedObjectValueOf[IssueAlertConditionReappearedEventModel]           `tfsdk:"reappeared_event"`
+	NewHighPriorityIssue      supertypes.SingleNestedObjectValueOf[IssueAlertConditionNewHighPriorityIssueModel]      `tfsdk:"new_high_priority_issue"`
+	ExistingHighPriorityIssue supertypes.SingleNestedObjectValueOf[IssueAlertConditionExistingHighPriorityIssueModel] `tfsdk:"existing_high_priority_issue"`
+	EventFrequency            supertypes.SingleNestedObjectValueOf[IssueAlertConditionEventFrequencyModel]            `tfsdk:"event_frequency"`
+	EventUniqueUserFrequency  supertypes.SingleNestedObjectValueOf[IssueAlertConditionEventUniqueUserFrequencyModel]  `tfsdk:"event_unique_user_frequency"`
+	EventFrequencyPercent     supertypes.SingleNestedObjectValueOf[IssueAlertConditionEventFrequencyPercentModel]     `tfsdk:"event_frequency_percent"`
 }
 
 func (m IssueAlertConditionModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleCondition, diag.Diagnostics) {
-	if m.FirstSeenEvent != nil {
-		return m.FirstSeenEvent.ToApi(ctx)
-	} else if m.RegressionEvent != nil {
-		return m.RegressionEvent.ToApi(ctx)
-	} else if m.ReappearedEvent != nil {
-		return m.ReappearedEvent.ToApi(ctx)
-	} else if m.NewHighPriorityIssue != nil {
-		return m.NewHighPriorityIssue.ToApi(ctx)
-	} else if m.ExistingHighPriorityIssue != nil {
-		return m.ExistingHighPriorityIssue.ToApi(ctx)
-	} else if m.EventFrequency != nil {
-		return m.EventFrequency.ToApi(ctx)
-	} else if m.EventUniqueUserFrequency != nil {
-		return m.EventUniqueUserFrequency.ToApi(ctx)
-	} else if m.EventFrequencyPercent != nil {
-		return m.EventFrequencyPercent.ToApi(ctx)
+	if !m.FirstSeenEvent.IsNull() {
+		return m.FirstSeenEvent.MustGet(ctx).ToApi(ctx)
+	} else if !m.RegressionEvent.IsNull() {
+		return m.RegressionEvent.MustGet(ctx).ToApi(ctx)
+	} else if !m.ReappearedEvent.IsNull() {
+		return m.ReappearedEvent.MustGet(ctx).ToApi(ctx)
+	} else if !m.NewHighPriorityIssue.IsNull() {
+		return m.NewHighPriorityIssue.MustGet(ctx).ToApi(ctx)
+	} else if !m.ExistingHighPriorityIssue.IsNull() {
+		return m.ExistingHighPriorityIssue.MustGet(ctx).ToApi(ctx)
+	} else if !m.EventFrequency.IsNull() {
+		return m.EventFrequency.MustGet(ctx).ToApi(ctx)
+	} else if !m.EventUniqueUserFrequency.IsNull() {
+		return m.EventUniqueUserFrequency.MustGet(ctx).ToApi(ctx)
+	} else if !m.EventFrequencyPercent.IsNull() {
+		return m.EventFrequencyPercent.MustGet(ctx).ToApi(ctx)
 	} else {
 		var diags diag.Diagnostics
 		diags.AddError("Exactly one condition must be set", "Exactly one condition must be set")
@@ -272,40 +273,72 @@ func (m *IssueAlertConditionModel) Fill(ctx context.Context, condition apiclient
 		return
 	}
 
-	m.FirstSeenEvent = nil
-	m.RegressionEvent = nil
-	m.ReappearedEvent = nil
-	m.NewHighPriorityIssue = nil
-	m.ExistingHighPriorityIssue = nil
-	m.EventFrequency = nil
-	m.EventUniqueUserFrequency = nil
-	m.EventFrequencyPercent = nil
+	m.FirstSeenEvent = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertConditionFirstSeenEventModel](ctx)
+	m.RegressionEvent = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertConditionRegressionEventModel](ctx)
+	m.ReappearedEvent = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertConditionReappearedEventModel](ctx)
+	m.NewHighPriorityIssue = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertConditionNewHighPriorityIssueModel](ctx)
+	m.ExistingHighPriorityIssue = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertConditionExistingHighPriorityIssueModel](ctx)
+	m.EventFrequency = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertConditionEventFrequencyModel](ctx)
+	m.EventUniqueUserFrequency = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertConditionEventUniqueUserFrequencyModel](ctx)
+	m.EventFrequencyPercent = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertConditionEventFrequencyPercentModel](ctx)
 
 	switch conditionValue := conditionValue.(type) {
 	case apiclient.ProjectRuleConditionFirstSeenEvent:
-		m.FirstSeenEvent = &IssueAlertConditionFirstSeenEventModel{}
-		diags.Append(m.FirstSeenEvent.Fill(ctx, conditionValue)...)
+		data := &IssueAlertConditionFirstSeenEventModel{}
+		diags.Append(data.Fill(ctx, conditionValue)...)
+		if diags.HasError() {
+			return
+		}
+		m.FirstSeenEvent = supertypes.NewSingleNestedObjectValueOf(ctx, data)
 	case apiclient.ProjectRuleConditionRegressionEvent:
-		m.RegressionEvent = &IssueAlertConditionRegressionEventModel{}
-		diags.Append(m.RegressionEvent.Fill(ctx, conditionValue)...)
+		data := &IssueAlertConditionRegressionEventModel{}
+		diags.Append(data.Fill(ctx, conditionValue)...)
+		if diags.HasError() {
+			return
+		}
+		m.RegressionEvent = supertypes.NewSingleNestedObjectValueOf(ctx, data)
 	case apiclient.ProjectRuleConditionReappearedEvent:
-		m.ReappearedEvent = &IssueAlertConditionReappearedEventModel{}
-		diags.Append(m.ReappearedEvent.Fill(ctx, conditionValue)...)
+		data := &IssueAlertConditionReappearedEventModel{}
+		diags.Append(data.Fill(ctx, conditionValue)...)
+		if diags.HasError() {
+			return
+		}
+		m.ReappearedEvent = supertypes.NewSingleNestedObjectValueOf(ctx, data)
 	case apiclient.ProjectRuleConditionNewHighPriorityIssue:
-		m.NewHighPriorityIssue = &IssueAlertConditionNewHighPriorityIssueModel{}
-		diags.Append(m.NewHighPriorityIssue.Fill(ctx, conditionValue)...)
+		data := &IssueAlertConditionNewHighPriorityIssueModel{}
+		diags.Append(data.Fill(ctx, conditionValue)...)
+		if diags.HasError() {
+			return
+		}
+		m.NewHighPriorityIssue = supertypes.NewSingleNestedObjectValueOf(ctx, data)
 	case apiclient.ProjectRuleConditionExistingHighPriorityIssue:
-		m.ExistingHighPriorityIssue = &IssueAlertConditionExistingHighPriorityIssueModel{}
-		diags.Append(m.ExistingHighPriorityIssue.Fill(ctx, conditionValue)...)
+		data := &IssueAlertConditionExistingHighPriorityIssueModel{}
+		diags.Append(data.Fill(ctx, conditionValue)...)
+		if diags.HasError() {
+			return
+		}
+		m.ExistingHighPriorityIssue = supertypes.NewSingleNestedObjectValueOf(ctx, data)
 	case apiclient.ProjectRuleConditionEventFrequency:
-		m.EventFrequency = &IssueAlertConditionEventFrequencyModel{}
-		diags.Append(m.EventFrequency.Fill(ctx, conditionValue)...)
+		data := &IssueAlertConditionEventFrequencyModel{}
+		diags.Append(data.Fill(ctx, conditionValue)...)
+		if diags.HasError() {
+			return
+		}
+		m.EventFrequency = supertypes.NewSingleNestedObjectValueOf(ctx, data)
 	case apiclient.ProjectRuleConditionEventUniqueUserFrequency:
-		m.EventUniqueUserFrequency = &IssueAlertConditionEventUniqueUserFrequencyModel{}
-		diags.Append(m.EventUniqueUserFrequency.Fill(ctx, conditionValue)...)
+		data := &IssueAlertConditionEventUniqueUserFrequencyModel{}
+		diags.Append(data.Fill(ctx, conditionValue)...)
+		if diags.HasError() {
+			return
+		}
+		m.EventUniqueUserFrequency = supertypes.NewSingleNestedObjectValueOf(ctx, data)
 	case apiclient.ProjectRuleConditionEventFrequencyPercent:
-		m.EventFrequencyPercent = &IssueAlertConditionEventFrequencyPercentModel{}
-		diags.Append(m.EventFrequencyPercent.Fill(ctx, conditionValue)...)
+		data := &IssueAlertConditionEventFrequencyPercentModel{}
+		diags.Append(data.Fill(ctx, conditionValue)...)
+		if diags.HasError() {
+			return
+		}
+		m.EventFrequencyPercent = supertypes.NewSingleNestedObjectValueOf(ctx, data)
 	default:
 		diags.AddError("Unsupported condition", fmt.Sprintf("Unsupported condition type %T", conditionValue))
 	}
