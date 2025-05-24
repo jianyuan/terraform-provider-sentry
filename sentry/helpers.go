@@ -78,7 +78,7 @@ func expandStringList(configured []interface{}) []string {
 // `false`, `err` => encountered an unexpected error
 func checkClientGet(resp *sentry.Response, err error, d *schema.ResourceData) (bool, error) {
 	if err != nil {
-		if resp != nil && resp.Response.StatusCode == http.StatusNotFound {
+		if resp != nil && resp.StatusCode == http.StatusNotFound {
 			d.SetId("")
 			return false, nil
 		}

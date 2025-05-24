@@ -109,8 +109,7 @@ func resourceSentryOrganizationRepositoryGithubRead(ctx context.Context, d *sche
 	// query does a fuzzy match on name
 	var orgRepos []*sentry.OrganizationRepository
 	params := &sentry.ListOrganizationRepositoriesParams{
-		ListCursorParams: sentry.ListCursorParams{},
-		Query:            id,
+		Query: id,
 	}
 	for {
 		keys, resp, err := client.OrganizationRepositories.List(ctx, org, params)
@@ -123,7 +122,7 @@ func resourceSentryOrganizationRepositoryGithubRead(ctx context.Context, d *sche
 		if resp.Cursor == "" {
 			break
 		}
-		params.ListCursorParams.Cursor = resp.Cursor
+		params.Cursor = resp.Cursor
 	}
 
 	tflog.Debug(ctx, "Reading Sentry Github Organization Repository", map[string]interface{}{

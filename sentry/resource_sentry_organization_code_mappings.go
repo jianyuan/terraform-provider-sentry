@@ -120,8 +120,7 @@ func resourceSentryOrganizationCodeMappingRead(ctx context.Context, d *schema.Re
 	// query does a fuzzy match on name
 	var orgCodeMappings []*sentry.OrganizationCodeMapping
 	params := &sentry.ListOrganizationCodeMappingsParams{
-		ListCursorParams: sentry.ListCursorParams{},
-		IntegrationId:    integrationId,
+		IntegrationId: integrationId,
 	}
 	for {
 		keys, resp, err := client.OrganizationCodeMappings.List(ctx, org, params)
@@ -134,7 +133,7 @@ func resourceSentryOrganizationCodeMappingRead(ctx context.Context, d *schema.Re
 		if resp.Cursor == "" {
 			break
 		}
-		params.ListCursorParams.Cursor = resp.Cursor
+		params.Cursor = resp.Cursor
 	}
 
 	// filter for first exactly matching name
