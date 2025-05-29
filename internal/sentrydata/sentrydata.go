@@ -1,6 +1,6 @@
 package sentrydata
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/constants.py#L222-L229
+// https://github.com/getsentry/sentry/blob/master/src/sentry/constants.py#L237-L244
 var LogLevels = []string{
 	"sample",
 	"debug",
@@ -10,7 +10,7 @@ var LogLevels = []string{
 	"fatal",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/constants.py#L222-L229
+// https://github.com/getsentry/sentry/blob/master/src/sentry/constants.py#L237-L244
 var LogLevelNameToId = map[string]string{
 	"sample":  "0",
 	"debug":   "10",
@@ -20,7 +20,7 @@ var LogLevelNameToId = map[string]string{
 	"fatal":   "50",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/constants.py#L222-L229
+// https://github.com/getsentry/sentry/blob/master/src/sentry/constants.py#L237-L244
 var LogLevelIdToName = map[string]string{
 	"0":  "sample",
 	"10": "debug",
