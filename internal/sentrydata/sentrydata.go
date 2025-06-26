@@ -1,6 +1,6 @@
 package sentrydata
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/constants.py#L222-L229
+// https://github.com/getsentry/sentry/blob/master/src/sentry/constants.py#L238-L245
 var LogLevels = []string{
 	"sample",
 	"debug",
@@ -10,7 +10,7 @@ var LogLevels = []string{
 	"fatal",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/constants.py#L222-L229
+// https://github.com/getsentry/sentry/blob/master/src/sentry/constants.py#L238-L245
 var LogLevelNameToId = map[string]string{
 	"sample":  "0",
 	"debug":   "10",
@@ -20,7 +20,7 @@ var LogLevelNameToId = map[string]string{
 	"fatal":   "50",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/constants.py#L222-L229
+// https://github.com/getsentry/sentry/blob/master/src/sentry/constants.py#L238-L245
 var LogLevelIdToName = map[string]string{
 	"0":  "sample",
 	"10": "debug",
@@ -210,7 +210,7 @@ var DashboardWidgetDisplayTypes = []string{
 	"top_n",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/models/project.py#L62-L167
+// https://github.com/getsentry/sentry/blob/master/src/sentry/models/project.py#L62-L168
 var Platforms = []string{
 	"other",
 	"android",
@@ -258,6 +258,7 @@ var Platforms = []string{
 	"javascript-gatsby",
 	"javascript-nextjs",
 	"javascript-react",
+	"javascript-react-router",
 	"javascript-remix",
 	"javascript-solid",
 	"javascript-solidstart",
