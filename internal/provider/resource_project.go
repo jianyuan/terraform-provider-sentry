@@ -643,7 +643,6 @@ func (r *ProjectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 		return
 	} else if httpResp.StatusCode() == http.StatusNotFound {
-		resp.Diagnostics.Append(diagutils.NewNotFoundError("project"))
 		resp.State.RemoveResource(ctx)
 		return
 	} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
