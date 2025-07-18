@@ -210,7 +210,7 @@ var DashboardWidgetDisplayTypes = []string{
 	"top_n",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/models/project.py#L62-L168
+// https://github.com/getsentry/sentry/blob/master/src/sentry/models/project.py#L62-L171
 var Platforms = []string{
 	"other",
 	"android",
@@ -257,6 +257,7 @@ var Platforms = []string{
 	"javascript-ember",
 	"javascript-gatsby",
 	"javascript-nextjs",
+	"javascript-nuxt",
 	"javascript-react",
 	"javascript-react-router",
 	"javascript-remix",
@@ -265,13 +266,13 @@ var Platforms = []string{
 	"javascript-svelte",
 	"javascript-sveltekit",
 	"javascript-tanstackstart-react",
-	"javascript-nuxt",
 	"javascript-vue",
 	"kotlin",
 	"minidump",
 	"native",
 	"native-qt",
 	"nintendo-switch",
+	"nintendo-switch-2",
 	"node",
 	"node-awslambda",
 	"node-azurefunctions",
@@ -287,6 +288,7 @@ var Platforms = []string{
 	"php",
 	"php-laravel",
 	"php-symfony",
+	"playstation",
 	"powershell",
 	"python",
 	"python-aiohttp",
@@ -318,4 +320,5 @@ var Platforms = []string{
 	"rust",
 	"unity",
 	"unreal",
+	"xbox",
 }
