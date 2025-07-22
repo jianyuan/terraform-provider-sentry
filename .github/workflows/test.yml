@@ -62,7 +62,7 @@ jobs:
       - run: make generate
       - name: git diff
         run: |
-          git diff --compact-summary --exit-code || \
+          git diff --exit-code || \
             (echo; echo "Unexpected difference in directories after code generation. Run 'make generate' command and commit."; exit 1)
 
   # Run acceptance tests in a matrix with Terraform CLI versions
