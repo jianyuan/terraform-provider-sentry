@@ -239,7 +239,9 @@ func (r *TeamMemberResource) Read(ctx context.Context, req resource.ReadRequest,
 
 	effectiveRole, err := r.getEffectiveTeamRole(ctx, data.Organization.ValueString(), data.MemberId.ValueString(), data.Team.ValueString())
 	if err != nil {
-		if strings.Contains(err.Error(), "404 The requested resource does not exist") {
+
+		if strings.Contains(err.Error(), "404 The requested resource does not exist") ||
+			strings.Contains(err.Error(), "unable to read organization member, got status code: 404") {
 			resp.State.RemoveResource(ctx)
 		} else {
 			resp.Diagnostics.Append(diagutils.NewClientError("read", err))
