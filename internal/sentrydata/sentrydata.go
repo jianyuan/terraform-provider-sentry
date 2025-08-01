@@ -210,7 +210,7 @@ var DashboardWidgetDisplayTypes = []string{
 	"top_n",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/models/project.py#L62-L171
+// https://github.com/getsentry/sentry/blob/master/src/sentry/models/project.py#L62-L170
 var Platforms = []string{
 	"other",
 	"android",
@@ -272,7 +272,6 @@ var Platforms = []string{
 	"native",
 	"native-qt",
 	"nintendo-switch",
-	"nintendo-switch-2",
 	"node",
 	"node-awslambda",
 	"node-azurefunctions",
