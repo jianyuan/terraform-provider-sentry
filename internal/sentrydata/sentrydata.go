@@ -1,6 +1,6 @@
 package sentrydata
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/constants.py#L238-L245
+// https://github.com/getsentry/sentry/blob/master/src/sentry/constants.py#L246-L253
 var LogLevels = []string{
 	"sample",
 	"debug",
@@ -10,7 +10,7 @@ var LogLevels = []string{
 	"fatal",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/constants.py#L238-L245
+// https://github.com/getsentry/sentry/blob/master/src/sentry/constants.py#L246-L253
 var LogLevelNameToId = map[string]string{
 	"sample":  "0",
 	"debug":   "10",
@@ -20,7 +20,7 @@ var LogLevelNameToId = map[string]string{
 	"fatal":   "50",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/constants.py#L238-L245
+// https://github.com/getsentry/sentry/blob/master/src/sentry/constants.py#L246-L253
 var LogLevelIdToName = map[string]string{
 	"0":  "sample",
 	"10": "debug",
@@ -210,7 +210,7 @@ var DashboardWidgetDisplayTypes = []string{
 	"top_n",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/models/project.py#L62-L171
+// https://github.com/getsentry/sentry/blob/master/src/sentry/models/project.py#L62-L170
 var Platforms = []string{
 	"other",
 	"android",
@@ -272,7 +272,6 @@ var Platforms = []string{
 	"native",
 	"native-qt",
 	"nintendo-switch",
-	"nintendo-switch-2",
 	"node",
 	"node-awslambda",
 	"node-azurefunctions",
