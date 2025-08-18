@@ -87,11 +87,18 @@ func resourceSentryOrganizationMemberCreate(ctx context.Context, d *schema.Resou
 		"email": params.Email,
 		"org":   org,
 	})
+
 	httpResp, err := apiClient.CreateOrganizationMemberWithResponse(ctx, org, params)
 	if err != nil {
 		return diag.FromErr(err)
-	} else if httpResp.StatusCode() != http.StatusCreated || httpResp.JSON201 == nil {
-		return diag.FromErr(fmt.Errorf("unexpected status code: %d", httpResp.StatusCode()))
+	}
+
+	if httpResp.StatusCode() != http.StatusCreated {
+		return diag.FromErr(fmt.Errorf("failed to create organization member, got status %d: %s", httpResp.StatusCode(), string(httpResp.Body)))
+	}
+
+	if httpResp.JSON201 == nil {
+		return diag.FromErr(fmt.Errorf("failed to create organization member: empty response body"))
 	}
 
 	member := httpResp.JSON201
@@ -115,11 +122,19 @@ func resourceSentryOrganizationMemberRead(ctx context.Context, d *schema.Resourc
 	httpResp, err := apiClient.GetOrganizationMemberWithResponse(ctx, org, memberID)
 	if err != nil {
 		return diag.FromErr(err)
-	} else if httpResp.StatusCode() == http.StatusNotFound {
+	}
+
+	if httpResp.StatusCode() == http.StatusNotFound {
 		d.SetId("")
 		return nil
-	} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
-		return diag.FromErr(fmt.Errorf("unexpected status code: %d", httpResp.StatusCode()))
+	}
+
+	if httpResp.StatusCode() != http.StatusOK {
+		return diag.FromErr(fmt.Errorf("failed to read organization member, got status %d: %s", httpResp.StatusCode(), string(httpResp.Body)))
+	}
+
+	if httpResp.JSON200 == nil {
+		return diag.FromErr(fmt.Errorf("failed to read organization member: empty response body"))
 	}
 
 	member := httpResp.JSON200
@@ -147,8 +162,14 @@ func resourceSentryOrganizationMemberUpdate(ctx context.Context, d *schema.Resou
 	getHttpResp, err := apiClient.GetOrganizationMemberWithResponse(ctx, org, memberID)
 	if err != nil {
 		return diag.FromErr(err)
-	} else if getHttpResp.StatusCode() != http.StatusOK || getHttpResp.JSON200 == nil {
-		return diag.FromErr(fmt.Errorf("unexpected status code: %d", getHttpResp.StatusCode()))
+	}
+
+	if getHttpResp.StatusCode() != http.StatusOK {
+		return diag.FromErr(fmt.Errorf("failed to read organization member for update, got status %d: %s", getHttpResp.StatusCode(), string(getHttpResp.Body)))
+	}
+
+	if getHttpResp.JSON200 == nil {
+		return diag.FromErr(fmt.Errorf("failed to read organization member for update: empty response body"))
 	}
 	orgMember := getHttpResp.JSON200
 
@@ -174,8 +195,14 @@ func resourceSentryOrganizationMemberUpdate(ctx context.Context, d *schema.Resou
 	httpResp, err := apiClient.UpdateOrganizationMemberWithResponse(ctx, org, memberID, params)
 	if err != nil {
 		return diag.FromErr(err)
-	} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
-		return diag.FromErr(fmt.Errorf("unexpected status code: %d", httpResp.StatusCode()))
+	}
+
+	if httpResp.StatusCode() != http.StatusOK {
+		return diag.FromErr(fmt.Errorf("failed to update organization member, got status %d: %s", httpResp.StatusCode(), string(httpResp.Body)))
+	}
+
+	if httpResp.JSON200 == nil {
+		return diag.FromErr(fmt.Errorf("failed to update organization member: empty response body"))
 	}
 
 	member := httpResp.JSON200
@@ -199,8 +226,10 @@ func resourceSentryOrganizationMemberDelete(ctx context.Context, d *schema.Resou
 	httpResp, err := apiClient.DeleteOrganizationMemberWithResponse(ctx, org, memberID)
 	if err != nil {
 		return diag.FromErr(err)
-	} else if httpResp.StatusCode() != http.StatusNoContent {
-		return diag.FromErr(fmt.Errorf("unexpected status code: %d", httpResp.StatusCode()))
+	}
+
+	if httpResp.StatusCode() != http.StatusNoContent {
+		return diag.FromErr(fmt.Errorf("failed to delete organization member, got status %d: %s", httpResp.StatusCode(), string(httpResp.Body)))
 	}
 
 	return nil
