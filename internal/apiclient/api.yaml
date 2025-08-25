@@ -398,6 +398,10 @@ paths:
                   type: string
                 verifySSL:
                   type: boolean
+                highlightTags:
+                  type: array
+                  items:
+                    type: string
       responses:
         "200":
           description: OK
@@ -1269,6 +1273,10 @@ components:
           nullable: true
         verifySSL:
           type: boolean
+        highlightTags:
+          type: array
+          items:
+            type: string
     ProjectKey:
       type: object
       required:
