@@ -23,6 +23,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/jianyuan/go-utils/sliceutils"
+
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
@@ -147,6 +148,7 @@ type ProjectResourceModel struct {
 	FingerprintingRules  sentrytypes.TrimmedString `tfsdk:"fingerprinting_rules"`
 	GroupingEnhancements sentrytypes.TrimmedString `tfsdk:"grouping_enhancements"`
 	ClientSecurity       types.Object              `tfsdk:"client_security"`
+	HighlightTags        types.Set                 `tfsdk:"highlight_tags"`
 }
 
 func (m *ProjectResourceModel) Fill(ctx context.Context, project apiclient.Project) (diags diag.Diagnostics) {
@@ -183,6 +185,14 @@ func (m *ProjectResourceModel) Fill(ctx context.Context, project apiclient.Proje
 	var clientSecurity ProjectClientSecurityResourceModel
 	diags.Append(clientSecurity.Fill(ctx, project)...)
 	m.ClientSecurity = tfutils.MergeDiagnostics(types.ObjectValueFrom(ctx, clientSecurity.AttributeTypes(), clientSecurity))(&diags)
+
+	if project.HighlightTags != nil {
+		m.HighlightTags = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
+			return types.StringValue(v)
+		}, *project.HighlightTags))
+	} else {
+		m.HighlightTags = types.SetNull(types.StringType)
+	}
 
 	return
 }
@@ -405,6 +415,15 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 				},
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"highlight_tags": schema.SetAttribute{
+				MarkdownDescription: "A list of strings with tag keys to highlight on this project's issues. E.g. ['release', 'environment']",
+				ElementType:         types.StringType,
+				Optional:            true,
+				Computed:            true,
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.UseStateForUnknown(),
 				},
 			},
 		},
@@ -772,6 +791,15 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 		if !clientSecurityPlan.VerifyTlsSsl.Equal(clientSecurityState.VerifyTlsSsl) {
 			updateBody.VerifySSL = clientSecurityPlan.VerifyTlsSsl.ValueBoolPointer()
 		}
+	}
+
+	if !plan.HighlightTags.Equal(state.HighlightTags) {
+		var highlightTags []string
+		resp.Diagnostics.Append(plan.HighlightTags.ElementsAs(ctx, &highlightTags, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		updateBody.HighlightTags = &highlightTags
 	}
 
 	httpRespUpdate, err := r.apiClient.UpdateOrganizationProjectWithResponse(
