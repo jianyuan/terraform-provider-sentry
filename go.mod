@@ -6,7 +6,7 @@ require (
 	github.com/google/go-cmp v0.7.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/go-retryablehttp v0.7.8
-	github.com/hashicorp/terraform-plugin-docs v0.21.0
+	github.com/hashicorp/terraform-plugin-docs v0.22.0
 	github.com/hashicorp/terraform-plugin-framework v1.15.0
 	github.com/hashicorp/terraform-plugin-framework-validators v0.18.0
 	github.com/hashicorp/terraform-plugin-go v0.28.0
