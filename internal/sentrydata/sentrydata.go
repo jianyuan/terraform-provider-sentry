@@ -210,7 +210,7 @@ var DashboardWidgetDisplayTypes = []string{
 	"top_n",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/models/project.py#L61-L169
+// https://github.com/getsentry/sentry/blob/master/src/sentry/models/project.py#L61-L170
 var Platforms = []string{
 	"other",
 	"android",
@@ -282,6 +282,7 @@ var Platforms = []string{
 	"node-fastify",
 	"node-gcpfunctions",
 	"node-hapi",
+	"node-hono",
 	"node-koa",
 	"node-nestjs",
 	"php",
