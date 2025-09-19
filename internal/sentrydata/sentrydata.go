@@ -210,7 +210,7 @@ var DashboardWidgetDisplayTypes = []string{
 	"top_n",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/models/project.py#L61-L170
+// https://github.com/getsentry/sentry/blob/master/src/sentry/models/project.py#L63-L172
 var Platforms = []string{
 	"other",
 	"android",
