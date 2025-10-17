@@ -108,3 +108,5 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/jianyuan/go-sentry/v2 => github.com/loveholidays/go-sentry/v2 v2.8.5
