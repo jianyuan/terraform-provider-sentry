@@ -8,6 +8,8 @@ from typing import Any, Generic, NamedTuple, OrderedDict, TypeGuard, TypeVar
 import httpx
 import jinja2
 
+REPO = "getsentry/sentry"
+BRANCH = "master"
 TEMPLATE = """package sentrydata
 
 {% for key, value in result.items() %}
@@ -46,33 +48,20 @@ def get_jinja2_env() -> jinja2.Environment:
 
 def get_text(path: str) -> str:
     r = httpx.get(
-        f"https://raw.githubusercontent.com/getsentry/sentry/refs/heads/master/{path}"
+        f"https://raw.githubusercontent.com/{REPO}/refs/heads/{BRANCH}/{path}"
     )
     r.raise_for_status()
     return r.text
 
 
-class GitHubUrl(str):
-    def for_stmt(self, stmt: ast.stmt) -> GitHubUrl:
-        return self.lineno(stmt.lineno).end_lineno(stmt.end_lineno)
-
-    def lineno(self, lineno: int) -> GitHubUrl:
-        return GitHubUrl(f"{self}#L{lineno}")
-
-    def end_lineno(self, lineno: int | None) -> GitHubUrl:
-        if lineno is None:
-            return self
-        return GitHubUrl(f"{self}-L{lineno}")
-
-
 class FileData(NamedTuple):
-    github_url: GitHubUrl
+    github_url: str
     tree: ast.Module
 
 
 def get_file_data(path: str) -> FileData:
     return FileData(
-        github_url=GitHubUrl(f"https://github.com/getsentry/sentry/blob/master/{path}"),
+        github_url=f"https://github.com/{REPO}/blob/{BRANCH}/{path}",
         tree=ast.parse(get_text(path)),
     )
 
@@ -97,15 +86,15 @@ def parse_constants() -> dict[str, ResultData[Any]]:
                 value=ast.Dict(keys=keys, values=values),
             ):
                 out["LogLevels"] = ResultData(
-                    github_url=data.github_url.for_stmt(node),
+                    github_url=data.github_url,
                     result=[],
                 )
                 out["LogLevelNameToId"] = ResultData(
-                    github_url=data.github_url.for_stmt(node),
+                    github_url=data.github_url,
                     result=OrderedDict(),
                 )
                 out["LogLevelIdToName"] = ResultData(
-                    github_url=data.github_url.for_stmt(node),
+                    github_url=data.github_url,
                     result=OrderedDict(),
                 )
                 for key, value in zip(keys, values):
@@ -127,15 +116,15 @@ def parse_issues_grouptype() -> dict[str, ResultData[Any]]:
         match node:
             case ast.ClassDef(name="GroupCategory", body=body):
                 out["IssueGroupCategories"] = ResultData(
-                    github_url=data.github_url.for_stmt(node),
+                    github_url=data.github_url,
                     result=[],
                 )
                 out["IssueGroupCategoryNameToId"] = ResultData(
-                    github_url=data.github_url.for_stmt(node),
+                    github_url=data.github_url,
                     result=OrderedDict(),
                 )
                 out["IssueGroupCategoryIdToName"] = ResultData(
-                    github_url=data.github_url.for_stmt(node),
+                    github_url=data.github_url,
                     result=OrderedDict(),
                 )
                 for node in body:
@@ -167,7 +156,7 @@ def parse_rules_conditions_event_attribute() -> dict[str, ResultData[Any]]:
                 value=ast.Dict(keys=keys),
             ):
                 out["EventAttributes"] = ResultData(
-                    github_url=data.github_url.for_stmt(node),
+                    github_url=data.github_url,
                     result=[],
                 )
                 for key in keys:
@@ -185,15 +174,15 @@ def parse_rules_match() -> dict[str, ResultData[Any]]:
         match node:
             case ast.ClassDef(name="MatchType", body=body):
                 out["MatchTypes"] = ResultData(
-                    github_url=data.github_url.for_stmt(node),
+                    github_url=data.github_url,
                     result=[],
                 )
                 out["MatchTypeNameToId"] = ResultData(
-                    github_url=data.github_url.for_stmt(node),
+                    github_url=data.github_url,
                     result=OrderedDict(),
                 )
                 out["MatchTypeIdToName"] = ResultData(
-                    github_url=data.github_url.for_stmt(node),
+                    github_url=data.github_url,
                     result=OrderedDict(),
                 )
                 for node in body:
@@ -214,7 +203,7 @@ def parse_rules_match() -> dict[str, ResultData[Any]]:
                 value=ast.Dict(keys=keys),
             ):
                 out["LevelMatchTypes"] = ResultData(
-                    github_url=data.github_url.for_stmt(node),
+                    github_url=data.github_url,
                     result=[],
                 )
                 for key in keys:
@@ -254,7 +243,7 @@ def parse_models_dashboard_widget() -> dict[str, ResultData[Any]]:
                 types = extract_types(node)
                 if types:
                     out[name] = ResultData(
-                        github_url=data.github_url.for_stmt(node),
+                        github_url=data.github_url,
                         result=types,
                     )
             case _:
@@ -272,7 +261,7 @@ def parse_models_project() -> dict[str, ResultData[Any]]:
                 value=ast.List(elts=elts),
             ):
                 out["Platforms"] = ResultData(
-                    github_url=data.github_url.for_stmt(node),
+                    github_url=data.github_url,
                     result=["other"],
                 )
                 for elt in elts:
