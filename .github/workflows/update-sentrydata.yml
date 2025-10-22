@@ -19,7 +19,7 @@ jobs:
           go-version-file: "go.mod"
           cache: true
       - name: Install uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_wrapper: false
@@ -30,7 +30,6 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           branch: update-sentry-data
           commit-message: Update Sentry data
           title: Update Sentry data
