@@ -1,6 +1,6 @@
 package sentrydata
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/constants.py#L246-L253
+// https://github.com/getsentry/sentry/blob/master/src/sentry/constants.py
 var LogLevels = []string{
 	"sample",
 	"debug",
@@ -10,7 +10,7 @@ var LogLevels = []string{
 	"fatal",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/constants.py#L246-L253
+// https://github.com/getsentry/sentry/blob/master/src/sentry/constants.py
 var LogLevelNameToId = map[string]string{
 	"sample":  "0",
 	"debug":   "10",
@@ -20,7 +20,7 @@ var LogLevelNameToId = map[string]string{
 	"fatal":   "50",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/constants.py#L246-L253
+// https://github.com/getsentry/sentry/blob/master/src/sentry/constants.py
 var LogLevelIdToName = map[string]string{
 	"0":  "sample",
 	"10": "debug",
@@ -30,7 +30,7 @@ var LogLevelIdToName = map[string]string{
 	"50": "fatal",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/issues/grouptype.py#L30-L67
+// https://github.com/getsentry/sentry/blob/master/src/sentry/issues/grouptype.py
 var IssueGroupCategories = []string{
 	"Error",
 	"Performance",
@@ -49,7 +49,7 @@ var IssueGroupCategories = []string{
 	"Mobile",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/issues/grouptype.py#L30-L67
+// https://github.com/getsentry/sentry/blob/master/src/sentry/issues/grouptype.py
 var IssueGroupCategoryNameToId = map[string]string{
 	"Error":             "1",
 	"Performance":       "2",
@@ -68,7 +68,7 @@ var IssueGroupCategoryNameToId = map[string]string{
 	"Mobile":            "15",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/issues/grouptype.py#L30-L67
+// https://github.com/getsentry/sentry/blob/master/src/sentry/issues/grouptype.py
 var IssueGroupCategoryIdToName = map[string]string{
 	"1":  "Error",
 	"2":  "Performance",
@@ -87,7 +87,7 @@ var IssueGroupCategoryIdToName = map[string]string{
 	"15": "Mobile",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/rules/conditions/event_attribute.py#L41-L72
+// https://github.com/getsentry/sentry/blob/master/src/sentry/rules/conditions/event_attribute.py
 var EventAttributes = []string{
 	"message",
 	"platform",
@@ -121,7 +121,7 @@ var EventAttributes = []string{
 	"ota_updates.update_id",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/rules/match.py#L6-L22
+// https://github.com/getsentry/sentry/blob/master/src/sentry/rules/match.py
 var MatchTypes = []string{
 	"CONTAINS",
 	"ENDS_WITH",
@@ -141,7 +141,7 @@ var MatchTypes = []string{
 	"STARTS_WITH",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/rules/match.py#L6-L22
+// https://github.com/getsentry/sentry/blob/master/src/sentry/rules/match.py
 var MatchTypeNameToId = map[string]string{
 	"CONTAINS":         "co",
 	"ENDS_WITH":        "ew",
@@ -161,7 +161,7 @@ var MatchTypeNameToId = map[string]string{
 	"STARTS_WITH":      "sw",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/rules/match.py#L6-L22
+// https://github.com/getsentry/sentry/blob/master/src/sentry/rules/match.py
 var MatchTypeIdToName = map[string]string{
 	"co":  "CONTAINS",
 	"ew":  "ENDS_WITH",
@@ -181,14 +181,14 @@ var MatchTypeIdToName = map[string]string{
 	"sw":  "STARTS_WITH",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/rules/match.py#L25-L29
+// https://github.com/getsentry/sentry/blob/master/src/sentry/rules/match.py
 var LevelMatchTypes = []string{
 	"EQUAL",
 	"GREATER_OR_EQUAL",
 	"LESS_OR_EQUAL",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/models/dashboard_widget.py#L49-L83
+// https://github.com/getsentry/sentry/blob/master/src/sentry/models/dashboard_widget.py
 var DashboardWidgetTypes = []string{
 	"discover",
 	"issue",
@@ -199,7 +199,7 @@ var DashboardWidgetTypes = []string{
 	"logs",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/models/dashboard_widget.py#L133-L150
+// https://github.com/getsentry/sentry/blob/master/src/sentry/models/dashboard_widget.py
 var DashboardWidgetDisplayTypes = []string{
 	"line",
 	"area",
@@ -210,7 +210,7 @@ var DashboardWidgetDisplayTypes = []string{
 	"top_n",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/models/project.py#L61-L170
+// https://github.com/getsentry/sentry/blob/master/src/sentry/models/project.py
 var Platforms = []string{
 	"other",
 	"android",

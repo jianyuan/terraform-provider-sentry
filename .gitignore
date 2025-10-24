@@ -40,3 +40,6 @@ website/vendor
 
 # virtualenv
 .venv
+
+.env
+.envrc
