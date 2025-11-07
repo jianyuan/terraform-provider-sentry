@@ -197,6 +197,7 @@ var DashboardWidgetTypes = []string{
 	"transaction-like",
 	"spans",
 	"logs",
+	"tracemetrics",
 }
 
 // https://github.com/getsentry/sentry/blob/master/src/sentry/models/dashboard_widget.py
