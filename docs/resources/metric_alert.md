@@ -130,6 +130,8 @@ Read-Only:
 
 Import is supported using the following syntax:
 
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
 ```shell
 # import using the organization, project slugs and rule id from the URL:
 # https://sentry.io/organizations/[org-slug]/projects/[project-slug]/

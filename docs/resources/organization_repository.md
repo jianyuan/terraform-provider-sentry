@@ -60,6 +60,8 @@ resource "sentry_organization_repository" "vsts" {
 
 Import is supported using the following syntax:
 
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
 ```shell
 terraform import sentry_organization_repository.this org-slug/integration-type/integration-id/internal-id
 ```
