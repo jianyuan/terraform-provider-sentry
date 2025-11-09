@@ -46,7 +46,7 @@ func TestAccIssueAlertDataSource(t *testing.T) {
 func testAccIssueAlertDataSourceConfig(teamName string, projectName string, alertName string) string {
 	return testAccOrganizationDataSourceConfig + fmt.Sprintf(`
 resource "sentry_team" "test" {
-	organization = data.sentry_organization.test.id
+	organization = data.sentry_organization.test.slug
 	name         = "%[1]s"
 	slug         = "%[1]s"
 }

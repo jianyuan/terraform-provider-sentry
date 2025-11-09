@@ -22,5 +22,45 @@
 				}
 			]
 		}
-	}
+	},
+	"resources": [],
+	"datasources": [
+		{
+			"name": "organization",
+			"schema": {
+				"markdown_description": "Sentry Organization data source.",
+				"attributes": [
+					{
+						"name": "slug",
+						"string": {
+							"description": "The unique URL slug for the organization.",
+							"computed_optional_required": "required"
+						}
+					},
+					{
+						"name": "internal_id",
+						"string": {
+							"description": "The internal ID for this organization.",
+							"computed_optional_required": "computed"
+						}
+					},
+					{
+						"name": "name",
+						"string": {
+							"description": "The human readable name for this organization.",
+							"computed_optional_required": "computed"
+						}
+					},
+					{
+						"name": "id",
+						"string": {
+							"description": "The unique URL slug for this organization. **Deprecated** Use `slug` instead.",
+							"deprecation_message": "Use `slug` instead.",
+							"computed_optional_required": "computed"
+						}
+					}
+				]
+			}
+		}
+	]
 }

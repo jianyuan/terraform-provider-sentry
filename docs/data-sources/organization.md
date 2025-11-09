@@ -24,10 +24,10 @@ data "sentry_organization" "org" {
 
 ### Required
 
-- `slug` (String) The organization the resource belongs to.
+- `slug` (String) The unique URL slug for the organization.
 
 ### Read-Only
 
-- `id` (String) The unique URL slug for this organization.
+- `id` (String, Deprecated) The unique URL slug for this organization. **Deprecated** Use `slug` instead.
 - `internal_id` (String) The internal ID for this organization.
 - `name` (String) The human readable name for this organization.

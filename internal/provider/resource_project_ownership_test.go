@@ -61,7 +61,7 @@ func TestAccProjectOwnershipResource_IllegalAutoAssignment(t *testing.T) {
 func testAccProjectOwnershipConfig(teamName string, projectName string, fallThrough bool, codeownersAutoSync bool, autoAssignment string, raw string) string {
 	return testAccOrganizationDataSourceConfig + fmt.Sprintf(`
 resource "sentry_team" "test" {
-	organization = data.sentry_organization.test.id
+	organization = data.sentry_organization.test.slug
 	name         = "%[1]s"
 	slug         = "%[1]s"
 }

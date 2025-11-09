@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
-	"github.com/jianyuan/terraform-provider-sentry/internal/provider/provider_sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/provider/gen"
 	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
 )
@@ -32,11 +32,11 @@ func (p *SentryProvider) Metadata(ctx context.Context, req provider.MetadataRequ
 }
 
 func (p *SentryProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
-	resp.Schema = provider_sentry.SentryProviderSchema(ctx)
+	resp.Schema = gen.SentryProviderSchema(ctx)
 }
 
 func (p *SentryProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
-	var data provider_sentry.SentryModel
+	var data gen.SentryModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {

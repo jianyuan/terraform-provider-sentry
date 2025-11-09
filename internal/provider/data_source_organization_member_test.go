@@ -33,13 +33,13 @@ func TestAccOrganizationMemberDataSource(t *testing.T) {
 func testAccOrganizationMemberConfig(email string) string {
 	return testAccOrganizationDataSourceConfig + fmt.Sprintf(`
 resource "sentry_organization_member" "test" {
-	organization = data.sentry_organization.test.id
+	organization = data.sentry_organization.test.slug
 	email        = "%[1]s"
 	role         = "member"
 }
 
 data "sentry_organization_member" "test" {
-	organization = data.sentry_organization.test.id
+	organization = data.sentry_organization.test.slug
 	email        = sentry_organization_member.test.email
 }
 `, email)

@@ -24,7 +24,7 @@ output "organization" {
 #
 
 resource "sentry_team" "main" {
-  organization = data.sentry_organization.main.id
+  organization = data.sentry_organization.main.slug
   name         = "My team"
 }
 
