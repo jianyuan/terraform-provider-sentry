@@ -53,7 +53,7 @@ func (d *OrganizationDataSource) Read(ctx context.Context, req datasource.ReadRe
 		return
 	}
 
-	resp.Diagnostics.Append(fillDataSourceOrganizationModel(ctx, &data, *httpResp.JSON200)...)
+	resp.Diagnostics.Append(fillDataSourceOrganizationModel(ctx, &data, *httpResp)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -61,10 +61,10 @@ func (d *OrganizationDataSource) Read(ctx context.Context, req datasource.ReadRe
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func fillDataSourceOrganizationModel(ctx context.Context, m *gen.OrganizationModel, org apiclient.Organization) (diags diag.Diagnostics) {
-	m.Slug = types.StringValue(org.Slug)
-	m.Name = types.StringValue(org.Name)
-	m.InternalId = types.StringValue(org.Id)
-	m.Id = types.StringValue(org.Slug) // Deprecated
+func fillDataSourceOrganizationModel(ctx context.Context, m *gen.OrganizationModel, resp apiclient.GetOrganizationResponse) (diags diag.Diagnostics) {
+	m.Slug = types.StringValue(resp.JSON200.Slug)
+	m.Name = types.StringValue(resp.JSON200.Name)
+	m.InternalId = types.StringValue(resp.JSON200.Id)
+	m.Id = types.StringValue(resp.JSON200.Slug) // Deprecated
 	return
 }
