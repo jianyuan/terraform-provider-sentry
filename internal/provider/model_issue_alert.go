@@ -1440,16 +1440,18 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 			diags.AddError("Invalid conditions", err.Error())
 			return
 		}
-	} else if m.ConditionsV2 != nil {
-		m.ConditionsV2 = ptr.Ptr(sliceutils.Map(func(condition apiclient.ProjectRuleCondition) IssueAlertConditionModel {
+	} else {
+		conditionsModels := sliceutils.Map(func(condition apiclient.ProjectRuleCondition) IssueAlertConditionModel {
 			var conditionModel IssueAlertConditionModel
 			diags.Append(conditionModel.Fill(ctx, condition)...)
 			return conditionModel
-		}, alert.Conditions))
+		}, alert.Conditions)
 
 		if diags.HasError() {
 			return
 		}
+
+		m.ConditionsV2 = ptr.Ptr(conditionsModels)
 	}
 
 	if !m.Filters.IsNull() {
@@ -1458,16 +1460,18 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 		} else {
 			diags.AddError("Invalid filters", err.Error())
 		}
-	} else if m.FiltersV2 != nil {
-		m.FiltersV2 = ptr.Ptr(sliceutils.Map(func(filter apiclient.ProjectRuleFilter) IssueAlertFilterModel {
+	} else {
+		filterModels := sliceutils.Map(func(filter apiclient.ProjectRuleFilter) IssueAlertFilterModel {
 			var filterModel IssueAlertFilterModel
 			diags.Append(filterModel.Fill(ctx, filter)...)
 			return filterModel
-		}, alert.Filters))
+		}, alert.Filters)
 
 		if diags.HasError() {
 			return
 		}
+
+		m.FiltersV2 = ptr.Ptr(filterModels)
 	}
 
 	if !m.Actions.IsNull() {
@@ -1476,16 +1480,18 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 		} else {
 			diags.AddError("Invalid actions", err.Error())
 		}
-	} else if m.ActionsV2 != nil {
-		m.ActionsV2 = ptr.Ptr(sliceutils.Map(func(action apiclient.ProjectRuleAction) IssueAlertActionModel {
+	} else {
+		actionModels := sliceutils.Map(func(action apiclient.ProjectRuleAction) IssueAlertActionModel {
 			var actionModel IssueAlertActionModel
 			diags.Append(actionModel.Fill(ctx, action)...)
 			return actionModel
-		}, alert.Actions))
+		}, alert.Actions)
 
 		if diags.HasError() {
 			return
 		}
+
+		m.ActionsV2 = ptr.Ptr(actionModels)
 	}
 
 	return
