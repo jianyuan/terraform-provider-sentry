@@ -61,7 +61,7 @@ func TestAccOrganizationIntegrationDataSource_UpgradeFromVersion(t *testing.T) {
 
 var testAccOrganizationIntegrationDataSourceConfig = testAccOrganizationDataSourceConfig + `
 data "sentry_organization_integration" "test" {
-	organization = data.sentry_organization.test.id
+	organization = data.sentry_organization.test.slug
 	provider_key = "github"
 	name         = "jianyuan"
 }

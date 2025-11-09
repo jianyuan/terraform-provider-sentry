@@ -1,5 +1,5 @@
 resource "sentry_dashboard" "main" {
-  organization = data.sentry_organization.main.id
+  organization = data.sentry_organization.main.slug
   title        = "Test dashboard"
 
   widget {

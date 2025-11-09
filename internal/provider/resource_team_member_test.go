@@ -62,25 +62,25 @@ func TestAccTeamMemberResource(t *testing.T) {
 func testAccTeamMemberConfig(teamName, member1Email, member2Email, memberResourceName, teamRole string) string {
 	return testAccOrganizationDataSourceConfig + fmt.Sprintf(`
 resource "sentry_team" "test" {
-	organization = data.sentry_organization.test.id
+	organization = data.sentry_organization.test.slug
 	name         = "%[1]s"
 	slug         = "%[1]s"
 }
 
 resource "sentry_organization_member" "test_1" {
-	organization = data.sentry_organization.test.id
+	organization = data.sentry_organization.test.slug
 	email        = "%[2]s"
 	role         = "member"
 }
 
 resource "sentry_organization_member" "test_2" {
-	organization = data.sentry_organization.test.id
+	organization = data.sentry_organization.test.slug
 	email        = "%[3]s"
 	role         = "member"
 }
 
 resource "sentry_team_member" "test" {
-	organization = data.sentry_organization.test.id
+	organization = data.sentry_organization.test.slug
 	team         = sentry_team.test.id
 	member_id    = %[4]s.internal_id
 	role         = "%[5]s"
@@ -144,19 +144,19 @@ func TestAccTeamMemberResource_minimumPriority(t *testing.T) {
 func testAccTeamMemberConfig_minimumPriority(teamName, memberEmail, memberRole, teamRole string) string {
 	return testAccOrganizationDataSourceConfig + fmt.Sprintf(`
 resource "sentry_team" "test" {
-	organization = data.sentry_organization.test.id
+	organization = data.sentry_organization.test.slug
 	name         = "%[1]s"
 	slug         = "%[1]s"
 }
 
 resource "sentry_organization_member" "test" {
-	organization = data.sentry_organization.test.id
+	organization = data.sentry_organization.test.slug
 	email        = "%[2]s"
 	role         = "%[3]s"
 }
 
 resource "sentry_team_member" "test" {
-	organization = data.sentry_organization.test.id
+	organization = data.sentry_organization.test.slug
 	team         = sentry_team.test.id
 	member_id    = sentry_organization_member.test.internal_id
 	role         = "%[4]s"

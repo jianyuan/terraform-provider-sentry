@@ -808,14 +808,14 @@ func testAccProjectResourceConfig(data testAccProjectResourceConfigData) string 
 var testAccProjectResourceConfig_teamsTemplate = template.Must(template.New("config").Parse(`
 {{ range $i, $teamName := .AllTeamNames }}
 resource "sentry_team" "team_{{ $i }}" {
-	organization = data.sentry_organization.test.id
+	organization = data.sentry_organization.test.slug
 	name         = "{{ $teamName }}"
 	slug         = "{{ $teamName }}"
 }
 {{ end }}
 
 resource "sentry_project" "test" {
-	organization = data.sentry_organization.test.id
+	organization = data.sentry_organization.test.slug
 	teams        = [
 		{{ range $i, $TeamId := .TeamIds }}
 		sentry_team.team_{{ $TeamId }}.slug,

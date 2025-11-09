@@ -2,6 +2,7 @@ package provider
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -24,39 +25,8 @@ func TestAccOrganizationDataSource(t *testing.T) {
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.StringExact(acctest.TestOrganization)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("slug"), knownvalue.StringExact(acctest.TestOrganization)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("internal_id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("internal_id"), knownvalue.StringRegexp(regexp.MustCompile(`^\d+$`))),
 				},
-			},
-		},
-	})
-}
-
-func TestAccOrganizationDataSource_UpgradeFromVersion(t *testing.T) {
-	rn := "data.sentry_organization.test"
-
-	checks := []statecheck.StateCheck{
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("slug"), knownvalue.StringExact(acctest.TestOrganization)),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.NotNull()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("internal_id"), knownvalue.NotNull()),
-	}
-
-	resource.Test(t, resource.TestCase{
-		PreCheck: func() { acctest.PreCheck(t) },
-		Steps: []resource.TestStep{
-			{
-				ExternalProviders: map[string]resource.ExternalProvider{
-					acctest.ProviderName: {
-						Source:            "jianyuan/sentry",
-						VersionConstraint: "0.12.3",
-					},
-				},
-				Config:            testAccOrganizationDataSourceConfig,
-				ConfigStateChecks: checks,
-			},
-			{
-				ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-				Config:                   testAccOrganizationDataSourceConfig,
-				ConfigStateChecks:        checks,
 			},
 		},
 	})

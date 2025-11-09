@@ -48,7 +48,7 @@ func TestAccProjectSpikeProtectionResource(t *testing.T) {
 func testAccProjectSpikeProtectionResourceConfig(teamName, projectName string, enabled bool) string {
 	return testAccOrganizationDataSourceConfig + fmt.Sprintf(`
 resource "sentry_team" "test" {
-	organization = data.sentry_organization.test.id
+	organization = data.sentry_organization.test.slug
 	name         = "%[1]s"
 	slug         = "%[1]s"
 }

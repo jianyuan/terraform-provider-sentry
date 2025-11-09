@@ -41,13 +41,13 @@ func TestAccAllOrganizationMembersDataSource(t *testing.T) {
 func testAccAllOrganizationMembersConfig(email string, role string) string {
 	return testAccOrganizationDataSourceConfig + fmt.Sprintf(`
 resource "sentry_organization_member" "test" {
-	organization = data.sentry_organization.test.id
+	organization = data.sentry_organization.test.slug
 	email        = "%[1]s"
 	role         = "%[2]s"
 }
 
 data "sentry_all_organization_members" "test" {
-	organization = data.sentry_organization.test.id
+	organization = data.sentry_organization.test.slug
 
 	depends_on = [sentry_organization_member.test]
 }
