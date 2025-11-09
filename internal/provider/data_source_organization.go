@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
-	"github.com/jianyuan/terraform-provider-sentry/internal/provider/datasource_organization"
+	"github.com/jianyuan/terraform-provider-sentry/internal/provider/gen"
 )
 
 var _ datasource.DataSource = &OrganizationDataSource{}
@@ -28,11 +28,11 @@ func (d *OrganizationDataSource) Metadata(ctx context.Context, req datasource.Me
 }
 
 func (d *OrganizationDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema = datasource_organization.OrganizationDataSourceSchema(ctx)
+	resp.Schema = gen.OrganizationDataSourceSchema(ctx)
 }
 
 func (d *OrganizationDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data datasource_organization.OrganizationModel
+	var data gen.OrganizationModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -61,7 +61,7 @@ func (d *OrganizationDataSource) Read(ctx context.Context, req datasource.ReadRe
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func fillDataSourceOrganizationModel(ctx context.Context, m *datasource_organization.OrganizationModel, org apiclient.Organization) (diags diag.Diagnostics) {
+func fillDataSourceOrganizationModel(ctx context.Context, m *gen.OrganizationModel, org apiclient.Organization) (diags diag.Diagnostics) {
 	m.Slug = types.StringValue(org.Slug)
 	m.Name = types.StringValue(org.Name)
 	m.InternalId = types.StringValue(org.Id)

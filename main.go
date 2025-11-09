@@ -15,7 +15,7 @@ import (
 	"github.com/jianyuan/terraform-provider-sentry/sentry"
 )
 
-//go:generate go tool tfplugingen-framework generate all --input specification.json --output internal/provider
+//go:generate go tool tfplugingen-framework generate all --input specification.json --output internal/provider/gen --package gen
 
 // Run "go generate" to format example terraform files and generate the docs for the registry/website
 //go:generate terraform fmt -recursive ./examples/
