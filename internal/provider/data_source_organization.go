@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
-	"github.com/jianyuan/terraform-provider-sentry/internal/provider/gen"
+	"github.com/jianyuan/terraform-provider-sentry/internal/provider/datasource_organization"
 )
 
 var _ datasource.DataSource = &OrganizationDataSource{}
@@ -28,11 +28,11 @@ func (d *OrganizationDataSource) Metadata(ctx context.Context, req datasource.Me
 }
 
 func (d *OrganizationDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema = gen.OrganizationDataSourceSchema(ctx)
+	resp.Schema = datasource_organization.OrganizationDataSourceSchema(ctx)
 }
 
 func (d *OrganizationDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data gen.OrganizationModel
+	var data datasource_organization.OrganizationModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -61,7 +61,7 @@ func (d *OrganizationDataSource) Read(ctx context.Context, req datasource.ReadRe
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func fillDataSourceOrganizationModel(ctx context.Context, m *gen.OrganizationModel, resp apiclient.GetOrganizationResponse) (diags diag.Diagnostics) {
+func fillDataSourceOrganizationModel(ctx context.Context, m *datasource_organization.OrganizationModel, resp apiclient.GetOrganizationResponse) (diags diag.Diagnostics) {
 	m.Slug = types.StringValue(resp.JSON200.Slug)
 	m.Name = types.StringValue(resp.JSON200.Name)
 	m.InternalId = types.StringValue(resp.JSON200.Id)
