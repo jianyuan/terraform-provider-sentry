@@ -61,6 +61,71 @@
 					}
 				]
 			}
+		},
+		{
+			"name": "team",
+			"schema": {
+				"markdown_description": "Sentry Team data source.",
+				"attributes": [
+					{
+						"name": "organization",
+						"string": {
+							"description": "The unique URL slug or internal ID of the organization.",
+							"computed_optional_required": "required"
+						}
+					},
+					{
+						"name": "slug",
+						"string": {
+							"description": "The unique URL slug for the team.",
+							"computed_optional_required": "required"
+						}
+					},
+					{
+						"name": "internal_id",
+						"string": {
+							"description": "The internal ID for this team.",
+							"computed_optional_required": "computed"
+						}
+					},
+					{
+						"name": "name",
+						"string": {
+							"description": "The human readable name for this team.",
+							"computed_optional_required": "computed"
+						}
+					},
+					{
+						"name": "id",
+						"string": {
+							"description": "The unique URL slug for this team. **Deprecated** Use `slug` instead.",
+							"deprecation_message": "Use `slug` instead.",
+							"computed_optional_required": "computed"
+						}
+					},
+					{
+						"name": "has_access",
+						"bool": {
+							"deprecation_message": "This field is deprecated and will be removed in a future version.",
+							"computed_optional_required": "computed"
+						}
+					},
+					{
+						"name": "is_pending",
+						"bool": {
+							"deprecation_message": "This field is deprecated and will be removed in a future version.",
+							"computed_optional_required": "computed"
+						}
+					},
+					{
+						"name": "is_member",
+						"bool": {
+							"deprecation_message": "This field is deprecated and will be removed in a future version.",
+							"computed_optional_required": "computed"
+						}
+					}
+				]
+			}
 		}
 	]
 }

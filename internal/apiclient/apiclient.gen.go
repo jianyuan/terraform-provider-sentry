@@ -2575,6 +2575,9 @@ type ClientInterface interface {
 	// AddTeamToProject request
 	AddTeamToProject(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, teamIdOrSlug TeamIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetOrganizationTeam request
+	GetOrganizationTeam(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateOrganizationTeamProjectWithBody request with any body
 	CreateOrganizationTeamProjectWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -3051,6 +3054,18 @@ func (c *Client) RemoveTeamFromProject(ctx context.Context, organizationIdOrSlug
 
 func (c *Client) AddTeamToProject(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, teamIdOrSlug TeamIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAddTeamToProjectRequest(c.Server, organizationIdOrSlug, projectIdOrSlug, teamIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetOrganizationTeam(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetOrganizationTeamRequest(c.Server, organizationIdOrSlug, teamIdOrSlug)
 	if err != nil {
 		return nil, err
 	}
@@ -4546,6 +4561,47 @@ func NewAddTeamToProjectRequest(server string, organizationIdOrSlug Organization
 	return req, nil
 }
 
+// NewGetOrganizationTeamRequest generates requests for GetOrganizationTeam
+func NewGetOrganizationTeamRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "organization_id_or_slug", runtime.ParamLocationPath, organizationIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "team_id_or_slug", runtime.ParamLocationPath, teamIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/teams/%s/%s/", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewCreateOrganizationTeamProjectRequest calls the generic CreateOrganizationTeamProject builder with application/json body
 func NewCreateOrganizationTeamProjectRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, body CreateOrganizationTeamProjectJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -4751,6 +4807,9 @@ type ClientWithResponsesInterface interface {
 
 	// AddTeamToProjectWithResponse request
 	AddTeamToProjectWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, teamIdOrSlug TeamIdOrSlug, reqEditors ...RequestEditorFn) (*AddTeamToProjectResponse, error)
+
+	// GetOrganizationTeamWithResponse request
+	GetOrganizationTeamWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, reqEditors ...RequestEditorFn) (*GetOrganizationTeamResponse, error)
 
 	// CreateOrganizationTeamProjectWithBodyWithResponse request with any body
 	CreateOrganizationTeamProjectWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOrganizationTeamProjectResponse, error)
@@ -5391,6 +5450,35 @@ func (r AddTeamToProjectResponse) StatusCode() int {
 	return 0
 }
 
+type GetOrganizationTeamResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		HasAccess bool   `json:"hasAccess"`
+		Id        string `json:"id"`
+		IsMember  bool   `json:"isMember"`
+		IsPending bool   `json:"isPending"`
+		Name      string `json:"name"`
+		Slug      string `json:"slug"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetOrganizationTeamResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetOrganizationTeamResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateOrganizationTeamProjectResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -5760,6 +5848,15 @@ func (c *ClientWithResponses) AddTeamToProjectWithResponse(ctx context.Context, 
 		return nil, err
 	}
 	return ParseAddTeamToProjectResponse(rsp)
+}
+
+// GetOrganizationTeamWithResponse request returning *GetOrganizationTeamResponse
+func (c *ClientWithResponses) GetOrganizationTeamWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, reqEditors ...RequestEditorFn) (*GetOrganizationTeamResponse, error) {
+	rsp, err := c.GetOrganizationTeam(ctx, organizationIdOrSlug, teamIdOrSlug, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetOrganizationTeamResponse(rsp)
 }
 
 // CreateOrganizationTeamProjectWithBodyWithResponse request with arbitrary body returning *CreateOrganizationTeamProjectResponse
@@ -6456,6 +6553,39 @@ func ParseAddTeamToProjectResponse(rsp *http.Response) (*AddTeamToProjectRespons
 			return nil, err
 		}
 		response.JSON201 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetOrganizationTeamResponse parses an HTTP response from a GetOrganizationTeamWithResponse call
+func ParseGetOrganizationTeamResponse(rsp *http.Response) (*GetOrganizationTeamResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetOrganizationTeamResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			HasAccess bool   `json:"hasAccess"`
+			Id        string `json:"id"`
+			IsMember  bool   `json:"isMember"`
+			IsPending bool   `json:"isPending"`
+			Name      string `json:"name"`
+			Slug      string `json:"slug"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
 
 	}
 
