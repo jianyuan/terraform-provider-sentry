@@ -29,7 +29,7 @@ resource "sentry_team" "main" {
 }
 
 output "team" {
-  value = sentry_team.main.id
+  value = sentry_team.main.slug
 }
 
 #
@@ -38,7 +38,7 @@ output "team" {
 
 resource "sentry_project" "main" {
   organization = sentry_team.main.organization
-  teams        = [sentry_team.main.id]
+  teams        = [sentry_team.main.slug]
   name         = "My project"
   platform     = "python"
 }

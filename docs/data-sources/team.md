@@ -26,14 +26,14 @@ data "sentry_team" "default" {
 
 ### Required
 
-- `organization` (String) The slug of the organization the team should be created for.
-- `slug` (String) The unique URL slug for this team.
+- `organization` (String) The unique URL slug or internal ID of the organization.
+- `slug` (String) The unique URL slug for the team.
 
 ### Read-Only
 
-- `has_access` (Boolean)
-- `id` (String) The ID of this resource.
+- `has_access` (Boolean, Deprecated)
+- `id` (String, Deprecated) The unique URL slug for this team. **Deprecated** Use `slug` instead.
 - `internal_id` (String) The internal ID for this team.
-- `is_member` (Boolean)
-- `is_pending` (Boolean)
-- `name` (String) The human readable name for this organization.
+- `is_member` (Boolean, Deprecated)
+- `is_pending` (Boolean, Deprecated)
+- `name` (String) The human readable name for this team.

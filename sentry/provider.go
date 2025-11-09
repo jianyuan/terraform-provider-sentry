@@ -54,7 +54,6 @@ func NewProvider(version string) func() *schema.Provider {
 			DataSourcesMap: map[string]*schema.Resource{
 				"sentry_dashboard":    dataSourceSentryDashboard(),
 				"sentry_metric_alert": dataSourceSentryMetricAlert(),
-				"sentry_team":         dataSourceSentryTeam(),
 			},
 		}
 

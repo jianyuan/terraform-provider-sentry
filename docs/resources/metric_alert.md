@@ -34,7 +34,7 @@ resource "sentry_metric_alert" "main" {
     action {
       type              = "email"
       target_type       = "team"
-      target_identifier = sentry_team.main.team_id
+      target_identifier = sentry_team.main.internal_id
     }
     alert_threshold = 300
     label           = "critical"
