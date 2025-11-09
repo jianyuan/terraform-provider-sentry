@@ -6,7 +6,6 @@ require (
 	github.com/google/go-cmp v0.7.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/go-retryablehttp v0.7.8
-	github.com/hashicorp/terraform-plugin-docs v0.24.0
 	github.com/hashicorp/terraform-plugin-framework v1.16.1
 	github.com/hashicorp/terraform-plugin-framework-validators v0.19.0
 	github.com/hashicorp/terraform-plugin-go v0.29.0
@@ -16,7 +15,7 @@ require (
 	github.com/hashicorp/terraform-plugin-testing v1.13.3
 	github.com/jianyuan/go-sentry/v2 v2.8.4
 	github.com/jianyuan/go-utils v0.0.0-20250223213401-62c93a9e0b6c
-	github.com/oapi-codegen/oapi-codegen/v2 v2.5.1
+	github.com/oapi-codegen/nullable v1.1.0
 	github.com/oapi-codegen/runtime v1.1.2
 	github.com/orange-cloudavenue/terraform-plugin-framework-superschema v1.11.0
 	github.com/orange-cloudavenue/terraform-plugin-framework-supertypes v1.2.0
@@ -62,6 +61,7 @@ require (
 	github.com/hashicorp/terraform-json v0.27.2 // indirect
 	github.com/hashicorp/terraform-plugin-codegen-framework v0.4.1 // indirect
 	github.com/hashicorp/terraform-plugin-codegen-spec v0.2.0 // indirect
+	github.com/hashicorp/terraform-plugin-docs v0.24.0 // indirect
 	github.com/hashicorp/terraform-plugin-framework-timeouts v0.7.0 // indirect
 	github.com/hashicorp/terraform-registry-address v0.4.0 // indirect
 	github.com/hashicorp/terraform-svchost v0.1.1 // indirect
@@ -80,6 +80,7 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
+	github.com/oapi-codegen/oapi-codegen/v2 v2.5.1 // indirect
 	github.com/oasdiff/yaml v0.0.0-20250309154309-f31be36b4037 // indirect
 	github.com/oasdiff/yaml3 v0.0.0-20250309153720-d2182401db90 // indirect
 	github.com/oklog/run v1.2.0 // indirect

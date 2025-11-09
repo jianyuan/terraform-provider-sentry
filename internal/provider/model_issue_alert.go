@@ -1420,8 +1420,18 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 	m.ActionMatch = types.StringValue(alert.ActionMatch)
 	m.FilterMatch = types.StringValue(alert.FilterMatch)
 	m.Frequency = types.Int64Value(alert.Frequency)
-	m.Environment = types.StringPointerValue(alert.Environment)
-	m.Owner = types.StringPointerValue(alert.Owner)
+
+	if v, err := alert.Environment.Get(); err == nil {
+		m.Environment = types.StringValue(v)
+	} else {
+		m.Environment = types.StringNull()
+	}
+
+	if v, err := alert.Owner.Get(); err == nil {
+		m.Owner = types.StringValue(v)
+	} else {
+		m.Owner = types.StringNull()
+	}
 
 	if !m.Conditions.IsNull() {
 		if conditions, err := json.Marshal(alert.Conditions); err == nil {

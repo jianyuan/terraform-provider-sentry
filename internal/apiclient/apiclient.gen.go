@@ -15,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/oapi-codegen/nullable"
 	"github.com/oapi-codegen/runtime"
 )
 
@@ -205,21 +206,21 @@ type Organization struct {
 
 // OrganizationIntegration defines model for OrganizationIntegration.
 type OrganizationIntegration struct {
-	AccountType                   *string     `json:"accountType"`
-	ConfigData                    interface{} `json:"configData"`
-	ConfigOrganization            interface{} `json:"configOrganization"`
-	DomainName                    *string     `json:"domainName"`
-	GracePeriodEnd                *string     `json:"gracePeriodEnd"`
-	Icon                          *string     `json:"icon"`
-	Id                            string      `json:"id"`
-	Name                          string      `json:"name"`
-	OrganizationId                int         `json:"organizationId"`
-	OrganizationIntegrationStatus string      `json:"organizationIntegrationStatus"`
+	AccountType                   nullable.Nullable[string] `json:"accountType"`
+	ConfigData                    interface{}               `json:"configData"`
+	ConfigOrganization            interface{}               `json:"configOrganization"`
+	DomainName                    nullable.Nullable[string] `json:"domainName"`
+	GracePeriodEnd                nullable.Nullable[string] `json:"gracePeriodEnd"`
+	Icon                          nullable.Nullable[string] `json:"icon"`
+	Id                            string                    `json:"id"`
+	Name                          string                    `json:"name"`
+	OrganizationId                int                       `json:"organizationId"`
+	OrganizationIntegrationStatus string                    `json:"organizationIntegrationStatus"`
 	Provider                      struct {
 		Key string `json:"key"`
 	} `json:"provider"`
-	Scopes *[]string `json:"scopes"`
-	Status string    `json:"status"`
+	Scopes nullable.Nullable[[]string] `json:"scopes"`
+	Status string                      `json:"status"`
 	union  json.RawMessage
 }
 
@@ -306,27 +307,27 @@ type OrganizationRoleListItem struct {
 
 // Project defines model for Project.
 type Project struct {
-	AllowedDomains       []string               `json:"allowedDomains"`
-	Color                string                 `json:"color"`
-	DateCreated          time.Time              `json:"dateCreated"`
-	DigestsMaxDelay      int64                  `json:"digestsMaxDelay"`
-	DigestsMinDelay      int64                  `json:"digestsMinDelay"`
-	Features             []string               `json:"features"`
-	FingerprintingRules  string                 `json:"fingerprintingRules"`
-	GroupingEnhancements string                 `json:"groupingEnhancements"`
-	Id                   string                 `json:"id"`
-	IsPublic             bool                   `json:"isPublic"`
-	Name                 string                 `json:"name"`
-	Options              map[string]interface{} `json:"options"`
-	Organization         Organization           `json:"organization"`
-	Platform             *string                `json:"platform"`
-	ResolveAge           int64                  `json:"resolveAge"`
-	ScrapeJavaScript     bool                   `json:"scrapeJavaScript"`
-	SecurityToken        string                 `json:"securityToken"`
-	SecurityTokenHeader  *string                `json:"securityTokenHeader"`
-	Slug                 string                 `json:"slug"`
-	Teams                []Team                 `json:"teams"`
-	VerifySSL            bool                   `json:"verifySSL"`
+	AllowedDomains       []string                  `json:"allowedDomains"`
+	Color                string                    `json:"color"`
+	DateCreated          time.Time                 `json:"dateCreated"`
+	DigestsMaxDelay      int64                     `json:"digestsMaxDelay"`
+	DigestsMinDelay      int64                     `json:"digestsMinDelay"`
+	Features             []string                  `json:"features"`
+	FingerprintingRules  string                    `json:"fingerprintingRules"`
+	GroupingEnhancements string                    `json:"groupingEnhancements"`
+	Id                   string                    `json:"id"`
+	IsPublic             bool                      `json:"isPublic"`
+	Name                 string                    `json:"name"`
+	Options              map[string]interface{}    `json:"options"`
+	Organization         Organization              `json:"organization"`
+	Platform             nullable.Nullable[string] `json:"platform"`
+	ResolveAge           int64                     `json:"resolveAge"`
+	ScrapeJavaScript     bool                      `json:"scrapeJavaScript"`
+	SecurityToken        string                    `json:"securityToken"`
+	SecurityTokenHeader  nullable.Nullable[string] `json:"securityTokenHeader"`
+	Slug                 string                    `json:"slug"`
+	Teams                []Team                    `json:"teams"`
+	VerifySSL            bool                      `json:"verifySSL"`
 }
 
 // ProjectKey defines model for ProjectKey.
@@ -345,10 +346,10 @@ type ProjectKey struct {
 	Name      string      `json:"name"`
 	ProjectId json.Number `json:"projectId"`
 	Public    string      `json:"public"`
-	RateLimit *struct {
+	RateLimit nullable.Nullable[struct {
 		Count  int64 `json:"count"`
 		Window int64 `json:"window"`
-	} `json:"rateLimit"`
+	}] `json:"rateLimit"`
 	Secret string `json:"secret"`
 }
 
@@ -364,17 +365,17 @@ type ProjectOwnership struct {
 
 // ProjectRule defines model for ProjectRule.
 type ProjectRule struct {
-	ActionMatch string                 `json:"actionMatch"`
-	Actions     []ProjectRuleAction    `json:"actions"`
-	Conditions  []ProjectRuleCondition `json:"conditions"`
-	Environment *string                `json:"environment"`
-	FilterMatch string                 `json:"filterMatch"`
-	Filters     []ProjectRuleFilter    `json:"filters"`
-	Frequency   int64                  `json:"frequency"`
-	Id          string                 `json:"id"`
-	Name        string                 `json:"name"`
-	Owner       *string                `json:"owner"`
-	Projects    []string               `json:"projects"`
+	ActionMatch string                    `json:"actionMatch"`
+	Actions     []ProjectRuleAction       `json:"actions"`
+	Conditions  []ProjectRuleCondition    `json:"conditions"`
+	Environment nullable.Nullable[string] `json:"environment"`
+	FilterMatch string                    `json:"filterMatch"`
+	Filters     []ProjectRuleFilter       `json:"filters"`
+	Frequency   int64                     `json:"frequency"`
+	Id          string                    `json:"id"`
+	Name        string                    `json:"name"`
+	Owner       nullable.Nullable[string] `json:"owner"`
+	Projects    []string                  `json:"projects"`
 }
 
 // ProjectRuleAction defines model for ProjectRuleAction.

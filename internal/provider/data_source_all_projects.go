@@ -29,7 +29,11 @@ func (m *AllProjectsDataSourceProjectModel) Fill(ctx context.Context, project ap
 	m.InternalId = types.StringValue(project.Id)
 	m.Slug = types.StringValue(project.Slug)
 	m.Name = types.StringValue(project.Name)
-	m.Platform = types.StringPointerValue(project.Platform)
+	if v, err := project.Platform.Get(); err == nil && v != "" {
+		m.Platform = types.StringValue(v)
+	} else {
+		m.Platform = types.StringNull()
+	}
 	m.DateCreated = types.StringValue(project.DateCreated.String())
 	m.Features = supertypes.NewSetValueOfSlice(ctx, project.Features)
 	m.Color = types.StringValue(project.Color)

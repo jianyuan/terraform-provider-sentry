@@ -118,10 +118,10 @@ func (m *ProjectClientSecurityResourceModel) Fill(ctx context.Context, project a
 	m.ScrapeJavascript = types.BoolValue(project.ScrapeJavaScript)
 	m.SecurityToken = types.StringValue(project.SecurityToken)
 
-	if project.SecurityTokenHeader == nil {
-		m.SecurityTokenHeader = types.StringValue("")
+	if v, err := project.SecurityTokenHeader.Get(); err == nil {
+		m.SecurityTokenHeader = types.StringValue(v)
 	} else {
-		m.SecurityTokenHeader = types.StringPointerValue(project.SecurityTokenHeader)
+		m.SecurityTokenHeader = types.StringValue("")
 	}
 
 	m.VerifyTlsSsl = types.BoolValue(project.VerifySSL)
@@ -158,10 +158,10 @@ func (m *ProjectResourceModel) Fill(ctx context.Context, project apiclient.Proje
 	m.Name = types.StringValue(project.Name)
 	m.Slug = types.StringValue(project.Slug)
 
-	if project.Platform == nil || *project.Platform == "" {
-		m.Platform = types.StringNull()
+	if v, err := project.Platform.Get(); err == nil && v != "" {
+		m.Platform = types.StringValue(v)
 	} else {
-		m.Platform = types.StringPointerValue(project.Platform)
+		m.Platform = types.StringNull()
 	}
 
 	m.InternalId = types.StringValue(project.Id)
