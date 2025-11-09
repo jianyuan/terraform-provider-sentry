@@ -780,7 +780,7 @@ func testAccCheckProjectDestroy(s *terraform.State) error {
 var testAccProjectResourceConfigTemplate = template.Must(template.New("config").Parse(`
 resource "sentry_project" "test" {
 	organization = sentry_team.test.organization
-	teams        = [sentry_team.test.id]
+	teams        = [sentry_team.test.slug]
 	name         = "{{ .ProjectName }}"
 	{{ if .Platform }}
 	platform = "{{ .Platform }}"

@@ -53,7 +53,7 @@ resource "sentry_team" "test" {
 
 resource "sentry_project" "test" {
 	organization = sentry_team.test.organization
-	teams        = [sentry_team.test.id]
+	teams        = [sentry_team.test.slug]
 	name         = "%[2]s"
 	platform     = "go"
 }
@@ -111,7 +111,7 @@ EOT
 	{
 		"id": "sentry.rules.filters.assigned_to.AssignedToFilter",
 		"targetType": "Team",
-		"targetIdentifier": ${parseint(sentry_team.test.team_id, 10)}
+		"targetIdentifier": ${parseint(sentry_team.test.internal_id, 10)}
 	},
 	{
 		"id": "sentry.rules.filters.latest_release.LatestReleaseFilter"
@@ -146,7 +146,7 @@ EOT
 	{
 		"id": "sentry.mail.actions.NotifyEmailAction",
 		"targetType": "Team",
-		"targetIdentifier": ${parseint(sentry_team.test.team_id, 10)}
+		"targetIdentifier": ${parseint(sentry_team.test.internal_id, 10)}
 	},
 	{
 		"id": "sentry.rules.actions.notify_event.NotifyEventAction"

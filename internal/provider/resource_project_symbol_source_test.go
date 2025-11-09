@@ -81,7 +81,7 @@ resource "sentry_team" "test" {
 
 resource "sentry_project" "test" {
 	organization = sentry_team.test.organization
-	teams        = [sentry_team.test.id]
+	teams        = [sentry_team.test.slug]
 	name         = "%[2]s"
 	platform     = "go"
 }

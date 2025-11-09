@@ -81,7 +81,7 @@ resource "sentry_organization_member" "test_2" {
 
 resource "sentry_team_member" "test" {
 	organization = data.sentry_organization.test.slug
-	team         = sentry_team.test.id
+	team         = sentry_team.test.slug
 	member_id    = %[4]s.internal_id
 	role         = "%[5]s"
 }
@@ -157,7 +157,7 @@ resource "sentry_organization_member" "test" {
 
 resource "sentry_team_member" "test" {
 	organization = data.sentry_organization.test.slug
-	team         = sentry_team.test.id
+	team         = sentry_team.test.slug
 	member_id    = sentry_organization_member.test.internal_id
 	role         = "%[4]s"
 }

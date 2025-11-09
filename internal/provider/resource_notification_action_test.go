@@ -72,14 +72,14 @@ resource "sentry_team" "test" {
 
 resource "sentry_project" "test_1" {
 	organization = sentry_team.test.organization
-	teams        = [sentry_team.test.id]
+	teams        = [sentry_team.test.slug]
 	name         = "%[2]s"
 	platform     = "go"
 }
 
 resource "sentry_project" "test_2" {
 	organization = sentry_team.test.organization
-	teams        = [sentry_team.test.id]
+	teams        = [sentry_team.test.slug]
 	name         = "%[3]s"
 	platform     = "go"
 }
