@@ -82,10 +82,12 @@ func TestAccProjectResource_basic(t *testing.T) {
 				return fmt.Errorf("unexpected project name %v", project.Name)
 			}
 
-			if project.Platform == nil {
-				return fmt.Errorf("platform is nil")
-			} else if *project.Platform != data.Platform {
-				return fmt.Errorf("unexpected platform %v", *project.Platform)
+			if v, err := project.Platform.Get(); err == nil {
+				if data.Platform != v {
+					return fmt.Errorf("unexpected platform %v", v)
+				}
+			} else {
+				return fmt.Errorf("unexpected platform: %s", err)
 			}
 
 			if len(project.Teams) != len(data.TeamIds) {
@@ -114,8 +116,14 @@ func TestAccProjectResource_basic(t *testing.T) {
 				return fmt.Errorf("unexpected scrape javascript %v", project.ScrapeJavaScript)
 			}
 
-			if ptr.Value(project.SecurityTokenHeader) != ptr.Value(data.SecurityTokenHeader) {
-				return fmt.Errorf("unexpected security token header %v", ptr.Value(project.SecurityTokenHeader))
+			if v, err := project.SecurityTokenHeader.Get(); err == nil {
+				if v != ptr.Value(data.SecurityTokenHeader) {
+					return fmt.Errorf("unexpected security token header %v", v)
+				}
+			} else {
+				if ptr.Value(data.SecurityTokenHeader) != "" {
+					return fmt.Errorf("unexpected security token header")
+				}
 			}
 
 			if project.VerifySSL != ptr.Value(data.VerifyTlsSsl) {

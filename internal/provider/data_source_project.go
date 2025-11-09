@@ -33,10 +33,10 @@ func (m *ProjectDataSourceModel) Fill(project apiclient.Project) error {
 	m.InternalId = types.StringValue(project.Id)
 	m.Name = types.StringValue(project.Name)
 
-	if project.Platform == nil || *project.Platform == "" {
-		m.Platform = types.StringNull()
+	if v, err := project.Platform.Get(); err == nil && v != "" {
+		m.Platform = types.StringValue(v)
 	} else {
-		m.Platform = types.StringPointerValue(project.Platform)
+		m.Platform = types.StringNull()
 	}
 
 	m.DateCreated = types.StringValue(project.DateCreated.String())

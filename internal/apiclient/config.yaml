@@ -4,3 +4,5 @@ output: apiclient.gen.go
 generate:
   models: true
   client: true
+output-options:
+  nullable-type: true
