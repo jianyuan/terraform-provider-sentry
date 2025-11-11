@@ -47,6 +47,7 @@ var IssueGroupCategories = []string{
 	"Http_Client",
 	"Frontend",
 	"Mobile",
+	"Ai_Detected",
 }
 
 // https://github.com/getsentry/sentry/blob/master/src/sentry/issues/grouptype.py
@@ -66,6 +67,7 @@ var IssueGroupCategoryNameToId = map[string]string{
 	"Http_Client":       "13",
 	"Frontend":          "14",
 	"Mobile":            "15",
+	"Ai_Detected":       "16",
 }
 
 // https://github.com/getsentry/sentry/blob/master/src/sentry/issues/grouptype.py
@@ -85,6 +87,7 @@ var IssueGroupCategoryIdToName = map[string]string{
 	"13": "Http_Client",
 	"14": "Frontend",
 	"15": "Mobile",
+	"16": "Ai_Detected",
 }
 
 // https://github.com/getsentry/sentry/blob/master/src/sentry/rules/conditions/event_attribute.py
