@@ -54,7 +54,7 @@ func (d *OrganizationMemberDataSource) Schema(ctx context.Context, req datasourc
 				Computed:            true,
 			},
 			"internal_id": schema.StringAttribute{
-				MarkdownDescription: "The internal ID for this organization membership.",
+				MarkdownDescription: "The internal ID of the organization member.",
 				Computed:            true,
 			},
 			"organization": DataSourceOrganizationAttribute(),
