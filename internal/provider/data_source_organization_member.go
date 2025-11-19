@@ -15,6 +15,7 @@ import (
 
 type OrganizationMemberDataSourceModel struct {
 	Id           types.String `tfsdk:"id"`
+	InternalId   types.String `tfsdk:"internal_id"`
 	Organization types.String `tfsdk:"organization"`
 	Email        types.String `tfsdk:"email"`
 	Role         types.String `tfsdk:"role"`
@@ -22,6 +23,7 @@ type OrganizationMemberDataSourceModel struct {
 
 func (m *OrganizationMemberDataSourceModel) Fill(ctx context.Context, member apiclient.OrganizationMember) (diags diag.Diagnostics) {
 	m.Id = types.StringValue(member.Id)
+	m.InternalId = types.StringValue(member.User.Id)
 	m.Email = types.StringValue(member.Email)
 	m.Role = types.StringValue(member.OrgRole)
 	return
@@ -49,6 +51,10 @@ func (d *OrganizationMemberDataSource) Schema(ctx context.Context, req datasourc
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				MarkdownDescription: "The ID of this resource.",
+				Computed:            true,
+			},
+			"internal_id": schema.StringAttribute{
+				MarkdownDescription: "The internal ID for this organization membership.",
 				Computed:            true,
 			},
 			"organization": DataSourceOrganizationAttribute(),
