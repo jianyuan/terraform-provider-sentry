@@ -878,7 +878,7 @@ func (r *ProjectResource) removeDefaultKey(ctx context.Context, organization str
 		)
 		if err != nil {
 			return err
-		} else if httpResp.StatusCode() != http.StatusOK {
+		} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
 			return fmt.Errorf("unable to list project client keys, got status %d: %s", httpResp.StatusCode(), string(httpResp.Body))
 		}
 

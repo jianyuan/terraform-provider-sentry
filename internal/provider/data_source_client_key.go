@@ -144,7 +144,7 @@ func (d *ClientKeyDataSource) Read(ctx context.Context, req datasource.ReadReque
 				resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 				return
 			}
-			if httpResp.StatusCode() != http.StatusOK {
+			if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
 				resp.Diagnostics.Append(diagutils.NewClientStatusError("read", httpResp.StatusCode(), httpResp.Body))
 				return
 			}
