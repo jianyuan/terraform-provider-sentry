@@ -276,11 +276,11 @@ type OrganizationMember struct {
 	Expired bool   `json:"expired"`
 	Id      string `json:"id"`
 	Name    string `json:"name"`
+	OrgRole string `json:"orgRole"`
+	Pending bool   `json:"pending"`
 	User    struct {
 		Id string `json:"id"`
 	} `json:"user"`
-	OrgRole string `json:"orgRole"`
-	Pending bool   `json:"pending"`
 }
 
 // OrganizationMemberWithRoles defines model for OrganizationMemberWithRoles.
