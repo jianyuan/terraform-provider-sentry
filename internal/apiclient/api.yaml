@@ -973,6 +973,7 @@ components:
         - pending
         - expired
         - orgRole
+        - user 
       properties:
         id:
           type: string
@@ -986,6 +987,13 @@ components:
           type: boolean
         orgRole:
           type: string
+        user:
+          type: object
+          required:
+            - id
+          properties:
+            id:
+              type: string
     OrganizationRoleListItem:
       type: object
       required:

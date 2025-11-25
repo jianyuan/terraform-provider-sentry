@@ -278,6 +278,9 @@ type OrganizationMember struct {
 	Name    string `json:"name"`
 	OrgRole string `json:"orgRole"`
 	Pending bool   `json:"pending"`
+	User    struct {
+		Id string `json:"id"`
+	} `json:"user"`
 }
 
 // OrganizationMemberWithRoles defines model for OrganizationMemberWithRoles.
