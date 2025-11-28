@@ -212,6 +212,7 @@ var DashboardWidgetDisplayTypes = []string{
 	"table",
 	"big_number",
 	"top_n",
+	"details",
 }
 
 // https://github.com/getsentry/sentry/blob/master/src/sentry/models/project.py
