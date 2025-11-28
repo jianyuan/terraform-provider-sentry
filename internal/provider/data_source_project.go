@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/jianyuan/go-utils/maputils"
 	"github.com/jianyuan/go-utils/sliceutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
@@ -24,6 +25,7 @@ type ProjectDataSourceModel struct {
 	Features     types.Set    `tfsdk:"features"`
 	Color        types.String `tfsdk:"color"`
 	IsPublic     types.Bool   `tfsdk:"is_public"`
+	Teams        types.Set    `tfsdk:"teams"`
 }
 
 func (m *ProjectDataSourceModel) Fill(project apiclient.Project) error {
@@ -43,6 +45,16 @@ func (m *ProjectDataSourceModel) Fill(project apiclient.Project) error {
 	m.Features = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
 		return types.StringValue(v)
 	}, project.Features))
+	m.Teams = types.SetValueMust(types.MapType{}, sliceutils.Map(func(team apiclient.Team) attr.Value {
+		var teamMap = map[string]string{
+			"id":   team.Id,
+			"slug": team.Slug,
+			"name": team.Name,
+		}
+		return types.MapValueMust(types.StringType, maputils.MapValues(teamMap, func(v string) attr.Value {
+			return types.StringValue(v)
+		}))
+	}, project.Teams))
 	m.Color = types.StringValue(project.Color)
 	m.IsPublic = types.BoolValue(project.IsPublic)
 
@@ -103,6 +115,25 @@ func (d *ProjectDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 			"is_public": schema.BoolAttribute{
 				MarkdownDescription: "Whether this project is public.",
 				Computed:            true,
+			},
+			"teams": schema.SetNestedAttribute{
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"id": schema.StringAttribute{
+							MarkdownDescription: "The ID of of the organization team.",
+							Computed:            true,
+						},
+						"slug": schema.StringAttribute{
+							MarkdownDescription: "The slug of the organization team.",
+							Computed:            true,
+						},
+						"name": schema.StringAttribute{
+							MarkdownDescription: "The name of the organization team.",
+							Computed:            true,
+						},
+					},
+				},
+				Computed: true,
 			},
 		},
 	}

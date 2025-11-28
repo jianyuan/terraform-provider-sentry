@@ -39,3 +39,13 @@ data "sentry_project" "default" {
 - `is_public` (Boolean) Whether this project is public.
 - `name` (String) The name of this project.
 - `platform` (String) The platform of this project.
+- `teams` (Attributes Set) (see [below for nested schema](#nestedatt--teams))
+
+<a id="nestedatt--teams"></a>
+### Nested Schema for `teams`
+
+Read-Only:
+
+- `id` (String) The ID of of the organization team.
+- `name` (String) The name of the organization team.
+- `slug` (String) The slug of the organization team.
