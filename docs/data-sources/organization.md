@@ -3,12 +3,12 @@
 page_title: "sentry_organization Data Source - terraform-provider-sentry"
 subcategory: ""
 description: |-
-  Sentry Organization data source.
+  Retrieves an organization.
 ---
 
 # sentry_organization (Data Source)
 
-Sentry Organization data source.
+Retrieves an organization.
 
 ## Example Usage
 

@@ -3,12 +3,12 @@
 page_title: "sentry_all_projects Data Source - terraform-provider-sentry"
 subcategory: ""
 description: |-
-  Return a list of projects available to the authenticated session.
+  List of projects in an organization.
 ---
 
 # sentry_all_projects (Data Source)
 
-Return a list of projects available to the authenticated session.
+List of projects in an organization.
 
 ## Example Usage
 
@@ -24,22 +24,30 @@ data "sentry_all_projects" "default" {
 
 ### Required
 
-- `organization` (String) The organization the resource belongs to.
+- `organization` (String) The organization slug or internal ID to list projects for.
 
 ### Read-Only
 
-- `project_slugs` (Set of String) The slugs of the projects.
-- `projects` (Attributes Set) The list of projects. (see [below for nested schema](#nestedatt--projects))
+- `projects` (Attributes Set) The projects in this organization. (see [below for nested schema](#nestedatt--projects))
 
 <a id="nestedatt--projects"></a>
 ### Nested Schema for `projects`
 
 Read-Only:
 
-- `color` (String) The color of this project.
 - `date_created` (String) The date this project was created.
 - `features` (Set of String) The features of this project.
 - `internal_id` (String) The internal ID of this project.
 - `name` (String) The name of this project.
 - `platform` (String) The platform of this project.
-- `slug` (String) The slug of this project.
+- `slug` (String) The unique URL slug for the project.
+- `teams` (Attributes Set) The teams of this project. (see [below for nested schema](#nestedatt--projects--teams))
+
+<a id="nestedatt--projects--teams"></a>
+### Nested Schema for `projects.teams`
+
+Read-Only:
+
+- `internal_id` (String) The internal ID of this team.
+- `name` (String) The name of this team.
+- `slug` (String) The slug of this team.
