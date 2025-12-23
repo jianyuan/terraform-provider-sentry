@@ -48,6 +48,7 @@ var IssueGroupCategories = []string{
 	"Frontend",
 	"Mobile",
 	"Ai_Detected",
+	"Preprod",
 }
 
 // https://github.com/getsentry/sentry/blob/master/src/sentry/issues/grouptype.py
@@ -68,6 +69,7 @@ var IssueGroupCategoryNameToId = map[string]string{
 	"Frontend":          "14",
 	"Mobile":            "15",
 	"Ai_Detected":       "16",
+	"Preprod":           "17",
 }
 
 // https://github.com/getsentry/sentry/blob/master/src/sentry/issues/grouptype.py
@@ -88,6 +90,7 @@ var IssueGroupCategoryIdToName = map[string]string{
 	"14": "Frontend",
 	"15": "Mobile",
 	"16": "Ai_Detected",
+	"17": "Preprod",
 }
 
 // https://github.com/getsentry/sentry/blob/master/src/sentry/rules/conditions/event_attribute.py
@@ -201,6 +204,7 @@ var DashboardWidgetTypes = []string{
 	"spans",
 	"logs",
 	"tracemetrics",
+	"mobile-app-size",
 }
 
 // https://github.com/getsentry/sentry/blob/master/src/sentry/models/dashboard_widget.py
@@ -212,6 +216,7 @@ var DashboardWidgetDisplayTypes = []string{
 	"table",
 	"big_number",
 	"top_n",
+	"details",
 }
 
 // https://github.com/getsentry/sentry/blob/master/src/sentry/models/project.py
