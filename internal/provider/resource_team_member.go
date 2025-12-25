@@ -116,17 +116,17 @@ func (r *TeamMemberResource) getEffectiveTeamRole(ctx context.Context, organizat
 
 	orgHttpResp, err := r.apiClient.GetOrganizationWithResponse(ctx, organization)
 	if err != nil {
-		return nil, fmt.Errorf("unable to read organization, got error: %s", err)
+		return nil, fmt.Errorf("unable to read organization %q, got error: %s", organization, err)
 	} else if orgHttpResp.StatusCode() != http.StatusOK || orgHttpResp.JSON200 == nil {
-		return nil, fmt.Errorf("unable to read organization, got status code: %d", orgHttpResp.StatusCode())
+		return nil, fmt.Errorf("unable to read organization %q, got status code: %d", organization, orgHttpResp.StatusCode())
 	}
 	org := orgHttpResp.JSON200
 
 	memberHttpResp, err := r.apiClient.GetOrganizationMemberWithResponse(ctx, organization, memberId)
 	if err != nil {
-		return nil, fmt.Errorf("unable to read organization member, got error: %s", err)
+		return nil, fmt.Errorf("unable to read organization member (organization=%s, member_id=%s), got error: %s", organization, memberId, err)
 	} else if memberHttpResp.StatusCode() != http.StatusOK || memberHttpResp.JSON200 == nil {
-		return nil, fmt.Errorf("unable to read organization member, got status code: %d", memberHttpResp.StatusCode())
+		return nil, fmt.Errorf("unable to read organization member (organization=%s, member_id=%s), got status code: %d", organization, memberId, memberHttpResp.StatusCode())
 	}
 	member := memberHttpResp.JSON200
 
@@ -166,7 +166,7 @@ func (r *TeamMemberResource) updateRole(ctx context.Context, organization string
 		TeamRole: sentry.String(role),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("unable to read organization member, got error: %s", err)
+		return nil, fmt.Errorf("unable to update team member role (organization=%s, team=%s, member_id=%s), got error: %s", organization, team, memberId, err)
 	}
 
 	if !sentry.BoolValue(member.IsActive) {
