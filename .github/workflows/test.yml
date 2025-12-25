@@ -45,7 +45,7 @@ jobs:
           echo "Their current access level: ${{ steps.checkAccess.outputs.user-permission }}"
           echo "Initial trigger for this job: ${{ github.actor }}"
           exit 1
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-go@v6
@@ -75,7 +75,7 @@ jobs:
           echo "Their current access level: ${{ steps.checkAccess.outputs.user-permission }}"
           echo "Initial trigger for this job: ${{ github.actor }}"
           exit 1
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-go@v6
@@ -119,7 +119,7 @@ jobs:
           echo "Their current access level: ${{ steps.checkAccess.outputs.user-permission }}"
           echo "Initial trigger for this job: ${{ github.actor }}"
           exit 1
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-go@v6
