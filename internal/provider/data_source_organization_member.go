@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -88,7 +89,11 @@ out:
 			resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 			return
 		} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
-			resp.Diagnostics.Append(diagutils.NewClientStatusError("read", httpResp.StatusCode(), httpResp.Body))
+			resp.Diagnostics.Append(diagutils.NewClientStatusError(
+				fmt.Sprintf("read organization member (organization=%s, email=%s)", data.Organization.ValueString(), data.Email.ValueString()),
+				httpResp.StatusCode(),
+				httpResp.Body,
+			))
 			return
 		}
 
@@ -106,7 +111,15 @@ out:
 	}
 
 	if foundMember == nil {
-		resp.Diagnostics.AddError("Not found", "No matching organization member found")
+		resp.Diagnostics.AddError(
+			"Not found",
+			fmt.Sprintf(
+				"Could not find a member with email %q in organization %q. "+
+					"Please verify the email address is correct and the member exists in the organization.",
+				data.Email.ValueString(),
+				data.Organization.ValueString(),
+			),
+		)
 		return
 	}
 
