@@ -47,6 +47,7 @@ func TestAccProjectDataSource_UpgradeFromVersion(t *testing.T) {
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("date_created"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("features"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("color"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("teams"), knownvalue.NotNull()),
 				),
 			},
 		},
