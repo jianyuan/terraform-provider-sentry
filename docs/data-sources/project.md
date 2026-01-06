@@ -3,12 +3,12 @@
 page_title: "sentry_project Data Source - terraform-provider-sentry"
 subcategory: ""
 description: |-
-  Return a list of projects available to the authenticated session.
+  Retrieves a project.
 ---
 
 # sentry_project (Data Source)
 
-Return a list of projects available to the authenticated session.
+Retrieves a project.
 
 ## Example Usage
 
@@ -26,16 +26,26 @@ data "sentry_project" "default" {
 
 ### Required
 
-- `organization` (String) The organization the resource belongs to.
-- `slug` (String) The project the resource belongs to.
+- `organization` (String) The organization slug.
+- `slug` (String) The unique URL slug for the project.
 
 ### Read-Only
 
 - `color` (String) The color of this project.
 - `date_created` (String) The date this project was created.
 - `features` (Set of String) The features of this project.
-- `id` (String) The slug of this project.
+- `id` (String, Deprecated) The unique URL slug for this project. **Deprecated** Use `slug` instead.
 - `internal_id` (String) The internal ID of this project.
 - `is_public` (Boolean) Whether this project is public.
 - `name` (String) The name of this project.
 - `platform` (String) The platform of this project.
+- `teams` (Attributes Set) The teams of this project. (see [below for nested schema](#nestedatt--teams))
+
+<a id="nestedatt--teams"></a>
+### Nested Schema for `teams`
+
+Read-Only:
+
+- `internal_id` (String) The internal ID of this team.
+- `name` (String) The name of this team.
+- `slug` (String) The slug of this team.

@@ -18,15 +18,12 @@ jobs:
         with:
           go-version-file: "go.mod"
           cache: true
-      - name: Install uv
-        uses: astral-sh/setup-uv@v7
+      - uses: astral-sh/setup-uv@v7
+      - uses: oven-sh/setup-bun@v2
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_wrapper: false
-      - name: Update spec
-        run: make generate
-      - name: Update docs
-        run: make generate
+      - run: make generate
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v8
         with:

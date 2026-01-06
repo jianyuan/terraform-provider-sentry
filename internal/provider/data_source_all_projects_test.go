@@ -37,6 +37,7 @@ func TestAccAllProjectsDataSource(t *testing.T) {
 							"date_created": knownvalue.NotNull(),
 							"features":     knownvalue.NotNull(),
 							"color":        knownvalue.NotNull(),
+							"teams":        knownvalue.NotNull(),
 						}),
 					})),
 				},
