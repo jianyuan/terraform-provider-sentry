@@ -120,6 +120,7 @@ Optional:
 
 - `input_channel_id` (String) Slack channel ID to avoid rate-limiting, see [here](https://docs.sentry.io/product/integrations/notification-incidents/slack/#rate-limiting-error)
 - `integration_id` (Number)
+- `priority` (String)
 - `target_identifier` (String)
 
 Read-Only:
