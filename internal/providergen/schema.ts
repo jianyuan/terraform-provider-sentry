@@ -26,6 +26,7 @@ export interface BaseAttribute {
   sourceType?: "time";
   destinationAttribute?: Array<string>;
   skipFill?: boolean;
+  customFill?: string;
 }
 
 export interface StringAttribute extends BaseAttribute {

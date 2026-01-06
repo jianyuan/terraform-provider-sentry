@@ -28,6 +28,7 @@ data "sentry_all_projects" "default" {
 
 ### Read-Only
 
+- `project_slugs` (Set of String, Deprecated) The set of project slugs in this organization. **Deprecated** Use `projects[*].slug` instead.
 - `projects` (Attributes Set) The projects in this organization. (see [below for nested schema](#nestedatt--projects))
 
 <a id="nestedatt--projects"></a>
@@ -35,6 +36,7 @@ data "sentry_all_projects" "default" {
 
 Read-Only:
 
+- `color` (String) The color of this project.
 - `date_created` (String) The date this project was created.
 - `features` (Set of String) The features of this project.
 - `internal_id` (String) The internal ID of this project.

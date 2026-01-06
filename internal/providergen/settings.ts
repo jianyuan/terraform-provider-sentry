@@ -1,3 +1,4 @@
+import dedent from "dedent";
 import type { DataSource, Resource } from "./schema";
 
 export const DATASOURCES: Array<DataSource> = [
@@ -175,6 +176,19 @@ export const DATASOURCES: Array<DataSource> = [
         skipFill: true,
       },
       {
+        name: "project_slugs",
+        type: "set",
+        description: "The set of project slugs in this organization.",
+        computedOptionalRequired: "computed",
+        elementType: "string",
+        deprecationMessage: "Use `projects[*].slug` instead.",
+        customFill: dedent.withOptions({ trimWhitespace: true })`
+          m.ProjectSlugs = supertypes.NewSetValueOfSlice(ctx, sliceutils.Map(func(item apiclient.Project) string {
+            return item.Slug
+          }, data))
+        `,
+      },
+      {
         name: "projects",
         type: "set_nested",
         description: "The projects in this organization.",
@@ -207,6 +221,12 @@ export const DATASOURCES: Array<DataSource> = [
             description: "The platform of this project.",
             computedOptionalRequired: "computed",
             nullable: true,
+          },
+          {
+            name: "color",
+            type: "string",
+            description: "The color of this project.",
+            computedOptionalRequired: "computed",
           },
           {
             name: "date_created",

@@ -25,6 +25,9 @@ func TestAccAllProjectsDataSource(t *testing.T) {
 				Config: testAccAllProjectsDataSourceConfig(teamName, projectName),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("project_slugs"), knownvalue.SetPartial([]knownvalue.Check{
+						knownvalue.StringExact(projectName),
+					})),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("projects"), knownvalue.SetPartial([]knownvalue.Check{
 						knownvalue.ObjectExact(map[string]knownvalue.Check{
 							"internal_id":  knownvalue.StringRegexp(regexp.MustCompile(`^\d+$`)),

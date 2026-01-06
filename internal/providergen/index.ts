@@ -304,7 +304,11 @@ function generateModel({
       })} \`tfsdk:"${attribute.name}"\``,
     );
 
-    if (!attribute.skipFill) {
+    if (attribute.customFill) {
+      fillerLines.push(
+        `${attribute.customFill}${attribute.deprecationMessage ? " // Deprecated" : ""}`,
+      );
+    } else if (!attribute.skipFill) {
       fillerLines.push(
         `${generatePrimitiveToTerraform({
           name,

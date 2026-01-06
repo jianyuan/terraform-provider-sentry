@@ -38,6 +38,12 @@ func (d *AllProjectsDataSource) Schema(ctx context.Context, req datasource.Schem
 				Required:            true,
 				CustomType:          supertypes.StringType{},
 			},
+			"project_slugs": schema.SetAttribute{
+				MarkdownDescription: "The set of project slugs in this organization. **Deprecated** Use `projects[*].slug` instead.",
+				DeprecationMessage:  "Use `projects[*].slug` instead.",
+				Computed:            true,
+				CustomType:          supertypes.NewSetTypeOf[string](ctx),
+			},
 			"projects": schema.SetNestedAttribute{
 				MarkdownDescription: "The projects in this organization.",
 				Computed:            true,
@@ -61,6 +67,11 @@ func (d *AllProjectsDataSource) Schema(ctx context.Context, req datasource.Schem
 						},
 						"platform": schema.StringAttribute{
 							MarkdownDescription: "The platform of this project.",
+							Computed:            true,
+							CustomType:          supertypes.StringType{},
+						},
+						"color": schema.StringAttribute{
+							MarkdownDescription: "The color of this project.",
 							Computed:            true,
 							CustomType:          supertypes.StringType{},
 						},
@@ -149,10 +160,14 @@ func (d *AllProjectsDataSource) Read(ctx context.Context, req datasource.ReadReq
 
 type AllProjectsDataSourceModel struct {
 	Organization supertypes.StringValue                                                    `tfsdk:"organization"`
+	ProjectSlugs supertypes.SetValueOf[string]                                             `tfsdk:"project_slugs"`
 	Projects     supertypes.SetNestedObjectValueOf[AllProjectsDataSourceModelProjectsItem] `tfsdk:"projects"`
 }
 
 func (m *AllProjectsDataSourceModel) Fill(ctx context.Context, data []apiclient.Project) (diags diag.Diagnostics) {
+	m.ProjectSlugs = supertypes.NewSetValueOfSlice(ctx, sliceutils.Map(func(item apiclient.Project) string {
+		return item.Slug
+	}, data)) // Deprecated
 	m.Projects = supertypes.NewSetNestedObjectValueOfValueSlice(ctx, sliceutils.Map(func(item apiclient.Project) AllProjectsDataSourceModelProjectsItem {
 		var model AllProjectsDataSourceModelProjectsItem
 		diags.Append(model.Fill(ctx, item)...)
@@ -166,6 +181,7 @@ type AllProjectsDataSourceModelProjectsItem struct {
 	InternalId  supertypes.StringValue                                                             `tfsdk:"internal_id"`
 	Name        supertypes.StringValue                                                             `tfsdk:"name"`
 	Platform    supertypes.StringValue                                                             `tfsdk:"platform"`
+	Color       supertypes.StringValue                                                             `tfsdk:"color"`
 	DateCreated supertypes.StringValue                                                             `tfsdk:"date_created"`
 	Features    supertypes.SetValueOf[string]                                                      `tfsdk:"features"`
 	Teams       supertypes.SetNestedObjectValueOf[AllProjectsDataSourceModelProjectsItemTeamsItem] `tfsdk:"teams"`
@@ -180,6 +196,7 @@ func (m *AllProjectsDataSourceModelProjectsItem) Fill(ctx context.Context, data 
 	} else {
 		m.Platform = supertypes.NewStringNull()
 	}
+	m.Color = supertypes.NewStringValue(data.Color)
 	m.DateCreated = supertypes.NewStringValue(data.DateCreated.String())
 	m.Features = supertypes.NewSetValueOfSlice(ctx, data.Features)
 	m.Teams = supertypes.NewSetNestedObjectValueOfValueSlice(ctx, sliceutils.Map(func(item apiclient.Team) AllProjectsDataSourceModelProjectsItemTeamsItem {
