@@ -31,10 +31,12 @@ data "sentry_project" "default" {
 
 ### Read-Only
 
+- `color` (String) The color of this project.
 - `date_created` (String) The date this project was created.
 - `features` (Set of String) The features of this project.
 - `id` (String, Deprecated) The unique URL slug for this project. **Deprecated** Use `slug` instead.
 - `internal_id` (String) The internal ID of this project.
+- `is_public` (Boolean) Whether this project is public.
 - `name` (String) The name of this project.
 - `platform` (String) The platform of this project.
 - `teams` (Attributes Set) The teams of this project. (see [below for nested schema](#nestedatt--teams))

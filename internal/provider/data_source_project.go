@@ -57,6 +57,16 @@ func (d *ProjectDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 				Computed:            true,
 				CustomType:          supertypes.StringType{},
 			},
+			"color": schema.StringAttribute{
+				MarkdownDescription: "The color of this project.",
+				Computed:            true,
+				CustomType:          supertypes.StringType{},
+			},
+			"is_public": schema.BoolAttribute{
+				MarkdownDescription: "Whether this project is public.",
+				Computed:            true,
+				CustomType:          supertypes.BoolType{},
+			},
 			"date_created": schema.StringAttribute{
 				MarkdownDescription: "The date this project was created.",
 				Computed:            true,
@@ -135,6 +145,8 @@ type ProjectDataSourceModel struct {
 	InternalId   supertypes.StringValue                                             `tfsdk:"internal_id"`
 	Name         supertypes.StringValue                                             `tfsdk:"name"`
 	Platform     supertypes.StringValue                                             `tfsdk:"platform"`
+	Color        supertypes.StringValue                                             `tfsdk:"color"`
+	IsPublic     supertypes.BoolValue                                               `tfsdk:"is_public"`
 	DateCreated  supertypes.StringValue                                             `tfsdk:"date_created"`
 	Features     supertypes.SetValueOf[string]                                      `tfsdk:"features"`
 	Teams        supertypes.SetNestedObjectValueOf[ProjectDataSourceModelTeamsItem] `tfsdk:"teams"`
@@ -151,6 +163,8 @@ func (m *ProjectDataSourceModel) Fill(ctx context.Context, data apiclient.Projec
 	} else {
 		m.Platform = supertypes.NewStringNull()
 	}
+	m.Color = supertypes.NewStringValue(data.Color)
+	m.IsPublic = supertypes.NewBoolValue(data.IsPublic)
 	m.DateCreated = supertypes.NewStringValue(data.DateCreated.String())
 	m.Features = supertypes.NewSetValueOfSlice(ctx, data.Features)
 	m.Teams = supertypes.NewSetNestedObjectValueOfValueSlice(ctx, sliceutils.Map(func(item apiclient.Team) ProjectDataSourceModelTeamsItem {

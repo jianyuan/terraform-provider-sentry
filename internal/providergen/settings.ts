@@ -90,6 +90,18 @@ export const DATASOURCES: Array<DataSource> = [
         nullable: true,
       },
       {
+        name: "color",
+        type: "string",
+        description: "The color of this project.",
+        computedOptionalRequired: "computed",
+      },
+      {
+        name: "is_public",
+        type: "bool",
+        description: "Whether this project is public.",
+        computedOptionalRequired: "computed",
+      },
+      {
         name: "date_created",
         type: "string",
         description: "The date this project was created.",
