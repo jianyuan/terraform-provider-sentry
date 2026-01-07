@@ -23,3 +23,13 @@ Sentry Project Ownership. See the [Sentry documentation](https://docs.sentry.io/
 - `organization` (String) The organization of this resource.
 - `project` (String) The project of this resource.
 - `raw` (String) Raw input for ownership configuration.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+terraform import sentry_project_ownership.default org-slug/project-slug
+```
