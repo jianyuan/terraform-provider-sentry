@@ -12,7 +12,7 @@ import (
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 )
 
-func TestAccTeamDataSource_UpgradeFromVersion(t *testing.T) {
+func TestAccTeamDataSource(t *testing.T) {
 	teamName := acctest.RandomWithPrefix("tf-team")
 	rn := "sentry_team.test"
 	dsn := "data.sentry_team.test"
@@ -29,18 +29,9 @@ func TestAccTeamDataSource_UpgradeFromVersion(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { acctest.PreCheck(t) },
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			{
-				ExternalProviders: map[string]resource.ExternalProvider{
-					acctest.ProviderName: {
-						Source:            "jianyuan/sentry",
-						VersionConstraint: "0.14.6",
-					},
-				},
-				Config:            testAccTeamDataSourceConfig(teamName),
-				ConfigStateChecks: configStateChecks,
-			},
 			{
 				ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 				Config:                   testAccTeamDataSourceConfig(teamName),

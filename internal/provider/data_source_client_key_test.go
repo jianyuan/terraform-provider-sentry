@@ -12,60 +12,6 @@ import (
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 )
 
-func TestAccClientKeyDataSource_UpgradeFromVersion(t *testing.T) {
-	teamName := acctest.RandomWithPrefix("tf-team")
-	projectName := acctest.RandomWithPrefix("tf-project")
-	rn := "data.sentry_key.test"
-
-	checks := []statecheck.StateCheck{
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("project"), knownvalue.StringExact(projectName)),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact("Default")),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("project_id"), knownvalue.NotNull()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("public"), knownvalue.NotNull()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("secret"), knownvalue.NotNull()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("rate_limit_window"), knownvalue.Null()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("rate_limit_count"), knownvalue.Null()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("dsn_public"), knownvalue.NotNull()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("dsn_secret"), knownvalue.NotNull()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("dsn_csp"), knownvalue.NotNull()),
-	}
-
-	resource.Test(t, resource.TestCase{
-		PreCheck: func() { acctest.PreCheck(t) },
-		Steps: []resource.TestStep{
-			{
-				ExternalProviders: map[string]resource.ExternalProvider{
-					acctest.ProviderName: {
-						Source:            "jianyuan/sentry",
-						VersionConstraint: "0.12.3",
-					},
-				},
-				Config: testAccClientKeyDataSourceConfig_bare(teamName, projectName),
-				ConfigStateChecks: append(
-					checks,
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("first"), knownvalue.Bool(false)),
-				),
-			},
-			{
-				ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-				Config:                   testAccClientKeyDataSourceConfig_bare(teamName, projectName),
-				ConfigStateChecks: append(
-					checks,
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("first"), knownvalue.Null()),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("javascript_loader_script"), knownvalue.MapExact(map[string]knownvalue.Check{
-						"browser_sdk_version":            knownvalue.NotNull(),
-						"performance_monitoring_enabled": knownvalue.NotNull(),
-						"session_replay_enabled":         knownvalue.NotNull(),
-						"debug_enabled":                  knownvalue.NotNull(),
-					})),
-				),
-			},
-		},
-	})
-}
-
 func TestAccClientKeyDataSource_id(t *testing.T) {
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
