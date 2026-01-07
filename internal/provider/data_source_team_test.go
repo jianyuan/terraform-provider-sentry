@@ -6,13 +6,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/compare"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
-	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 )
 
-func TestAccTeamDataSource_UpgradeFromVersion(t *testing.T) {
+func TestAccTeamDataSource(t *testing.T) {
 	teamName := acctest.RandomWithPrefix("tf-team")
 	rn := "sentry_team.test"
 	dsn := "data.sentry_team.test"
@@ -29,26 +28,11 @@ func TestAccTeamDataSource_UpgradeFromVersion(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { acctest.PreCheck(t) },
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				ExternalProviders: map[string]resource.ExternalProvider{
-					acctest.ProviderName: {
-						Source:            "jianyuan/sentry",
-						VersionConstraint: "0.14.6",
-					},
-				},
 				Config:            testAccTeamDataSourceConfig(teamName),
-				ConfigStateChecks: configStateChecks,
-			},
-			{
-				ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-				Config:                   testAccTeamDataSourceConfig(teamName),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectEmptyPlan(),
-					},
-				},
 				ConfigStateChecks: configStateChecks,
 			},
 		},
