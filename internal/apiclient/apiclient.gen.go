@@ -318,6 +318,7 @@ type Project struct {
 	Features             []string                  `json:"features"`
 	FingerprintingRules  string                    `json:"fingerprintingRules"`
 	GroupingEnhancements string                    `json:"groupingEnhancements"`
+	HighlightTags        *[]string                 `json:"highlightTags,omitempty"`
 	Id                   string                    `json:"id"`
 	IsPublic             bool                      `json:"isPublic"`
 	Name                 string                    `json:"name"`
@@ -884,6 +885,7 @@ type UpdateOrganizationProjectJSONBody struct {
 	DigestsMinDelay      *int64                  `json:"digestsMinDelay,omitempty"`
 	FingerprintingRules  *string                 `json:"fingerprintingRules,omitempty"`
 	GroupingEnhancements *string                 `json:"groupingEnhancements,omitempty"`
+	HighlightTags        *[]string               `json:"highlightTags,omitempty"`
 	Name                 *string                 `json:"name,omitempty"`
 	Options              *map[string]interface{} `json:"options,omitempty"`
 	Platform             *string                 `json:"platform,omitempty"`

@@ -20,6 +20,7 @@ import (
 	"github.com/jianyuan/go-utils/must"
 	"github.com/jianyuan/go-utils/ptr"
 	"github.com/jianyuan/go-utils/sliceutils"
+
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 )
@@ -130,6 +131,22 @@ func TestAccProjectResource_basic(t *testing.T) {
 				return fmt.Errorf("unexpected verify tls ssl %v", project.VerifySSL)
 			}
 
+			if data.HighlightTags != nil {
+				if project.HighlightTags == nil {
+					return fmt.Errorf("highlight tags is nil")
+				}
+
+				if len(*project.HighlightTags) != len(*data.HighlightTags) {
+					return fmt.Errorf("unexpected highlight tags %v", *project.HighlightTags)
+				}
+
+				for _, tag := range *data.HighlightTags {
+					if !slices.Contains(*project.HighlightTags, tag) {
+						return fmt.Errorf("highlight tag %v not found", tag)
+					}
+				}
+			}
+
 			return nil
 		}
 	}
@@ -167,6 +184,15 @@ func TestAccProjectResource_basic(t *testing.T) {
 				"security_token_header": knownvalue.StringExact(ptr.Value(data.SecurityTokenHeader)),
 				"verify_tls_ssl":        knownvalue.Bool(ptr.Value(data.VerifyTlsSsl)),
 			})),
+			func() statecheck.StateCheck {
+				if data.HighlightTags == nil {
+					// Computed
+					return statecheck.ExpectKnownValue(rn, tfjsonpath.New("highlight_tags"), knownvalue.NotNull())
+				}
+				return statecheck.ExpectKnownValue(rn, tfjsonpath.New("highlight_tags"), knownvalue.SetExact(sliceutils.Map(func(v string) knownvalue.Check {
+					return knownvalue.StringExact(v)
+				}, *data.HighlightTags)))
+			}(),
 		}
 	}
 
@@ -241,6 +267,7 @@ func TestAccProjectResource_basic(t *testing.T) {
 					Platform:            "python",
 					AllowedDomains:      ptr.Ptr([]string{"jianyuan.io", "*.jianyuan.io"}),
 					SecurityTokenHeader: ptr.Ptr("x-my-security-token"),
+					HighlightTags:       ptr.Ptr([]string{"release", "environment"}),
 				}),
 				Check: testAccCheckProject(rn, checkProperties(testAccProjectResourceConfig_teamsData{
 					AllTeamNames:        []string{teamName1, teamName2, teamName3},
@@ -251,6 +278,7 @@ func TestAccProjectResource_basic(t *testing.T) {
 					ScrapeJavascript:    ptr.Ptr(false),
 					SecurityTokenHeader: ptr.Ptr("x-my-security-token"),
 					VerifyTlsSsl:        ptr.Ptr(true),
+					HighlightTags:       ptr.Ptr([]string{"release", "environment"}),
 				})),
 				ConfigStateChecks: configStateChecks(testAccProjectResourceConfig_teamsData{
 					AllTeamNames:        []string{teamName1, teamName2, teamName3},
@@ -261,6 +289,7 @@ func TestAccProjectResource_basic(t *testing.T) {
 					ScrapeJavascript:    ptr.Ptr(false),
 					SecurityTokenHeader: ptr.Ptr("x-my-security-token"),
 					VerifyTlsSsl:        ptr.Ptr(true),
+					HighlightTags:       ptr.Ptr([]string{"release", "environment"}),
 				}),
 			},
 			// Remove all optional attributes
@@ -847,6 +876,14 @@ resource "sentry_project" "test" {
 		verify_tls_ssl = {{ .VerifyTlsSsl }}
 		{{ end }}
 	}
+
+	{{ if ne .HighlightTags nil }}
+	highlight_tags = [
+		{{ range $i, $tag := .HighlightTags }}
+		"{{ $tag }}",
+		{{ end }}
+	]
+	{{ end }}
 }
 `))
 
@@ -860,6 +897,7 @@ type testAccProjectResourceConfig_teamsData struct {
 	SecurityToken       *string
 	SecurityTokenHeader *string
 	VerifyTlsSsl        *bool
+	HighlightTags       *[]string
 }
 
 func testAccProjectResourceConfig_teams(data testAccProjectResourceConfig_teamsData) string {
