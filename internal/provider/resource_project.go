@@ -23,6 +23,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/jianyuan/go-utils/sliceutils"
+	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
@@ -131,31 +132,31 @@ func (m *ProjectClientSecurityResourceModel) Fill(ctx context.Context, project a
 }
 
 type ProjectResourceModel struct {
-	Id                   types.String              `tfsdk:"id"`
-	Organization         types.String              `tfsdk:"organization"`
-	Teams                types.Set                 `tfsdk:"teams"`
-	Name                 types.String              `tfsdk:"name"`
-	Slug                 types.String              `tfsdk:"slug"`
-	Platform             types.String              `tfsdk:"platform"`
-	DefaultRules         types.Bool                `tfsdk:"default_rules"`
-	DefaultKey           types.Bool                `tfsdk:"default_key"`
-	InternalId           types.String              `tfsdk:"internal_id"`
-	Features             types.Set                 `tfsdk:"features"`
-	DigestsMinDelay      types.Int64               `tfsdk:"digests_min_delay"`
-	DigestsMaxDelay      types.Int64               `tfsdk:"digests_max_delay"`
-	ResolveAge           types.Int64               `tfsdk:"resolve_age"`
-	Filters              types.Object              `tfsdk:"filters"`
-	FingerprintingRules  sentrytypes.TrimmedString `tfsdk:"fingerprinting_rules"`
-	GroupingEnhancements sentrytypes.TrimmedString `tfsdk:"grouping_enhancements"`
-	ClientSecurity       types.Object              `tfsdk:"client_security"`
-	HighlightTags        types.Set                 `tfsdk:"highlight_tags"`
+	Id                   types.String                  `tfsdk:"id"`
+	Organization         types.String                  `tfsdk:"organization"`
+	Teams                supertypes.SetValueOf[string] `tfsdk:"teams"`
+	Name                 types.String                  `tfsdk:"name"`
+	Slug                 types.String                  `tfsdk:"slug"`
+	Platform             types.String                  `tfsdk:"platform"`
+	DefaultRules         types.Bool                    `tfsdk:"default_rules"`
+	DefaultKey           types.Bool                    `tfsdk:"default_key"`
+	InternalId           types.String                  `tfsdk:"internal_id"`
+	Features             supertypes.SetValueOf[string] `tfsdk:"features"`
+	DigestsMinDelay      types.Int64                   `tfsdk:"digests_min_delay"`
+	DigestsMaxDelay      types.Int64                   `tfsdk:"digests_max_delay"`
+	ResolveAge           types.Int64                   `tfsdk:"resolve_age"`
+	Filters              types.Object                  `tfsdk:"filters"`
+	FingerprintingRules  sentrytypes.TrimmedString     `tfsdk:"fingerprinting_rules"`
+	GroupingEnhancements sentrytypes.TrimmedString     `tfsdk:"grouping_enhancements"`
+	ClientSecurity       types.Object                  `tfsdk:"client_security"`
+	HighlightTags        supertypes.SetValueOf[string] `tfsdk:"highlight_tags"`
 }
 
 func (m *ProjectResourceModel) Fill(ctx context.Context, project apiclient.Project) (diags diag.Diagnostics) {
 	m.Id = types.StringValue(project.Slug)
 	m.Organization = types.StringValue(project.Organization.Slug)
-	m.Teams = types.SetValueMust(types.StringType, sliceutils.Map(func(v apiclient.Team) attr.Value {
-		return types.StringValue(v.Slug)
+	m.Teams = supertypes.NewSetValueOfSlice(ctx, sliceutils.Map(func(item apiclient.Team) string {
+		return item.Slug
 	}, project.Teams))
 	m.Name = types.StringValue(project.Name)
 	m.Slug = types.StringValue(project.Slug)
@@ -167,10 +168,7 @@ func (m *ProjectResourceModel) Fill(ctx context.Context, project apiclient.Proje
 	}
 
 	m.InternalId = types.StringValue(project.Id)
-	m.Features = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
-		return types.StringValue(v)
-	}, project.Features))
-
+	m.Features = supertypes.NewSetValueOfSlice(ctx, project.Features)
 	m.DigestsMinDelay = types.Int64Value(project.DigestsMinDelay)
 	m.DigestsMaxDelay = types.Int64Value(project.DigestsMaxDelay)
 	m.ResolveAge = types.Int64Value(project.ResolveAge)
@@ -187,11 +185,9 @@ func (m *ProjectResourceModel) Fill(ctx context.Context, project apiclient.Proje
 	m.ClientSecurity = tfutils.MergeDiagnostics(types.ObjectValueFrom(ctx, clientSecurity.AttributeTypes(), clientSecurity))(&diags)
 
 	if project.HighlightTags != nil {
-		m.HighlightTags = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
-			return types.StringValue(v)
-		}, *project.HighlightTags))
+		m.HighlightTags = supertypes.NewSetValueOfSlice(ctx, *project.HighlightTags)
 	} else {
-		m.HighlightTags = types.SetNull(types.StringType)
+		m.HighlightTags = supertypes.NewSetValueOfNull[string](ctx)
 	}
 
 	return
@@ -223,7 +219,7 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 			"teams": schema.SetAttribute{
 				Description: "The slugs of the teams to create the project for.",
 				Required:    true,
-				ElementType: types.StringType,
+				CustomType:  supertypes.NewSetTypeOf[string](ctx),
 				Validators: []validator.Set{
 					setvalidator.SizeAtLeast(1),
 				},
@@ -266,8 +262,8 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 				},
 			},
 			"features": schema.SetAttribute{
-				ElementType: types.StringType,
-				Computed:    true,
+				CustomType: supertypes.NewSetTypeOf[string](ctx),
+				Computed:   true,
 				PlanModifiers: []planmodifier.Set{
 					setplanmodifier.UseStateForUnknown(),
 				},
@@ -419,7 +415,7 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 			},
 			"highlight_tags": schema.SetAttribute{
 				MarkdownDescription: "A list of strings with tag keys to highlight on this project's issues. E.g. ['release', 'environment']",
-				ElementType:         types.StringType,
+				CustomType:          supertypes.NewSetTypeOf[string](ctx),
 				Optional:            true,
 				Computed:            true,
 				PlanModifiers: []planmodifier.Set{
@@ -438,8 +434,7 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	var teams []string
-	resp.Diagnostics.Append(data.Teams.ElementsAs(ctx, &teams, false)...)
+	teams := data.Teams.DiagsGet(ctx, resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -822,10 +817,8 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	// Update teams
 	if !plan.Teams.Equal(state.Teams) {
-		var planTeams, stateTeams []string
-
-		resp.Diagnostics.Append(plan.Teams.ElementsAs(ctx, &planTeams, false)...)
-		resp.Diagnostics.Append(state.Teams.ElementsAs(ctx, &stateTeams, false)...)
+		planTeams := plan.Teams.DiagsGet(ctx, resp.Diagnostics)
+		stateTeams := state.Teams.DiagsGet(ctx, resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}

@@ -186,7 +186,8 @@ func TestAccProjectResource_basic(t *testing.T) {
 			})),
 			func() statecheck.StateCheck {
 				if data.HighlightTags == nil {
-					return statecheck.ExpectKnownValue(rn, tfjsonpath.New("highlight_tags"), knownvalue.Null())
+					// Computed
+					return statecheck.ExpectKnownValue(rn, tfjsonpath.New("highlight_tags"), knownvalue.NotNull())
 				}
 				return statecheck.ExpectKnownValue(rn, tfjsonpath.New("highlight_tags"), knownvalue.SetExact(sliceutils.Map(func(v string) knownvalue.Check {
 					return knownvalue.StringExact(v)
