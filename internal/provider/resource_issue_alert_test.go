@@ -923,14 +923,14 @@ func TestAccIssueAlertResource_upgradeFromVersion(t *testing.T) {
 				},
 				Config: testAccOrganizationDataSourceConfig + fmt.Sprintf(`
 resource "sentry_team" "test" {
-	organization = data.sentry_organization.test.id
+	organization = data.sentry_organization.test.slug
 	name         = "%[1]s"
 	slug         = "%[1]s"
 }
 
 resource "sentry_project" "test" {
 	organization = sentry_team.test.organization
-	teams        = [sentry_team.test.id]
+	teams        = [sentry_team.test.slug]
 	name         = "%[2]s"
 	platform     = "go"
 }
@@ -972,14 +972,14 @@ resource "sentry_issue_alert" "test" {
 				ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 				Config: testAccOrganizationDataSourceConfig + fmt.Sprintf(`
 resource "sentry_team" "test" {
-	organization = data.sentry_organization.test.id
+	organization = data.sentry_organization.test.slug
 	name         = "%[1]s"
 	slug         = "%[1]s"
 }
 
 resource "sentry_project" "test" {
 	organization = sentry_team.test.organization
-	teams        = [sentry_team.test.id]
+	teams        = [sentry_team.test.slug]
 	name         = "%[2]s"
 	platform     = "go"
 }
@@ -1089,14 +1089,14 @@ func testAccCheckIssueAlertExists(n string, alertId *string) resource.TestCheckF
 func testAccIssueAlertConfig(team string, project string, alert string, extras string) string {
 	return testAccOrganizationDataSourceConfig + fmt.Sprintf(`
 resource "sentry_team" "test" {
-	organization = data.sentry_organization.test.id
+	organization = data.sentry_organization.test.slug
 	name         = "%[1]s"
 	slug         = "%[1]s"
 }
 
 resource "sentry_project" "test" {
 	organization = sentry_team.test.organization
-	teams        = [sentry_team.test.id]
+	teams        = [sentry_team.test.slug]
 	name         = "%[2]s"
 	platform     = "go"
 }
@@ -1162,7 +1162,7 @@ EOT
 	{
 		"id": "sentry.rules.filters.assigned_to.AssignedToFilter",
 		"targetType": "Team",
-		"targetIdentifier": ${parseint(sentry_team.test.team_id, 10)}
+		"targetIdentifier": ${parseint(sentry_team.test.internal_id, 10)}
 	},
 	{
 		"id": "sentry.rules.filters.latest_release.LatestReleaseFilter"
@@ -1197,7 +1197,7 @@ EOT
 	{
 		"id": "sentry.mail.actions.NotifyEmailAction",
 		"targetType": "Team",
-		"targetIdentifier": ${parseint(sentry_team.test.team_id, 10)}
+		"targetIdentifier": ${parseint(sentry_team.test.internal_id, 10)}
 	},
 	{
 		"id": "sentry.rules.actions.notify_event.NotifyEventAction"

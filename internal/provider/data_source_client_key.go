@@ -42,12 +42,12 @@ func (m *ClientKeyDataSourceModel) Fill(ctx context.Context, key apiclient.Proje
 	m.ProjectId = types.StringValue(key.ProjectId.String())
 	m.Name = types.StringValue(key.Name)
 
-	if key.RateLimit == nil {
+	if v, err := key.RateLimit.Get(); err == nil {
+		m.RateLimitWindow = types.Int64Value(int64(v.Window))
+		m.RateLimitCount = types.Int64Value(int64(v.Count))
+	} else {
 		m.RateLimitWindow = types.Int64Null()
 		m.RateLimitCount = types.Int64Null()
-	} else {
-		m.RateLimitWindow = types.Int64Value(int64(key.RateLimit.Window))
-		m.RateLimitCount = types.Int64Value(int64(key.RateLimit.Count))
 	}
 
 	var javascriptLoaderScript ClientKeyJavascriptLoaderScriptModel
@@ -144,7 +144,7 @@ func (d *ClientKeyDataSource) Read(ctx context.Context, req datasource.ReadReque
 				resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 				return
 			}
-			if httpResp.StatusCode() != http.StatusOK {
+			if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
 				resp.Diagnostics.Append(diagutils.NewClientStatusError("read", httpResp.StatusCode(), httpResp.Body))
 				return
 			}

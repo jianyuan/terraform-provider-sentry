@@ -29,4 +29,6 @@ resource "sentry_project" "default" {
     # mark all functions following a prefix in-app
     stack.function:mylibrary_* +app
   EOT
+
+  highlight_tags = ["release", "environment"]
 }

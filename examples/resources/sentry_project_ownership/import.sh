@@ -1,0 +1,1 @@
+terraform import sentry_project_ownership.default org-slug/project-slug

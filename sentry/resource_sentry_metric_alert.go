@@ -138,6 +138,10 @@ func resourceSentryMetricAlert() *schema.Resource {
 										Type:     schema.TypeInt,
 										Optional: true,
 									},
+									"priority": {
+										Type:     schema.TypeString,
+										Optional: true,
+									},
 								},
 							},
 						},

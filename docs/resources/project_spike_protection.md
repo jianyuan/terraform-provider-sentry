@@ -42,3 +42,15 @@ resource "sentry_project_spike_protection" "default" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# import using the organization and team slugs from the URL:
+# https://sentry.io/settings/[org-slug]/projects/[project-slug]/
+terraform import sentry_project_spike_protection.default org-slug/project-slug
+```

@@ -30,5 +30,6 @@ data "sentry_organization_member" "default" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `internal_id` (String) The internal ID of the organization member.
 - `role` (String) This is the role of the organization member.
 - `user_id` (String) The user ID of the organization member.

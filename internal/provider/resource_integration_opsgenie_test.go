@@ -209,13 +209,13 @@ func TestAccIntegrationOpsgenieResource(t *testing.T) {
 func testAccIntegrationOpsgenieResourceConfig(teamName string) string {
 	return testAccOrganizationDataSourceConfig + fmt.Sprintf(`
 data "sentry_organization_integration" "opsgenie" {
-	organization = data.sentry_organization.test.id
+	organization = data.sentry_organization.test.slug
 	provider_key = "opsgenie"
 	name         = "%[1]s"
 }
 
 resource "sentry_integration_opsgenie" "test" {
-	organization    = data.sentry_organization.test.id
+	organization    = data.sentry_organization.test.slug
 	integration_id  = data.sentry_organization_integration.opsgenie.id
 	team            = "%[2]s"
 	integration_key = "%[3]s"

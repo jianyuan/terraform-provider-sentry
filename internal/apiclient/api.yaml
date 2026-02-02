@@ -298,6 +298,40 @@ paths:
           description: Forbidden
         "404":
           description: Not Found
+  /0/teams/{organization_id_or_slug}/{team_id_or_slug}/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+      - $ref: "#/components/parameters/team_id_or_slug"
+    get:
+      summary: Retrieve a Team
+      operationId: getOrganizationTeam
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Team"
+                  - type: object
+                    required:
+                      - hasAccess
+                      - isPending
+                      - isMember
+                    properties:
+                      hasAccess:
+                        type: boolean
+                      isPending:
+                        type: boolean
+                      isMember:
+                        type: boolean
+
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
   /0/teams/{organization_id_or_slug}/{team_id_or_slug}/projects/:
     parameters:
       - $ref: "#/components/parameters/organization_id_or_slug"
@@ -398,6 +432,10 @@ paths:
                   type: string
                 verifySSL:
                   type: boolean
+                highlightTags:
+                  type: array
+                  items:
+                    type: string
       responses:
         "200":
           description: OK
@@ -423,8 +461,8 @@ paths:
           description: Forbidden
         "404":
           description: Not Found
-  ? /0/projects/{organization_id_or_slug}/{project_id_or_slug}/teams/{team_id_or_slug}/
-  : parameters:
+  /0/projects/{organization_id_or_slug}/{project_id_or_slug}/teams/{team_id_or_slug}/:
+    parameters:
       - $ref: "#/components/parameters/organization_id_or_slug"
       - $ref: "#/components/parameters/project_id_or_slug"
       - $ref: "#/components/parameters/team_id_or_slug"
@@ -939,6 +977,7 @@ components:
         - pending
         - expired
         - orgRole
+        - user 
       properties:
         id:
           type: string
@@ -952,6 +991,13 @@ components:
           type: boolean
         orgRole:
           type: string
+        user:
+          type: object
+          required:
+            - id
+          properties:
+            id:
+              type: string
     OrganizationRoleListItem:
       type: object
       required:
@@ -1269,6 +1315,10 @@ components:
           nullable: true
         verifySSL:
           type: boolean
+        highlightTags:
+          type: array
+          items:
+            type: string
     ProjectKey:
       type: object
       required:

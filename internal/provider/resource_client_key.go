@@ -39,12 +39,13 @@ func (m *ClientKeyResourceModel) Fill(ctx context.Context, key apiclient.Project
 	m.ProjectId = types.StringValue(key.ProjectId.String())
 	m.Name = types.StringValue(key.Name)
 
-	if key.RateLimit == nil {
+	if v, err := key.RateLimit.Get(); err == nil {
+		m.RateLimitWindow = types.Int64Value(v.Window)
+		m.RateLimitCount = types.Int64Value(v.Count)
+
+	} else {
 		m.RateLimitWindow = types.Int64Null()
 		m.RateLimitCount = types.Int64Null()
-	} else {
-		m.RateLimitWindow = types.Int64Value(key.RateLimit.Window)
-		m.RateLimitCount = types.Int64Value(key.RateLimit.Count)
 	}
 
 	var javascriptLoaderScript ClientKeyJavascriptLoaderScriptModel

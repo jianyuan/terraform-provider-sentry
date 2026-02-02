@@ -34,7 +34,7 @@ resource "sentry_metric_alert" "main" {
     action {
       type              = "email"
       target_type       = "team"
-      target_identifier = sentry_team.main.team_id
+      target_identifier = sentry_team.main.internal_id
     }
     alert_threshold = 300
     label           = "critical"
@@ -120,6 +120,7 @@ Optional:
 
 - `input_channel_id` (String) Slack channel ID to avoid rate-limiting, see [here](https://docs.sentry.io/product/integrations/notification-incidents/slack/#rate-limiting-error)
 - `integration_id` (Number)
+- `priority` (String)
 - `target_identifier` (String)
 
 Read-Only:
@@ -129,6 +130,8 @@ Read-Only:
 ## Import
 
 Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
 # import using the organization, project slugs and rule id from the URL:

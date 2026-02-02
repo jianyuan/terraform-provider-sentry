@@ -111,13 +111,13 @@ func TestAccIntegrationPagerDutyResource(t *testing.T) {
 func testAccIntegrationPagerDutyResourceConfig(serviceName, integrationKey string) string {
 	return testAccOrganizationDataSourceConfig + fmt.Sprintf(`
 data "sentry_organization_integration" "pagerduty" {
-	organization = data.sentry_organization.test.id
+	organization = data.sentry_organization.test.slug
 	provider_key = "pagerduty"
 	name         = "%[1]s"
 }
 
 resource "sentry_integration_pagerduty" "test" {
-	organization    = data.sentry_organization.test.id
+	organization    = data.sentry_organization.test.slug
 	integration_id  = data.sentry_organization_integration.pagerduty.id
 	service         = "%[2]s"
 	integration_key = "%[3]s"

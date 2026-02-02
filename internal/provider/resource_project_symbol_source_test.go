@@ -74,14 +74,14 @@ func TestAccProjectSymbolSourceResource(t *testing.T) {
 func testAccProjectSymbolSourceConfig(teamName string, projectName string, name string) string {
 	return testAccOrganizationDataSourceConfig + fmt.Sprintf(`
 resource "sentry_team" "test" {
-	organization = data.sentry_organization.test.id
+	organization = data.sentry_organization.test.slug
 	name         = "%[1]s"
 	slug         = "%[1]s"
 }
 
 resource "sentry_project" "test" {
 	organization = sentry_team.test.organization
-	teams        = [sentry_team.test.id]
+	teams        = [sentry_team.test.slug]
 	name         = "%[2]s"
 	platform     = "go"
 }

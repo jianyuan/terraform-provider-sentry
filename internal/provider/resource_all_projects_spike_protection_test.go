@@ -70,7 +70,7 @@ func TestAccAllProjectsSpikeProtectionResource(t *testing.T) {
 				}) + fmt.Sprintf(`
 					resource "sentry_project" "test2" {
 						organization = sentry_team.test.organization
-						teams        = [sentry_team.test.id]
+						teams        = [sentry_team.test.slug]
 						name         = "%[1]s"
 					}
 

@@ -13,22 +13,19 @@ jobs:
   generate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-go@v6
         with:
           go-version-file: "go.mod"
           cache: true
-      - name: Install uv
-        uses: astral-sh/setup-uv@v7
+      - uses: astral-sh/setup-uv@v7
+      - uses: oven-sh/setup-bun@v2
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_wrapper: false
-      - name: Update spec
-        run: make generate
-      - name: Update docs
-        run: make generate
+      - run: make generate
       - name: Create Pull Request
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: peter-evans/create-pull-request@v8
         with:
           commit_message: Update Sentry data
           branch: main

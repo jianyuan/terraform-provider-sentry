@@ -4,9 +4,8 @@ name: Tests
 # This GitHub action runs your tests for each pull request and push.
 # Optionally, you can turn it on using a schedule for regular testing.
 on:
-  pull_request:
-    branches:
-      - main
+  pull_request_target:
+    types: [opened, synchronize]
     paths-ignore:
       - "README.md"
   push:
@@ -33,7 +32,22 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v5
+      - id: check-access
+        if: github.event_name == 'pull_request_target'
+        uses: actions-cool/check-user-permission@v2
+        with:
+          require: write
+          username: ${{ github.triggering_actor }}
+      - name: Check User Permission
+        if: github.event_name == 'pull_request_target' && steps.check-access.outputs.require-result != 'true'
+        run: |
+          echo "User ${{ github.triggering_actor }} lacks the necessary rights on this repository."
+          echo "Their current access level: ${{ steps.checkAccess.outputs.user-permission }}"
+          echo "Initial trigger for this job: ${{ github.actor }}"
+          exit 1
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-go@v6
         with:
           go-version-file: "go.mod"
@@ -41,20 +55,35 @@ jobs:
       - run: go mod download
       - run: go build -v .
       - name: Run linters
-        uses: golangci/golangci-lint-action@v8
+        uses: golangci/golangci-lint-action@v9
         with:
           version: latest
 
   generate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - id: check-access
+        if: github.event_name == 'pull_request_target'
+        uses: actions-cool/check-user-permission@v2
+        with:
+          require: write
+          username: ${{ github.triggering_actor }}
+      - name: Check User Permission
+        if: github.event_name == 'pull_request_target' && steps.check-access.outputs.require-result != 'true'
+        run: |
+          echo "User ${{ github.triggering_actor }} lacks the necessary rights on this repository."
+          echo "Their current access level: ${{ steps.checkAccess.outputs.user-permission }}"
+          echo "Initial trigger for this job: ${{ github.actor }}"
+          exit 1
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-go@v6
         with:
           go-version-file: "go.mod"
           cache: true
-      - name: Install uv
-        uses: astral-sh/setup-uv@v7
+      - uses: astral-sh/setup-uv@v7
+      - uses: oven-sh/setup-bun@v2
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_wrapper: false
@@ -65,62 +94,55 @@ jobs:
             (echo; echo "Unexpected difference in directories after code generation. Run 'make generate' command and commit."; exit 1)
 
   # Run acceptance tests in a matrix with Terraform CLI versions
-  # test:
-  #   name: Terraform Provider Acceptance Tests
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 30
-  #   strategy:
-  #     fail-fast: false
-  #     max-parallel: 1
-  #     matrix:
-  #       terraform:
-  #         - "1.4.*"
-  #         - "1.5.*"
-  #         - "1.6.*"
-  #         - "1.7.*"
-  #         - "1.8.*"
-  #         - "1.9.*"
-  #         - "1.10.*"
-  #       is-pr:
-  #         - ${{ github.event_name == 'pull_request' }}
-  #       # Only run the latest version of Terraform on pull requests
-  #       exclude:
-  #         - terraform: "1.4.*"
-  #           is-pr: true
-  #         - terraform: "1.5.*"
-  #           is-pr: true
-  #         - terraform: "1.6.*"
-  #           is-pr: true
-  #         - terraform: "1.7.*"
-  #           is-pr: true
-  #         - terraform: "1.8.*"
-  #           is-pr: true
-  #         - terraform: "1.9.*"
-  #           is-pr: true
-  #   steps:
-  #     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-  #     - uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5.5.0
-  #       with:
-  #         go-version-file: "go.mod"
-  #         cache: true
-  #     - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
-  #       with:
-  #         terraform_version: ${{ matrix.terraform }}
-  #         terraform_wrapper: false
-  #     - run: go mod download
-  #     - env:
-  #         TF_ACC: "1"
-  #         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-  #         SENTRY_TEST_GITHUB_INSTALLATION_ID: ${{ secrets.SENTRY_TEST_GITHUB_INSTALLATION_ID }}
-  #         SENTRY_TEST_GITHUB_REPOSITORY_IDENTIFIER: ${{ secrets.SENTRY_TEST_GITHUB_REPOSITORY_IDENTIFIER }}
-  #         SENTRY_TEST_GITLAB_INSTALLATION_ID: ${{ secrets.SENTRY_TEST_GITLAB_INSTALLATION_ID }}
-  #         SENTRY_TEST_GITLAB_REPOSITORY_IDENTIFIER: ${{ secrets.SENTRY_TEST_GITLAB_REPOSITORY_IDENTIFIER }}
-  #         SENTRY_TEST_OPSGENIE_INTEGRATION_KEY: ${{ secrets.SENTRY_TEST_OPSGENIE_INTEGRATION_KEY }}
-  #         SENTRY_TEST_OPSGENIE_ORGANIZATION: ${{ secrets.SENTRY_TEST_OPSGENIE_ORGANIZATION }}
-  #         SENTRY_TEST_ORGANIZATION: ${{ secrets.SENTRY_TEST_ORGANIZATION }}
-  #         SENTRY_TEST_PAGERDUTY_ORGANIZATION: ${{ secrets.SENTRY_TEST_PAGERDUTY_ORGANIZATION }}
-  #         SENTRY_TEST_VSTS_INSTALLATION_ID: ${{ secrets.SENTRY_TEST_VSTS_INSTALLATION_ID }}
-  #         SENTRY_TEST_VSTS_REPOSITORY_IDENTIFIER: ${{ secrets.SENTRY_TEST_VSTS_REPOSITORY_IDENTIFIER }}
-  #       run: go test -v -cover -timeout 60m ./internal/provider/
-  #       timeout-minutes: 60
+  test:
+    name: Terraform Provider Acceptance Tests
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        terraform:
+          - "1.13.*"
+    steps:
+      - id: check-access
+        if: github.event_name == 'pull_request_target'
+        uses: actions-cool/check-user-permission@v2
+        with:
+          require: write
+          username: ${{ github.triggering_actor }}
+      - name: Check User Permission
+        if: github.event_name == 'pull_request_target' && steps.check-access.outputs.require-result != 'true'
+        run: |
+          echo "User ${{ github.triggering_actor }} lacks the necessary rights on this repository."
+          echo "Their current access level: ${{ steps.checkAccess.outputs.user-permission }}"
+          echo "Initial trigger for this job: ${{ github.actor }}"
+          exit 1
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: "go.mod"
+          cache: true
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ matrix.terraform }}
+          terraform_wrapper: false
+      - run: go mod download
+      - env:
+          TF_ACC: "1"
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_TEST_GITHUB_INSTALLATION_ID: ${{ secrets.SENTRY_TEST_GITHUB_INSTALLATION_ID }}
+          SENTRY_TEST_GITHUB_REPOSITORY_IDENTIFIER: ${{ secrets.SENTRY_TEST_GITHUB_REPOSITORY_IDENTIFIER }}
+          SENTRY_TEST_GITLAB_INSTALLATION_ID: ${{ secrets.SENTRY_TEST_GITLAB_INSTALLATION_ID }}
+          SENTRY_TEST_GITLAB_REPOSITORY_IDENTIFIER: ${{ secrets.SENTRY_TEST_GITLAB_REPOSITORY_IDENTIFIER }}
+          SENTRY_TEST_OPSGENIE_INTEGRATION_KEY: ${{ secrets.SENTRY_TEST_OPSGENIE_INTEGRATION_KEY }}
+          SENTRY_TEST_OPSGENIE_ORGANIZATION: ${{ secrets.SENTRY_TEST_OPSGENIE_ORGANIZATION }}
+          SENTRY_TEST_ORGANIZATION: ${{ secrets.SENTRY_TEST_ORGANIZATION }}
+          SENTRY_TEST_PAGERDUTY_ORGANIZATION: ${{ secrets.SENTRY_TEST_PAGERDUTY_ORGANIZATION }}
+          SENTRY_TEST_VSTS_INSTALLATION_ID: ${{ secrets.SENTRY_TEST_VSTS_INSTALLATION_ID }}
+          SENTRY_TEST_VSTS_REPOSITORY_IDENTIFIER: ${{ secrets.SENTRY_TEST_VSTS_REPOSITORY_IDENTIFIER }}
+        run: go test -v -cover -timeout 60m ./internal/provider/
+        timeout-minutes: 60

@@ -225,5 +225,5 @@ func (r *ProjectOwnershipResource) Delete(ctx context.Context, req resource.Dele
 }
 
 func (r *ProjectOwnershipResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	tfutils.ImportStateThreePartId(ctx, "organization", "project", req, resp)
+	tfutils.ImportStateTwoPart(ctx, "organization", "project", req, resp)
 }

@@ -17,7 +17,10 @@ lint:
 
 .PHONY: generate
 generate:
-	go generate ./...
+	go generate ./internal/apiclient
+	go generate ./internal/sentrydata
+	go generate ./internal/providergen
+	go generate ./
 
 .PHONY: fmt
 fmt:

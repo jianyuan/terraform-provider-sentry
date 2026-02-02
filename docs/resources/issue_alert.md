@@ -4,14 +4,17 @@ page_title: "sentry_issue_alert Resource - terraform-provider-sentry"
 subcategory: ""
 description: |-
   Create an Issue Alert Rule for a Project. See the Sentry Documentation https://docs.sentry.io/api/alerts/create-an-issue-alert-rule-for-a-project/ for more information.
-  NOTE: Since v0.15.0, the conditions, filters, and actions attributes which are JSON strings have been deprecated in favor of conditions_v2, filters_v2, and actions_v2 which are lists of objects.
+  NOTE: The conditions, filters, and actions attributes, which are JSON strings, have been deprecated in favor of conditions_v2, filters_v2, and actions_v2, which are lists of objects.
+  The *_v2 attributes are available starting from v0.14.2.
 ---
 
 # sentry_issue_alert (Resource)
 
 Create an Issue Alert Rule for a Project. See the [Sentry Documentation](https://docs.sentry.io/api/alerts/create-an-issue-alert-rule-for-a-project/) for more information.
 
-**NOTE:** Since v0.15.0, the `conditions`, `filters`, and `actions` attributes which are JSON strings have been deprecated in favor of `conditions_v2`, `filters_v2`, and `actions_v2` which are lists of objects.
+**NOTE:** The `conditions`, `filters`, and `actions` attributes, which are JSON strings, have been deprecated in favor of `conditions_v2`, `filters_v2`, and `actions_v2`, which are lists of objects.
+
+The `*_v2` attributes are available starting from v0.14.2.
 
 ## Example Usage
 
@@ -174,7 +177,7 @@ resource "sentry_issue_alert" "member_alert" {
 #
 
 data "sentry_organization_member" "member" {
-  organization = data.sentry_organization.test.id
+  organization = data.sentry_organization.test.slug
   email        = "test@example.com"
 }
 
@@ -999,6 +1002,8 @@ Read-Only:
 ## Import
 
 Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
 # import using the organization, project slugs and rule id from the URL:

@@ -99,7 +99,7 @@ func testAccCheckSentryOrganizationMemberExists(n string, member *apiclient.Orga
 func testAccSentryOrganizationMemberConfig(email, role string) string {
 	return testAccSentryOrganizationDataSourceConfig + fmt.Sprintf(`
 resource "sentry_organization_member" "john_doe" {
-	organization = data.sentry_organization.test.id
+	organization = data.sentry_organization.test.slug
 	email        = "%[1]s"
 	role         = "%[2]s"
 }

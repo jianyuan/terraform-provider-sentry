@@ -157,7 +157,7 @@ resource "sentry_issue_alert" "member_alert" {
 #
 
 data "sentry_organization_member" "member" {
-  organization = data.sentry_organization.test.id
+  organization = data.sentry_organization.test.slug
   email        = "test@example.com"
 }
 

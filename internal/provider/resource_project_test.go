@@ -16,10 +16,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/mzglinski/go-sentry/v2/sentry"
 	"github.com/jianyuan/go-utils/must"
 	"github.com/jianyuan/go-utils/ptr"
 	"github.com/jianyuan/go-utils/sliceutils"
+	"github.com/mzglinski/go-sentry/v2/sentry"
 	"github.com/mzglinski/terraform-provider-sentry/internal/acctest"
 	"github.com/mzglinski/terraform-provider-sentry/internal/apiclient"
 )
@@ -82,10 +82,12 @@ func TestAccProjectResource_basic(t *testing.T) {
 				return fmt.Errorf("unexpected project name %v", project.Name)
 			}
 
-			if project.Platform == nil {
-				return fmt.Errorf("platform is nil")
-			} else if *project.Platform != data.Platform {
-				return fmt.Errorf("unexpected platform %v", *project.Platform)
+			if v, err := project.Platform.Get(); err == nil {
+				if data.Platform != v {
+					return fmt.Errorf("unexpected platform %v", v)
+				}
+			} else {
+				return fmt.Errorf("unexpected platform: %s", err)
 			}
 
 			if len(project.Teams) != len(data.TeamIds) {
@@ -114,12 +116,34 @@ func TestAccProjectResource_basic(t *testing.T) {
 				return fmt.Errorf("unexpected scrape javascript %v", project.ScrapeJavaScript)
 			}
 
-			if ptr.Value(project.SecurityTokenHeader) != ptr.Value(data.SecurityTokenHeader) {
-				return fmt.Errorf("unexpected security token header %v", ptr.Value(project.SecurityTokenHeader))
+			if v, err := project.SecurityTokenHeader.Get(); err == nil {
+				if v != ptr.Value(data.SecurityTokenHeader) {
+					return fmt.Errorf("unexpected security token header %v", v)
+				}
+			} else {
+				if ptr.Value(data.SecurityTokenHeader) != "" {
+					return fmt.Errorf("unexpected security token header")
+				}
 			}
 
 			if project.VerifySSL != ptr.Value(data.VerifyTlsSsl) {
 				return fmt.Errorf("unexpected verify tls ssl %v", project.VerifySSL)
+			}
+
+			if data.HighlightTags != nil {
+				if project.HighlightTags == nil {
+					return fmt.Errorf("highlight tags is nil")
+				}
+
+				if len(*project.HighlightTags) != len(*data.HighlightTags) {
+					return fmt.Errorf("unexpected highlight tags %v", *project.HighlightTags)
+				}
+
+				for _, tag := range *data.HighlightTags {
+					if !slices.Contains(*project.HighlightTags, tag) {
+						return fmt.Errorf("highlight tag %v not found", tag)
+					}
+				}
 			}
 
 			return nil
@@ -159,6 +183,15 @@ func TestAccProjectResource_basic(t *testing.T) {
 				"security_token_header": knownvalue.StringExact(ptr.Value(data.SecurityTokenHeader)),
 				"verify_tls_ssl":        knownvalue.Bool(ptr.Value(data.VerifyTlsSsl)),
 			})),
+			func() statecheck.StateCheck {
+				if data.HighlightTags == nil {
+					// Computed
+					return statecheck.ExpectKnownValue(rn, tfjsonpath.New("highlight_tags"), knownvalue.NotNull())
+				}
+				return statecheck.ExpectKnownValue(rn, tfjsonpath.New("highlight_tags"), knownvalue.SetExact(sliceutils.Map(func(v string) knownvalue.Check {
+					return knownvalue.StringExact(v)
+				}, *data.HighlightTags)))
+			}(),
 		}
 	}
 
@@ -233,6 +266,7 @@ func TestAccProjectResource_basic(t *testing.T) {
 					Platform:            "python",
 					AllowedDomains:      ptr.Ptr([]string{"jianyuan.io", "*.jianyuan.io"}),
 					SecurityTokenHeader: ptr.Ptr("x-my-security-token"),
+					HighlightTags:       ptr.Ptr([]string{"release", "environment"}),
 				}),
 				Check: testAccCheckProject(rn, checkProperties(testAccProjectResourceConfig_teamsData{
 					AllTeamNames:        []string{teamName1, teamName2, teamName3},
@@ -243,6 +277,7 @@ func TestAccProjectResource_basic(t *testing.T) {
 					ScrapeJavascript:    ptr.Ptr(false),
 					SecurityTokenHeader: ptr.Ptr("x-my-security-token"),
 					VerifyTlsSsl:        ptr.Ptr(true),
+					HighlightTags:       ptr.Ptr([]string{"release", "environment"}),
 				})),
 				ConfigStateChecks: configStateChecks(testAccProjectResourceConfig_teamsData{
 					AllTeamNames:        []string{teamName1, teamName2, teamName3},
@@ -253,6 +288,7 @@ func TestAccProjectResource_basic(t *testing.T) {
 					ScrapeJavascript:    ptr.Ptr(false),
 					SecurityTokenHeader: ptr.Ptr("x-my-security-token"),
 					VerifyTlsSsl:        ptr.Ptr(true),
+					HighlightTags:       ptr.Ptr([]string{"release", "environment"}),
 				}),
 			},
 			// Remove all optional attributes
@@ -772,7 +808,7 @@ func testAccCheckProjectDestroy(s *terraform.State) error {
 var testAccProjectResourceConfigTemplate = template.Must(template.New("config").Parse(`
 resource "sentry_project" "test" {
 	organization = sentry_team.test.organization
-	teams        = [sentry_team.test.id]
+	teams        = [sentry_team.test.slug]
 	name         = "{{ .ProjectName }}"
 	{{ if .Platform }}
 	platform = "{{ .Platform }}"
@@ -800,14 +836,14 @@ func testAccProjectResourceConfig(data testAccProjectResourceConfigData) string 
 var testAccProjectResourceConfig_teamsTemplate = template.Must(template.New("config").Parse(`
 {{ range $i, $teamName := .AllTeamNames }}
 resource "sentry_team" "team_{{ $i }}" {
-	organization = data.sentry_organization.test.id
+	organization = data.sentry_organization.test.slug
 	name         = "{{ $teamName }}"
 	slug         = "{{ $teamName }}"
 }
 {{ end }}
 
 resource "sentry_project" "test" {
-	organization = data.sentry_organization.test.id
+	organization = data.sentry_organization.test.slug
 	teams        = [
 		{{ range $i, $TeamId := .TeamIds }}
 		sentry_team.team_{{ $TeamId }}.slug,
@@ -839,6 +875,14 @@ resource "sentry_project" "test" {
 		verify_tls_ssl = {{ .VerifyTlsSsl }}
 		{{ end }}
 	}
+
+	{{ if ne .HighlightTags nil }}
+	highlight_tags = [
+		{{ range $i, $tag := .HighlightTags }}
+		"{{ $tag }}",
+		{{ end }}
+	]
+	{{ end }}
 }
 `))
 
@@ -852,6 +896,7 @@ type testAccProjectResourceConfig_teamsData struct {
 	SecurityToken       *string
 	SecurityTokenHeader *string
 	VerifyTlsSsl        *bool
+	HighlightTags       *[]string
 }
 
 func testAccProjectResourceConfig_teams(data testAccProjectResourceConfig_teamsData) string {

@@ -68,7 +68,7 @@ func TestAccSentryDashboardDataSource_basic(t *testing.T) {
 func testAccSentryDashboardDataSourceConfig(dashboardTitle string) string {
 	return testAccSentryOrganizationDataSourceConfig + fmt.Sprintf(`
 resource "sentry_dashboard" "test" {
-	organization = data.sentry_organization.test.id
+	organization = data.sentry_organization.test.slug
 	title        = "%[1]s"
 
 	widget {
