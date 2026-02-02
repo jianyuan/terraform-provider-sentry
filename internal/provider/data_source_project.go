@@ -14,6 +14,7 @@ import (
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 )
 
+var _ = supertypes.StringType{}
 var _ datasource.DataSource = &ProjectDataSource{}
 
 func NewProjectDataSource() datasource.DataSource {

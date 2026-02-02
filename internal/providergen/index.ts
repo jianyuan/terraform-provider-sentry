@@ -514,6 +514,7 @@ import (
   "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
 
+var _ = supertypes.StringType{}
 var _ datasource.DataSource = &${dataSourceName}{}
 
 func New${dataSourceName}() datasource.DataSource {
