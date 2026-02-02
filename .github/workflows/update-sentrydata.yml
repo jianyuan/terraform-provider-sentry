@@ -27,5 +27,5 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v8
         with:
-          commit_message: Update Sentry data
+          commit-message: Update Sentry data
           branch: main
