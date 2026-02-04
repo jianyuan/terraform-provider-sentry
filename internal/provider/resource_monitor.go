@@ -5,9 +5,13 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
@@ -15,6 +19,7 @@ import (
 
 var _ resource.Resource = &MonitorResource{}
 var _ resource.ResourceWithConfigure = &MonitorResource{}
+var _ resource.ResourceWithConfigValidators = &MonitorResource{}
 var _ resource.ResourceWithImportState = &MonitorResource{}
 
 func NewMonitorResource() resource.Resource {
@@ -31,8 +36,40 @@ func (r *MonitorResource) Metadata(ctx context.Context, req resource.MetadataReq
 
 func (r *MonitorResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Return a client monitor bound to a project.",
-		Attributes:          MonitorResourceModel{}.Attributes(),
+		MarkdownDescription: "Sentry Monitor resource. This resource manages cron monitors for a project.",
+		Attributes: map[string]schema.Attribute{
+			"id":           ResourceIdAttribute(),
+			"organization": ResourceOrganizationAttribute(),
+			"project": schema.StringAttribute{
+				MarkdownDescription: "The project of this resource.",
+				Required:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"name": schema.StringAttribute{
+				Required: true,
+			},
+			"slug": schema.StringAttribute{
+				Optional: true,
+				Computed: true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"owner": schema.StringAttribute{
+				Optional: true,
+			},
+			"config": MonitorConfigResourceModel{}.SchemaAttribute(true),
+			"status": schema.StringAttribute{
+				Optional: true,
+				Computed: true,
+			},
+		},
 	}
 }
 
@@ -46,37 +83,35 @@ func (r *MonitorResource) ConfigValidators(ctx context.Context) []resource.Confi
 }
 
 func (r *MonitorResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data MonitorResourceModel
+	var plan MonitorResourceModel
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	monitorRequest, monitorRequestDiags := data.ToMonitorRequest(ctx)
+	monitorRequest, monitorRequestDiags := plan.ToMonitorRequest(ctx)
 	resp.Diagnostics.Append(monitorRequestDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	httpResp, err := r.apiClient.CreateMonitorWithResponse(ctx, data.Organization.ValueString(), monitorRequest)
+	httpResp, err := r.apiClient.CreateMonitorWithResponse(ctx, plan.Organization.ValueString(), monitorRequest)
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("create", err))
 		return
-	}
-
-	if httpResp.StatusCode() != http.StatusCreated || httpResp.JSON201 == nil {
+	} else if httpResp.StatusCode() != http.StatusCreated || httpResp.JSON201 == nil {
 		resp.Diagnostics.Append(diagutils.NewClientStatusError("create", httpResp.StatusCode(), httpResp.Body))
 		return
 	}
 
-	resp.Diagnostics.Append(data.Fill(ctx, data.Organization.ValueString(), *httpResp.JSON201)...)
+	resp.Diagnostics.Append(plan.Fill(ctx, plan.Organization.ValueString(), *httpResp.JSON201)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *MonitorResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -95,9 +130,8 @@ func (r *MonitorResource) Read(ctx context.Context, req resource.ReadRequest, re
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 		return
-	}
-
-	if httpResp.StatusCode() == http.StatusNotFound {
+	} else if httpResp.StatusCode() == http.StatusNotFound {
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("monitor"))
 		resp.State.RemoveResource(ctx)
 		return
 	}
@@ -116,14 +150,15 @@ func (r *MonitorResource) Read(ctx context.Context, req resource.ReadRequest, re
 }
 
 func (r *MonitorResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data MonitorResourceModel
+	var plan, state MonitorResourceModel
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	monitorRequest, monitorRequestDiags := data.ToMonitorRequest(ctx)
+	monitorRequest, monitorRequestDiags := plan.ToMonitorRequest(ctx)
 	resp.Diagnostics.Append(monitorRequestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -132,8 +167,8 @@ func (r *MonitorResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	httpResp, err := r.apiClient.UpdateOrganizationMonitorWithResponse(
 		ctx,
-		data.Organization.ValueString(),
-		data.Id.ValueString(),
+		state.Organization.ValueString(),
+		state.Id.ValueString(),
 		monitorRequest,
 	)
 
@@ -143,6 +178,7 @@ func (r *MonitorResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 
 	if httpResp.StatusCode() == http.StatusNotFound {
+		resp.Diagnostics.Append(diagutils.NewNotFoundError("monitor"))
 		resp.State.RemoveResource(ctx)
 		return
 	}
@@ -152,12 +188,12 @@ func (r *MonitorResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	resp.Diagnostics.Append(data.Fill(ctx, data.Organization.ValueString(), *httpResp.JSON200)...)
+	resp.Diagnostics.Append(plan.Fill(ctx, state.Organization.ValueString(), *httpResp.JSON200)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *MonitorResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {

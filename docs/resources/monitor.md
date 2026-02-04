@@ -24,7 +24,7 @@ Return a client monitor bound to a project.
 
 ### Optional
 
-- `owner` (String)
+- `owner` (String) Set to `null` to clear the owner.
 - `slug` (String)
 - `status` (String)
 
