@@ -24,7 +24,6 @@ Return a client monitor bound to a project.
 
 ### Optional
 
-- `is_muted` (Boolean)
 - `owner` (String)
 - `slug` (String)
 - `status` (String)

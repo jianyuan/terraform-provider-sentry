@@ -21,7 +21,6 @@ func TestMonitorResourceModelToMonitorRequestScheduleCrontab(t *testing.T) {
 		MaxRuntime:            types.Int64Value(20),
 		FailureIssueThreshold: types.Int64Value(5),
 		RecoveryThreshold:     types.Int64Value(10),
-		AlertRuleId:           types.Int64Value(123),
 	}
 
 	configObject, configObjectDiags := types.ObjectValueFrom(context.Background(), (*MonitorConfigResourceModel)(nil).AttributeTypes(), config)
@@ -34,7 +33,6 @@ func TestMonitorResourceModelToMonitorRequestScheduleCrontab(t *testing.T) {
 		Name:         types.StringValue("monitor name"),
 		Slug:         types.StringValue("monitor-slug"),
 		Owner:        types.StringValue("team:123"),
-		IsMuted:      types.BoolValue(false),
 		Status:       types.StringValue("active"),
 		Config:       configObject,
 	}
@@ -46,11 +44,15 @@ func TestMonitorResourceModelToMonitorRequestScheduleCrontab(t *testing.T) {
 	assert.Equal(t, "monitor name", monitorRequest.Name)
 	assert.Equal(t, "monitor-slug", *monitorRequest.Slug)
 	assert.Equal(t, "sentry-project", monitorRequest.Project)
-	assert.Equal(t, "team:123", *monitorRequest.Owner)
+	owner, ownerErr := monitorRequest.Owner.Get()
+	assert.NoError(t, ownerErr)
+	assert.Equal(t, "team:123", owner)
 	assert.Equal(t, apiclient.MonitorRequestStatusActive, *monitorRequest.Status)
-	assert.Equal(t, false, *monitorRequest.IsMuted)
+	assert.Nil(t, monitorRequest.IsMuted)
 
-	assert.Equal(t, apiclient.Crontab, monitorRequest.Config.ScheduleType)
+	if assert.NotNil(t, monitorRequest.Config.ScheduleType) {
+		assert.Equal(t, apiclient.MonitorConfigScheduleTypeCrontab, *monitorRequest.Config.ScheduleType)
+	}
 
 	monitorRequestConfigScheduleCrontab, monitorRequestConfigScheduleCrontabErr := monitorRequest.Config.Schedule.AsMonitorConfigScheduleString()
 	assert.NoError(t, monitorRequestConfigScheduleCrontabErr)
@@ -59,12 +61,21 @@ func TestMonitorResourceModelToMonitorRequestScheduleCrontab(t *testing.T) {
 	_, monitorRequestConfigScheduleIntervalErr := monitorRequest.Config.Schedule.AsMonitorConfigScheduleInterval()
 	assert.Error(t, monitorRequestConfigScheduleIntervalErr)
 
-	assert.Equal(t, "UTC", monitorRequest.Config.Timezone)
-	assert.Equal(t, int64(10), *monitorRequest.Config.CheckinMargin)
-	assert.Equal(t, int64(20), *monitorRequest.Config.MaxRuntime)
-	assert.Equal(t, int64(5), *monitorRequest.Config.FailureIssueThreshold)
-	assert.Equal(t, int64(10), *monitorRequest.Config.RecoveryThreshold)
-	assert.Equal(t, int64(123), *monitorRequest.Config.AlertRuleId)
+	if assert.NotNil(t, monitorRequest.Config.Timezone) {
+		assert.Equal(t, "UTC", *monitorRequest.Config.Timezone)
+	}
+	checkinMargin, checkinMarginErr := monitorRequest.Config.CheckinMargin.Get()
+	assert.NoError(t, checkinMarginErr)
+	assert.Equal(t, int64(10), checkinMargin)
+	maxRuntime, maxRuntimeErr := monitorRequest.Config.MaxRuntime.Get()
+	assert.NoError(t, maxRuntimeErr)
+	assert.Equal(t, int64(20), maxRuntime)
+	failureThreshold, failureThresholdErr := monitorRequest.Config.FailureIssueThreshold.Get()
+	assert.NoError(t, failureThresholdErr)
+	assert.Equal(t, int64(5), failureThreshold)
+	recoveryThreshold, recoveryThresholdErr := monitorRequest.Config.RecoveryThreshold.Get()
+	assert.NoError(t, recoveryThresholdErr)
+	assert.Equal(t, int64(10), recoveryThreshold)
 }
 
 func TestMonitorResourceModelToMonitorRequestScheduleInterval(t *testing.T) {
@@ -83,7 +94,6 @@ func TestMonitorResourceModelToMonitorRequestScheduleInterval(t *testing.T) {
 		MaxRuntime:            types.Int64Value(20),
 		FailureIssueThreshold: types.Int64Value(5),
 		RecoveryThreshold:     types.Int64Value(10),
-		AlertRuleId:           types.Int64Value(123),
 	}
 
 	configObject, configObjectDiags := types.ObjectValueFrom(context.Background(), (*MonitorConfigResourceModel)(nil).AttributeTypes(), config)
@@ -96,7 +106,6 @@ func TestMonitorResourceModelToMonitorRequestScheduleInterval(t *testing.T) {
 		Name:         types.StringValue("monitor name"),
 		Slug:         types.StringValue("monitor-slug"),
 		Owner:        types.StringValue("team:123"),
-		IsMuted:      types.BoolValue(false),
 		Status:       types.StringValue("active"),
 		Config:       configObject,
 	}
@@ -108,11 +117,15 @@ func TestMonitorResourceModelToMonitorRequestScheduleInterval(t *testing.T) {
 	assert.Equal(t, "monitor name", monitorRequest.Name)
 	assert.Equal(t, "monitor-slug", *monitorRequest.Slug)
 	assert.Equal(t, "sentry-project", monitorRequest.Project)
-	assert.Equal(t, "team:123", *monitorRequest.Owner)
+	owner, ownerErr := monitorRequest.Owner.Get()
+	assert.NoError(t, ownerErr)
+	assert.Equal(t, "team:123", owner)
 	assert.Equal(t, apiclient.MonitorRequestStatusActive, *monitorRequest.Status)
-	assert.Equal(t, false, *monitorRequest.IsMuted)
+	assert.Nil(t, monitorRequest.IsMuted)
 
-	assert.Equal(t, apiclient.Interval, monitorRequest.Config.ScheduleType)
+	if assert.NotNil(t, monitorRequest.Config.ScheduleType) {
+		assert.Equal(t, apiclient.MonitorConfigScheduleTypeInterval, *monitorRequest.Config.ScheduleType)
+	}
 
 	_, monitorRequestConfigScheduleCrontabErr := monitorRequest.Config.Schedule.AsMonitorConfigScheduleString()
 	assert.Error(t, monitorRequestConfigScheduleCrontabErr)
@@ -121,10 +134,19 @@ func TestMonitorResourceModelToMonitorRequestScheduleInterval(t *testing.T) {
 	assert.NoError(t, monitorRequestConfigScheduleIntervalErr)
 	assert.Equal(t, []any{float64(1), "day"}, monitorRequestConfigScheduleInterval)
 
-	assert.Equal(t, "UTC", monitorRequest.Config.Timezone)
-	assert.Equal(t, int64(10), *monitorRequest.Config.CheckinMargin)
-	assert.Equal(t, int64(20), *monitorRequest.Config.MaxRuntime)
-	assert.Equal(t, int64(5), *monitorRequest.Config.FailureIssueThreshold)
-	assert.Equal(t, int64(10), *monitorRequest.Config.RecoveryThreshold)
-	assert.Equal(t, int64(123), *monitorRequest.Config.AlertRuleId)
+	if assert.NotNil(t, monitorRequest.Config.Timezone) {
+		assert.Equal(t, "UTC", *monitorRequest.Config.Timezone)
+	}
+	checkinMargin, checkinMarginErr := monitorRequest.Config.CheckinMargin.Get()
+	assert.NoError(t, checkinMarginErr)
+	assert.Equal(t, int64(10), checkinMargin)
+	maxRuntime, maxRuntimeErr := monitorRequest.Config.MaxRuntime.Get()
+	assert.NoError(t, maxRuntimeErr)
+	assert.Equal(t, int64(20), maxRuntime)
+	failureThreshold, failureThresholdErr := monitorRequest.Config.FailureIssueThreshold.Get()
+	assert.NoError(t, failureThresholdErr)
+	assert.Equal(t, int64(5), failureThreshold)
+	recoveryThreshold, recoveryThresholdErr := monitorRequest.Config.RecoveryThreshold.Get()
+	assert.NoError(t, recoveryThresholdErr)
+	assert.Equal(t, int64(10), recoveryThreshold)
 }

@@ -1046,6 +1046,8 @@ components:
           type: string
         isMuted:
           type: boolean
+        isUpserting:
+          type: boolean
         config:
           $ref: "#/components/schemas/MonitorConfig"
         dateCreated:
@@ -1070,6 +1072,7 @@ components:
         #     - name
         owner:
           type: object
+          nullable: true
           properties:
             id:
               type: string
@@ -1087,6 +1090,7 @@ components:
         # - environments
         - id
         - isMuted
+        - isUpserting
         - name
         - owner
         - project
@@ -1104,6 +1108,68 @@ components:
         checkin_margin:
           type: integer
           format: int64
+          maximum: 40320
+          minimum: 1
+          nullable: true
+          description: >-
+            How long (in minutes) after the expected checkin
+            time will we wait until we consider the checkin to
+            have been missed.
+        max_runtime:
+          type: integer
+          format: int64
+          maximum: 40320
+          minimum: 1
+          nullable: true
+          description: >-
+            How long (in minutes) is the checkin allowed to run
+            for in CheckInStatus.IN_PROGRESS before it is
+            considered failed.
+        timezone:
+          type: string
+          nullable: true
+        failure_issue_threshold:
+          type: integer
+          format: int64
+          maximum: 720
+          minimum: 1
+          nullable: true
+          description: >-
+            How many consecutive missed or failed check-ins in a
+            row before creating a new issue.
+        recovery_threshold:
+          type: integer
+          format: int64
+          maximum: 720
+          minimum: 1
+          nullable: true
+          description: >-
+            How many successful check-ins in a row before
+            resolving an issue.
+        alert_rule_id:
+          type: integer
+          format: int64
+          nullable: true
+      required:
+        - checkin_margin
+        - max_runtime
+        - schedule
+        - schedule_type
+    MonitorConfigRequest:
+      type: object
+      properties:
+        schedule_type:
+          $ref: "#/components/schemas/MonitorConfigScheduleType"
+        schedule:
+          anyOf:
+            - $ref: "#/components/schemas/MonitorConfigScheduleString"
+            - $ref: "#/components/schemas/MonitorConfigScheduleInterval"
+            - $ref: "#/components/schemas/MonitorConfigScheduleObjectCrontab"
+            - $ref: "#/components/schemas/MonitorConfigScheduleObjectInterval"
+        checkin_margin:
+          type: integer
+          format: int64
+          maximum: 40320
           minimum: 1
           nullable: true
           description: >-
@@ -1140,19 +1206,8 @@ components:
           description: >-
             How many successful check-ins in a row before
             resolving an issue.
-        alert_rule_id:
-          type: integer
-          format: int64
-          nullable: true
       required:
-        - alert_rule_id
-        - checkin_margin
-        - failure_issue_threshold
-        - max_runtime
-        - recovery_threshold
         - schedule
-        - schedule_type
-        - timezone
     MonitorConfigScheduleType:
       type: string
       enum:
@@ -1164,6 +1219,42 @@ components:
       type: array
       minItems: 2
       maxItems: 2
+    MonitorConfigScheduleIntervalUnit:
+      type: string
+      enum:
+        - year
+        - month
+        - week
+        - day
+        - hour
+        - minute
+    MonitorConfigScheduleObjectCrontab:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - crontab
+        value:
+          type: string
+      required:
+        - type
+        - value
+    MonitorConfigScheduleObjectInterval:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - interval
+        value:
+          type: integer
+        unit:
+          $ref: "#/components/schemas/MonitorConfigScheduleIntervalUnit"
+      required:
+        - type
+        - value
+        - unit
     MonitorAlertRule:
       type: object
       properties:
@@ -1200,7 +1291,7 @@ components:
             slug will be derived from your monitor name.
           maxLength: 128
         config:
-          $ref: "#/components/schemas/MonitorConfig"
+          $ref: "#/components/schemas/MonitorConfigRequest"
         slug:
           type: string
           description: >-

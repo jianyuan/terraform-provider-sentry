@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
+	"github.com/oapi-codegen/nullable"
 )
 
 type MonitorConfigResourceModel struct {
@@ -53,12 +54,14 @@ func (m MonitorConfigResourceModel) SchemaAttributes() map[string]schema.Attribu
 		},
 		"checkin_margin": schema.Int64Attribute{
 			Optional: true,
+			Computed: true,
 			Validators: []validator.Int64{
 				int64validator.Between(0, 40320),
 			},
 		},
 		"max_runtime": schema.Int64Attribute{
 			Optional: true,
+			Computed: true,
 			Validators: []validator.Int64{
 				int64validator.Between(1, 40320),
 			},
@@ -68,18 +71,20 @@ func (m MonitorConfigResourceModel) SchemaAttributes() map[string]schema.Attribu
 		},
 		"failure_issue_threshold": schema.Int64Attribute{
 			Optional: true,
+			Computed: true,
 			Validators: []validator.Int64{
 				int64validator.Between(1, 720),
 			},
 		},
 		"recovery_threshold": schema.Int64Attribute{
 			Optional: true,
+			Computed: true,
 			Validators: []validator.Int64{
 				int64validator.Between(1, 720),
 			},
 		},
 		"alert_rule_id": schema.Int64Attribute{
-			Optional: true,
+			Computed: true,
 		},
 	}
 }
@@ -97,20 +102,20 @@ func (m *MonitorConfigResourceModel) AttributeTypes() map[string]attr.Type {
 	}
 }
 
-func (m *MonitorConfigResourceModel) ToMonitorRequest(ctx context.Context, path path.Path) (apiclient.MonitorConfig, diag.Diagnostics) {
+func (m *MonitorConfigResourceModel) ToMonitorRequest(ctx context.Context, path path.Path) (apiclient.MonitorConfigRequest, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	var scheduleType apiclient.MonitorConfigScheduleType
-	var configSchedule apiclient.MonitorConfig_Schedule
+	var configSchedule apiclient.MonitorConfigRequest_Schedule
 
 	if !m.ScheduleCrontab.IsUnknown() && !m.ScheduleCrontab.IsNull() {
-		scheduleType = apiclient.Crontab
+		scheduleType = apiclient.MonitorConfigScheduleTypeCrontab
 
 		if err := configSchedule.FromMonitorConfigScheduleString(m.ScheduleCrontab.ValueString()); err != nil {
 			diags.AddAttributeError(path.AtName("schedule_crontab"), "Invalid schedule", err.Error())
 		}
 	} else if !m.ScheduleInterval.IsUnknown() && !m.ScheduleInterval.IsNull() {
-		scheduleType = apiclient.Interval
+		scheduleType = apiclient.MonitorConfigScheduleTypeInterval
 
 		var scheduleIntervalModel MonitorConfigScheduleIntervalResourceModel
 		diags.Append(m.ScheduleInterval.As(ctx, &scheduleIntervalModel, basetypes.ObjectAsOptions{})...)
@@ -125,21 +130,31 @@ func (m *MonitorConfigResourceModel) ToMonitorRequest(ctx context.Context, path 
 		}
 	}
 
-	return apiclient.MonitorConfig{
-		ScheduleType:          scheduleType,
+	var scheduleTypePtr *apiclient.MonitorConfigScheduleType
+	if scheduleType != "" {
+		scheduleTypePtr = &scheduleType
+	}
+
+	var timezone *string
+	if !m.Timezone.IsNull() && !m.Timezone.IsUnknown() {
+		value := m.Timezone.ValueString()
+		timezone = &value
+	}
+
+	return apiclient.MonitorConfigRequest{
+		ScheduleType:          scheduleTypePtr,
 		Schedule:              configSchedule,
-		Timezone:              m.Timezone.ValueString(),
-		CheckinMargin:         m.CheckinMargin.ValueInt64Pointer(),
-		MaxRuntime:            m.MaxRuntime.ValueInt64Pointer(),
-		FailureIssueThreshold: m.FailureIssueThreshold.ValueInt64Pointer(),
-		RecoveryThreshold:     m.RecoveryThreshold.ValueInt64Pointer(),
-		AlertRuleId:           m.AlertRuleId.ValueInt64Pointer(),
+		Timezone:              timezone,
+		CheckinMargin:         int64ToNullable(m.CheckinMargin),
+		MaxRuntime:            int64ToNullable(m.MaxRuntime),
+		FailureIssueThreshold: int64ToNullable(m.FailureIssueThreshold),
+		RecoveryThreshold:     int64ToNullable(m.RecoveryThreshold),
 	}, diags
 }
 
 func (m *MonitorConfigResourceModel) Fill(ctx context.Context, path path.Path, config apiclient.MonitorConfig) (diags diag.Diagnostics) {
 	switch config.ScheduleType {
-	case apiclient.Crontab:
+	case apiclient.MonitorConfigScheduleTypeCrontab:
 		schedule, scheduleErr := config.Schedule.AsMonitorConfigScheduleString()
 		if scheduleErr != nil {
 			diags.AddAttributeError(path.AtName("schedule"), "Invalid schedule", scheduleErr.Error())
@@ -147,7 +162,7 @@ func (m *MonitorConfigResourceModel) Fill(ctx context.Context, path path.Path, c
 		}
 		m.ScheduleCrontab = types.StringValue(schedule)
 		m.ScheduleInterval = types.ObjectNull((&MonitorConfigScheduleIntervalResourceModel{}).AttributeTypes())
-	case apiclient.Interval:
+	case apiclient.MonitorConfigScheduleTypeInterval:
 		schedule, scheduleErr := config.Schedule.AsMonitorConfigScheduleInterval()
 		if scheduleErr != nil {
 			diags.AddAttributeError(path.AtName("schedule"), "Invalid schedule", scheduleErr.Error())
@@ -160,17 +175,49 @@ func (m *MonitorConfigResourceModel) Fill(ctx context.Context, path path.Path, c
 		diags.AddAttributeError(path.AtName("schedule"), "Invalid schedule type", string(config.ScheduleType))
 	}
 
-	m.CheckinMargin = types.Int64PointerValue(config.CheckinMargin)
-	m.MaxRuntime = types.Int64PointerValue(config.MaxRuntime)
-	if config.Timezone == "" {
+	m.CheckinMargin = types.Int64PointerValue(nullableInt64ToPointer(config.CheckinMargin))
+	m.MaxRuntime = types.Int64PointerValue(nullableInt64ToPointer(config.MaxRuntime))
+	timezone := nullableStringToPointer(config.Timezone)
+	if timezone == nil || *timezone == "" {
 		m.Timezone = types.StringNull()
 	} else {
-		m.Timezone = types.StringValue(config.Timezone)
+		m.Timezone = types.StringValue(*timezone)
 	}
-	m.FailureIssueThreshold = types.Int64PointerValue(config.FailureIssueThreshold)
-	m.RecoveryThreshold = types.Int64PointerValue(config.RecoveryThreshold)
+	m.FailureIssueThreshold = types.Int64PointerValue(nullableInt64ToPointer(config.FailureIssueThreshold))
+	m.RecoveryThreshold = types.Int64PointerValue(nullableInt64ToPointer(config.RecoveryThreshold))
 
-	m.AlertRuleId = types.Int64PointerValue(config.AlertRuleId)
+	m.AlertRuleId = types.Int64PointerValue(nullableInt64ToPointer(config.AlertRuleId))
 
 	return
+}
+
+func int64ToNullable(value types.Int64) nullable.Nullable[int64] {
+	var result nullable.Nullable[int64]
+	if value.IsNull() || value.IsUnknown() {
+		return result
+	}
+	result.Set(value.ValueInt64())
+	return result
+}
+
+func nullableInt64ToPointer(value nullable.Nullable[int64]) *int64 {
+	if value.IsNull() || !value.IsSpecified() {
+		return nil
+	}
+	parsed, err := value.Get()
+	if err != nil {
+		return nil
+	}
+	return &parsed
+}
+
+func nullableStringToPointer(value nullable.Nullable[string]) *string {
+	if value.IsNull() || !value.IsSpecified() {
+		return nil
+	}
+	parsed, err := value.Get()
+	if err != nil {
+		return nil
+	}
+	return &parsed
 }

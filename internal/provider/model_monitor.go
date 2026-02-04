@@ -3,16 +3,18 @@ package provider
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
+	"github.com/oapi-codegen/nullable"
 )
 
 type MonitorResourceModel struct {
@@ -24,7 +26,6 @@ type MonitorResourceModel struct {
 	Owner        types.String `tfsdk:"owner"`
 	Config       types.Object `tfsdk:"config"`
 	Status       types.String `tfsdk:"status"`
-	IsMuted      types.Bool   `tfsdk:"is_muted"`
 }
 
 func (m MonitorResourceModel) Attributes() map[string]schema.Attribute {
@@ -45,6 +46,9 @@ func (m MonitorResourceModel) Attributes() map[string]schema.Attribute {
 		"slug": schema.StringAttribute{
 			Optional: true,
 			Computed: true,
+			Validators: []validator.String{
+				stringvalidator.LengthAtLeast(1),
+			},
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
 			},
@@ -56,13 +60,6 @@ func (m MonitorResourceModel) Attributes() map[string]schema.Attribute {
 		"status": schema.StringAttribute{
 			Optional: true,
 			Computed: true,
-		},
-		"is_muted": schema.BoolAttribute{
-			Optional: true,
-			Computed: true,
-			PlanModifiers: []planmodifier.Bool{
-				boolplanmodifier.UseStateForUnknown(),
-			},
 		},
 	}
 }
@@ -76,14 +73,26 @@ func (m MonitorResourceModel) ToMonitorRequest(ctx context.Context) (apiclient.M
 	monitorConfig, monitorConfigDiags := monitorConfigResourceModel.ToMonitorRequest(ctx, path.Root("config"))
 	diags.Append(monitorConfigDiags...)
 
+	owner := nullable.Nullable[string]{}
+	if !m.Owner.IsNull() && !m.Owner.IsUnknown() {
+		owner.Set(m.Owner.ValueString())
+	}
+
+	var slug *string
+	if !m.Slug.IsNull() && !m.Slug.IsUnknown() {
+		value := m.Slug.ValueString()
+		if value != "" {
+			slug = &value
+		}
+	}
+
 	request := apiclient.MonitorRequest{
 		Name:    m.Name.ValueString(),
-		Slug:    m.Slug.ValueStringPointer(),
+		Slug:    slug,
 		Project: m.Project.ValueString(),
-		Owner:   m.Owner.ValueStringPointer(),
+		Owner:   owner,
 		Config:  monitorConfig,
 		Status:  (*apiclient.MonitorRequestStatus)(m.Status.ValueStringPointer()),
-		IsMuted: m.IsMuted.ValueBoolPointer(),
 	}
 
 	return request, diags
@@ -100,21 +109,28 @@ func (m *MonitorResourceModel) Fill(ctx context.Context, organization string, mo
 	m.Name = types.StringValue(monitor.Name)
 	m.Slug = types.StringValue(monitor.Slug)
 	m.Project = types.StringValue(monitor.Project.Slug)
-	m.Owner = types.StringPointerValue(formatMonitorOwner(monitor.Owner.Type, monitor.Owner.Id))
+	m.Owner = types.StringPointerValue(formatMonitorOwner(monitor.Owner))
 	m.Config = tfutils.MergeDiagnostics(types.ObjectValueFrom(ctx, config.AttributeTypes(), config))(&diags)
 
 	m.Status = types.StringValue(monitor.Status)
-	m.IsMuted = types.BoolValue(monitor.IsMuted)
 
 	return
 }
 
-func formatMonitorOwner(ownerType apiclient.MonitorOwnerType, ownerId string) *string {
-	if ownerType == "" && ownerId == "" {
+func formatMonitorOwner(owner nullable.Nullable[struct {
+	Id   string                     `json:"id"`
+	Type apiclient.MonitorOwnerType `json:"type"`
+}]) *string {
+	if owner.IsNull() || !owner.IsSpecified() {
 		return nil
 	}
 
-	owner := string(ownerType) + ":" + ownerId
+	parsed, err := owner.Get()
+	if err != nil || parsed.Id == "" || parsed.Type == "" {
+		return nil
+	}
 
-	return &owner
+	formatted := string(parsed.Type) + ":" + parsed.Id
+
+	return &formatted
 }

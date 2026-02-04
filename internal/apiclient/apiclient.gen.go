@@ -29,10 +29,30 @@ const (
 	MonitorOwnerTypeUser MonitorOwnerType = "user"
 )
 
+// Defines values for MonitorConfigScheduleIntervalUnit.
+const (
+	Day    MonitorConfigScheduleIntervalUnit = "day"
+	Hour   MonitorConfigScheduleIntervalUnit = "hour"
+	Minute MonitorConfigScheduleIntervalUnit = "minute"
+	Month  MonitorConfigScheduleIntervalUnit = "month"
+	Week   MonitorConfigScheduleIntervalUnit = "week"
+	Year   MonitorConfigScheduleIntervalUnit = "year"
+)
+
+// Defines values for MonitorConfigScheduleObjectCrontabType.
+const (
+	MonitorConfigScheduleObjectCrontabTypeCrontab MonitorConfigScheduleObjectCrontabType = "crontab"
+)
+
+// Defines values for MonitorConfigScheduleObjectIntervalType.
+const (
+	Interval MonitorConfigScheduleObjectIntervalType = "interval"
+)
+
 // Defines values for MonitorConfigScheduleType.
 const (
-	Crontab  MonitorConfigScheduleType = "crontab"
-	Interval MonitorConfigScheduleType = "interval"
+	MonitorConfigScheduleTypeCrontab  MonitorConfigScheduleType = "crontab"
+	MonitorConfigScheduleTypeInterval MonitorConfigScheduleType = "interval"
 )
 
 // Defines values for MonitorRequestStatus.
@@ -219,11 +239,12 @@ type Monitor struct {
 	DateCreated time.Time         `json:"dateCreated"`
 	Id          string            `json:"id"`
 	IsMuted     bool              `json:"isMuted"`
+	IsUpserting bool              `json:"isUpserting"`
 	Name        string            `json:"name"`
-	Owner       struct {
+	Owner       nullable.Nullable[struct {
 		Id   string           `json:"id"`
 		Type MonitorOwnerType `json:"type"`
-	} `json:"owner"`
+	}] `json:"owner"`
 	Project struct {
 		Id   string `json:"id"`
 		Slug string `json:"slug"`
@@ -249,22 +270,22 @@ type MonitorAlertRuleTarget struct {
 
 // MonitorConfig defines model for MonitorConfig.
 type MonitorConfig struct {
-	AlertRuleId *int64 `json:"alert_rule_id"`
+	AlertRuleId nullable.Nullable[int64] `json:"alert_rule_id,omitempty"`
 
 	// CheckinMargin How long (in minutes) after the expected checkin time will we wait until we consider the checkin to have been missed.
-	CheckinMargin *int64 `json:"checkin_margin"`
+	CheckinMargin nullable.Nullable[int64] `json:"checkin_margin"`
 
 	// FailureIssueThreshold How many consecutive missed or failed check-ins in a row before creating a new issue.
-	FailureIssueThreshold *int64 `json:"failure_issue_threshold"`
+	FailureIssueThreshold nullable.Nullable[int64] `json:"failure_issue_threshold,omitempty"`
 
 	// MaxRuntime How long (in minutes) is the checkin allowed to run for in CheckInStatus.IN_PROGRESS before it is considered failed.
-	MaxRuntime *int64 `json:"max_runtime"`
+	MaxRuntime nullable.Nullable[int64] `json:"max_runtime"`
 
 	// RecoveryThreshold How many successful check-ins in a row before resolving an issue.
-	RecoveryThreshold *int64                    `json:"recovery_threshold"`
+	RecoveryThreshold nullable.Nullable[int64]  `json:"recovery_threshold,omitempty"`
 	Schedule          MonitorConfig_Schedule    `json:"schedule"`
 	ScheduleType      MonitorConfigScheduleType `json:"schedule_type"`
-	Timezone          string                    `json:"timezone"`
+	Timezone          nullable.Nullable[string] `json:"timezone,omitempty"`
 }
 
 // MonitorConfig_Schedule defines model for MonitorConfig.Schedule.
@@ -272,8 +293,53 @@ type MonitorConfig_Schedule struct {
 	union json.RawMessage
 }
 
+// MonitorConfigRequest defines model for MonitorConfigRequest.
+type MonitorConfigRequest struct {
+	// CheckinMargin How long (in minutes) after the expected checkin time will we wait until we consider the checkin to have been missed.
+	CheckinMargin nullable.Nullable[int64] `json:"checkin_margin,omitempty"`
+
+	// FailureIssueThreshold How many consecutive missed or failed check-ins in a row before creating a new issue.
+	FailureIssueThreshold nullable.Nullable[int64] `json:"failure_issue_threshold,omitempty"`
+
+	// MaxRuntime How long (in minutes) is the checkin allowed to run for in CheckInStatus.IN_PROGRESS before it is considered failed.
+	MaxRuntime nullable.Nullable[int64] `json:"max_runtime,omitempty"`
+
+	// RecoveryThreshold How many successful check-ins in a row before resolving an issue.
+	RecoveryThreshold nullable.Nullable[int64]      `json:"recovery_threshold,omitempty"`
+	Schedule          MonitorConfigRequest_Schedule `json:"schedule"`
+	ScheduleType      *MonitorConfigScheduleType    `json:"schedule_type,omitempty"`
+	Timezone          *string                       `json:"timezone,omitempty"`
+}
+
+// MonitorConfigRequest_Schedule defines model for MonitorConfigRequest.Schedule.
+type MonitorConfigRequest_Schedule struct {
+	union json.RawMessage
+}
+
 // MonitorConfigScheduleInterval defines model for MonitorConfigScheduleInterval.
 type MonitorConfigScheduleInterval = []interface{}
+
+// MonitorConfigScheduleIntervalUnit defines model for MonitorConfigScheduleIntervalUnit.
+type MonitorConfigScheduleIntervalUnit string
+
+// MonitorConfigScheduleObjectCrontab defines model for MonitorConfigScheduleObjectCrontab.
+type MonitorConfigScheduleObjectCrontab struct {
+	Type  MonitorConfigScheduleObjectCrontabType `json:"type"`
+	Value string                                 `json:"value"`
+}
+
+// MonitorConfigScheduleObjectCrontabType defines model for MonitorConfigScheduleObjectCrontab.Type.
+type MonitorConfigScheduleObjectCrontabType string
+
+// MonitorConfigScheduleObjectInterval defines model for MonitorConfigScheduleObjectInterval.
+type MonitorConfigScheduleObjectInterval struct {
+	Type  MonitorConfigScheduleObjectIntervalType `json:"type"`
+	Unit  MonitorConfigScheduleIntervalUnit       `json:"unit"`
+	Value int                                     `json:"value"`
+}
+
+// MonitorConfigScheduleObjectIntervalType defines model for MonitorConfigScheduleObjectInterval.Type.
+type MonitorConfigScheduleObjectIntervalType string
 
 // MonitorConfigScheduleString defines model for MonitorConfigScheduleString.
 type MonitorConfigScheduleString = string
@@ -283,7 +349,7 @@ type MonitorConfigScheduleType string
 
 // MonitorRequest defines model for MonitorRequest.
 type MonitorRequest struct {
-	Config MonitorConfig `json:"config"`
+	Config MonitorConfigRequest `json:"config"`
 
 	// IsMuted Disable creation of monitor incidents
 	IsMuted *bool `json:"is_muted,omitempty"`
@@ -292,7 +358,7 @@ type MonitorRequest struct {
 	Name string `json:"name"`
 
 	// Owner The ID of the team or user that owns the monitor. (eg. user:51 or team:6)
-	Owner *string `json:"owner"`
+	Owner nullable.Nullable[string] `json:"owner,omitempty"`
 
 	// Project The project slug to associate the monitor to.
 	Project string `json:"project"`
@@ -1202,6 +1268,120 @@ func (t MonitorConfig_Schedule) MarshalJSON() ([]byte, error) {
 }
 
 func (t *MonitorConfig_Schedule) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsMonitorConfigScheduleString returns the union data inside the MonitorConfigRequest_Schedule as a MonitorConfigScheduleString
+func (t MonitorConfigRequest_Schedule) AsMonitorConfigScheduleString() (MonitorConfigScheduleString, error) {
+	var body MonitorConfigScheduleString
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromMonitorConfigScheduleString overwrites any union data inside the MonitorConfigRequest_Schedule as the provided MonitorConfigScheduleString
+func (t *MonitorConfigRequest_Schedule) FromMonitorConfigScheduleString(v MonitorConfigScheduleString) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeMonitorConfigScheduleString performs a merge with any union data inside the MonitorConfigRequest_Schedule, using the provided MonitorConfigScheduleString
+func (t *MonitorConfigRequest_Schedule) MergeMonitorConfigScheduleString(v MonitorConfigScheduleString) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsMonitorConfigScheduleInterval returns the union data inside the MonitorConfigRequest_Schedule as a MonitorConfigScheduleInterval
+func (t MonitorConfigRequest_Schedule) AsMonitorConfigScheduleInterval() (MonitorConfigScheduleInterval, error) {
+	var body MonitorConfigScheduleInterval
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromMonitorConfigScheduleInterval overwrites any union data inside the MonitorConfigRequest_Schedule as the provided MonitorConfigScheduleInterval
+func (t *MonitorConfigRequest_Schedule) FromMonitorConfigScheduleInterval(v MonitorConfigScheduleInterval) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeMonitorConfigScheduleInterval performs a merge with any union data inside the MonitorConfigRequest_Schedule, using the provided MonitorConfigScheduleInterval
+func (t *MonitorConfigRequest_Schedule) MergeMonitorConfigScheduleInterval(v MonitorConfigScheduleInterval) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsMonitorConfigScheduleObjectCrontab returns the union data inside the MonitorConfigRequest_Schedule as a MonitorConfigScheduleObjectCrontab
+func (t MonitorConfigRequest_Schedule) AsMonitorConfigScheduleObjectCrontab() (MonitorConfigScheduleObjectCrontab, error) {
+	var body MonitorConfigScheduleObjectCrontab
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromMonitorConfigScheduleObjectCrontab overwrites any union data inside the MonitorConfigRequest_Schedule as the provided MonitorConfigScheduleObjectCrontab
+func (t *MonitorConfigRequest_Schedule) FromMonitorConfigScheduleObjectCrontab(v MonitorConfigScheduleObjectCrontab) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeMonitorConfigScheduleObjectCrontab performs a merge with any union data inside the MonitorConfigRequest_Schedule, using the provided MonitorConfigScheduleObjectCrontab
+func (t *MonitorConfigRequest_Schedule) MergeMonitorConfigScheduleObjectCrontab(v MonitorConfigScheduleObjectCrontab) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsMonitorConfigScheduleObjectInterval returns the union data inside the MonitorConfigRequest_Schedule as a MonitorConfigScheduleObjectInterval
+func (t MonitorConfigRequest_Schedule) AsMonitorConfigScheduleObjectInterval() (MonitorConfigScheduleObjectInterval, error) {
+	var body MonitorConfigScheduleObjectInterval
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromMonitorConfigScheduleObjectInterval overwrites any union data inside the MonitorConfigRequest_Schedule as the provided MonitorConfigScheduleObjectInterval
+func (t *MonitorConfigRequest_Schedule) FromMonitorConfigScheduleObjectInterval(v MonitorConfigScheduleObjectInterval) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeMonitorConfigScheduleObjectInterval performs a merge with any union data inside the MonitorConfigRequest_Schedule, using the provided MonitorConfigScheduleObjectInterval
+func (t *MonitorConfigRequest_Schedule) MergeMonitorConfigScheduleObjectInterval(v MonitorConfigScheduleObjectInterval) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t MonitorConfigRequest_Schedule) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *MonitorConfigRequest_Schedule) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
