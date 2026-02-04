@@ -1,6 +1,9 @@
 package provider
 
 import (
+	"encoding/json"
+	"math"
+
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -68,14 +71,32 @@ func parseMonitorConfigScheduleInterval(m apiclient.MonitorConfigScheduleInterva
 	}
 
 	var number int64
-	number, ok := m[0].(int64)
-	if !ok {
+	switch v := m[0].(type) {
+	case int:
+		number = int64(v)
+	case int32:
+		number = int64(v)
+	case int64:
+		number = v
+	case float64:
+		if v != math.Trunc(v) {
+			diags.AddError("Invalid schedule", "Invalid schedule")
+			return rm, diags
+		}
+		number = int64(v)
+	case json.Number:
+		parsed, err := v.Int64()
+		if err != nil {
+			diags.AddError("Invalid schedule", "Invalid schedule")
+			return rm, diags
+		}
+		number = parsed
+	default:
 		diags.AddError("Invalid schedule", "Invalid schedule")
 		return rm, diags
 	}
 
-	var unit string
-	unit, ok = m[1].(string)
+	unit, ok := m[1].(string)
 	if !ok {
 		diags.AddError("Invalid schedule", "Invalid schedule")
 		return rm, diags

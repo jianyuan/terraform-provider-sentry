@@ -2,13 +2,14 @@ package provider
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 
+	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
 
@@ -35,6 +36,15 @@ func (r *MonitorResource) Schema(ctx context.Context, req resource.SchemaRequest
 	}
 }
 
+func (r *MonitorResource) ConfigValidators(ctx context.Context) []resource.ConfigValidator {
+	return []resource.ConfigValidator{
+		resourcevalidator.AtLeastOneOf(
+			path.MatchRoot("config").AtName("schedule_crontab"),
+			path.MatchRoot("config").AtName("schedule_interval"),
+		),
+	}
+}
+
 func (r *MonitorResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data MonitorResourceModel
 
@@ -50,18 +60,18 @@ func (r *MonitorResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	response, err := r.apiClient.CreateMonitorWithResponse(ctx, data.Organization.ValueString(), monitorRequest)
+	httpResp, err := r.apiClient.CreateMonitorWithResponse(ctx, data.Organization.ValueString(), monitorRequest)
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Create error: %s", err.Error()))
+		resp.Diagnostics.Append(diagutils.NewClientError("create", err))
 		return
 	}
 
-	if response.JSON201 == nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Create error: %s", response.HTTPResponse.Status))
+	if httpResp.StatusCode() != http.StatusCreated || httpResp.JSON201 == nil {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("create", httpResp.StatusCode(), httpResp.Body))
 		return
 	}
 
-	resp.Diagnostics.Append(data.Fill(ctx, data.Organization.ValueString(), *response.JSON201)...)
+	resp.Diagnostics.Append(data.Fill(ctx, data.Organization.ValueString(), *httpResp.JSON201)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -77,28 +87,27 @@ func (r *MonitorResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	response, err := r.apiClient.GetOrganizationMonitorWithResponse(
+	httpResp, err := r.apiClient.GetOrganizationMonitorWithResponse(
 		ctx,
 		data.Organization.ValueString(),
 		data.Id.ValueString(),
 	)
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Read error: %s", err.Error()))
+		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 		return
 	}
 
-	if response.StatusCode() == http.StatusNotFound {
-		resp.Diagnostics.AddError("Client Error", "Not found")
-		// resp.State.RemoveResource(ctx)
+	if httpResp.StatusCode() == http.StatusNotFound {
+		resp.State.RemoveResource(ctx)
 		return
 	}
 
-	if response.JSON200 == nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Read error: %s", response.HTTPResponse.Status))
+	if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("read", httpResp.StatusCode(), httpResp.Body))
 		return
 	}
 
-	resp.Diagnostics.Append(data.Fill(ctx, data.Organization.ValueString(), *response.JSON200)...)
+	resp.Diagnostics.Append(data.Fill(ctx, data.Organization.ValueString(), *httpResp.JSON200)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -121,7 +130,7 @@ func (r *MonitorResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	response, err := r.apiClient.UpdateOrganizationMonitorWithResponse(
+	httpResp, err := r.apiClient.UpdateOrganizationMonitorWithResponse(
 		ctx,
 		data.Organization.ValueString(),
 		data.Id.ValueString(),
@@ -129,22 +138,21 @@ func (r *MonitorResource) Update(ctx context.Context, req resource.UpdateRequest
 	)
 
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Update error: %s", err.Error()))
+		resp.Diagnostics.Append(diagutils.NewClientError("update", err))
 		return
 	}
 
-	if response.StatusCode() == http.StatusNotFound {
-		resp.Diagnostics.AddError("Client Error", "Not found")
-		// resp.State.RemoveResource(ctx)
+	if httpResp.StatusCode() == http.StatusNotFound {
+		resp.State.RemoveResource(ctx)
 		return
 	}
 
-	if response.JSON200 == nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Read error: %s", response.HTTPResponse.Status))
+	if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("update", httpResp.StatusCode(), httpResp.Body))
 		return
 	}
 
-	resp.Diagnostics.Append(data.Fill(ctx, data.Organization.ValueString(), *response.JSON200)...)
+	resp.Diagnostics.Append(data.Fill(ctx, data.Organization.ValueString(), *httpResp.JSON200)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -160,34 +168,27 @@ func (r *MonitorResource) Delete(ctx context.Context, req resource.DeleteRequest
 		return
 	}
 
-	apiResp, err := r.apiClient.DeleteOrganizationMonitorWithResponse(
+	httpResp, err := r.apiClient.DeleteOrganizationMonitorWithResponse(
 		ctx,
 		data.Organization.ValueString(),
 		data.Id.ValueString(),
 	)
 
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Delete error: %s", err.Error()))
+		resp.Diagnostics.Append(diagutils.NewClientError("delete", err))
 		return
 	}
 
-	if apiResp.StatusCode() == http.StatusNotFound {
-		resp.Diagnostics.AddWarning("Monitor not found", "Monitor may have been deleted already")
+	if httpResp.StatusCode() == http.StatusNotFound {
+		return
+	}
+
+	if httpResp.StatusCode() != http.StatusAccepted {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("delete", httpResp.StatusCode(), httpResp.Body))
 		return
 	}
 }
 
 func (r *MonitorResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	organization, id, err := tfutils.SplitTwoPartId(req.ID, "organization", "monitor-id")
-	if err != nil {
-		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Error parsing ID: %s", err.Error()))
-		return
-	}
-
-	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("organization"), organization,
-	)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("id"), id,
-	)...)
+	tfutils.ImportStateTwoPartId(ctx, "organization", req, resp)
 }

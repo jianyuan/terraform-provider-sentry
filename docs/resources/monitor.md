@@ -21,12 +21,12 @@ Return a client monitor bound to a project.
 - `name` (String)
 - `organization` (String) The organization of this resource.
 - `project` (String) The project of this resource.
-- `slug` (String)
 
 ### Optional
 
 - `is_muted` (Boolean)
 - `owner` (String)
+- `slug` (String)
 - `status` (String)
 
 ### Read-Only

@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -40,6 +41,7 @@ func (m MonitorConfigResourceModel) SchemaAttributes() map[string]schema.Attribu
 			Optional: true,
 			Validators: []validator.String{
 				stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("schedule_interval")),
+				stringvalidator.LengthAtLeast(1),
 			},
 		},
 		"schedule_interval": schema.SingleNestedAttribute{
@@ -51,18 +53,30 @@ func (m MonitorConfigResourceModel) SchemaAttributes() map[string]schema.Attribu
 		},
 		"checkin_margin": schema.Int64Attribute{
 			Optional: true,
+			Validators: []validator.Int64{
+				int64validator.Between(0, 40320),
+			},
 		},
 		"max_runtime": schema.Int64Attribute{
 			Optional: true,
+			Validators: []validator.Int64{
+				int64validator.Between(1, 40320),
+			},
 		},
 		"timezone": schema.StringAttribute{
 			Optional: true,
 		},
 		"failure_issue_threshold": schema.Int64Attribute{
 			Optional: true,
+			Validators: []validator.Int64{
+				int64validator.Between(1, 720),
+			},
 		},
 		"recovery_threshold": schema.Int64Attribute{
 			Optional: true,
+			Validators: []validator.Int64{
+				int64validator.Between(1, 720),
+			},
 		},
 		"alert_rule_id": schema.Int64Attribute{
 			Optional: true,
@@ -92,7 +106,9 @@ func (m *MonitorConfigResourceModel) ToMonitorRequest(ctx context.Context, path 
 	if !m.ScheduleCrontab.IsUnknown() && !m.ScheduleCrontab.IsNull() {
 		scheduleType = apiclient.Crontab
 
-		configSchedule.FromMonitorConfigScheduleString(m.ScheduleCrontab.ValueString())
+		if err := configSchedule.FromMonitorConfigScheduleString(m.ScheduleCrontab.ValueString()); err != nil {
+			diags.AddAttributeError(path.AtName("schedule_crontab"), "Invalid schedule", err.Error())
+		}
 	} else if !m.ScheduleInterval.IsUnknown() && !m.ScheduleInterval.IsNull() {
 		scheduleType = apiclient.Interval
 
@@ -102,7 +118,11 @@ func (m *MonitorConfigResourceModel) ToMonitorRequest(ctx context.Context, path 
 		scheduleInterval, scheduleIntervalDiags := formatMonitorConfigScheduleInterval(scheduleIntervalModel)
 		diags.Append(scheduleIntervalDiags...)
 
-		configSchedule.FromMonitorConfigScheduleInterval(scheduleInterval)
+		if scheduleInterval == nil {
+			diags.AddAttributeError(path.AtName("schedule_interval"), "Missing schedule interval", "Exactly one of year, month, week, day, hour, or minute must be set.")
+		} else if err := configSchedule.FromMonitorConfigScheduleInterval(scheduleInterval); err != nil {
+			diags.AddAttributeError(path.AtName("schedule_interval"), "Invalid schedule", err.Error())
+		}
 	}
 
 	return apiclient.MonitorConfig{
@@ -142,7 +162,11 @@ func (m *MonitorConfigResourceModel) Fill(ctx context.Context, path path.Path, c
 
 	m.CheckinMargin = types.Int64PointerValue(config.CheckinMargin)
 	m.MaxRuntime = types.Int64PointerValue(config.MaxRuntime)
-	m.Timezone = types.StringValue(config.Timezone)
+	if config.Timezone == "" {
+		m.Timezone = types.StringNull()
+	} else {
+		m.Timezone = types.StringValue(config.Timezone)
+	}
 	m.FailureIssueThreshold = types.Int64PointerValue(config.FailureIssueThreshold)
 	m.RecoveryThreshold = types.Int64PointerValue(config.RecoveryThreshold)
 
