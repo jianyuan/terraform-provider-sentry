@@ -26,7 +26,6 @@ type MonitorConfigResourceModel struct {
 	Timezone              types.String `tfsdk:"timezone"`
 	FailureIssueThreshold types.Int64  `tfsdk:"failure_issue_threshold"`
 	RecoveryThreshold     types.Int64  `tfsdk:"recovery_threshold"`
-	AlertRuleId           types.Int64  `tfsdk:"alert_rule_id"`
 }
 
 func (m MonitorConfigResourceModel) SchemaAttribute(required bool) schema.Attribute {
@@ -83,9 +82,6 @@ func (m MonitorConfigResourceModel) SchemaAttributes() map[string]schema.Attribu
 				int64validator.Between(1, 720),
 			},
 		},
-		"alert_rule_id": schema.Int64Attribute{
-			Computed: true,
-		},
 	}
 }
 
@@ -98,7 +94,6 @@ func (m *MonitorConfigResourceModel) AttributeTypes() map[string]attr.Type {
 		"timezone":                types.StringType,
 		"failure_issue_threshold": types.Int64Type,
 		"recovery_threshold":      types.Int64Type,
-		"alert_rule_id":           types.Int64Type,
 	}
 }
 
@@ -185,8 +180,6 @@ func (m *MonitorConfigResourceModel) Fill(ctx context.Context, path path.Path, c
 	}
 	m.FailureIssueThreshold = types.Int64PointerValue(nullableInt64ToPointer(config.FailureIssueThreshold))
 	m.RecoveryThreshold = types.Int64PointerValue(nullableInt64ToPointer(config.RecoveryThreshold))
-
-	m.AlertRuleId = types.Int64PointerValue(nullableInt64ToPointer(config.AlertRuleId))
 
 	return
 }

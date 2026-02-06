@@ -37,7 +37,6 @@ Return a client monitor bound to a project.
 
 Optional:
 
-- `alert_rule_id` (Number)
 - `checkin_margin` (Number)
 - `failure_issue_threshold` (Number)
 - `max_runtime` (Number)
