@@ -39,8 +39,15 @@ func (r *MonitorResource) Schema(ctx context.Context, req resource.SchemaRequest
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Sentry Monitor resource. This resource manages cron monitors for a project.",
 		Attributes: map[string]schema.Attribute{
-			"id":           ResourceIdAttribute(),
-			"organization": ResourceOrganizationAttribute(),
+			"id": ResourceIdAttribute(),
+			"organization": schema.StringAttribute{
+				MarkdownDescription: "The organization of this resource.",
+				Required:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
 			"project": schema.StringAttribute{
 				MarkdownDescription: "The project of this resource.",
 				Required:            true,
@@ -175,7 +182,7 @@ func (r *MonitorResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	httpResp, err := r.apiClient.UpdateOrganizationMonitorWithResponse(
 		ctx,
-		state.Organization.ValueString(),
+		plan.Organization.ValueString(),
 		state.Id.ValueString(),
 		monitorRequest,
 	)
@@ -196,7 +203,7 @@ func (r *MonitorResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	resp.Diagnostics.Append(plan.Fill(ctx, state.Organization.ValueString(), *httpResp.JSON200)...)
+	resp.Diagnostics.Append(plan.Fill(ctx, plan.Organization.ValueString(), *httpResp.JSON200)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

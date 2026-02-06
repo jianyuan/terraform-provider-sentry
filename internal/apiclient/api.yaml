@@ -1109,7 +1109,7 @@ components:
           type: integer
           format: int64
           maximum: 40320
-          minimum: 1
+          minimum: 0
           nullable: true
           description: >-
             How long (in minutes) after the expected checkin
@@ -1170,7 +1170,7 @@ components:
           type: integer
           format: int64
           maximum: 40320
-          minimum: 1
+          minimum: 0
           nullable: true
           description: >-
             How long (in minutes) after the expected checkin
@@ -1265,7 +1265,6 @@ components:
         environment:
           type: string
       required:
-        - environment
         - targets
     MonitorAlertRuleTarget:
       type: object
@@ -1320,9 +1319,6 @@ components:
           description: >-
             The ID of the team or user that owns the monitor. (eg.
             user:51 or team:6)
-        is_muted:
-          type: boolean
-          description: Disable creation of monitor incidents
       required:
         - config
         - name

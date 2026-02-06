@@ -258,7 +258,7 @@ type MonitorOwnerType string
 
 // MonitorAlertRule defines model for MonitorAlertRule.
 type MonitorAlertRule struct {
-	Environment string                   `json:"environment"`
+	Environment *string                  `json:"environment,omitempty"`
 	Targets     []MonitorAlertRuleTarget `json:"targets"`
 }
 
@@ -350,9 +350,6 @@ type MonitorConfigScheduleType string
 // MonitorRequest defines model for MonitorRequest.
 type MonitorRequest struct {
 	Config MonitorConfigRequest `json:"config"`
-
-	// IsMuted Disable creation of monitor incidents
-	IsMuted *bool `json:"is_muted,omitempty"`
 
 	// Name Name of the monitor. Used for notifications. If not set the slug will be derived from your monitor name.
 	Name string `json:"name"`
