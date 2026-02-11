@@ -221,6 +221,7 @@ var DashboardWidgetDisplayTypes = []string{
 	"top_n",
 	"details",
 	"categorical_bar",
+	"wheel",
 }
 
 // https://github.com/getsentry/sentry/blob/master/src/sentry/models/project.py
