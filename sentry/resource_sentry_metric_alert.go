@@ -138,6 +138,11 @@ func resourceSentryMetricAlert() *schema.Resource {
 										Type:     schema.TypeInt,
 										Optional: true,
 									},
+									"sentry_app_id": {
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Description: "The ID of the Sentry App (required when type is sentry_app)",
+									},
 									"priority": {
 										Type:     schema.TypeString,
 										Optional: true,
@@ -387,6 +392,11 @@ func expandMetricAlertTriggerActions(actionList []interface{}) []*sentry.MetricA
 				action.IntegrationID = sentry.Int(v)
 			}
 		}
+		if v, ok := actionMap["sentry_app_id"].(int); ok {
+			if v != 0 {
+				action.SentryAppID = sentry.Int(v)
+			}
+		}
 		actions = append(actions, action)
 	}
 	return actions
@@ -431,6 +441,7 @@ func flattenMetricAlertTriggerActions(actions []*sentry.MetricAlertTriggerAction
 		}
 		actionMap["input_channel_id"] = action.InputChannelID
 		actionMap["integration_id"] = action.IntegrationID
+		actionMap["sentry_app_id"] = action.SentryAppID
 
 		actionList = append(actionList, actionMap)
 	}

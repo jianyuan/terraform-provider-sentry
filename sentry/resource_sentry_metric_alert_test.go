@@ -149,7 +149,7 @@ resource "sentry_metric_alert" "test" {
 			target_type       = "team"
 			target_identifier = sentry_team.test.internal_id
 		}
-	
+
 		alert_threshold   = 500
 		label             = "warning"
 		resolve_threshold = 100.0
@@ -157,4 +157,33 @@ resource "sentry_metric_alert" "test" {
 	}
 }
 	`, alertName)
+}
+
+func testAccSentryMetricAlertConfig_sentryApp(teamName, projectName, ruleName string) string {
+	return testAccSentryProjectConfig_team(teamName, projectName) + fmt.Sprintf(`
+resource "sentry_metric_alert" "test_sentry_app" {
+	organization   = sentry_project.test.organization
+	project        = sentry_project.test.id
+	name           = "%[1]s"
+	dataset        = "events"
+	event_types    = ["error"]
+	query          = ""
+	aggregate      = "count()"
+	time_window    = 60
+	threshold_type = 0
+
+	trigger {
+		action {
+			type              = "sentry_app"
+			target_type       = "sentry_app"
+			target_identifier = "114883"
+			sentry_app_id     = 114883
+			integration_id    = 0
+		}
+		alert_threshold = 100
+		label           = "critical"
+		threshold_type  = 0
+	}
+}
+`, ruleName)
 }
