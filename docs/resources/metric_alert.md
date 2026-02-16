@@ -60,11 +60,8 @@ resource "sentry_metric_alert" "main" {
     threshold_type  = 0
   }
 }
-```
 
-### Example: Metric Alert with Sentry App Action
-
-```terraform
+# Example: Metric Alert with Sentry App Action
 data "sentry_organization_integration" "rootly" {
   organization = "my-organization"
   name         = "Rootly"
