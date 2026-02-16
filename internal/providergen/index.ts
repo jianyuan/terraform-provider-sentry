@@ -512,6 +512,7 @@ package provider
 
 import (
   "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+  supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 )
 
 var _ datasource.DataSource = &${dataSourceName}{}
@@ -678,6 +679,7 @@ package provider
 
 import (
   "github.com/hashicorp/terraform-plugin-framework/resource/schema"
+  supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 )
 
 var _ resource.Resource = &${resourceName}{}
