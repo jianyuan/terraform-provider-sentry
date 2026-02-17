@@ -245,6 +245,33 @@ paths:
           description: Forbidden
         "404":
           description: Not Found
+  /0/organizations/{organization_id_or_slug}/monitors/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+    post:
+      summary: Create a Monitor
+      operationId: createOrganizationMonitor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MonitorRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MonitorResponse"
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
   /0/organizations/{organization_id_or_slug}/spike-protections/:
     parameters:
       - $ref: "#/components/parameters/organization_id_or_slug"
@@ -665,6 +692,63 @@ paths:
           description: Forbidden
         "404":
           description: Not Found
+  /0/projects/{organization_id_or_slug}/{project_id_or_slug}/monitors/{monitor_id_or_slug}/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+      - $ref: "#/components/parameters/project_id_or_slug"
+      - $ref: "#/components/parameters/monitor_id_or_slug"
+    get:
+      summary: Retrieve a Monitor for a Project
+      operationId: getProjectMonitor
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MonitorResponse"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+    put:
+      summary: Update a Monitor for a Project
+      operationId: updateProjectMonitor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MonitorRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MonitorResponse"
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+    delete:
+      summary: Delete a Monitor for a Project
+      operationId: deleteProjectMonitor
+      responses:
+        "202":
+          description: Accepted
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
   /0/projects/{organization_id_or_slug}/{project_id_or_slug}/rules/:
     parameters:
       - $ref: "#/components/parameters/organization_id_or_slug"
@@ -895,91 +979,7 @@ paths:
           description: Forbidden
         "404":
           description: Not Found
-  /0/organizations/{organization_id_or_slug}/monitors/:
-    parameters:
-      - $ref: "#/components/parameters/organization_id_or_slug"
-    post:
-      operationId: createMonitor
-      description: Create a new monitor.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/MonitorRequest"
-        required: true
-      responses:
-        "201":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Monitor"
-          description: ""
-        "400":
-          description: Bad Request
-        "401":
-          description: Unauthorized
-        "403":
-          description: Forbidden
-        "404":
-          description: Not Found
-  /0/organizations/{organization_id_or_slug}/monitors/{monitor_id_or_slug}/:
-    parameters:
-      - $ref: "#/components/parameters/organization_id_or_slug"
-      - $ref: "#/components/parameters/monitor_id_or_slug"
-    get:
-      operationId: getOrganizationMonitor
-      description: Retrieves details for a monitor.
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Monitor"
-          description: ""
-        "400":
-          description: Bad Request
-        "401":
-          description: Unauthorized
-        "403":
-          description: Forbidden
-        "404":
-          description: Not Found
-    put:
-      operationId: updateOrganizationMonitor
-      description: Update a monitor.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/MonitorRequest"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Monitor"
-          description: ""
-        "400":
-          description: Bad Request
-        "401":
-          description: Unauthorized
-        "403":
-          description: Forbidden
-        "404":
-          description: Not Found
-    delete:
-      operationId: deleteOrganizationMonitor
-      description: Delete a monitor.
-      responses:
-        "202":
-          description: Accepted
-        "401":
-          description: Unauthorized
-        "403":
-          description: Forbidden
-        "404":
-          description: Not Found
+
 security:
   - bearerAuth: []
 components:
@@ -994,14 +994,14 @@ components:
       required: true
       schema:
         type: string
-    monitor_id_or_slug:
-      name: monitor_id_or_slug
+    project_id_or_slug:
+      name: project_id_or_slug
       in: path
       required: true
       schema:
         type: string
-    project_id_or_slug:
-      name: project_id_or_slug
+    monitor_id_or_slug:
+      name: monitor_id_or_slug
       in: path
       required: true
       schema:
@@ -1031,298 +1031,6 @@ components:
       schema:
         type: string
   schemas:
-    Monitor:
-      type: object
-      properties:
-        alertRule:
-          $ref: "#/components/schemas/MonitorAlertRule"
-        id:
-          type: string
-        name:
-          type: string
-        slug:
-          type: string
-        status:
-          type: string
-        isMuted:
-          type: boolean
-        isUpserting:
-          type: boolean
-        config:
-          $ref: "#/components/schemas/MonitorConfig"
-        dateCreated:
-          type: string
-          format: date-time
-        project:
-          type: object
-          properties:
-            id:
-              type: string
-            slug:
-              type: string
-          required:
-            - id
-            - slug
-        # environments:
-        #   type: object
-        #   properties:
-        #     name:
-        #       type: string
-        #   required:
-        #     - name
-        owner:
-          type: object
-          nullable: true
-          properties:
-            id:
-              type: string
-            type:
-              enum:
-                - user
-                - team
-              type: string
-          required:
-            - id
-            - type
-      required:
-        - config
-        - dateCreated
-        # - environments
-        - id
-        - isMuted
-        - isUpserting
-        - name
-        - owner
-        - project
-        - slug
-        - status
-    MonitorConfig:
-      type: object
-      properties:
-        schedule_type:
-          $ref: "#/components/schemas/MonitorConfigScheduleType"
-        schedule:
-          anyOf:
-            - $ref: "#/components/schemas/MonitorConfigScheduleString"
-            - $ref: "#/components/schemas/MonitorConfigScheduleInterval"
-        checkin_margin:
-          type: integer
-          format: int64
-          maximum: 40320
-          minimum: 0
-          nullable: true
-          description: >-
-            How long (in minutes) after the expected checkin
-            time will we wait until we consider the checkin to
-            have been missed.
-        max_runtime:
-          type: integer
-          format: int64
-          maximum: 40320
-          minimum: 1
-          nullable: true
-          description: >-
-            How long (in minutes) is the checkin allowed to run
-            for in CheckInStatus.IN_PROGRESS before it is
-            considered failed.
-        timezone:
-          type: string
-          nullable: true
-        failure_issue_threshold:
-          type: integer
-          format: int64
-          maximum: 720
-          minimum: 1
-          nullable: true
-          description: >-
-            How many consecutive missed or failed check-ins in a
-            row before creating a new issue.
-        recovery_threshold:
-          type: integer
-          format: int64
-          maximum: 720
-          minimum: 1
-          nullable: true
-          description: >-
-            How many successful check-ins in a row before
-            resolving an issue.
-        alert_rule_id:
-          type: integer
-          format: int64
-          nullable: true
-      required:
-        - checkin_margin
-        - max_runtime
-        - schedule
-        - schedule_type
-    MonitorConfigRequest:
-      type: object
-      properties:
-        schedule_type:
-          $ref: "#/components/schemas/MonitorConfigScheduleType"
-        schedule:
-          anyOf:
-            - $ref: "#/components/schemas/MonitorConfigScheduleString"
-            - $ref: "#/components/schemas/MonitorConfigScheduleInterval"
-            - $ref: "#/components/schemas/MonitorConfigScheduleObjectCrontab"
-            - $ref: "#/components/schemas/MonitorConfigScheduleObjectInterval"
-        checkin_margin:
-          type: integer
-          format: int64
-          maximum: 40320
-          minimum: 0
-          nullable: true
-          description: >-
-            How long (in minutes) after the expected checkin
-            time will we wait until we consider the checkin to
-            have been missed.
-        max_runtime:
-          type: integer
-          format: int64
-          maximum: 40320
-          minimum: 1
-          nullable: true
-          description: >-
-            How long (in minutes) is the checkin allowed to run
-            for in CheckInStatus.IN_PROGRESS before it is
-            considered failed.
-        timezone:
-          type: string
-        failure_issue_threshold:
-          type: integer
-          format: int64
-          maximum: 720
-          minimum: 1
-          nullable: true
-          description: >-
-            How many consecutive missed or failed check-ins in a
-            row before creating a new issue.
-        recovery_threshold:
-          type: integer
-          format: int64
-          maximum: 720
-          minimum: 1
-          nullable: true
-          description: >-
-            How many successful check-ins in a row before
-            resolving an issue.
-      required:
-        - schedule
-    MonitorConfigScheduleType:
-      type: string
-      enum:
-        - crontab
-        - interval
-    MonitorConfigScheduleString:
-      type: string
-    MonitorConfigScheduleInterval:
-      type: array
-      minItems: 2
-      maxItems: 2
-    MonitorConfigScheduleIntervalUnit:
-      type: string
-      enum:
-        - year
-        - month
-        - week
-        - day
-        - hour
-        - minute
-    MonitorConfigScheduleObjectCrontab:
-      type: object
-      properties:
-        type:
-          type: string
-          enum:
-            - crontab
-        value:
-          type: string
-      required:
-        - type
-        - value
-    MonitorConfigScheduleObjectInterval:
-      type: object
-      properties:
-        type:
-          type: string
-          enum:
-            - interval
-        value:
-          type: integer
-        unit:
-          $ref: "#/components/schemas/MonitorConfigScheduleIntervalUnit"
-      required:
-        - type
-        - value
-        - unit
-    MonitorAlertRule:
-      type: object
-      properties:
-        targets:
-          type: array
-          items:
-            $ref: "#/components/schemas/MonitorAlertRuleTarget"
-        environment:
-          type: string
-      required:
-        - targets
-    MonitorAlertRuleTarget:
-      type: object
-      properties:
-        targetIdentifier:
-          type: integer
-          x-go-type: json.Number
-        targetType:
-          type: string
-      required:
-        - targetIdentifier
-        - targetType
-    MonitorRequest:
-      type: object
-      properties:
-        project:
-          type: string
-          description: The project slug to associate the monitor to.
-        name:
-          type: string
-          description: >-
-            Name of the monitor. Used for notifications. If not set the
-            slug will be derived from your monitor name.
-          maxLength: 128
-        config:
-          $ref: "#/components/schemas/MonitorConfigRequest"
-        slug:
-          type: string
-          description: >-
-            Uniquely identifies your monitor within your organization.
-            Changing this slug will require updates to any instrumented
-            check-in calls.
-          maxLength: 50
-          pattern: '^(?![0-9]+$)[a-z0-9_\-]+$'
-        status:
-          enum:
-            - active
-            - disabled
-          type: string
-          default: active
-          description: >-
-            Status of the monitor. Disabled monitors will not accept
-            events and will not count towards the monitor quota.
-
-
-            * `active`
-
-            * `disabled`
-        owner:
-          type: string
-          nullable: true
-          description: >-
-            The ID of the team or user that owns the monitor. (eg.
-            user:51 or team:6)
-      required:
-        - config
-        - name
-        - project
     Organization:
       type: object
       required:
@@ -1767,6 +1475,128 @@ components:
               type: boolean
             hasDebug:
               type: boolean
+    MonitorOwner:
+      type: object
+      required:
+        - type
+        - id
+      properties:
+        type:
+          type: string
+          enum:
+            - user
+            - team
+        id:
+          type: string
+    MonitorScheduleInput:
+      description: Crontab string or interval tuple [value, unit].
+      oneOf:
+        - type: string
+        - type: array
+          minItems: 2
+          maxItems: 2
+          items:
+            oneOf:
+              - type: integer
+                format: int64
+              - type: string
+                enum:
+                  - year
+                  - month
+                  - week
+                  - day
+                  - hour
+                  - minute
+    MonitorConfigShared:
+      type: object
+      properties:
+        checkin_margin:
+          type: integer
+          format: int64
+          nullable: true
+        max_runtime:
+          type: integer
+          format: int64
+          nullable: true
+        timezone:
+          type: string
+          nullable: true
+        failure_issue_threshold:
+          type: integer
+          format: int64
+          nullable: true
+        recovery_threshold:
+          type: integer
+          format: int64
+          nullable: true
+    MonitorConfigRequest:
+      allOf:
+        - $ref: "#/components/schemas/MonitorConfigShared"
+        - type: object
+          required:
+            - schedule_type
+            - schedule
+          properties:
+            schedule_type:
+              type: string
+              enum:
+                - crontab
+                - interval
+            schedule:
+              $ref: "#/components/schemas/MonitorScheduleInput"
+    MonitorConfig:
+      allOf:
+        - $ref: "#/components/schemas/MonitorConfigShared"
+        - type: object
+          required:
+            - schedule_type
+            - schedule
+          properties:
+            schedule_type:
+              type: string
+              enum:
+                - crontab
+                - interval
+            schedule:
+              $ref: "#/components/schemas/MonitorScheduleInput"
+    MonitorRequest:
+      type: object
+      required:
+        - project
+        - name
+        - config
+      properties:
+        project:
+          type: string
+        name:
+          type: string
+          maxLength: 128
+        slug:
+          type: string
+        owner:
+          type: string
+          nullable: true
+        config:
+          $ref: "#/components/schemas/MonitorConfigRequest"
+    MonitorResponse:
+      type: object
+      required:
+        - id
+        - name
+        - slug
+        - config
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        slug:
+          type: string
+        config:
+          $ref: "#/components/schemas/MonitorConfig"
+        owner:
+          $ref: "#/components/schemas/MonitorOwner"
+          nullable: true
     ProjectRule:
       type: object
       required:
