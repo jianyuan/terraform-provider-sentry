@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/jianyuan/go-utils/ptr"
 	"github.com/jianyuan/go-utils/sliceutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
@@ -1391,21 +1390,21 @@ func (m *IssueAlertActionModel) Fill(ctx context.Context, action apiclient.Proje
 // Model
 
 type IssueAlertModel struct {
-	Id           types.String                `tfsdk:"id"`
-	Organization types.String                `tfsdk:"organization"`
-	Project      types.String                `tfsdk:"project"`
-	Name         types.String                `tfsdk:"name"`
-	Conditions   sentrytypes.LossyJson       `tfsdk:"conditions"`
-	Filters      sentrytypes.LossyJson       `tfsdk:"filters"`
-	Actions      sentrytypes.LossyJson       `tfsdk:"actions"`
-	ActionMatch  types.String                `tfsdk:"action_match"`
-	FilterMatch  types.String                `tfsdk:"filter_match"`
-	Frequency    types.Int64                 `tfsdk:"frequency"`
-	Environment  types.String                `tfsdk:"environment"`
-	Owner        types.String                `tfsdk:"owner"`
-	ConditionsV2 *[]IssueAlertConditionModel `tfsdk:"conditions_v2"`
-	FiltersV2    *[]IssueAlertFilterModel    `tfsdk:"filters_v2"`
-	ActionsV2    *[]IssueAlertActionModel    `tfsdk:"actions_v2"`
+	Id           types.String          `tfsdk:"id"`
+	Organization types.String          `tfsdk:"organization"`
+	Project      types.String          `tfsdk:"project"`
+	Name         types.String          `tfsdk:"name"`
+	Conditions   sentrytypes.LossyJson `tfsdk:"conditions"`
+	Filters      sentrytypes.LossyJson `tfsdk:"filters"`
+	Actions      sentrytypes.LossyJson `tfsdk:"actions"`
+	ActionMatch  types.String          `tfsdk:"action_match"`
+	FilterMatch  types.String          `tfsdk:"filter_match"`
+	Frequency    types.Int64           `tfsdk:"frequency"`
+	Environment  types.String          `tfsdk:"environment"`
+	Owner        types.String          `tfsdk:"owner"`
+	ConditionsV2 types.List            `tfsdk:"conditions_v2"`
+	FiltersV2    types.List            `tfsdk:"filters_v2"`
+	ActionsV2    types.List            `tfsdk:"actions_v2"`
 }
 
 func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule) (diags diag.Diagnostics) {
@@ -1440,16 +1439,23 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 			diags.AddError("Invalid conditions", err.Error())
 			return
 		}
-	} else if m.ConditionsV2 != nil {
-		m.ConditionsV2 = ptr.Ptr(sliceutils.Map(func(condition apiclient.ProjectRuleCondition) IssueAlertConditionModel {
+	} else if !m.ConditionsV2.IsNull() {
+		conditions := sliceutils.Map(func(condition apiclient.ProjectRuleCondition) IssueAlertConditionModel {
 			var conditionModel IssueAlertConditionModel
 			diags.Append(conditionModel.Fill(ctx, condition)...)
 			return conditionModel
-		}, alert.Conditions))
+		}, alert.Conditions)
 
 		if diags.HasError() {
 			return
 		}
+
+		conditionsV2, d := types.ListValueFrom(ctx, issueAlertConditionV2ElemType, conditions)
+		diags.Append(d...)
+		if diags.HasError() {
+			return
+		}
+		m.ConditionsV2 = conditionsV2
 	}
 
 	if !m.Filters.IsNull() {
@@ -1458,16 +1464,23 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 		} else {
 			diags.AddError("Invalid filters", err.Error())
 		}
-	} else if m.FiltersV2 != nil {
-		m.FiltersV2 = ptr.Ptr(sliceutils.Map(func(filter apiclient.ProjectRuleFilter) IssueAlertFilterModel {
+	} else if !m.FiltersV2.IsNull() {
+		filters := sliceutils.Map(func(filter apiclient.ProjectRuleFilter) IssueAlertFilterModel {
 			var filterModel IssueAlertFilterModel
 			diags.Append(filterModel.Fill(ctx, filter)...)
 			return filterModel
-		}, alert.Filters))
+		}, alert.Filters)
 
 		if diags.HasError() {
 			return
 		}
+
+		filtersV2, d := types.ListValueFrom(ctx, issueAlertFilterV2ElemType, filters)
+		diags.Append(d...)
+		if diags.HasError() {
+			return
+		}
+		m.FiltersV2 = filtersV2
 	}
 
 	if !m.Actions.IsNull() {
@@ -1476,16 +1489,23 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 		} else {
 			diags.AddError("Invalid actions", err.Error())
 		}
-	} else if m.ActionsV2 != nil {
-		m.ActionsV2 = ptr.Ptr(sliceutils.Map(func(action apiclient.ProjectRuleAction) IssueAlertActionModel {
+	} else if !m.ActionsV2.IsNull() {
+		actions := sliceutils.Map(func(action apiclient.ProjectRuleAction) IssueAlertActionModel {
 			var actionModel IssueAlertActionModel
 			diags.Append(actionModel.Fill(ctx, action)...)
 			return actionModel
-		}, alert.Actions))
+		}, alert.Actions)
 
 		if diags.HasError() {
 			return
 		}
+
+		actionsV2, d := types.ListValueFrom(ctx, issueAlertActionV2ElemType, actions)
+		diags.Append(d...)
+		if diags.HasError() {
+			return
+		}
+		m.ActionsV2 = actionsV2
 	}
 
 	return
