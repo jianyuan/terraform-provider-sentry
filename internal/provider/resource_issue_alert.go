@@ -29,6 +29,22 @@ var _ resource.ResourceWithConfigure = &IssueAlertResource{}
 var _ resource.ResourceWithImportState = &IssueAlertResource{}
 var _ resource.ResourceWithUpgradeState = &IssueAlertResource{}
 
+var (
+	issueAlertConditionV2ElemType types.ObjectType
+	issueAlertFilterV2ElemType    types.ObjectType
+	issueAlertActionV2ElemType    types.ObjectType
+)
+
+func init() {
+	r := &IssueAlertResource{}
+	var resp resource.SchemaResponse
+	r.Schema(context.Background(), resource.SchemaRequest{}, &resp)
+
+	issueAlertConditionV2ElemType = resp.Schema.Attributes["conditions_v2"].(schema.ListNestedAttribute).NestedObject.Type().(types.ObjectType)
+	issueAlertFilterV2ElemType = resp.Schema.Attributes["filters_v2"].(schema.ListNestedAttribute).NestedObject.Type().(types.ObjectType)
+	issueAlertActionV2ElemType = resp.Schema.Attributes["actions_v2"].(schema.ListNestedAttribute).NestedObject.Type().(types.ObjectType)
+}
+
 func NewIssueAlertResource() resource.Resource {
 	return &IssueAlertResource{}
 }
@@ -639,8 +655,14 @@ func (r *IssueAlertResource) ValidateConfig(ctx context.Context, req resource.Va
 		return
 	}
 
-	if data.ConditionsV2 != nil {
-		for i, item := range *data.ConditionsV2 {
+	if !data.ConditionsV2.IsNull() && !data.ConditionsV2.IsUnknown() {
+		var conditions []IssueAlertConditionModel
+		resp.Diagnostics.Append(data.ConditionsV2.ElementsAs(ctx, &conditions, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		for i, item := range conditions {
 			if _, diags := item.ToApi(ctx); diags.HasError() {
 				resp.Diagnostics.AddAttributeError(
 					path.Root("conditions_v2").AtListIndex(i),
@@ -651,8 +673,14 @@ func (r *IssueAlertResource) ValidateConfig(ctx context.Context, req resource.Va
 		}
 	}
 
-	if data.FiltersV2 != nil {
-		for i, item := range *data.FiltersV2 {
+	if !data.FiltersV2.IsNull() && !data.FiltersV2.IsUnknown() {
+		var filters []IssueAlertFilterModel
+		resp.Diagnostics.Append(data.FiltersV2.ElementsAs(ctx, &filters, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		for i, item := range filters {
 			if _, diags := item.ToApi(ctx); diags.HasError() {
 				resp.Diagnostics.AddAttributeError(
 					path.Root("filters_v2").AtListIndex(i),
@@ -671,8 +699,14 @@ func (r *IssueAlertResource) ValidateConfig(ctx context.Context, req resource.Va
 				"You must add an action for this alert to fire",
 			)
 		}
-	} else if data.ActionsV2 != nil {
-		if len(*data.ActionsV2) == 0 {
+	} else if !data.ActionsV2.IsNull() && !data.ActionsV2.IsUnknown() {
+		var actions []IssueAlertActionModel
+		resp.Diagnostics.Append(data.ActionsV2.ElementsAs(ctx, &actions, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		if len(actions) == 0 {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("actions_v2"),
 				"Missing attribute configuration",
@@ -680,7 +714,7 @@ func (r *IssueAlertResource) ValidateConfig(ctx context.Context, req resource.Va
 			)
 		}
 
-		for i, item := range *data.ActionsV2 {
+		for i, item := range actions {
 			if _, diags := item.ToApi(ctx); diags.HasError() {
 				resp.Diagnostics.AddAttributeError(
 					path.Root("actions_v2").AtListIndex(i),
@@ -712,9 +746,15 @@ func (r *IssueAlertResource) Create(ctx context.Context, req resource.CreateRequ
 
 	if !data.Conditions.IsNull() {
 		resp.Diagnostics.Append(data.Conditions.Unmarshal(&body.Conditions)...)
-	} else if data.ConditionsV2 != nil {
+	} else if !data.ConditionsV2.IsNull() {
+		var conditions []IssueAlertConditionModel
+		resp.Diagnostics.Append(data.ConditionsV2.ElementsAs(ctx, &conditions, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
 		body.Conditions = []apiclient.ProjectRuleCondition{}
-		for i, item := range *data.ConditionsV2 {
+		for i, item := range conditions {
 			condition, diags := item.ToApi(ctx)
 			if diags.HasError() {
 				resp.Diagnostics.AddAttributeError(
@@ -732,9 +772,15 @@ func (r *IssueAlertResource) Create(ctx context.Context, req resource.CreateRequ
 
 	if !data.Filters.IsNull() {
 		resp.Diagnostics.Append(data.Filters.Unmarshal(&body.Filters)...)
-	} else if data.FiltersV2 != nil {
+	} else if !data.FiltersV2.IsNull() {
+		var filters []IssueAlertFilterModel
+		resp.Diagnostics.Append(data.FiltersV2.ElementsAs(ctx, &filters, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
 		body.Filters = []apiclient.ProjectRuleFilter{}
-		for i, item := range *data.FiltersV2 {
+		for i, item := range filters {
 			filter, diags := item.ToApi(ctx)
 			if diags.HasError() {
 				resp.Diagnostics.AddAttributeError(
@@ -752,9 +798,15 @@ func (r *IssueAlertResource) Create(ctx context.Context, req resource.CreateRequ
 
 	if !data.Actions.IsNull() {
 		resp.Diagnostics.Append(data.Actions.Unmarshal(&body.Actions)...)
-	} else if data.ActionsV2 != nil {
+	} else if !data.ActionsV2.IsNull() {
+		var actions []IssueAlertActionModel
+		resp.Diagnostics.Append(data.ActionsV2.ElementsAs(ctx, &actions, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
 		body.Actions = []apiclient.ProjectRuleAction{}
-		for i, item := range *data.ActionsV2 {
+		for i, item := range actions {
 			action, diags := item.ToApi(ctx)
 			if diags.HasError() {
 				resp.Diagnostics.AddAttributeError(
@@ -849,9 +901,15 @@ func (r *IssueAlertResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	if !data.Conditions.IsNull() {
 		resp.Diagnostics.Append(data.Conditions.Unmarshal(&body.Conditions)...)
-	} else if data.ConditionsV2 != nil {
+	} else if !data.ConditionsV2.IsNull() {
+		var conditions []IssueAlertConditionModel
+		resp.Diagnostics.Append(data.ConditionsV2.ElementsAs(ctx, &conditions, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
 		body.Conditions = []apiclient.ProjectRuleCondition{}
-		for i, item := range *data.ConditionsV2 {
+		for i, item := range conditions {
 			condition, diags := item.ToApi(ctx)
 			if diags.HasError() {
 				resp.Diagnostics.AddAttributeError(
@@ -869,9 +927,15 @@ func (r *IssueAlertResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	if !data.Filters.IsNull() {
 		resp.Diagnostics.Append(data.Filters.Unmarshal(&body.Filters)...)
-	} else if data.FiltersV2 != nil {
+	} else if !data.FiltersV2.IsNull() {
+		var filters []IssueAlertFilterModel
+		resp.Diagnostics.Append(data.FiltersV2.ElementsAs(ctx, &filters, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
 		body.Filters = []apiclient.ProjectRuleFilter{}
-		for i, item := range *data.FiltersV2 {
+		for i, item := range filters {
 			filter, diags := item.ToApi(ctx)
 			if diags.HasError() {
 				resp.Diagnostics.AddAttributeError(
@@ -889,9 +953,15 @@ func (r *IssueAlertResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	if !data.Actions.IsNull() {
 		resp.Diagnostics.Append(data.Actions.Unmarshal(&body.Actions)...)
-	} else if data.ActionsV2 != nil {
+	} else if !data.ActionsV2.IsNull() {
+		var actions []IssueAlertActionModel
+		resp.Diagnostics.Append(data.ActionsV2.ElementsAs(ctx, &actions, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
 		body.Actions = []apiclient.ProjectRuleAction{}
-		for i, item := range *data.ActionsV2 {
+		for i, item := range actions {
 			action, diags := item.ToApi(ctx)
 			if diags.HasError() {
 				resp.Diagnostics.AddAttributeError(
@@ -1059,6 +1129,10 @@ func (r *IssueAlertResource) UpgradeState(ctx context.Context) map[int64]resourc
 					Frequency:    priorStateData.Frequency,
 					Environment:  priorStateData.Environment,
 				}
+
+				upgradedStateData.ConditionsV2 = types.ListNull(issueAlertConditionV2ElemType)
+				upgradedStateData.FiltersV2 = types.ListNull(issueAlertFilterV2ElemType)
+				upgradedStateData.ActionsV2 = types.ListNull(issueAlertActionV2ElemType)
 
 				upgradedStateData.Conditions = sentrytypes.NewLossyJsonNull()
 				if !priorStateData.Conditions.IsNull() {
