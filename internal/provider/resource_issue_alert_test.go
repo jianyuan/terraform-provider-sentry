@@ -1035,6 +1035,137 @@ resource "sentry_issue_alert" "test" {
 	})
 }
 
+func TestAccIssueAlertResource_forExpression(t *testing.T) {
+	rn := "sentry_issue_alert.test"
+	team := acctest.RandomWithPrefix("tf-team")
+	project := acctest.RandomWithPrefix("tf-project")
+	alert := acctest.RandomWithPrefix("tf-issue-alert")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckIssueAlertDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccIssueAlertConfig_forExpression(team, project, alert),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("project"), knownvalue.StringExact(project)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(alert)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("conditions_v2"), knownvalue.ListExact([]knownvalue.Check{
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"first_seen_event": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"name": knownvalue.NotNull(),
+							}),
+						}),
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"regression_event": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"name": knownvalue.NotNull(),
+							}),
+						}),
+					})),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters_v2"), knownvalue.ListExact([]knownvalue.Check{
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"tagged_event": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"name":  knownvalue.NotNull(),
+								"key":   knownvalue.StringExact("key"),
+								"match": knownvalue.StringExact("CONTAINS"),
+								"value": knownvalue.StringExact("value"),
+							}),
+						}),
+					})),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("actions_v2"), knownvalue.ListExact([]knownvalue.Check{
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"notify_email": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"name":              knownvalue.NotNull(),
+								"target_type":       knownvalue.StringExact("IssueOwners"),
+								"target_identifier": knownvalue.Null(),
+								"fallthrough_type":  knownvalue.StringExact("ActiveMembers"),
+							}),
+						}),
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"notify_email": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"name":              knownvalue.NotNull(),
+								"target_type":       knownvalue.StringExact("Team"),
+								"target_identifier": knownvalue.NotNull(),
+								"fallthrough_type":  knownvalue.Null(),
+							}),
+						}),
+					})),
+				},
+			},
+		},
+	})
+}
+
+func testAccIssueAlertConfig_forExpression(team string, project string, alert string) string {
+	return testAccOrganizationDataSourceConfig + fmt.Sprintf(`
+locals {
+	conditions = [
+		{ type = "first_seen" },
+		{ type = "regression" },
+	]
+
+	filters = [
+		{ key = "key", match = "CONTAINS", value = "value" },
+	]
+
+	action_types = ["issue_owners", "team"]
+}
+
+resource "sentry_team" "test" {
+	organization = data.sentry_organization.test.slug
+	name         = "%[1]s"
+	slug         = "%[1]s"
+}
+
+resource "sentry_project" "test" {
+	organization = sentry_team.test.organization
+	teams        = [sentry_team.test.slug]
+	name         = "%[2]s"
+	platform     = "go"
+}
+
+resource "sentry_issue_alert" "test" {
+	organization = sentry_project.test.organization
+	project      = sentry_project.test.id
+	name         = "%[3]s"
+
+	action_match = "any"
+	filter_match = "any"
+	frequency    = 30
+
+	conditions_v2 = [
+		for c in local.conditions : {
+			first_seen_event  = c.type == "first_seen" ? {} : null
+			regression_event  = c.type == "regression" ? {} : null
+		}
+	]
+
+	filters_v2 = [
+		for f in local.filters : {
+			tagged_event = {
+				key   = f.key
+				match = f.match
+				value = f.value
+			}
+		}
+	]
+
+	actions_v2 = [
+		for a in local.action_types : {
+			notify_email = {
+				target_type       = a == "issue_owners" ? "IssueOwners" : "Team"
+				target_identifier = a == "team" ? sentry_team.test.internal_id : null
+				fallthrough_type  = a == "issue_owners" ? "ActiveMembers" : null
+			}
+		}
+	]
+}
+`, team, project, alert)
+}
+
 func testAccCheckIssueAlertDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "sentry_issue_alert" {
