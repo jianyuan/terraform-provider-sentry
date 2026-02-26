@@ -36,6 +36,7 @@ func TestAccProjectDataSource(t *testing.T) {
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("platform"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("date_created"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("features"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("subject_template"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("color"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("teams"), knownvalue.NotNull()),
 				),
