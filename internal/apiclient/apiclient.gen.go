@@ -330,6 +330,7 @@ type Project struct {
 	SecurityToken        string                    `json:"securityToken"`
 	SecurityTokenHeader  nullable.Nullable[string] `json:"securityTokenHeader"`
 	Slug                 string                    `json:"slug"`
+	SubjectTemplate      string                    `json:"subjectTemplate"`
 	Teams                []Team                    `json:"teams"`
 	VerifySSL            bool                      `json:"verifySSL"`
 }
@@ -894,6 +895,7 @@ type UpdateOrganizationProjectJSONBody struct {
 	SecurityToken        *string                 `json:"securityToken,omitempty"`
 	SecurityTokenHeader  *string                 `json:"securityTokenHeader,omitempty"`
 	Slug                 *string                 `json:"slug,omitempty"`
+	SubjectTemplate      *string                 `json:"subjectTemplate,omitempty"`
 	VerifySSL            *bool                   `json:"verifySSL,omitempty"`
 }
 
