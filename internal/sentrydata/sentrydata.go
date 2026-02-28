@@ -50,6 +50,7 @@ var IssueGroupCategories = []string{
 	"Ai_Detected",
 	"Preprod",
 	"Instrumentation",
+	"Configuration",
 }
 
 // https://github.com/getsentry/sentry/blob/master/src/sentry/issues/grouptype.py
@@ -72,6 +73,7 @@ var IssueGroupCategoryNameToId = map[string]string{
 	"Ai_Detected":       "16",
 	"Preprod":           "17",
 	"Instrumentation":   "18",
+	"Configuration":     "19",
 }
 
 // https://github.com/getsentry/sentry/blob/master/src/sentry/issues/grouptype.py
@@ -94,6 +96,7 @@ var IssueGroupCategoryIdToName = map[string]string{
 	"16": "Ai_Detected",
 	"17": "Preprod",
 	"18": "Instrumentation",
+	"19": "Configuration",
 }
 
 // https://github.com/getsentry/sentry/blob/master/src/sentry/rules/conditions/event_attribute.py
