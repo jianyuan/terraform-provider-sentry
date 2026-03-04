@@ -47,15 +47,15 @@ resource "sentry_metric_alert" "main" {
 }
 
 # Example: Metric Alert with Sentry App Action
-data "sentry_organization_integration" "rootly" {
+data "sentry_app_installation" "my_app" {
   organization = "my-organization"
-  name         = "Rootly"
+  slug         = "my-sentry-app"
 }
 
 resource "sentry_metric_alert" "main" {
   organization   = "my-organization"
   project        = "my-project"
-  name           = "My Alert with Rootly"
+  name           = "My Alert with Sentry App"
   dataset        = "events"
   event_types    = ["error"]
   query          = ""
@@ -67,8 +67,8 @@ resource "sentry_metric_alert" "main" {
     action {
       type              = "sentry_app"
       target_type       = "sentry_app"
-      target_identifier = data.sentry_organization_integration.rootly.internal_id
-      sentry_app_id     = tonumber(data.sentry_organization_integration.rootly.internal_id)
+      target_identifier = tostring(data.sentry_app_installation.my_app.sentry_app_id)
+      sentry_app_id     = data.sentry_app_installation.my_app.sentry_app_id
       integration_id    = 0
     }
     alert_threshold = 100
