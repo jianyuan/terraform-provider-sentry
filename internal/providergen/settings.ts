@@ -91,6 +91,12 @@ export const DATASOURCES: Array<DataSource> = [
         nullable: true,
       },
       {
+        name: "subject_template",
+        type: "string",
+        description: "The subject template of this project.",
+        computedOptionalRequired: "computed",
+      },
+      {
         name: "color",
         type: "string",
         description: "The color of this project.",

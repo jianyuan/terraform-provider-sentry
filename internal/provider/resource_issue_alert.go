@@ -447,6 +447,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 								},
 								"channel_id": schema.StringAttribute{
 									MarkdownDescription: "The ID of the channel to send the notification to.",
+									Optional:            true,
 									Computed:            true,
 								},
 								"tags": schema.SetAttribute{

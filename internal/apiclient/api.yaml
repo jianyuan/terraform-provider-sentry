@@ -453,6 +453,8 @@ paths:
                   type: string
                 securityTokenHeader:
                   type: string
+                subjectTemplate:
+                  type: string
                 verifySSL:
                   type: boolean
                 highlightTags:
@@ -1280,6 +1282,7 @@ components:
         - groupingEnhancements
         - allowedDomains
         - scrapeJavaScript
+        - subjectTemplate
         - securityToken
         - securityTokenHeader
         - verifySSL
@@ -1336,6 +1339,8 @@ components:
         securityTokenHeader:
           type: string
           nullable: true
+        subjectTemplate:
+          type: string
         verifySSL:
           type: boolean
         highlightTags:

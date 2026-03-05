@@ -47,6 +47,7 @@ resource "sentry_metric_alert" "main" {
 }
 
 # Example: Metric Alert with Sentry App Action
+
 data "sentry_app_installation" "my_app" {
   organization = "my-organization"
   slug         = "my-sentry-app"

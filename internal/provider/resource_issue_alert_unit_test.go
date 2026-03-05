@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 )
 
 func TestIssueAlertResource_elemTypesInitialized(t *testing.T) {
@@ -145,5 +146,61 @@ func TestIssueAlertActionModel_ToApi_validAction(t *testing.T) {
 	}
 	if result == nil {
 		t.Fatal("expected non-nil result")
+	}
+}
+
+func TestIssueAlertActionSlackNotifyServiceModel_ToApi_withChannelId(t *testing.T) {
+	channelId := "C1234567890"
+	model := IssueAlertActionSlackNotifyServiceModel{
+		Workspace: types.StringValue("ws123"),
+		Channel:   types.StringValue("#general"),
+		ChannelId: types.StringValue(channelId),
+	}
+	result, diags := model.ToApi(context.Background())
+	if diags.HasError() {
+		t.Fatalf("unexpected error: %s", diags)
+	}
+	slack, err := result.AsProjectRuleActionSlackNotifyService()
+	if err != nil {
+		t.Fatalf("failed to decode result: %s", err)
+	}
+	if slack.ChannelId == nil || *slack.ChannelId != channelId {
+		t.Errorf("expected channel_id %q, got %v", channelId, slack.ChannelId)
+	}
+}
+
+func TestIssueAlertActionSlackNotifyServiceModel_ToApi_withoutChannelId(t *testing.T) {
+	model := IssueAlertActionSlackNotifyServiceModel{
+		Workspace: types.StringValue("ws123"),
+		Channel:   types.StringValue("#general"),
+		ChannelId: types.StringNull(),
+	}
+	result, diags := model.ToApi(context.Background())
+	if diags.HasError() {
+		t.Fatalf("unexpected error: %s", diags)
+	}
+	slack, err := result.AsProjectRuleActionSlackNotifyService()
+	if err != nil {
+		t.Fatalf("failed to decode result: %s", err)
+	}
+	if slack.ChannelId != nil {
+		t.Errorf("expected channel_id to be nil, got %q", *slack.ChannelId)
+	}
+}
+
+func TestIssueAlertActionSlackNotifyServiceModel_Fill_setsChannelId(t *testing.T) {
+	channelId := "C9876543210"
+	action := apiclient.ProjectRuleActionSlackNotifyService{
+		Workspace: "ws123",
+		Channel:   "#general",
+		ChannelId: &channelId,
+	}
+	var model IssueAlertActionSlackNotifyServiceModel
+	diags := model.Fill(context.Background(), action)
+	if diags.HasError() {
+		t.Fatalf("unexpected error: %s", diags)
+	}
+	if model.ChannelId.IsNull() || model.ChannelId.ValueString() != channelId {
+		t.Errorf("expected channel_id %q, got %q", channelId, model.ChannelId.ValueString())
 	}
 }

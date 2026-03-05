@@ -62,10 +62,10 @@ resource "sentry_metric_alert" "main" {
 }
 
 # Example: Metric Alert with Sentry App Action
-data "sentry_organization_integration" "rootly" {
-  organization = "my-organization"
-  name         = "Rootly"
-}
+#
+# Note: At this time the only possible method to extract the value required for the action fields sentry_app_id and target_identifier
+# is from an existing Metric Alert that already uses the Sentry App in an action. You can use the following API endpoint to get this information:
+# https://sentry.io/api/0/organizations/{organization_id_or_slug}/alert-rules/ 
 
 resource "sentry_metric_alert" "main" {
   organization   = "my-organization"
@@ -82,8 +82,8 @@ resource "sentry_metric_alert" "main" {
     action {
       type              = "sentry_app"
       target_type       = "sentry_app"
-      target_identifier = data.sentry_organization_integration.rootly.internal_id
-      sentry_app_id     = tonumber(data.sentry_organization_integration.rootly.internal_id)
+      target_identifier = "123456"
+      sentry_app_id     = 123456
       integration_id    = 0
     }
     alert_threshold = 100

@@ -743,12 +743,12 @@ Required:
 
 Optional:
 
+- `channel_id` (String) The ID of the channel to send the notification to.
 - `notes` (String) Text to show alongside the notification. To @ a user, include their user id like `@<USER_ID>`. To include a clickable link, format the link and title like `<http://example.com|Click Here>`.
 - `tags` (Set of String) A string of tags to show in the notification.
 
 Read-Only:
 
-- `channel_id` (String) The ID of the channel to send the notification to.
 - `name` (String)
 
 
@@ -929,7 +929,7 @@ Read-Only:
 
 Required:
 
-- `value` (String) Valid values are: `Error`, `Performance`, `Profile`, `Cron`, `Replay`, `Feedback`, `Uptime`, `Metric_Alert`, `Test_Notification`, `Outage`, `Metric`, `Db_Query`, `Http_Client`, `Frontend`, `Mobile`, `Ai_Detected`, `Preprod`, and `Instrumentation`.
+- `value` (String) Valid values are: `Error`, `Performance`, `Profile`, `Cron`, `Replay`, `Feedback`, `Uptime`, `Metric_Alert`, `Test_Notification`, `Outage`, `Metric`, `Db_Query`, `Http_Client`, `Frontend`, `Mobile`, `Ai_Detected`, `Preprod`, `Instrumentation`, and `Configuration`.
 
 Read-Only:
 

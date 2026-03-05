@@ -57,6 +57,11 @@ func (d *ProjectDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 				Computed:            true,
 				CustomType:          supertypes.StringType{},
 			},
+			"subject_template": schema.StringAttribute{
+				MarkdownDescription: "The subject template of this project.",
+				Computed:            true,
+				CustomType:          supertypes.StringType{},
+			},
 			"color": schema.StringAttribute{
 				MarkdownDescription: "The color of this project.",
 				Computed:            true,
@@ -140,17 +145,18 @@ func (d *ProjectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 }
 
 type ProjectDataSourceModel struct {
-	Organization supertypes.StringValue                                             `tfsdk:"organization"`
-	Slug         supertypes.StringValue                                             `tfsdk:"slug"`
-	InternalId   supertypes.StringValue                                             `tfsdk:"internal_id"`
-	Name         supertypes.StringValue                                             `tfsdk:"name"`
-	Platform     supertypes.StringValue                                             `tfsdk:"platform"`
-	Color        supertypes.StringValue                                             `tfsdk:"color"`
-	IsPublic     supertypes.BoolValue                                               `tfsdk:"is_public"`
-	DateCreated  supertypes.StringValue                                             `tfsdk:"date_created"`
-	Features     supertypes.SetValueOf[string]                                      `tfsdk:"features"`
-	Teams        supertypes.SetNestedObjectValueOf[ProjectDataSourceModelTeamsItem] `tfsdk:"teams"`
-	Id           supertypes.StringValue                                             `tfsdk:"id"`
+	Organization    supertypes.StringValue                                             `tfsdk:"organization"`
+	Slug            supertypes.StringValue                                             `tfsdk:"slug"`
+	InternalId      supertypes.StringValue                                             `tfsdk:"internal_id"`
+	Name            supertypes.StringValue                                             `tfsdk:"name"`
+	Platform        supertypes.StringValue                                             `tfsdk:"platform"`
+	SubjectTemplate supertypes.StringValue                                             `tfsdk:"subject_template"`
+	Color           supertypes.StringValue                                             `tfsdk:"color"`
+	IsPublic        supertypes.BoolValue                                               `tfsdk:"is_public"`
+	DateCreated     supertypes.StringValue                                             `tfsdk:"date_created"`
+	Features        supertypes.SetValueOf[string]                                      `tfsdk:"features"`
+	Teams           supertypes.SetNestedObjectValueOf[ProjectDataSourceModelTeamsItem] `tfsdk:"teams"`
+	Id              supertypes.StringValue                                             `tfsdk:"id"`
 }
 
 func (m *ProjectDataSourceModel) Fill(ctx context.Context, data apiclient.Project) (diags diag.Diagnostics) {
@@ -163,6 +169,7 @@ func (m *ProjectDataSourceModel) Fill(ctx context.Context, data apiclient.Projec
 	} else {
 		m.Platform = supertypes.NewStringNull()
 	}
+	m.SubjectTemplate = supertypes.NewStringValue(data.SubjectTemplate)
 	m.Color = supertypes.NewStringValue(data.Color)
 	m.IsPublic = supertypes.NewBoolValue(data.IsPublic)
 	m.DateCreated = supertypes.NewStringValue(data.DateCreated.String())
