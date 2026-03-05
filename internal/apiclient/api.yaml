@@ -245,6 +245,29 @@ paths:
           description: Forbidden
         "404":
           description: Not Found
+  /0/organizations/{organization_id_or_slug}/sentry-app-installations/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+    get:
+      summary: List Sentry App Installations
+      operationId: listSentryAppInstallations
+      parameters:
+        - $ref: "#/components/parameters/cursor"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SentryAppInstallation"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
   /0/organizations/{organization_id_or_slug}/spike-protections/:
     parameters:
       - $ref: "#/components/parameters/organization_id_or_slug"
@@ -2153,6 +2176,38 @@ components:
           type: string
         codeownersAutoSync:
           type: boolean
+    SentryAppInstallation:
+      type: object
+      required:
+        - uuid
+        - status
+        - app
+        - organization
+      properties:
+        uuid:
+          type: string
+        status:
+          type: string
+        app:
+          type: object
+          required:
+            - uuid
+            - slug
+            - sentryAppId
+          properties:
+            uuid:
+              type: string
+            slug:
+              type: string
+            sentryAppId:
+              type: integer
+        organization:
+          type: object
+          required:
+            - slug
+          properties:
+            slug:
+              type: string
     Team:
       type: object
       required:

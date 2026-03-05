@@ -1134,6 +1134,20 @@ type ProjectRuleFilterTaggedEvent struct {
 // ProjectRuleFilterTaggedEventId defines model for ProjectRuleFilterTaggedEvent.Id.
 type ProjectRuleFilterTaggedEventId string
 
+// SentryAppInstallation defines model for SentryAppInstallation.
+type SentryAppInstallation struct {
+	App struct {
+		SentryAppId int    `json:"sentryAppId"`
+		Slug        string `json:"slug"`
+		Uuid        string `json:"uuid"`
+	} `json:"app"`
+	Organization struct {
+		Slug string `json:"slug"`
+	} `json:"organization"`
+	Status string `json:"status"`
+	Uuid   string `json:"uuid"`
+}
+
 // Team defines model for Team.
 type Team struct {
 	Id   string `json:"id"`
@@ -1209,6 +1223,11 @@ type UpdateOrganizationMemberJSONBody struct {
 type ListOrganizationProjectsParams struct {
 	Cursor  *Cursor   `form:"cursor,omitempty" json:"cursor,omitempty"`
 	Options *[]string `form:"options,omitempty" json:"options,omitempty"`
+}
+
+// ListSentryAppInstallationsParams defines parameters for ListSentryAppInstallations.
+type ListSentryAppInstallationsParams struct {
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
 }
 
 // DisableSpikeProtectionJSONBody defines parameters for DisableSpikeProtection.
@@ -2854,6 +2873,9 @@ type ClientInterface interface {
 	// ListOrganizationProjects request
 	ListOrganizationProjects(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationProjectsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListSentryAppInstallations request
+	ListSentryAppInstallations(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListSentryAppInstallationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// DisableSpikeProtectionWithBody request with any body
 	DisableSpikeProtectionWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -3091,6 +3113,18 @@ func (c *Client) UpdateOrganizationMember(ctx context.Context, organizationIdOrS
 
 func (c *Client) ListOrganizationProjects(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationProjectsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListOrganizationProjectsRequest(c.Server, organizationIdOrSlug, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListSentryAppInstallations(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListSentryAppInstallationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListSentryAppInstallationsRequest(c.Server, organizationIdOrSlug, params)
 	if err != nil {
 		return nil, err
 	}
@@ -3964,6 +3998,62 @@ func NewListOrganizationProjectsRequest(server string, organizationIdOrSlug Orga
 		if params.Options != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "options", *params.Options, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "array", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListSentryAppInstallationsRequest generates requests for ListSentryAppInstallations
+func NewListSentryAppInstallationsRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, params *ListSentryAppInstallationsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/sentry-app-installations/", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -5087,6 +5177,9 @@ type ClientWithResponsesInterface interface {
 	// ListOrganizationProjectsWithResponse request
 	ListOrganizationProjectsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationProjectsParams, reqEditors ...RequestEditorFn) (*ListOrganizationProjectsResponse, error)
 
+	// ListSentryAppInstallationsWithResponse request
+	ListSentryAppInstallationsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListSentryAppInstallationsParams, reqEditors ...RequestEditorFn) (*ListSentryAppInstallationsResponse, error)
+
 	// DisableSpikeProtectionWithBodyWithResponse request with any body
 	DisableSpikeProtectionWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DisableSpikeProtectionResponse, error)
 
@@ -5399,6 +5492,28 @@ func (r ListOrganizationProjectsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListOrganizationProjectsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListSentryAppInstallationsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]SentryAppInstallation
+}
+
+// Status returns HTTPResponse.Status
+func (r ListSentryAppInstallationsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListSentryAppInstallationsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -5973,6 +6088,15 @@ func (c *ClientWithResponses) ListOrganizationProjectsWithResponse(ctx context.C
 	return ParseListOrganizationProjectsResponse(rsp)
 }
 
+// ListSentryAppInstallationsWithResponse request returning *ListSentryAppInstallationsResponse
+func (c *ClientWithResponses) ListSentryAppInstallationsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListSentryAppInstallationsParams, reqEditors ...RequestEditorFn) (*ListSentryAppInstallationsResponse, error) {
+	rsp, err := c.ListSentryAppInstallations(ctx, organizationIdOrSlug, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListSentryAppInstallationsResponse(rsp)
+}
+
 // DisableSpikeProtectionWithBodyWithResponse request with arbitrary body returning *DisableSpikeProtectionResponse
 func (c *ClientWithResponses) DisableSpikeProtectionWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DisableSpikeProtectionResponse, error) {
 	rsp, err := c.DisableSpikeProtectionWithBody(ctx, organizationIdOrSlug, contentType, body, reqEditors...)
@@ -6471,6 +6595,32 @@ func ParseListOrganizationProjectsResponse(rsp *http.Response) (*ListOrganizatio
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest []Project
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListSentryAppInstallationsResponse parses an HTTP response from a ListSentryAppInstallationsWithResponse call
+func ParseListSentryAppInstallationsResponse(rsp *http.Response) (*ListSentryAppInstallationsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListSentryAppInstallationsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []SentryAppInstallation
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
