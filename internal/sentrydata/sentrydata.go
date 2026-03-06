@@ -227,6 +227,7 @@ var DashboardWidgetDisplayTypes = []string{
 	"wheel",
 	"rage_and_dead_clicks",
 	"server_tree",
+	"text",
 }
 
 // https://github.com/getsentry/sentry/blob/master/src/sentry/models/project.py
