@@ -444,6 +444,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 								"channel": schema.StringAttribute{
 									MarkdownDescription: "The name of the channel to send the notification to (e.g., #critical, Jane Schmidt).",
 									Required:            true,
+									CustomType:          sentrytypes.SlackChannelType{},
 								},
 								"channel_id": schema.StringAttribute{
 									MarkdownDescription: "The ID of the channel to send the notification to.",

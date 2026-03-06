@@ -1035,6 +1035,104 @@ resource "sentry_issue_alert" "test" {
 	})
 }
 
+func TestAccIssueAlertResource_slackChannelNormalization(t *testing.T) {
+	rn := "sentry_issue_alert.test"
+	team := acctest.RandomWithPrefix("tf-team")
+	project := acctest.RandomWithPrefix("tf-project")
+	alert := acctest.RandomWithPrefix("tf-issue-alert")
+
+	slackConfig := `
+		data "sentry_organization_integration" "slack" {
+			organization = sentry_project.test.organization
+			provider_key = "slack"
+			name         = "A2 Marketing"
+		}
+	`
+
+	makeConfig := func(channel string, channelId string) string {
+		channelIdLine := ""
+		if channelId != "" {
+			channelIdLine = fmt.Sprintf(`channel_id = "%s"`, channelId)
+		}
+		return testAccIssueAlertConfig(team, project, alert, fmt.Sprintf(`
+			conditions_v2 = [
+				{ first_seen_event = {} },
+			]
+			filters_v2 = []
+			actions_v2 = [
+				{
+					slack_notify_service = {
+						workspace = data.sentry_organization_integration.slack.id
+						channel   = "%s"
+						%s
+					}
+				},
+			]
+		`, channel, channelIdLine)) + slackConfig
+	}
+
+	slackChecks := func(expectedChannel string, channelIdCheck knownvalue.Check) []statecheck.StateCheck {
+		return []statecheck.StateCheck{
+			statecheck.ExpectKnownValue(rn, tfjsonpath.New("actions_v2"), knownvalue.ListExact([]knownvalue.Check{
+				knownvalue.ObjectPartial(map[string]knownvalue.Check{
+					"slack_notify_service": knownvalue.ObjectExact(map[string]knownvalue.Check{
+						"name":       knownvalue.NotNull(),
+						"workspace":  knownvalue.NotNull(),
+						"channel":    knownvalue.StringExact(expectedChannel),
+						"channel_id": channelIdCheck,
+						"tags":       knownvalue.Null(),
+						"notes":      knownvalue.Null(),
+					}),
+				}),
+			})),
+		}
+	}
+
+	var channelId string
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckIssueAlertDestroy,
+		Steps: []resource.TestStep{
+			// Step 1: Create with "#general", no explicit channel_id
+			{
+				Config:            makeConfig("#general", ""),
+				ConfigStateChecks: slackChecks("#general", knownvalue.NotNull()),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrWith(rn, "actions_v2.0.slack_notify_service.channel_id", func(value string) error {
+						if value == "" {
+							return errors.New("channel_id should not be empty")
+						}
+						channelId = value
+						return nil
+					}),
+				),
+			},
+			// Step 2: Switch to "general" (without #), no explicit channel_id — should not cause drift
+			{
+				Config:            makeConfig("general", ""),
+				ConfigStateChecks: slackChecks("general", knownvalue.NotNull()),
+			},
+			// Step 3: Add explicit channel_id with "#general" — should not cause drift
+			{
+				Config:            makeConfig("#general", channelId),
+				ConfigStateChecks: slackChecks("#general", knownvalue.StringExact(channelId)),
+			},
+			// Step 4: Keep explicit channel_id, switch to "general" (without #) — should not cause drift
+			{
+				Config:            makeConfig("general", channelId),
+				ConfigStateChecks: slackChecks("general", knownvalue.StringExact(channelId)),
+			},
+			// Step 5: Remove channel_id, back to "#general" — should not cause drift
+			{
+				Config:            makeConfig("#general", ""),
+				ConfigStateChecks: slackChecks("#general", knownvalue.NotNull()),
+			},
+		},
+	})
+}
+
 func TestAccIssueAlertResource_forExpression(t *testing.T) {
 	rn := "sentry_issue_alert.test"
 	team := acctest.RandomWithPrefix("tf-team")
