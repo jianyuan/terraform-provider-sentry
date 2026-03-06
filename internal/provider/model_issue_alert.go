@@ -960,18 +960,18 @@ func (m IssueAlertActionPagerDutyNotifyServiceModel) ToApi(ctx context.Context) 
 }
 
 type IssueAlertActionSlackNotifyServiceModel struct {
-	Name      types.String          `tfsdk:"name"`
-	Workspace types.String          `tfsdk:"workspace"`
-	Channel   types.String          `tfsdk:"channel"`
-	ChannelId types.String          `tfsdk:"channel_id"`
-	Tags      sentrytypes.StringSet `tfsdk:"tags"`
-	Notes     types.String          `tfsdk:"notes"`
+	Name      types.String             `tfsdk:"name"`
+	Workspace types.String             `tfsdk:"workspace"`
+	Channel   sentrytypes.SlackChannel `tfsdk:"channel"`
+	ChannelId types.String             `tfsdk:"channel_id"`
+	Tags      sentrytypes.StringSet    `tfsdk:"tags"`
+	Notes     types.String             `tfsdk:"notes"`
 }
 
 func (m *IssueAlertActionSlackNotifyServiceModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionSlackNotifyService) (diags diag.Diagnostics) {
 	m.Name = types.StringPointerValue(action.Name)
 	m.Workspace = types.StringValue(action.Workspace)
-	m.Channel = types.StringValue(action.Channel)
+	m.Channel = sentrytypes.SlackChannelValue(action.Channel)
 	m.ChannelId = types.StringPointerValue(action.ChannelId)
 	m.Tags = tfutils.MergeDiagnostics(sentrytypes.StringSetPointerValue(action.Tags))(&diags)
 	m.Notes = types.StringPointerValue(action.Notes)

@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
 )
 
 func TestIssueAlertResource_elemTypesInitialized(t *testing.T) {
@@ -153,7 +154,7 @@ func TestIssueAlertActionSlackNotifyServiceModel_ToApi_withChannelId(t *testing.
 	channelId := "C1234567890"
 	model := IssueAlertActionSlackNotifyServiceModel{
 		Workspace: types.StringValue("ws123"),
-		Channel:   types.StringValue("#general"),
+		Channel:   sentrytypes.SlackChannelValue("#general"),
 		ChannelId: types.StringValue(channelId),
 	}
 	result, diags := model.ToApi(context.Background())
@@ -172,7 +173,7 @@ func TestIssueAlertActionSlackNotifyServiceModel_ToApi_withChannelId(t *testing.
 func TestIssueAlertActionSlackNotifyServiceModel_ToApi_withoutChannelId(t *testing.T) {
 	model := IssueAlertActionSlackNotifyServiceModel{
 		Workspace: types.StringValue("ws123"),
-		Channel:   types.StringValue("#general"),
+		Channel:   sentrytypes.SlackChannelValue("#general"),
 		ChannelId: types.StringNull(),
 	}
 	result, diags := model.ToApi(context.Background())
@@ -202,5 +203,34 @@ func TestIssueAlertActionSlackNotifyServiceModel_Fill_setsChannelId(t *testing.T
 	}
 	if model.ChannelId.IsNull() || model.ChannelId.ValueString() != channelId {
 		t.Errorf("expected channel_id %q, got %q", channelId, model.ChannelId.ValueString())
+	}
+}
+
+func TestSlackChannel_SemanticEquals_ignoresHashPrefix(t *testing.T) {
+	tests := []struct {
+		name  string
+		a, b  string
+		equal bool
+	}{
+		{"both with hash", "#general", "#general", true},
+		{"both without hash", "general", "general", true},
+		{"first with hash", "#general", "general", true},
+		{"second with hash", "general", "#general", true},
+		{"different channels", "#general", "#random", false},
+		{"different without hash", "general", "random", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			a := sentrytypes.SlackChannelValue(tt.a)
+			b := sentrytypes.SlackChannelValue(tt.b)
+			result, diags := a.StringSemanticEquals(context.Background(), b)
+			if diags.HasError() {
+				t.Fatalf("unexpected error: %s", diags)
+			}
+			if result != tt.equal {
+				t.Errorf("SlackChannel(%q).SemanticEquals(%q) = %v, want %v", tt.a, tt.b, result, tt.equal)
+			}
+		})
 	}
 }
