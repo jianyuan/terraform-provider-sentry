@@ -560,6 +560,8 @@ function generateResourceModel({ resource }: { resource: Resource }) {
   return generateModel({
     name: modelName,
     attributes: resource.attributes,
+    srcModel: `apiclient.${resource.api.model}`,
+    generateFillers: resource.generate?.modelFillers ?? false,
   });
 }
 
@@ -724,7 +726,7 @@ func (r *${resourceName}) Create(ctx context.Context, req resource.CreateRequest
     return
   }
 
-  httpResp, err := r.client.${
+  httpResp, err := r.apiClient.${
     resource.api.createMethod
   }WithResponse(${createRequestParams.join(",")})
   if err != nil {
@@ -733,12 +735,12 @@ func (r *${resourceName}) Create(ctx context.Context, req resource.CreateRequest
   } else if httpResp.StatusCode() != http.StatusOK {
     resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create, got status code %d: %s", httpResp.StatusCode(), string(httpResp.Body)))
     return
-  } else if httpResp.JSON200 == nil {
+  } else if httpResp.JSON201 == nil {
     resp.Diagnostics.AddError("Client Error", "Unable to create, got empty response body")
     return
   }
 
-  resp.Diagnostics.Append(data.Fill(ctx, *httpResp.JSON200)...)
+  resp.Diagnostics.Append(data.Fill(ctx, *httpResp.JSON201)...)
   if resp.Diagnostics.HasError() {
     return
   }
@@ -767,7 +769,7 @@ func (r *${resourceName}) Read(ctx context.Context, req resource.ReadRequest, re
             }
 
             for {
-              httpResp, err := r.client.${
+              httpResp, err := r.apiClient.${
                 api.readMethod
               }WithResponse(${readRequestParams.join(",")})
               if err != nil {
@@ -813,7 +815,7 @@ func (r *${resourceName}) Read(ctx context.Context, req resource.ReadRequest, re
     )
     .otherwise(
       (api) => dedent`
-        httpResp, err := r.client.${
+        httpResp, err := r.apiClient.${
           api.readMethod
         }WithResponse(${readRequestParams.join(",")})
         if err != nil {
@@ -861,7 +863,7 @@ func (r *${resourceName}) Update(ctx context.Context, req resource.UpdateRequest
         return
       }
 
-      httpResp, err := r.client.${
+      httpResp, err := r.apiClient.${
         resource.api.updateMethod
       }WithResponse(${updateRequestParams.join(",")})
       if err != nil {
@@ -899,7 +901,7 @@ func (r *${resourceName}) Delete(ctx context.Context, req resource.DeleteRequest
         return
       }
 
-      httpResp, err := r.client.${
+      httpResp, err := r.apiClient.${
         resource.api.deleteMethod
       }WithResponse(${deleteRequestParams.join(",")})
       if err != nil {

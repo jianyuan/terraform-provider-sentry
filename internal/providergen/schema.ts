@@ -114,6 +114,9 @@ export interface Resource {
   name: string;
   description: string;
   api: ResourceApiStrategy;
+  generate?: {
+    modelFillers?: boolean;
+  };
   importStateAttributes?: Array<string>;
   attributes: Array<Attribute>;
 }
