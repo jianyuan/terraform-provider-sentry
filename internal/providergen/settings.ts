@@ -281,4 +281,53 @@ export const DATASOURCES: Array<DataSource> = [
     ],
   },
 ];
-export const RESOURCES: Array<Resource> = [];
+export const RESOURCES: Array<Resource> = [
+  {
+    name: "cron_monitor",
+    description: "Create a Monitor for a Project.",
+    api: {
+      model: "ProjectMonitor",
+      createMethod: "CreateProjectMonitor",
+      createRequestAttributes: ["organization"],
+      readMethod: "GetProjectMonitor",
+      readRequestAttributes: ["organization", "id"],
+      deleteMethod: "DeleteProjectMonitor",
+      deleteRequestAttributes: ["organization", "id"],
+    },
+    generate: {
+      modelFillers: true,
+    },
+
+    attributes: [
+      {
+        name: "id",
+        type: "string",
+        description: "The internal ID of this monitor.",
+        computedOptionalRequired: "computed",
+        sourceAttribute: ["Id"],
+      },
+      {
+        name: "organization",
+        type: "string",
+        description:
+          "The organization slug or internal ID to create the monitor for.",
+        computedOptionalRequired: "required",
+        skipFill: true,
+      },
+      {
+        name: "name",
+        type: "string",
+        description: "The name of this monitor.",
+        computedOptionalRequired: "required",
+      },
+      {
+        name: "description",
+        type: "string",
+        description:
+          "A description of the monitor. Will be used in the resulting issue.",
+        computedOptionalRequired: "optional",
+        nullable: true,
+      },
+    ],
+  },
+];
