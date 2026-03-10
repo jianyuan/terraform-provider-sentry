@@ -777,13 +777,15 @@ type ProjectKey struct {
 
 // ProjectMonitor defines model for ProjectMonitor.
 type ProjectMonitor struct {
-	DateCreated time.Time                 `json:"dateCreated"`
-	DateUpdated time.Time                 `json:"dateUpdated"`
-	Description nullable.Nullable[string] `json:"description"`
-	Id          string                    `json:"id"`
-	Name        string                    `json:"name"`
-	ProjectId   string                    `json:"projectId"`
-	Type        string                    `json:"type"`
+	DataSources []ProjectMonitorDataSourceRead `json:"dataSources"`
+	DateCreated time.Time                      `json:"dateCreated"`
+	DateUpdated time.Time                      `json:"dateUpdated"`
+	Description nullable.Nullable[string]      `json:"description"`
+	Id          string                         `json:"id"`
+	Name        string                         `json:"name"`
+	ProjectId   string                         `json:"projectId"`
+	Type        string                         `json:"type"`
+	WorkflowIds []string                       `json:"workflowIds"`
 }
 
 // ProjectMonitorDataSource defines model for ProjectMonitor_DataSource.
@@ -830,6 +832,11 @@ type ProjectMonitorDataSourceConfigCronIntervalUnit string
 
 // ProjectMonitorDataSourceConfigCronIntervalValue defines model for ProjectMonitor_DataSource_Config_Cron_Interval_Value.
 type ProjectMonitorDataSourceConfigCronIntervalValue = int64
+
+// ProjectMonitorDataSourceRead defines model for ProjectMonitor_DataSource_Read.
+type ProjectMonitorDataSourceRead struct {
+	QueryObj ProjectMonitorDataSource `json:"queryObj"`
+}
 
 // ProjectOwnership defines model for ProjectOwnership.
 type ProjectOwnership struct {

@@ -6,13 +6,11 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
@@ -205,15 +203,4 @@ type CronMonitorResourceModel struct {
 	MaxRuntime            supertypes.Int64Value  `tfsdk:"max_runtime"`
 	RecoveryThreshold     supertypes.Int64Value  `tfsdk:"recovery_threshold"`
 	Timezone              supertypes.StringValue `tfsdk:"timezone"`
-}
-
-func (m *CronMonitorResourceModel) Fill(ctx context.Context, data apiclient.ProjectMonitor) (diags diag.Diagnostics) {
-	m.Id = supertypes.NewStringValue(data.Id)
-	m.Name = supertypes.NewStringValue(data.Name)
-	if v, err := data.Description.Get(); err == nil {
-		m.Description = supertypes.NewStringValueOrNull(v)
-	} else {
-		m.Description = supertypes.NewStringNull()
-	}
-	return
 }
