@@ -11,7 +11,8 @@ export type Attribute =
   | ListAttribute
   | SetAttribute
   | SetNestedAttribute
-  | ObjectAttribute;
+  | ObjectAttribute
+  | SingleNestedAttribute;
 
 export interface BaseAttribute {
   name: string;
@@ -62,6 +63,12 @@ export interface SetNestedAttribute extends BaseAttribute {
 export interface ObjectAttribute extends BaseAttribute {
   type: "object";
   attributes: Array<Attribute>;
+}
+
+export interface SingleNestedAttribute extends BaseAttribute {
+  type: "single_nested";
+  attributes: Array<Attribute>;
+  model: string;
 }
 
 export interface BaseDataSourceApiStrategy {

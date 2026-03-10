@@ -173,6 +173,26 @@ function generateTerraformAttribute({
       parts.push("}");
       return parts.join("\n");
     })
+    .with({ type: "single_nested" }, (attribute) => {
+      const parts: string[] = [];
+      parts.push("schema.SingleNestedAttribute{");
+      parts.push(...commonParts);
+      parts.push(
+        `CustomType: supertypes.NewSingleNestedObjectTypeOf[${parent}${camelize(attribute.name)}](ctx),`,
+      );
+      parts.push("Attributes: map[string]schema.Attribute{");
+      for (const nestedAttribute of attribute.attributes) {
+        parts.push(
+          `"${nestedAttribute.name}": ${generateTerraformAttribute({
+            parent: `${parent}${camelize(attribute.name)}Item`,
+            attribute: nestedAttribute,
+          })},`,
+        );
+      }
+      parts.push("},");
+      parts.push("}");
+      return parts.join("\n");
+    })
     .exhaustive();
 }
 
@@ -201,6 +221,13 @@ function generateTerraformValueType({
         `supertypes.SetNestedObjectValueOf[${parent}${camelize(
           attribute.name,
         )}Item]`,
+    )
+    .with(
+      { type: "single_nested" },
+      () =>
+        `supertypes.SingleNestedObjectValueOf[${parent}${camelize(
+          attribute.name,
+        )}]`,
     )
     .exhaustive();
 }
@@ -290,6 +317,7 @@ function generatePrimitiveToTerraform({
           return model
         }, ${srcVarName}))`,
     )
+    .with({ type: "single_nested" }, (attribute) => "TODO")
     .exhaustive();
 }
 
@@ -338,6 +366,14 @@ function generateModel({
             name: `${name}${camelize(attribute.name)}Item`,
             attributes: attribute.attributes,
             srcModel: `apiclient.${attribute.model}`,
+            generateFillers,
+          }),
+        ])
+        .with({ type: "single_nested" }, (attribute) => [
+          generateModel({
+            name: `${name}${camelize(attribute.name)}`,
+            attributes: attribute.attributes,
+            srcModel: `apiclient.${attribute.model}`, // TODO: attribute.model unused
             generateFillers,
           }),
         ])

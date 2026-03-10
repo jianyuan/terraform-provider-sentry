@@ -796,18 +796,27 @@ type ProjectMonitorDataSource struct {
 
 // ProjectMonitorDataSourceConfigCron defines model for ProjectMonitor_DataSource_Config_Cron.
 type ProjectMonitorDataSourceConfigCron struct {
+	union json.RawMessage
+}
+
+// ProjectMonitorDataSourceConfigCronBase defines model for ProjectMonitor_DataSource_Config_Cron_Base.
+type ProjectMonitorDataSourceConfigCronBase struct {
 	CheckinMargin         int64  `json:"checkin_margin"`
 	FailureIssueThreshold int64  `json:"failure_issue_threshold"`
 	MaxRuntime            int64  `json:"max_runtime"`
 	RecoveryThreshold     int64  `json:"recovery_threshold"`
 	Timezone              string `json:"timezone"`
-	union                 json.RawMessage
 }
 
 // ProjectMonitorDataSourceConfigCronCrontab defines model for ProjectMonitor_DataSource_Config_Cron_Crontab.
 type ProjectMonitorDataSourceConfigCronCrontab struct {
-	Schedule     string                                                `json:"schedule"`
-	ScheduleType ProjectMonitorDataSourceConfigCronCrontabScheduleType `json:"schedule_type"`
+	CheckinMargin         int64                                                 `json:"checkin_margin"`
+	FailureIssueThreshold int64                                                 `json:"failure_issue_threshold"`
+	MaxRuntime            int64                                                 `json:"max_runtime"`
+	RecoveryThreshold     int64                                                 `json:"recovery_threshold"`
+	Schedule              string                                                `json:"schedule"`
+	ScheduleType          ProjectMonitorDataSourceConfigCronCrontabScheduleType `json:"schedule_type"`
+	Timezone              string                                                `json:"timezone"`
 }
 
 // ProjectMonitorDataSourceConfigCronCrontabScheduleType defines model for ProjectMonitorDataSourceConfigCronCrontab.ScheduleType.
@@ -815,8 +824,13 @@ type ProjectMonitorDataSourceConfigCronCrontabScheduleType string
 
 // ProjectMonitorDataSourceConfigCronInterval defines model for ProjectMonitor_DataSource_Config_Cron_Interval.
 type ProjectMonitorDataSourceConfigCronInterval struct {
-	Schedule     []ProjectMonitorDataSourceConfigCronInterval_Schedule_Item `json:"schedule"`
-	ScheduleType ProjectMonitorDataSourceConfigCronIntervalScheduleType     `json:"schedule_type"`
+	CheckinMargin         int64                                                      `json:"checkin_margin"`
+	FailureIssueThreshold int64                                                      `json:"failure_issue_threshold"`
+	MaxRuntime            int64                                                      `json:"max_runtime"`
+	RecoveryThreshold     int64                                                      `json:"recovery_threshold"`
+	Schedule              []ProjectMonitorDataSourceConfigCronInterval_Schedule_Item `json:"schedule"`
+	ScheduleType          ProjectMonitorDataSourceConfigCronIntervalScheduleType     `json:"schedule_type"`
+	Timezone              string                                                     `json:"timezone"`
 }
 
 // ProjectMonitorDataSourceConfigCronInterval_Schedule_Item defines model for ProjectMonitor_DataSource_Config_Cron_Interval.schedule.Item.
@@ -1786,6 +1800,7 @@ func (t ProjectMonitorDataSourceConfigCron) AsProjectMonitorDataSourceConfigCron
 
 // FromProjectMonitorDataSourceConfigCronCrontab overwrites any union data inside the ProjectMonitorDataSourceConfigCron as the provided ProjectMonitorDataSourceConfigCronCrontab
 func (t *ProjectMonitorDataSourceConfigCron) FromProjectMonitorDataSourceConfigCronCrontab(v ProjectMonitorDataSourceConfigCronCrontab) error {
+	v.ScheduleType = "crontab"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -1793,6 +1808,7 @@ func (t *ProjectMonitorDataSourceConfigCron) FromProjectMonitorDataSourceConfigC
 
 // MergeProjectMonitorDataSourceConfigCronCrontab performs a merge with any union data inside the ProjectMonitorDataSourceConfigCron, using the provided ProjectMonitorDataSourceConfigCronCrontab
 func (t *ProjectMonitorDataSourceConfigCron) MergeProjectMonitorDataSourceConfigCronCrontab(v ProjectMonitorDataSourceConfigCronCrontab) error {
+	v.ScheduleType = "crontab"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -1812,6 +1828,7 @@ func (t ProjectMonitorDataSourceConfigCron) AsProjectMonitorDataSourceConfigCron
 
 // FromProjectMonitorDataSourceConfigCronInterval overwrites any union data inside the ProjectMonitorDataSourceConfigCron as the provided ProjectMonitorDataSourceConfigCronInterval
 func (t *ProjectMonitorDataSourceConfigCron) FromProjectMonitorDataSourceConfigCronInterval(v ProjectMonitorDataSourceConfigCronInterval) error {
+	v.ScheduleType = "interval"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -1819,6 +1836,7 @@ func (t *ProjectMonitorDataSourceConfigCron) FromProjectMonitorDataSourceConfigC
 
 // MergeProjectMonitorDataSourceConfigCronInterval performs a merge with any union data inside the ProjectMonitorDataSourceConfigCron, using the provided ProjectMonitorDataSourceConfigCronInterval
 func (t *ProjectMonitorDataSourceConfigCron) MergeProjectMonitorDataSourceConfigCronInterval(v ProjectMonitorDataSourceConfigCronInterval) error {
+	v.ScheduleType = "interval"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -1829,94 +1847,36 @@ func (t *ProjectMonitorDataSourceConfigCron) MergeProjectMonitorDataSourceConfig
 	return err
 }
 
-func (t ProjectMonitorDataSourceConfigCron) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
+func (t ProjectMonitorDataSourceConfigCron) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"schedule_type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t ProjectMonitorDataSourceConfigCron) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
 	if err != nil {
 		return nil, err
 	}
-	object := make(map[string]json.RawMessage)
-	if t.union != nil {
-		err = json.Unmarshal(b, &object)
-		if err != nil {
-			return nil, err
-		}
+	switch discriminator {
+	case "crontab":
+		return t.AsProjectMonitorDataSourceConfigCronCrontab()
+	case "interval":
+		return t.AsProjectMonitorDataSourceConfigCronInterval()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
 	}
+}
 
-	object["checkin_margin"], err = json.Marshal(t.CheckinMargin)
-	if err != nil {
-		return nil, fmt.Errorf("error marshaling 'checkin_margin': %w", err)
-	}
-
-	object["failure_issue_threshold"], err = json.Marshal(t.FailureIssueThreshold)
-	if err != nil {
-		return nil, fmt.Errorf("error marshaling 'failure_issue_threshold': %w", err)
-	}
-
-	object["max_runtime"], err = json.Marshal(t.MaxRuntime)
-	if err != nil {
-		return nil, fmt.Errorf("error marshaling 'max_runtime': %w", err)
-	}
-
-	object["recovery_threshold"], err = json.Marshal(t.RecoveryThreshold)
-	if err != nil {
-		return nil, fmt.Errorf("error marshaling 'recovery_threshold': %w", err)
-	}
-
-	object["timezone"], err = json.Marshal(t.Timezone)
-	if err != nil {
-		return nil, fmt.Errorf("error marshaling 'timezone': %w", err)
-	}
-
-	b, err = json.Marshal(object)
+func (t ProjectMonitorDataSourceConfigCron) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
 	return b, err
 }
 
 func (t *ProjectMonitorDataSourceConfigCron) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
-	if err != nil {
-		return err
-	}
-	object := make(map[string]json.RawMessage)
-	err = json.Unmarshal(b, &object)
-	if err != nil {
-		return err
-	}
-
-	if raw, found := object["checkin_margin"]; found {
-		err = json.Unmarshal(raw, &t.CheckinMargin)
-		if err != nil {
-			return fmt.Errorf("error reading 'checkin_margin': %w", err)
-		}
-	}
-
-	if raw, found := object["failure_issue_threshold"]; found {
-		err = json.Unmarshal(raw, &t.FailureIssueThreshold)
-		if err != nil {
-			return fmt.Errorf("error reading 'failure_issue_threshold': %w", err)
-		}
-	}
-
-	if raw, found := object["max_runtime"]; found {
-		err = json.Unmarshal(raw, &t.MaxRuntime)
-		if err != nil {
-			return fmt.Errorf("error reading 'max_runtime': %w", err)
-		}
-	}
-
-	if raw, found := object["recovery_threshold"]; found {
-		err = json.Unmarshal(raw, &t.RecoveryThreshold)
-		if err != nil {
-			return fmt.Errorf("error reading 'recovery_threshold': %w", err)
-		}
-	}
-
-	if raw, found := object["timezone"]; found {
-		err = json.Unmarshal(raw, &t.Timezone)
-		if err != nil {
-			return fmt.Errorf("error reading 'timezone': %w", err)
-		}
-	}
-
 	return err
 }
 

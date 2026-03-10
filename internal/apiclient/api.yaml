@@ -2322,60 +2322,69 @@ components:
         config:
           $ref: "#/components/schemas/ProjectMonitor_DataSource_Config_Cron"
     ProjectMonitor_DataSource_Config_Cron:
+      oneOf:
+        - $ref: "#/components/schemas/ProjectMonitor_DataSource_Config_Cron_Crontab"
+        - $ref: "#/components/schemas/ProjectMonitor_DataSource_Config_Cron_Interval"
+      discriminator:
+        propertyName: schedule_type
+        mapping:
+          crontab: "#/components/schemas/ProjectMonitor_DataSource_Config_Cron_Crontab"
+          interval: "#/components/schemas/ProjectMonitor_DataSource_Config_Cron_Interval"
+    ProjectMonitor_DataSource_Config_Cron_Base:
+      type: object
+      required:
+        - checkin_margin
+        - failure_issue_threshold
+        - max_runtime
+        - recovery_threshold
+        - timezone
+      properties:
+        checkin_margin:
+          type: integer
+          format: int64
+        failure_issue_threshold:
+          type: integer
+          format: int64
+        max_runtime:
+          type: integer
+          format: int64
+        recovery_threshold:
+          type: integer
+          format: int64
+        timezone:
+          type: string
+    ProjectMonitor_DataSource_Config_Cron_Crontab:
       allOf:
-        - oneOf:
-            - $ref: "#/components/schemas/ProjectMonitor_DataSource_Config_Cron_Crontab"
-            - $ref: "#/components/schemas/ProjectMonitor_DataSource_Config_Cron_Interval"
+        - $ref: "#/components/schemas/ProjectMonitor_DataSource_Config_Cron_Base"
         - type: object
           required:
-            - checkin_margin
-            - failure_issue_threshold
-            - max_runtime
-            - recovery_threshold
-            - timezone
+            - schedule_type
+            - schedule
           properties:
-            checkin_margin:
-              type: integer
-              format: int64
-            failure_issue_threshold:
-              type: integer
-              format: int64
-            max_runtime:
-              type: integer
-              format: int64
-            recovery_threshold:
-              type: integer
-              format: int64
-            timezone:
+            schedule_type:
               type: string
-    ProjectMonitor_DataSource_Config_Cron_Crontab:
-      type: object
-      required:
-        - schedule_type
-        - schedule
-      properties:
-        schedule_type:
-          type: string
-          enum:
-            - crontab
-        schedule:
-          type: string
+              enum:
+                - crontab
+            schedule:
+              type: string
     ProjectMonitor_DataSource_Config_Cron_Interval:
-      type: object
-      required:
-        - schedule_type
-        - schedule
-      properties:
-        schedule_type:
-          type: string
-          enum:
-            - interval
-        schedule:
-          type: array
-          items:
-            anyOf:
-              - $ref: "#/components/schemas/ProjectMonitor_DataSource_Config_Cron_Interval_Value"
-              - $ref: "#/components/schemas/ProjectMonitor_DataSource_Config_Cron_Interval_Unit"
+      allOf:
+        - $ref: "#/components/schemas/ProjectMonitor_DataSource_Config_Cron_Base"
+        - type: object
+          required:
+            - schedule_type
+            - schedule
+          properties:
+            schedule_type:
+              type: string
+              enum:
+                - interval
+            schedule:
+              type: array
+              items:
+                anyOf:
+                  - $ref: "#/components/schemas/ProjectMonitor_DataSource_Config_Cron_Interval_Value"
+                  - $ref: "#/components/schemas/ProjectMonitor_DataSource_Config_Cron_Interval_Unit"
     ProjectMonitor_DataSource_Config_Cron_Interval_Value:
       type: integer
       format: int64
