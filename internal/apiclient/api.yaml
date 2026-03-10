@@ -2284,6 +2284,8 @@ components:
         - name
         - type
         - description
+        - dataSources
+        - workflowIds
         - dateCreated
         - dateUpdated
       properties:
@@ -2298,12 +2300,27 @@ components:
         description:
           type: string
           nullable: true
+        dataSources:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectMonitor_DataSource_Read"
+        workflowIds:
+          type: array
+          items:
+            type: string
         dateCreated:
           type: string
           format: date-time
         dateUpdated:
           type: string
           format: date-time
+    ProjectMonitor_DataSource_Read:
+      type: object
+      required:
+        - queryObj
+      properties:
+        queryObj:
+          $ref: "#/components/schemas/ProjectMonitor_DataSource"
     ProjectMonitor_DataSource:
       type: object
       required:

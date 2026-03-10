@@ -45,9 +45,9 @@ func testAccCronMonitorResourceConfig(teamName, projectName, name string) string
 			name         = "%[1]s"
 
 			checkin_margin = 1
-			failure_issue_threshold = 1
-			max_runtime = 30
-			recovery_threshold = 1
+			failure_issue_threshold = 2
+			max_runtime = 3
+			recovery_threshold = 4
 		}
 	`, projectName, projectName, name)
 }
