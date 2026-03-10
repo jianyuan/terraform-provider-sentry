@@ -9,7 +9,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
+	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 )
 
@@ -40,6 +45,17 @@ func (r *CronMonitorResource) Schema(ctx context.Context, req resource.SchemaReq
 				MarkdownDescription: "The organization slug or internal ID to create the monitor for.",
 				Required:            true,
 				CustomType:          supertypes.StringType{},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
+			"project": schema.StringAttribute{
+				MarkdownDescription: "The project slug or internal ID to create the monitor for.",
+				Required:            true,
+				CustomType:          supertypes.StringType{},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"name": schema.StringAttribute{
 				MarkdownDescription: "The name of this monitor.",
@@ -51,6 +67,36 @@ func (r *CronMonitorResource) Schema(ctx context.Context, req resource.SchemaReq
 				Optional:            true,
 				CustomType:          supertypes.StringType{},
 			},
+			"checkin_margin": schema.Int64Attribute{
+				MarkdownDescription: "Grace period. The number of minutes before a check-in is considered missed.",
+				Required:            true,
+				CustomType:          supertypes.Int64Type{},
+			},
+			"failure_issue_threshold": schema.Int64Attribute{
+				MarkdownDescription: "Failure tolerance. Create a new issue when this many consecutive missed or error check-ins are processed.",
+				Required:            true,
+				CustomType:          supertypes.Int64Type{},
+			},
+			"max_runtime": schema.Int64Attribute{
+				MarkdownDescription: "Maximum runtime. The number of minutes before an in-progress check-in is marked timed out.",
+				Required:            true,
+				CustomType:          supertypes.Int64Type{},
+			},
+			"recovery_threshold": schema.Int64Attribute{
+				MarkdownDescription: "Recovery Tolerance. Resolve the issue when this many consecutive healthy check-ins are processed.",
+				Required:            true,
+				CustomType:          supertypes.Int64Type{},
+			},
+			"timezone": tfutils.WithEnumStringAttribute(
+				schema.StringAttribute{
+					MarkdownDescription: "Timezone.",
+					Optional:            true,
+					Computed:            true,
+					Default:             stringdefault.StaticString("UTC"),
+					CustomType:          supertypes.StringType{},
+				},
+				sentrydata.Timezones,
+			),
 		},
 	}
 }
@@ -73,7 +119,7 @@ func (r *CronMonitorResource) Create(ctx context.Context, req resource.CreateReq
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create, got error: %s", err))
 		return
-	} else if httpResp.StatusCode() != http.StatusOK {
+	} else if httpResp.StatusCode() != http.StatusCreated {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create, got status code %d: %s", httpResp.StatusCode(), string(httpResp.Body)))
 		return
 	} else if httpResp.JSON201 == nil {
@@ -142,17 +188,23 @@ func (r *CronMonitorResource) Delete(ctx context.Context, req resource.DeleteReq
 		return
 	} else if httpResp.StatusCode() == http.StatusNotFound {
 		return
-	} else if httpResp.StatusCode() != http.StatusOK {
+	} else if httpResp.StatusCode() != http.StatusNoContent {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete, got status code %d: %s", httpResp.StatusCode(), string(httpResp.Body)))
 		return
 	}
 }
 
 type CronMonitorResourceModel struct {
-	Id           supertypes.StringValue `tfsdk:"id"`
-	Organization supertypes.StringValue `tfsdk:"organization"`
-	Name         supertypes.StringValue `tfsdk:"name"`
-	Description  supertypes.StringValue `tfsdk:"description"`
+	Id                    supertypes.StringValue `tfsdk:"id"`
+	Organization          supertypes.StringValue `tfsdk:"organization"`
+	Project               supertypes.StringValue `tfsdk:"project"`
+	Name                  supertypes.StringValue `tfsdk:"name"`
+	Description           supertypes.StringValue `tfsdk:"description"`
+	CheckinMargin         supertypes.Int64Value  `tfsdk:"checkin_margin"`
+	FailureIssueThreshold supertypes.Int64Value  `tfsdk:"failure_issue_threshold"`
+	MaxRuntime            supertypes.Int64Value  `tfsdk:"max_runtime"`
+	RecoveryThreshold     supertypes.Int64Value  `tfsdk:"recovery_threshold"`
+	Timezone              supertypes.StringValue `tfsdk:"timezone"`
 }
 
 func (m *CronMonitorResourceModel) Fill(ctx context.Context, data apiclient.ProjectMonitor) (diags diag.Diagnostics) {

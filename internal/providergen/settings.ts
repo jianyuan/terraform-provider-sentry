@@ -313,6 +313,17 @@ export const RESOURCES: Array<Resource> = [
           "The organization slug or internal ID to create the monitor for.",
         computedOptionalRequired: "required",
         skipFill: true,
+        planModifiers: ["stringplanmodifier.RequiresReplace()"],
+        // REQUIRES REPLACE
+      },
+      {
+        name: "project",
+        type: "string",
+        description:
+          "The project slug or internal ID to create the monitor for.",
+        computedOptionalRequired: "required",
+        skipFill: true,
+        planModifiers: ["stringplanmodifier.RequiresReplace()"],
       },
       {
         name: "name",
@@ -327,6 +338,47 @@ export const RESOURCES: Array<Resource> = [
           "A description of the monitor. Will be used in the resulting issue.",
         computedOptionalRequired: "optional",
         nullable: true,
+      },
+      {
+        name: "checkin_margin",
+        type: "int",
+        description:
+          "Grace period. The number of minutes before a check-in is considered missed.",
+        computedOptionalRequired: "required",
+        skipFill: true,
+      },
+      {
+        name: "failure_issue_threshold",
+        type: "int",
+        description:
+          "Failure tolerance. Create a new issue when this many consecutive missed or error check-ins are processed.",
+        computedOptionalRequired: "required",
+        skipFill: true,
+      },
+      {
+        name: "max_runtime",
+        type: "int",
+        description:
+          "Maximum runtime. The number of minutes before an in-progress check-in is marked timed out.",
+        computedOptionalRequired: "required",
+        skipFill: true,
+      },
+      {
+        name: "recovery_threshold",
+        type: "int",
+        description:
+          "Recovery Tolerance. Resolve the issue when this many consecutive healthy check-ins are processed.",
+        computedOptionalRequired: "required",
+        skipFill: true,
+      },
+      {
+        name: "timezone",
+        type: "string",
+        description: "Timezone.",
+        computedOptionalRequired: "computed_optional",
+        default: `stringdefault.StaticString("UTC")`,
+        enum: "sentrydata.Timezones",
+        skipFill: true,
       },
     ],
   },

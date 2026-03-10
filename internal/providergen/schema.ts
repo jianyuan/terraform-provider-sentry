@@ -19,7 +19,9 @@ export interface BaseAttribute {
   deprecationMessage?: string;
   computedOptionalRequired: ComputedOptionalRequired;
   sensitive?: boolean;
+  default?: string;
   planModifiers?: Array<string>;
+  enum?: string;
   validators?: Array<string>;
   nullable?: boolean;
   sourceAttribute?: Array<string>;
