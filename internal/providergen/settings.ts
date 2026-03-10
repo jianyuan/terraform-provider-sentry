@@ -370,7 +370,47 @@ export const RESOURCES: Array<Resource> = [
         computedOptionalRequired: "required",
         skipFill: true,
       },
-
+      {
+        name: "schedule",
+        type: "single_nested",
+        description: "Set your schedule.",
+        computedOptionalRequired: "required",
+        model: "Schedule",
+        attributes: [
+          {
+            name: "crontab",
+            type: "string",
+            description: "Use the crontab syntax. (e.g. 0 0 * * *)",
+            computedOptionalRequired: "optional",
+            validators: [
+              `stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("interval_value"), path.MatchRelative().AtParent().AtName("interval_unit"))`,
+              `stringvalidator.AtLeastOneOf(path.MatchRelative().AtParent().AtName("interval_value"))`,
+              `stringvalidator.AtLeastOneOf(path.MatchRelative().AtParent().AtName("interval_unit"))`,
+            ],
+          },
+          {
+            name: "interval_value",
+            type: "int",
+            description: "",
+            computedOptionalRequired: "optional",
+            validators: [
+              `int64validator.ConflictsWith(path.MatchRelative().AtParent().AtName("crontab"))`,
+              `int64validator.AlsoRequires(path.MatchRelative().AtParent().AtName("interval_unit"))`,
+            ],
+          },
+          {
+            name: "interval_unit",
+            type: "string",
+            description: "",
+            computedOptionalRequired: "optional",
+            enum: "sentrydata.Intervals",
+            validators: [
+              `stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("crontab"))`,
+              `stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("interval_value"))`,
+            ],
+          },
+        ],
+      },
       {
         name: "timezone",
         type: "string",

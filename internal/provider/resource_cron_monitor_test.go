@@ -26,8 +26,11 @@ func TestAccCronMonitorResource_basic(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:            testAccCronMonitorResourceConfig(teamName, projectName, monitorName),
-				ConfigStateChecks: checks,
+				Config: testAccCronMonitorResourceConfig(teamName, projectName, monitorName),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(monitorName)),
+				),
 			},
 		},
 	})
@@ -48,6 +51,12 @@ func testAccCronMonitorResourceConfig(teamName, projectName, name string) string
 			failure_issue_threshold = 2
 			max_runtime = 3
 			recovery_threshold = 4
+
+			schedule = {
+				// crontab = "0 0 * * *"
+				interval_value = 1
+				interval_unit = "day"
+			}
 		}
-	`, projectName, projectName, name)
+	`, name)
 }

@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
@@ -10,28 +11,43 @@ import (
 )
 
 func (r *CronMonitorResource) getCreateJSONRequestBody(ctx context.Context, data CronMonitorResourceModel) (apiclient.CreateProjectMonitorJSONRequestBody, diag.Diagnostics) {
-	dataSourceConfig := apiclient.ProjectMonitorDataSourceConfigCron{
-		CheckinMargin:         data.CheckinMargin.GetInt64(),
-		FailureIssueThreshold: data.FailureIssueThreshold.GetInt64(),
-		MaxRuntime:            data.MaxRuntime.GetInt64(),
-		RecoveryThreshold:     data.RecoveryThreshold.GetInt64(),
-		Timezone:              data.Timezone.Get(),
+	var diags diag.Diagnostics
+
+	var dataSourceConfig apiclient.ProjectMonitorDataSourceConfigCron
+
+	inSchedule := data.Schedule.DiagsGet(ctx, diags)
+	if diags.HasError() {
+		return apiclient.CreateProjectMonitorJSONRequestBody{}, diags
 	}
 
-	// dataSourceConfig.MergeProjectMonitorDataSourceConfigCronCrontab(apiclient.ProjectMonitorDataSourceConfigCronCrontab{
-	// 	ScheduleType: apiclient.Crontab,
-	// 	Schedule:     "0 0 * * *",
-	// })
+	switch {
+	case inSchedule.Crontab.IsKnown():
+		dataSourceConfig.FromProjectMonitorDataSourceConfigCronCrontab(apiclient.ProjectMonitorDataSourceConfigCronCrontab{
+			CheckinMargin:         data.CheckinMargin.GetInt64(),
+			FailureIssueThreshold: data.FailureIssueThreshold.GetInt64(),
+			MaxRuntime:            data.MaxRuntime.GetInt64(),
+			RecoveryThreshold:     data.RecoveryThreshold.GetInt64(),
+			Timezone:              data.Timezone.Get(),
+			Schedule:              inSchedule.Crontab.Get(),
+		})
+	case inSchedule.IntervalUnit.IsKnown() && inSchedule.IntervalValue.IsKnown():
+		var intervalValue apiclient.ProjectMonitorDataSourceConfigCronInterval_Schedule_Item
+		intervalValue.FromProjectMonitorDataSourceConfigCronIntervalValue(inSchedule.IntervalValue.GetInt64())
+		var intervalUnit apiclient.ProjectMonitorDataSourceConfigCronInterval_Schedule_Item
+		intervalUnit.FromProjectMonitorDataSourceConfigCronIntervalUnit(apiclient.ProjectMonitorDataSourceConfigCronIntervalUnit(inSchedule.IntervalUnit.Get()))
 
-	var scheduleIntervalValue apiclient.ProjectMonitorDataSourceConfigCronInterval_Schedule_Item
-	scheduleIntervalValue.FromProjectMonitorDataSourceConfigCronIntervalValue(1)
-	var scheduleIntervalUnit apiclient.ProjectMonitorDataSourceConfigCronInterval_Schedule_Item
-	scheduleIntervalUnit.FromProjectMonitorDataSourceConfigCronIntervalUnit(apiclient.Day)
-
-	dataSourceConfig.MergeProjectMonitorDataSourceConfigCronInterval(apiclient.ProjectMonitorDataSourceConfigCronInterval{
-		ScheduleType: apiclient.Interval,
-		Schedule:     []apiclient.ProjectMonitorDataSourceConfigCronInterval_Schedule_Item{scheduleIntervalValue, scheduleIntervalUnit},
-	})
+		dataSourceConfig.FromProjectMonitorDataSourceConfigCronInterval(apiclient.ProjectMonitorDataSourceConfigCronInterval{
+			CheckinMargin:         data.CheckinMargin.GetInt64(),
+			FailureIssueThreshold: data.FailureIssueThreshold.GetInt64(),
+			MaxRuntime:            data.MaxRuntime.GetInt64(),
+			RecoveryThreshold:     data.RecoveryThreshold.GetInt64(),
+			Timezone:              data.Timezone.Get(),
+			Schedule: []apiclient.ProjectMonitorDataSourceConfigCronInterval_Schedule_Item{
+				intervalValue,
+				intervalUnit,
+			},
+		})
+	}
 
 	out := apiclient.CreateProjectMonitorJSONRequestBody{
 		Type:      apiclient.MonitorCheckInFailure,
@@ -65,19 +81,61 @@ func (m *CronMonitorResourceModel) Fill(ctx context.Context, data apiclient.Proj
 	}
 
 	if len(data.DataSources) == 1 {
-		m.CheckinMargin = supertypes.NewInt64Value(data.DataSources[0].QueryObj.Config.CheckinMargin)
-		m.FailureIssueThreshold = supertypes.NewInt64Value(data.DataSources[0].QueryObj.Config.FailureIssueThreshold)
-		m.MaxRuntime = supertypes.NewInt64Value(data.DataSources[0].QueryObj.Config.MaxRuntime)
-		m.RecoveryThreshold = supertypes.NewInt64Value(data.DataSources[0].QueryObj.Config.RecoveryThreshold)
-		m.Timezone = supertypes.NewStringValue(data.DataSources[0].QueryObj.Config.Timezone)
+		configValue, err := data.DataSources[0].QueryObj.Config.ValueByDiscriminator()
+		if err != nil {
+			diags.AddError("Invalid config", err.Error())
+			return
+		}
+
+		schedule := &CronMonitorResourceModelSchedule{
+			Crontab:       supertypes.NewStringNull(),
+			IntervalValue: supertypes.NewInt64Null(),
+			IntervalUnit:  supertypes.NewStringNull(),
+		}
+
+		switch configValue := configValue.(type) {
+		case apiclient.ProjectMonitorDataSourceConfigCronCrontab:
+			m.CheckinMargin = supertypes.NewInt64Value(configValue.CheckinMargin)
+			m.FailureIssueThreshold = supertypes.NewInt64Value(configValue.FailureIssueThreshold)
+			m.MaxRuntime = supertypes.NewInt64Value(configValue.MaxRuntime)
+			m.RecoveryThreshold = supertypes.NewInt64Value(configValue.RecoveryThreshold)
+			m.Timezone = supertypes.NewStringValue(configValue.Timezone)
+			schedule.Crontab = supertypes.NewStringValue(configValue.Schedule)
+
+		case apiclient.ProjectMonitorDataSourceConfigCronInterval:
+			m.CheckinMargin = supertypes.NewInt64Value(configValue.CheckinMargin)
+			m.FailureIssueThreshold = supertypes.NewInt64Value(configValue.FailureIssueThreshold)
+			m.MaxRuntime = supertypes.NewInt64Value(configValue.MaxRuntime)
+			m.RecoveryThreshold = supertypes.NewInt64Value(configValue.RecoveryThreshold)
+			m.Timezone = supertypes.NewStringValue(configValue.Timezone)
+
+			if len(configValue.Schedule) == 2 {
+				if intervalValue, err := configValue.Schedule[0].AsProjectMonitorDataSourceConfigCronIntervalValue(); err == nil {
+					schedule.IntervalValue = supertypes.NewInt64Value(intervalValue)
+				} else {
+					diags.AddError("Invalid schedule", "Invalid schedule")
+				}
+
+				if intervalUnit, err := configValue.Schedule[1].AsProjectMonitorDataSourceConfigCronIntervalUnit(); err == nil {
+					schedule.IntervalUnit = supertypes.NewStringValue(string(intervalUnit))
+				} else {
+					diags.AddError("Invalid schedule", "Invalid schedule")
+				}
+			} else {
+				diags.AddError("Invalid schedule", fmt.Sprintf("Expected 2 items, got %d", len(configValue.Schedule)))
+			}
+		}
+
+		m.Schedule = supertypes.NewSingleNestedObjectValueOf(ctx, schedule)
 	} else {
+		diags.AddError("Invalid config", "Invalid config")
+
 		m.CheckinMargin = supertypes.NewInt64Null()
 		m.FailureIssueThreshold = supertypes.NewInt64Null()
 		m.MaxRuntime = supertypes.NewInt64Null()
 		m.RecoveryThreshold = supertypes.NewInt64Null()
 		m.Timezone = supertypes.NewStringNull()
-		// TODO
-		// diags.AddError("")
+		m.Schedule = supertypes.NewSingleNestedObjectValueOfNull[CronMonitorResourceModelSchedule](ctx)
 	}
 
 	return

@@ -271,6 +271,28 @@ def parse_models_project() -> dict[str, ResultData[Any]]:
     return out
 
 
+def parse_intervals() -> dict[str, ResultData[Any]]:
+    data = get_file_data("src/sentry/monitors/validators.py")
+    out: dict[str, ResultData[Any]] = {}
+    for node in ast.walk(data.tree):
+        match node:
+            case ast.Assign(
+                targets=[ast.Name(id="INTERVAL_NAMES")],
+                value=ast.Tuple(elts=elts),
+            ):
+                result: list[str] = []
+                for elt in elts:
+                    match elt:
+                        case ast.Constant(value=value):
+                            result.append(value)
+                        case _:
+                            pass
+                out["Intervals"] = ResultData(github_url=data.github_url, result=result)
+            case _:
+                pass
+    return out
+
+
 def get_timezones() -> dict[str, ResultData[Any]]:
     timezones = frozenset(zoneinfo.available_timezones() - {"Factory"})
     return {
@@ -289,6 +311,7 @@ def main() -> None:
     result.update(parse_rules_match())
     result.update(parse_models_dashboard_widget())
     result.update(parse_models_project())
+    result.update(parse_intervals())
     result.update(get_timezones())
 
     env = get_jinja2_env()
