@@ -343,6 +343,16 @@ var Platforms = []string{
 	"xbox",
 }
 
+// https://github.com/getsentry/sentry/blob/master/src/sentry/monitors/validators.py
+var Intervals = []string{
+	"year",
+	"month",
+	"week",
+	"day",
+	"hour",
+	"minute",
+}
+
 var Timezones = []string{
 	"Africa/Abidjan",
 	"Africa/Accra",
