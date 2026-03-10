@@ -334,19 +334,32 @@ paths:
             schema:
               type: object
               required:
+                - projectId
+                - type
                 - name
                 - description
-                - type
+                - dataSources
+                - workflowIds
               properties:
+                projectId:
+                  type: string
+                type:
+                  type: string
+                  enum:
+                    - monitor_check_in_failure
                 name:
                   type: string
                 description:
                   type: string
                   nullable: true
-                type:
-                  type: string
-                  enum:
-                    - monitor_check_in_failure
+                dataSources:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/ProjectMonitor_DataSource"
+                workflowIds:
+                  type: array
+                  items:
+                    type: string
       responses:
         "201":
           description: Created
@@ -360,7 +373,7 @@ paths:
           description: Forbidden
         "404":
           description: Not Found
-  /0/teams/{organization_id_or_slug}/detectors/{detector_id}/:
+  /0/organizations/{organization_id_or_slug}/detectors/{detector_id}/:
     parameters:
       - $ref: "#/components/parameters/organization_id_or_slug"
       - $ref: "#/components/parameters/detector_id"
@@ -1079,7 +1092,7 @@ components:
         - pending
         - expired
         - orgRole
-        - user 
+        - user
       properties:
         id:
           type: string
@@ -2257,6 +2270,7 @@ components:
       type: object
       required:
         - id
+        - projectId
         - name
         - type
         - description
@@ -2264,6 +2278,8 @@ components:
         - dateUpdated
       properties:
         id:
+          type: string
+        projectId:
           type: string
         name:
           type: string
@@ -2278,6 +2294,83 @@ components:
         dateUpdated:
           type: string
           format: date-time
+    ProjectMonitor_DataSource:
+      type: object
+      required:
+        - name
+        - config
+      properties:
+        name:
+          type: string
+        config:
+          $ref: "#/components/schemas/ProjectMonitor_DataSource_Config_Cron"
+    ProjectMonitor_DataSource_Config_Cron:
+      allOf:
+        - oneOf:
+            - $ref: "#/components/schemas/ProjectMonitor_DataSource_Config_Cron_Crontab"
+            - $ref: "#/components/schemas/ProjectMonitor_DataSource_Config_Cron_Interval"
+        - type: object
+          required:
+            - checkin_margin
+            - failure_issue_threshold
+            - max_runtime
+            - recovery_threshold
+            - timezone
+          properties:
+            checkin_margin:
+              type: integer
+              format: int64
+            failure_issue_threshold:
+              type: integer
+              format: int64
+            max_runtime:
+              type: integer
+              format: int64
+            recovery_threshold:
+              type: integer
+              format: int64
+            timezone:
+              type: string
+    ProjectMonitor_DataSource_Config_Cron_Crontab:
+      type: object
+      required:
+        - schedule_type
+        - schedule
+      properties:
+        schedule_type:
+          type: string
+          enum:
+            - crontab
+        schedule:
+          type: string
+    ProjectMonitor_DataSource_Config_Cron_Interval:
+      type: object
+      required:
+        - schedule_type
+        - schedule
+      properties:
+        schedule_type:
+          type: string
+          enum:
+            - interval
+        schedule:
+          type: array
+          items:
+            anyOf:
+              - $ref: "#/components/schemas/ProjectMonitor_DataSource_Config_Cron_Interval_Value"
+              - $ref: "#/components/schemas/ProjectMonitor_DataSource_Config_Cron_Interval_Unit"
+    ProjectMonitor_DataSource_Config_Cron_Interval_Value:
+      type: integer
+      format: int64
+    ProjectMonitor_DataSource_Config_Cron_Interval_Unit:
+      type: string
+      enum:
+        - minute
+        - hour
+        - day
+        - week
+        - month
+        - year
     SentryAppInstallation:
       type: object
       required:

@@ -3,6 +3,7 @@ from __future__ import annotations
 import ast
 import pathlib
 import subprocess
+import zoneinfo
 from typing import Any, Generic, NamedTuple, OrderedDict, TypeGuard, TypeVar
 
 import httpx
@@ -13,7 +14,9 @@ BRANCH = "master"
 TEMPLATE = """package sentrydata
 
 {% for key, value in result.items() %}
+{% if value.github_url %}
 // {{ value.github_url }}
+{% endif %}
 var {{ key }}{{ ' = ' }}{% if value.result|is_list %}
 []string{
 {% for v in value.result %}
@@ -132,9 +135,7 @@ def parse_issues_grouptype() -> dict[str, ResultData[Any]]:
                         case ast.Assign(
                             targets=[ast.Name(id=id)],
                             value=ast.Constant(value=value),
-                        ) if (
-                            id.upper() == id
-                        ):
+                        ) if id.upper() == id:
                             name = id.replace("_", " ").title().replace(" ", "_")
                             out["IssueGroupCategories"].result.append(name)
                             out["IssueGroupCategoryNameToId"].result[name] = str(value)
@@ -190,9 +191,7 @@ def parse_rules_match() -> dict[str, ResultData[Any]]:
                         case ast.Assign(
                             targets=[ast.Name(id=id)],
                             value=ast.Constant(value=value),
-                        ) if (
-                            id.upper() == id
-                        ):
+                        ) if id.upper() == id:
                             out["MatchTypes"].result.append(id)
                             out["MatchTypeNameToId"].result[id] = value
                             out["MatchTypeIdToName"].result[value] = id
@@ -227,7 +226,7 @@ def parse_models_dashboard_widget() -> dict[str, ResultData[Any]]:
                         match elt:
                             case ast.Tuple(
                                 elts=[ast.Name(id=id), ast.Constant(value=value)]
-                            ) if (id.upper() == id):
+                            ) if id.upper() == id:
                                 out.append(value)
                             case _:
                                 pass
@@ -272,6 +271,16 @@ def parse_models_project() -> dict[str, ResultData[Any]]:
     return out
 
 
+def get_timezones() -> dict[str, ResultData[Any]]:
+    timezones = frozenset(zoneinfo.available_timezones() - {"Factory"})
+    return {
+        "Timezones": ResultData(
+            github_url=None,
+            result=sorted(list(timezones)),
+        )
+    }
+
+
 def main() -> None:
     result: OrderedDict[str, ResultData[Any]] = OrderedDict()
     result.update(parse_constants())
@@ -280,6 +289,7 @@ def main() -> None:
     result.update(parse_rules_match())
     result.update(parse_models_dashboard_widget())
     result.update(parse_models_project())
+    result.update(get_timezones())
 
     env = get_jinja2_env()
     template = env.from_string(TEMPLATE)
