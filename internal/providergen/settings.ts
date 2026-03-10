@@ -295,9 +295,8 @@ export const RESOURCES: Array<Resource> = [
       deleteRequestAttributes: ["organization", "id"],
     },
     generate: {
-      modelFillers: true,
+      modelFillers: false,
     },
-
     attributes: [
       {
         name: "id",
@@ -371,6 +370,7 @@ export const RESOURCES: Array<Resource> = [
         computedOptionalRequired: "required",
         skipFill: true,
       },
+
       {
         name: "timezone",
         type: "string",
