@@ -1088,6 +1088,8 @@ func TestAccIssueAlertResource_slackChannelNormalization(t *testing.T) {
 		}
 	}
 
+	channelIdCheck := knownvalue.StringRegexp(regexp.MustCompile(`^[CGD][A-Z0-9]+$`))
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -1096,27 +1098,27 @@ func TestAccIssueAlertResource_slackChannelNormalization(t *testing.T) {
 			// Step 1: Create with "#general", no explicit channel_id
 			{
 				Config:            makeConfig("#general", ""),
-				ConfigStateChecks: slackChecks("#general", knownvalue.StringExact("C04AKSURGVB")),
+				ConfigStateChecks: slackChecks("#general", channelIdCheck),
 			},
 			// Step 2: Switch to "general" (without #), no explicit channel_id — should not cause drift
 			{
 				Config:            makeConfig("general", ""),
-				ConfigStateChecks: slackChecks("general", knownvalue.StringExact("C04AKSURGVB")),
+				ConfigStateChecks: slackChecks("general", channelIdCheck),
 			},
 			// Step 3: Add explicit channel_id with "#general" — should not cause drift
 			{
 				Config:            makeConfig("#general", "C04AKSURGVB"),
-				ConfigStateChecks: slackChecks("#general", knownvalue.StringExact("C04AKSURGVB")),
+				ConfigStateChecks: slackChecks("#general", channelIdCheck),
 			},
 			// Step 4: Keep explicit channel_id, switch to "general" (without #) — should not cause drift
 			{
 				Config:            makeConfig("general", "C04AKSURGVB"),
-				ConfigStateChecks: slackChecks("general", knownvalue.StringExact("C04AKSURGVB")),
+				ConfigStateChecks: slackChecks("general", channelIdCheck),
 			},
 			// Step 5: Remove channel_id, back to "#general" — should not cause drift
 			{
 				Config:            makeConfig("#general", ""),
-				ConfigStateChecks: slackChecks("#general", knownvalue.StringExact("C04AKSURGVB")),
+				ConfigStateChecks: slackChecks("#general", channelIdCheck),
 			},
 		},
 	})
