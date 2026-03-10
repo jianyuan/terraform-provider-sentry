@@ -35,10 +35,16 @@ function generateTerraformAttribute({
   if (attribute.sensitive) {
     commonParts.push("Sensitive: true,");
   }
+  if (attribute.default) {
+    commonParts.push(`Default: ${attribute.default},`);
+  }
 
   return match(attribute)
     .with({ type: "string" }, () => {
       const parts: string[] = [];
+      if (attribute.enum) {
+        parts.push("tfutils.WithEnumStringAttribute(");
+      }
       parts.push("schema.StringAttribute{");
       parts.push(...commonParts);
       parts.push("CustomType: supertypes.StringType{},");
@@ -54,7 +60,13 @@ function generateTerraformAttribute({
         );
         parts.push("},");
       }
-      parts.push("}");
+      if (attribute.enum) {
+        parts.push("},");
+        parts.push(`${attribute.enum},`);
+        parts.push(")");
+      } else {
+        parts.push("}");
+      }
       return parts.join("\n");
     })
     .with({ type: "int" }, (attribute) => {
@@ -732,7 +744,7 @@ func (r *${resourceName}) Create(ctx context.Context, req resource.CreateRequest
   if err != nil {
     resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create, got error: %s", err))
     return
-  } else if httpResp.StatusCode() != http.StatusOK {
+  } else if httpResp.StatusCode() != http.StatusCreated {
     resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create, got status code %d: %s", httpResp.StatusCode(), string(httpResp.Body)))
     return
   } else if httpResp.JSON201 == nil {
@@ -909,7 +921,7 @@ func (r *${resourceName}) Delete(ctx context.Context, req resource.DeleteRequest
         return
       } else if httpResp.StatusCode() == http.StatusNotFound {
         return
-      } else if httpResp.StatusCode() != http.StatusOK {
+      } else if httpResp.StatusCode() != http.StatusNoContent {
         resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete, got status code %d: %s", httpResp.StatusCode(), string(httpResp.Body)))
         return
       }
@@ -1046,16 +1058,16 @@ async function main() {
         code,
       );
     }),
-    async () => {
+    (() => {
       const code = generateProvider({
         resources: RESOURCES,
         dataSources: DATASOURCES,
       });
-      await writeAndFormatGoFile(
+      return writeAndFormatGoFile(
         new URL(`../provider/provider_gen.go`, import.meta.url),
         code,
       );
-    },
+    })(),
   ]);
 }
 
