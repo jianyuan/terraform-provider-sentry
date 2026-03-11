@@ -114,6 +114,33 @@ func (r *MetricMonitorResource) Schema(ctx context.Context, req resource.SchemaR
 						},
 						sentrydata.DataConditionGroupTypes,
 					),
+					"conditions": schema.ListNestedAttribute{
+						MarkdownDescription: "TODO",
+						Required:            true,
+						CustomType:          supertypes.NewListNestedObjectTypeOf[MetricMonitorResourceModelConditionGroupConditionsItem](ctx),
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"type": tfutils.WithEnumStringAttribute(
+									schema.StringAttribute{
+										MarkdownDescription: "TODO",
+										Required:            true,
+										CustomType:          supertypes.StringType{},
+									},
+									sentrydata.DataConditionTypes,
+								),
+								"comparison": schema.Int64Attribute{
+									MarkdownDescription: "TODO",
+									Required:            true,
+									CustomType:          supertypes.Int64Type{},
+								},
+								"condition_result": schema.Int64Attribute{
+									MarkdownDescription: "TODO",
+									Required:            true,
+									CustomType:          supertypes.Int64Type{},
+								},
+							},
+						},
+					},
 				},
 			},
 		},
@@ -233,5 +260,12 @@ type MetricMonitorResourceModelDefaultAssignee struct {
 }
 
 type MetricMonitorResourceModelConditionGroup struct {
-	LogicType supertypes.StringValue `tfsdk:"logic_type"`
+	LogicType  supertypes.StringValue                                                                     `tfsdk:"logic_type"`
+	Conditions supertypes.ListNestedObjectValueOf[MetricMonitorResourceModelConditionGroupConditionsItem] `tfsdk:"conditions"`
+}
+
+type MetricMonitorResourceModelConditionGroupConditionsItem struct {
+	Type            supertypes.StringValue `tfsdk:"type"`
+	Comparison      supertypes.Int64Value  `tfsdk:"comparison"`
+	ConditionResult supertypes.Int64Value  `tfsdk:"condition_result"`
 }

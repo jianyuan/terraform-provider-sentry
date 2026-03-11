@@ -129,6 +129,30 @@ function generateTerraformAttribute({
       parts.push("}");
       return parts.join("\n");
     })
+    .with({ type: "list_nested" }, (attribute) => {
+      const parts: string[] = [];
+      parts.push("schema.ListNestedAttribute{");
+      parts.push(...commonParts);
+      parts.push(
+        `CustomType: supertypes.NewListNestedObjectTypeOf[${parent}${camelize(
+          attribute.name,
+        )}Item](ctx),`,
+      );
+      parts.push("NestedObject: schema.NestedAttributeObject{");
+      parts.push("Attributes: map[string]schema.Attribute{");
+      for (const nestedAttribute of attribute.attributes) {
+        parts.push(
+          `"${nestedAttribute.name}": ${generateTerraformAttribute({
+            parent: `${parent}${camelize(attribute.name)}Item`,
+            attribute: nestedAttribute,
+          })},`,
+        );
+      }
+      parts.push("},");
+      parts.push("},");
+      parts.push("}");
+      return parts.join("\n");
+    })
     .with({ type: "set", elementType: "string" }, (attribute) => {
       const parts: string[] = [];
       parts.push("schema.SetAttribute{");
@@ -184,7 +208,7 @@ function generateTerraformAttribute({
       for (const nestedAttribute of attribute.attributes) {
         parts.push(
           `"${nestedAttribute.name}": ${generateTerraformAttribute({
-            parent: `${parent}${camelize(attribute.name)}Item`,
+            parent: `${parent}${camelize(attribute.name)}`,
             attribute: nestedAttribute,
           })},`,
         );
@@ -210,6 +234,13 @@ function generateTerraformValueType({
     .with(
       { type: "list", elementType: "string" },
       () => "supertypes.ListValueOf[string]",
+    )
+    .with(
+      { type: "list_nested" },
+      () =>
+        `supertypes.ListNestedObjectValueOf[${parent}${camelize(
+          attribute.name,
+        )}Item]`,
     )
     .with(
       { type: "set", elementType: "string" },
@@ -304,6 +335,15 @@ function generatePrimitiveToTerraform({
         `${destVarName} = supertypes.NewListValueOfSlice(ctx, ${srcVarName})`,
     )
     .with(
+      { type: "list_nested" },
+      (attribute) =>
+        `${destVarName} = supertypes.NewListNestedObjectValueOfValueSlice(ctx, sliceutils.Map(func(item apiclient.${attribute.model}) ${name}${camelize(attribute.name)}Item {
+          var model ${name}${camelize(attribute.name)}Item
+          diags.Append(model.Fill(ctx, item)...)
+          return model
+        }, ${srcVarName}))`,
+    )
+    .with(
       { type: "set", elementType: "string" },
       () =>
         `${destVarName} = supertypes.NewSetValueOfSlice(ctx, ${srcVarName})`,
@@ -361,7 +401,7 @@ function generateModel({
 
     extras.push(
       ...match(attribute)
-        .with({ type: "set_nested" }, (attribute) => [
+        .with({ type: "list_nested" }, { type: "set_nested" }, (attribute) => [
           generateModel({
             name: `${name}${camelize(attribute.name)}Item`,
             attributes: attribute.attributes,
