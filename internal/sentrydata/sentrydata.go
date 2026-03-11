@@ -953,3 +953,11 @@ var Timezones = []string{
 	"WET",
 	"Zulu",
 }
+
+// https://github.com/getsentry/sentry/blob/master/src/sentry/workflow_engine/models/data_condition_group.py
+var DataConditionGroupTypes = []string{
+	"any",
+	"any-short",
+	"all",
+	"none",
+}
