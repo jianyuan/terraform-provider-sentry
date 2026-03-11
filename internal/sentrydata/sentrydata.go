@@ -954,6 +954,39 @@ var Timezones = []string{
 	"Zulu",
 }
 
+// https://github.com/getsentry/sentry/blob/master/src/sentry/incidents/models/alert_rule.py
+var AlertRuleDetectionTypes = []string{
+	"static",
+	"percent",
+	"dynamic",
+}
+
+// https://github.com/getsentry/sentry/blob/master/src/sentry/snuba/models.py
+var ExtrapolationModes = []string{
+	"unknown",
+	"none",
+	"client_and_server_weighted",
+	"server_weighted",
+}
+
+// https://github.com/getsentry/sentry/blob/master/src/sentry/snuba/dataset.py
+var SnubaDatasets = []string{
+	"events",
+	"transactions",
+	"discover",
+	"outcomes",
+	"outcomes_raw",
+	"sessions",
+	"metrics",
+	"generic_metrics",
+	"replays",
+	"profiles",
+	"search_issues",
+	"functions",
+	"spans",
+	"events_analytics_platform",
+}
+
 // https://github.com/getsentry/sentry/blob/master/src/sentry/workflow_engine/models/data_condition.py
 var DataConditionTypes = []string{
 	"eq",

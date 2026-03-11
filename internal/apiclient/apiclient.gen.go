@@ -167,6 +167,36 @@ func (e ProjectMonitorDataSourceConfigCronIntervalUnit) Valid() bool {
 	}
 }
 
+// Defines values for ProjectMonitorDataSourceWrapperCronMonitorType.
+const (
+	CronMonitor ProjectMonitorDataSourceWrapperCronMonitorType = "cron_monitor"
+)
+
+// Valid indicates whether the value is a known member of the ProjectMonitorDataSourceWrapperCronMonitorType enum.
+func (e ProjectMonitorDataSourceWrapperCronMonitorType) Valid() bool {
+	switch e {
+	case CronMonitor:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ProjectMonitorDataSourceWrapperSnubaQuerySubscriptionType.
+const (
+	SnubaQuerySubscription ProjectMonitorDataSourceWrapperSnubaQuerySubscriptionType = "snuba_query_subscription"
+)
+
+// Valid indicates whether the value is a known member of the ProjectMonitorDataSourceWrapperSnubaQuerySubscriptionType enum.
+func (e ProjectMonitorDataSourceWrapperSnubaQuerySubscriptionType) Valid() bool {
+	switch e {
+	case SnubaQuerySubscription:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ProjectMonitorOwnerTeamType.
 const (
 	ProjectMonitorOwnerTeamTypeTeam ProjectMonitorOwnerTeamType = "team"
@@ -847,8 +877,8 @@ type ProjectKey struct {
 // ProjectMonitor defines model for ProjectMonitor.
 type ProjectMonitor struct {
 	ConditionGroup ProjectMonitorConditionGroup           `json:"conditionGroup"`
-	Config         map[string]interface{}                 `json:"config"`
-	DataSources    []ProjectMonitorDataSourceRead         `json:"dataSources"`
+	Config         ProjectMonitorConfig                   `json:"config"`
+	DataSources    []ProjectMonitorDataSourceWrapper      `json:"dataSources"`
 	DateCreated    time.Time                              `json:"dateCreated"`
 	DateUpdated    time.Time                              `json:"dateUpdated"`
 	Description    nullable.Nullable[string]              `json:"description"`
@@ -868,26 +898,27 @@ type ProjectMonitorRequest struct {
 
 // ProjectMonitorRequestBase defines model for ProjectMonitorRequest_Base.
 type ProjectMonitorRequestBase struct {
-	DataSources []ProjectMonitorDataSource `json:"dataSources"`
-	Description nullable.Nullable[string]  `json:"description"`
-	Enabled     nullable.Nullable[bool]    `json:"enabled,omitempty"`
-	Name        string                     `json:"name"`
-	Owner       nullable.Nullable[string]  `json:"owner"`
-	ProjectId   string                     `json:"projectId"`
-	WorkflowIds []string                   `json:"workflowIds"`
+	Config      *ProjectMonitorConfig     `json:"config,omitempty"`
+	Description nullable.Nullable[string] `json:"description"`
+	Enabled     nullable.Nullable[bool]   `json:"enabled,omitempty"`
+	Name        string                    `json:"name"`
+	Owner       nullable.Nullable[string] `json:"owner"`
+	ProjectId   string                    `json:"projectId"`
+	WorkflowIds []string                  `json:"workflowIds"`
 }
 
 // ProjectMonitorRequestMetricIssue defines model for ProjectMonitorRequest_MetricIssue.
 type ProjectMonitorRequestMetricIssue struct {
-	ConditionGroup ProjectMonitorConditionGroup         `json:"conditionGroup"`
-	DataSources    []ProjectMonitorDataSource           `json:"dataSources"`
-	Description    nullable.Nullable[string]            `json:"description"`
-	Enabled        nullable.Nullable[bool]              `json:"enabled,omitempty"`
-	Name           string                               `json:"name"`
-	Owner          nullable.Nullable[string]            `json:"owner"`
-	ProjectId      string                               `json:"projectId"`
-	Type           ProjectMonitorRequestMetricIssueType `json:"type"`
-	WorkflowIds    []string                             `json:"workflowIds"`
+	ConditionGroup ProjectMonitorConditionGroup                     `json:"conditionGroup"`
+	Config         *ProjectMonitorConfig                            `json:"config,omitempty"`
+	DataSources    []ProjectMonitorDataSourceSnubaQuerySubscription `json:"dataSources"`
+	Description    nullable.Nullable[string]                        `json:"description"`
+	Enabled        nullable.Nullable[bool]                          `json:"enabled,omitempty"`
+	Name           string                                           `json:"name"`
+	Owner          nullable.Nullable[string]                        `json:"owner"`
+	ProjectId      string                                           `json:"projectId"`
+	Type           ProjectMonitorRequestMetricIssueType             `json:"type"`
+	WorkflowIds    []string                                         `json:"workflowIds"`
 }
 
 // ProjectMonitorRequestMetricIssueType defines model for ProjectMonitorRequestMetricIssue.Type.
@@ -895,7 +926,8 @@ type ProjectMonitorRequestMetricIssueType string
 
 // ProjectMonitorRequestMonitorCheckInFailure defines model for ProjectMonitorRequest_MonitorCheckInFailure.
 type ProjectMonitorRequestMonitorCheckInFailure struct {
-	DataSources []ProjectMonitorDataSource                     `json:"dataSources"`
+	Config      *ProjectMonitorConfig                          `json:"config,omitempty"`
+	DataSources []ProjectMonitorDataSourceCron                 `json:"dataSources"`
 	Description nullable.Nullable[string]                      `json:"description"`
 	Enabled     nullable.Nullable[bool]                        `json:"enabled,omitempty"`
 	Name        string                                         `json:"name"`
@@ -924,10 +956,10 @@ type ProjectMonitorConditionGroupCondition struct {
 	Type            string `json:"type"`
 }
 
-// ProjectMonitorDataSource defines model for ProjectMonitor_DataSource.
-type ProjectMonitorDataSource struct {
-	Config ProjectMonitorDataSourceConfigCron `json:"config"`
-	Name   string                             `json:"name"`
+// ProjectMonitorConfig defines model for ProjectMonitor_Config.
+type ProjectMonitorConfig struct {
+	ComparisonDelta *int64  `json:"comparisonDelta,omitempty"`
+	DetectionType   *string `json:"detectionType,omitempty"`
 }
 
 // ProjectMonitorDataSourceConfigCron defines model for ProjectMonitor_DataSource_Config_Cron.
@@ -983,10 +1015,48 @@ type ProjectMonitorDataSourceConfigCronIntervalUnit string
 // ProjectMonitorDataSourceConfigCronIntervalValue defines model for ProjectMonitor_DataSource_Config_Cron_Interval_Value.
 type ProjectMonitorDataSourceConfigCronIntervalValue = int64
 
-// ProjectMonitorDataSourceRead defines model for ProjectMonitor_DataSource_Read.
-type ProjectMonitorDataSourceRead struct {
-	QueryObj ProjectMonitorDataSource `json:"queryObj"`
+// ProjectMonitorDataSourceCron defines model for ProjectMonitor_DataSource_Cron.
+type ProjectMonitorDataSourceCron struct {
+	Config ProjectMonitorDataSourceConfigCron `json:"config"`
+	Name   string                             `json:"name"`
 }
+
+// ProjectMonitorDataSourceSnubaQuerySubscription defines model for ProjectMonitor_DataSource_SnubaQuerySubscription.
+type ProjectMonitorDataSourceSnubaQuerySubscription struct {
+	Aggregate         string                    `json:"aggregate"`
+	Dataset           string                    `json:"dataset"`
+	Environment       nullable.Nullable[string] `json:"environment"`
+	EventTypes        []string                  `json:"eventTypes"`
+	ExtrapolationMode nullable.Nullable[string] `json:"extrapolationMode"`
+	Query             string                    `json:"query"`
+	QueryType         int64                     `json:"queryType"`
+	TimeWindow        int64                     `json:"timeWindow"`
+}
+
+// ProjectMonitorDataSourceWrapper defines model for ProjectMonitor_DataSource_Wrapper.
+type ProjectMonitorDataSourceWrapper struct {
+	union json.RawMessage
+}
+
+// ProjectMonitorDataSourceWrapperCronMonitor defines model for ProjectMonitor_DataSource_Wrapper_CronMonitor.
+type ProjectMonitorDataSourceWrapperCronMonitor struct {
+	QueryObj ProjectMonitorDataSourceCron                   `json:"queryObj"`
+	Type     ProjectMonitorDataSourceWrapperCronMonitorType `json:"type"`
+}
+
+// ProjectMonitorDataSourceWrapperCronMonitorType defines model for ProjectMonitorDataSourceWrapperCronMonitor.Type.
+type ProjectMonitorDataSourceWrapperCronMonitorType string
+
+// ProjectMonitorDataSourceWrapperSnubaQuerySubscription defines model for ProjectMonitor_DataSource_Wrapper_SnubaQuerySubscription.
+type ProjectMonitorDataSourceWrapperSnubaQuerySubscription struct {
+	QueryObj struct {
+		SnubaQuery ProjectMonitorDataSourceSnubaQuerySubscription `json:"snubaQuery"`
+	} `json:"queryObj"`
+	Type ProjectMonitorDataSourceWrapperSnubaQuerySubscriptionType `json:"type"`
+}
+
+// ProjectMonitorDataSourceWrapperSnubaQuerySubscriptionType defines model for ProjectMonitorDataSourceWrapperSnubaQuerySubscription.Type.
+type ProjectMonitorDataSourceWrapperSnubaQuerySubscriptionType string
 
 // ProjectMonitorOwner defines model for ProjectMonitor_Owner.
 type ProjectMonitorOwner struct {
@@ -2176,6 +2246,95 @@ func (t ProjectMonitorDataSourceConfigCronInterval_Schedule_Item) MarshalJSON() 
 }
 
 func (t *ProjectMonitorDataSourceConfigCronInterval_Schedule_Item) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsProjectMonitorDataSourceWrapperCronMonitor returns the union data inside the ProjectMonitorDataSourceWrapper as a ProjectMonitorDataSourceWrapperCronMonitor
+func (t ProjectMonitorDataSourceWrapper) AsProjectMonitorDataSourceWrapperCronMonitor() (ProjectMonitorDataSourceWrapperCronMonitor, error) {
+	var body ProjectMonitorDataSourceWrapperCronMonitor
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectMonitorDataSourceWrapperCronMonitor overwrites any union data inside the ProjectMonitorDataSourceWrapper as the provided ProjectMonitorDataSourceWrapperCronMonitor
+func (t *ProjectMonitorDataSourceWrapper) FromProjectMonitorDataSourceWrapperCronMonitor(v ProjectMonitorDataSourceWrapperCronMonitor) error {
+	v.Type = "cron_monitor"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectMonitorDataSourceWrapperCronMonitor performs a merge with any union data inside the ProjectMonitorDataSourceWrapper, using the provided ProjectMonitorDataSourceWrapperCronMonitor
+func (t *ProjectMonitorDataSourceWrapper) MergeProjectMonitorDataSourceWrapperCronMonitor(v ProjectMonitorDataSourceWrapperCronMonitor) error {
+	v.Type = "cron_monitor"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectMonitorDataSourceWrapperSnubaQuerySubscription returns the union data inside the ProjectMonitorDataSourceWrapper as a ProjectMonitorDataSourceWrapperSnubaQuerySubscription
+func (t ProjectMonitorDataSourceWrapper) AsProjectMonitorDataSourceWrapperSnubaQuerySubscription() (ProjectMonitorDataSourceWrapperSnubaQuerySubscription, error) {
+	var body ProjectMonitorDataSourceWrapperSnubaQuerySubscription
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectMonitorDataSourceWrapperSnubaQuerySubscription overwrites any union data inside the ProjectMonitorDataSourceWrapper as the provided ProjectMonitorDataSourceWrapperSnubaQuerySubscription
+func (t *ProjectMonitorDataSourceWrapper) FromProjectMonitorDataSourceWrapperSnubaQuerySubscription(v ProjectMonitorDataSourceWrapperSnubaQuerySubscription) error {
+	v.Type = "snuba_query_subscription"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectMonitorDataSourceWrapperSnubaQuerySubscription performs a merge with any union data inside the ProjectMonitorDataSourceWrapper, using the provided ProjectMonitorDataSourceWrapperSnubaQuerySubscription
+func (t *ProjectMonitorDataSourceWrapper) MergeProjectMonitorDataSourceWrapperSnubaQuerySubscription(v ProjectMonitorDataSourceWrapperSnubaQuerySubscription) error {
+	v.Type = "snuba_query_subscription"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ProjectMonitorDataSourceWrapper) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t ProjectMonitorDataSourceWrapper) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "cron_monitor":
+		return t.AsProjectMonitorDataSourceWrapperCronMonitor()
+	case "snuba_query_subscription":
+		return t.AsProjectMonitorDataSourceWrapperSnubaQuerySubscription()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t ProjectMonitorDataSourceWrapper) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ProjectMonitorDataSourceWrapper) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }

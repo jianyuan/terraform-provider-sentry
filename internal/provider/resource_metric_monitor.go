@@ -99,6 +99,58 @@ func (r *MetricMonitorResource) Schema(ctx context.Context, req resource.SchemaR
 					},
 				},
 			},
+			"aggregate": schema.StringAttribute{
+				MarkdownDescription: "TODO",
+				Required:            true,
+				CustomType:          supertypes.StringType{},
+			},
+			"dataset": tfutils.WithEnumStringAttribute(
+				schema.StringAttribute{
+					MarkdownDescription: "TODO",
+					Required:            true,
+					CustomType:          supertypes.StringType{},
+				},
+				sentrydata.SnubaDatasets,
+			),
+			"environment": schema.StringAttribute{
+				MarkdownDescription: "TODO",
+				Optional:            true,
+				CustomType:          supertypes.StringType{},
+			},
+			"event_types": schema.SetAttribute{
+				MarkdownDescription: "TODO",
+				Required:            true,
+				CustomType:          supertypes.NewSetTypeOf[string](ctx),
+			},
+			"extrapolation_mode": tfutils.WithEnumStringAttribute(
+				schema.StringAttribute{
+					MarkdownDescription: "TODO",
+					Optional:            true,
+					Computed:            true,
+					CustomType:          supertypes.StringType{},
+				},
+				sentrydata.ExtrapolationModes,
+			),
+			"issue_detection": schema.SingleNestedAttribute{
+				MarkdownDescription: "The issue detection type configuration.",
+				Required:            true,
+				CustomType:          supertypes.NewSingleNestedObjectTypeOf[MetricMonitorResourceModelIssueDetection](ctx),
+				Attributes: map[string]schema.Attribute{
+					"type": tfutils.WithEnumStringAttribute(
+						schema.StringAttribute{
+							MarkdownDescription: "`static`: Threshold based monitor; `percent`: Change based monitor; `dynamic`: Dynamic monitor.",
+							Required:            true,
+							CustomType:          supertypes.StringType{},
+						},
+						sentrydata.AlertRuleDetectionTypes,
+					),
+					"comparison_delta": schema.Int64Attribute{
+						MarkdownDescription: "TODO",
+						Optional:            true,
+						CustomType:          supertypes.Int64Type{},
+					},
+				},
+			},
 			"condition_group": schema.SingleNestedAttribute{
 				MarkdownDescription: "TODO",
 				Required:            true,
@@ -244,19 +296,30 @@ func (r *MetricMonitorResource) Delete(ctx context.Context, req resource.DeleteR
 }
 
 type MetricMonitorResourceModel struct {
-	Id              supertypes.StringValue                                                          `tfsdk:"id"`
-	Organization    supertypes.StringValue                                                          `tfsdk:"organization"`
-	Project         supertypes.StringValue                                                          `tfsdk:"project"`
-	Enabled         supertypes.BoolValue                                                            `tfsdk:"enabled"`
-	Name            supertypes.StringValue                                                          `tfsdk:"name"`
-	Description     supertypes.StringValue                                                          `tfsdk:"description"`
-	DefaultAssignee supertypes.SingleNestedObjectValueOf[MetricMonitorResourceModelDefaultAssignee] `tfsdk:"default_assignee"`
-	ConditionGroup  supertypes.SingleNestedObjectValueOf[MetricMonitorResourceModelConditionGroup]  `tfsdk:"condition_group"`
+	Id                supertypes.StringValue                                                          `tfsdk:"id"`
+	Organization      supertypes.StringValue                                                          `tfsdk:"organization"`
+	Project           supertypes.StringValue                                                          `tfsdk:"project"`
+	Enabled           supertypes.BoolValue                                                            `tfsdk:"enabled"`
+	Name              supertypes.StringValue                                                          `tfsdk:"name"`
+	Description       supertypes.StringValue                                                          `tfsdk:"description"`
+	DefaultAssignee   supertypes.SingleNestedObjectValueOf[MetricMonitorResourceModelDefaultAssignee] `tfsdk:"default_assignee"`
+	Aggregate         supertypes.StringValue                                                          `tfsdk:"aggregate"`
+	Dataset           supertypes.StringValue                                                          `tfsdk:"dataset"`
+	Environment       supertypes.StringValue                                                          `tfsdk:"environment"`
+	EventTypes        supertypes.SetValueOf[string]                                                   `tfsdk:"event_types"`
+	ExtrapolationMode supertypes.StringValue                                                          `tfsdk:"extrapolation_mode"`
+	IssueDetection    supertypes.SingleNestedObjectValueOf[MetricMonitorResourceModelIssueDetection]  `tfsdk:"issue_detection"`
+	ConditionGroup    supertypes.SingleNestedObjectValueOf[MetricMonitorResourceModelConditionGroup]  `tfsdk:"condition_group"`
 }
 
 type MetricMonitorResourceModelDefaultAssignee struct {
 	UserId supertypes.StringValue `tfsdk:"user_id"`
 	TeamId supertypes.StringValue `tfsdk:"team_id"`
+}
+
+type MetricMonitorResourceModelIssueDetection struct {
+	Type            supertypes.StringValue `tfsdk:"type"`
+	ComparisonDelta supertypes.Int64Value  `tfsdk:"comparison_delta"`
 }
 
 type MetricMonitorResourceModelConditionGroup struct {

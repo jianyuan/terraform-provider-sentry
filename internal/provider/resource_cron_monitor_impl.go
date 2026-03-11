@@ -52,7 +52,7 @@ func (r *CronMonitorResource) getCreateJSONRequestBody(ctx context.Context, data
 	out := apiclient.ProjectMonitorRequestMonitorCheckInFailure{
 		Name:      data.Name.Get(),
 		ProjectId: data.Project.Get(),
-		DataSources: []apiclient.ProjectMonitorDataSource{
+		DataSources: []apiclient.ProjectMonitorDataSourceCron{
 			{
 				Name:   data.Name.Get(),
 				Config: dataSourceConfig,
@@ -129,7 +129,13 @@ func (m *CronMonitorResourceModel) Fill(ctx context.Context, data apiclient.Proj
 	}
 
 	if len(data.DataSources) == 1 {
-		configValue, err := data.DataSources[0].QueryObj.Config.ValueByDiscriminator()
+		dataSource, err := data.DataSources[0].AsProjectMonitorDataSourceWrapperCronMonitor()
+		if err != nil {
+			diags.AddError("Invalid config", err.Error())
+			return
+		}
+
+		configValue, err := dataSource.QueryObj.Config.ValueByDiscriminator()
 		if err != nil {
 			diags.AddError("Invalid config", err.Error())
 			return
