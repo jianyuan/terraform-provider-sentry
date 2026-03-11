@@ -53,6 +53,60 @@ func (e OrganizationIntegrationPagerDutyProviderKey) Valid() bool {
 	}
 }
 
+// Defines values for ProjectMonitorRequestMetricIssueType.
+const (
+	MetricIssue ProjectMonitorRequestMetricIssueType = "metric_issue"
+)
+
+// Valid indicates whether the value is a known member of the ProjectMonitorRequestMetricIssueType enum.
+func (e ProjectMonitorRequestMetricIssueType) Valid() bool {
+	switch e {
+	case MetricIssue:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ProjectMonitorRequestMonitorCheckInFailureType.
+const (
+	MonitorCheckInFailure ProjectMonitorRequestMonitorCheckInFailureType = "monitor_check_in_failure"
+)
+
+// Valid indicates whether the value is a known member of the ProjectMonitorRequestMonitorCheckInFailureType enum.
+func (e ProjectMonitorRequestMonitorCheckInFailureType) Valid() bool {
+	switch e {
+	case MonitorCheckInFailure:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ProjectMonitorConditionGroupLogicType.
+const (
+	All      ProjectMonitorConditionGroupLogicType = "all"
+	Any      ProjectMonitorConditionGroupLogicType = "any"
+	AnyShort ProjectMonitorConditionGroupLogicType = "any-short"
+	None     ProjectMonitorConditionGroupLogicType = "none"
+)
+
+// Valid indicates whether the value is a known member of the ProjectMonitorConditionGroupLogicType enum.
+func (e ProjectMonitorConditionGroupLogicType) Valid() bool {
+	switch e {
+	case All:
+		return true
+	case Any:
+		return true
+	case AnyShort:
+		return true
+	case None:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ProjectMonitorDataSourceConfigCronCrontabScheduleType.
 const (
 	Crontab ProjectMonitorDataSourceConfigCronCrontabScheduleType = "crontab"
@@ -608,21 +662,6 @@ func (e ProjectRuleFilterTaggedEventId) Valid() bool {
 	}
 }
 
-// Defines values for CreateProjectMonitorJSONBodyType.
-const (
-	MonitorCheckInFailure CreateProjectMonitorJSONBodyType = "monitor_check_in_failure"
-)
-
-// Valid indicates whether the value is a known member of the CreateProjectMonitorJSONBodyType enum.
-func (e CreateProjectMonitorJSONBodyType) Valid() bool {
-	switch e {
-	case MonitorCheckInFailure:
-		return true
-	default:
-		return false
-	}
-}
-
 // Defines values for ListProjectClientKeysParamsStatus.
 const (
 	Active   ListProjectClientKeysParamsStatus = "active"
@@ -807,18 +846,76 @@ type ProjectKey struct {
 
 // ProjectMonitor defines model for ProjectMonitor.
 type ProjectMonitor struct {
-	DataSources []ProjectMonitorDataSourceRead         `json:"dataSources"`
-	DateCreated time.Time                              `json:"dateCreated"`
-	DateUpdated time.Time                              `json:"dateUpdated"`
-	Description nullable.Nullable[string]              `json:"description"`
-	Enabled     bool                                   `json:"enabled"`
-	Id          string                                 `json:"id"`
-	Name        string                                 `json:"name"`
-	Owner       nullable.Nullable[ProjectMonitorOwner] `json:"owner"`
-	ProjectId   string                                 `json:"projectId"`
-	Type        string                                 `json:"type"`
-	WorkflowIds []string                               `json:"workflowIds"`
+	ConditionGroup ProjectMonitorConditionGroup           `json:"conditionGroup"`
+	Config         map[string]interface{}                 `json:"config"`
+	DataSources    []ProjectMonitorDataSourceRead         `json:"dataSources"`
+	DateCreated    time.Time                              `json:"dateCreated"`
+	DateUpdated    time.Time                              `json:"dateUpdated"`
+	Description    nullable.Nullable[string]              `json:"description"`
+	Enabled        bool                                   `json:"enabled"`
+	Id             string                                 `json:"id"`
+	Name           string                                 `json:"name"`
+	Owner          nullable.Nullable[ProjectMonitorOwner] `json:"owner"`
+	ProjectId      string                                 `json:"projectId"`
+	Type           string                                 `json:"type"`
+	WorkflowIds    []string                               `json:"workflowIds"`
 }
+
+// ProjectMonitorRequest defines model for ProjectMonitorRequest.
+type ProjectMonitorRequest struct {
+	union json.RawMessage
+}
+
+// ProjectMonitorRequestBase defines model for ProjectMonitorRequest_Base.
+type ProjectMonitorRequestBase struct {
+	DataSources []ProjectMonitorDataSource `json:"dataSources"`
+	Description nullable.Nullable[string]  `json:"description"`
+	Enabled     nullable.Nullable[bool]    `json:"enabled,omitempty"`
+	Name        string                     `json:"name"`
+	Owner       nullable.Nullable[string]  `json:"owner"`
+	ProjectId   string                     `json:"projectId"`
+	WorkflowIds []string                   `json:"workflowIds"`
+}
+
+// ProjectMonitorRequestMetricIssue defines model for ProjectMonitorRequest_MetricIssue.
+type ProjectMonitorRequestMetricIssue struct {
+	ConditionGroup ProjectMonitorConditionGroup         `json:"conditionGroup"`
+	DataSources    []ProjectMonitorDataSource           `json:"dataSources"`
+	Description    nullable.Nullable[string]            `json:"description"`
+	Enabled        nullable.Nullable[bool]              `json:"enabled,omitempty"`
+	Name           string                               `json:"name"`
+	Owner          nullable.Nullable[string]            `json:"owner"`
+	ProjectId      string                               `json:"projectId"`
+	Type           ProjectMonitorRequestMetricIssueType `json:"type"`
+	WorkflowIds    []string                             `json:"workflowIds"`
+}
+
+// ProjectMonitorRequestMetricIssueType defines model for ProjectMonitorRequestMetricIssue.Type.
+type ProjectMonitorRequestMetricIssueType string
+
+// ProjectMonitorRequestMonitorCheckInFailure defines model for ProjectMonitorRequest_MonitorCheckInFailure.
+type ProjectMonitorRequestMonitorCheckInFailure struct {
+	DataSources []ProjectMonitorDataSource                     `json:"dataSources"`
+	Description nullable.Nullable[string]                      `json:"description"`
+	Enabled     nullable.Nullable[bool]                        `json:"enabled,omitempty"`
+	Name        string                                         `json:"name"`
+	Owner       nullable.Nullable[string]                      `json:"owner"`
+	ProjectId   string                                         `json:"projectId"`
+	Type        ProjectMonitorRequestMonitorCheckInFailureType `json:"type"`
+	WorkflowIds []string                                       `json:"workflowIds"`
+}
+
+// ProjectMonitorRequestMonitorCheckInFailureType defines model for ProjectMonitorRequestMonitorCheckInFailure.Type.
+type ProjectMonitorRequestMonitorCheckInFailureType string
+
+// ProjectMonitorConditionGroup defines model for ProjectMonitor_ConditionGroup.
+type ProjectMonitorConditionGroup struct {
+	Conditions []map[string]interface{}              `json:"conditions"`
+	LogicType  ProjectMonitorConditionGroupLogicType `json:"logicType"`
+}
+
+// ProjectMonitorConditionGroupLogicType defines model for ProjectMonitorConditionGroup.LogicType.
+type ProjectMonitorConditionGroupLogicType string
 
 // ProjectMonitorDataSource defines model for ProjectMonitor_DataSource.
 type ProjectMonitorDataSource struct {
@@ -1403,21 +1500,6 @@ type ProjectIdOrSlug = string
 // TeamIdOrSlug defines model for team_id_or_slug.
 type TeamIdOrSlug = string
 
-// CreateProjectMonitorJSONBody defines parameters for CreateProjectMonitor.
-type CreateProjectMonitorJSONBody struct {
-	DataSources []ProjectMonitorDataSource       `json:"dataSources"`
-	Description nullable.Nullable[string]        `json:"description"`
-	Enabled     nullable.Nullable[bool]          `json:"enabled,omitempty"`
-	Name        string                           `json:"name"`
-	Owner       nullable.Nullable[string]        `json:"owner"`
-	ProjectId   string                           `json:"projectId"`
-	Type        CreateProjectMonitorJSONBodyType `json:"type"`
-	WorkflowIds []string                         `json:"workflowIds"`
-}
-
-// CreateProjectMonitorJSONBodyType defines parameters for CreateProjectMonitor.
-type CreateProjectMonitorJSONBodyType string
-
 // ListOrganizationIntegrationsParams defines parameters for ListOrganizationIntegrations.
 type ListOrganizationIntegrationsParams struct {
 	Cursor      *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
@@ -1572,7 +1654,7 @@ type CreateOrganizationTeamProjectJSONBody struct {
 }
 
 // CreateProjectMonitorJSONRequestBody defines body for CreateProjectMonitor for application/json ContentType.
-type CreateProjectMonitorJSONRequestBody CreateProjectMonitorJSONBody
+type CreateProjectMonitorJSONRequestBody = ProjectMonitorRequest
 
 // UpdateOrganizationIntegrationJSONRequestBody defines body for UpdateOrganizationIntegration for application/json ContentType.
 type UpdateOrganizationIntegrationJSONRequestBody UpdateOrganizationIntegrationJSONBody
@@ -1848,6 +1930,95 @@ func (t *OrganizationIntegration) UnmarshalJSON(b []byte) error {
 		}
 	}
 
+	return err
+}
+
+// AsProjectMonitorRequestMetricIssue returns the union data inside the ProjectMonitorRequest as a ProjectMonitorRequestMetricIssue
+func (t ProjectMonitorRequest) AsProjectMonitorRequestMetricIssue() (ProjectMonitorRequestMetricIssue, error) {
+	var body ProjectMonitorRequestMetricIssue
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectMonitorRequestMetricIssue overwrites any union data inside the ProjectMonitorRequest as the provided ProjectMonitorRequestMetricIssue
+func (t *ProjectMonitorRequest) FromProjectMonitorRequestMetricIssue(v ProjectMonitorRequestMetricIssue) error {
+	v.Type = "metric_issue"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectMonitorRequestMetricIssue performs a merge with any union data inside the ProjectMonitorRequest, using the provided ProjectMonitorRequestMetricIssue
+func (t *ProjectMonitorRequest) MergeProjectMonitorRequestMetricIssue(v ProjectMonitorRequestMetricIssue) error {
+	v.Type = "metric_issue"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectMonitorRequestMonitorCheckInFailure returns the union data inside the ProjectMonitorRequest as a ProjectMonitorRequestMonitorCheckInFailure
+func (t ProjectMonitorRequest) AsProjectMonitorRequestMonitorCheckInFailure() (ProjectMonitorRequestMonitorCheckInFailure, error) {
+	var body ProjectMonitorRequestMonitorCheckInFailure
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectMonitorRequestMonitorCheckInFailure overwrites any union data inside the ProjectMonitorRequest as the provided ProjectMonitorRequestMonitorCheckInFailure
+func (t *ProjectMonitorRequest) FromProjectMonitorRequestMonitorCheckInFailure(v ProjectMonitorRequestMonitorCheckInFailure) error {
+	v.Type = "monitor_check_in_failure"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectMonitorRequestMonitorCheckInFailure performs a merge with any union data inside the ProjectMonitorRequest, using the provided ProjectMonitorRequestMonitorCheckInFailure
+func (t *ProjectMonitorRequest) MergeProjectMonitorRequestMonitorCheckInFailure(v ProjectMonitorRequestMonitorCheckInFailure) error {
+	v.Type = "monitor_check_in_failure"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ProjectMonitorRequest) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t ProjectMonitorRequest) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "metric_issue":
+		return t.AsProjectMonitorRequestMetricIssue()
+	case "monitor_check_in_failure":
+		return t.AsProjectMonitorRequestMonitorCheckInFailure()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t ProjectMonitorRequest) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ProjectMonitorRequest) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
 	return err
 }
 
