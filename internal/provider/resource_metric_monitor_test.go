@@ -47,6 +47,10 @@ func testAccMetricMonitorResourceConfig(teamName, projectName, name string) stri
 			project      = sentry_project.test.internal_id
 			name         = "%[1]s"
 
+			aggregate = "count()"
+			dataset = "events"
+			event_types = ["default", "error"]
+
 			condition_group = {
 				conditions = [
 					{
@@ -60,6 +64,10 @@ func testAccMetricMonitorResourceConfig(teamName, projectName, name string) stri
 						condition_result = 0
 					},
 				]
+			}
+
+			issue_detection = {
+				type = "static"
 			}
 
 			default_assignee = {

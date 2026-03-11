@@ -303,6 +303,81 @@ def get_timezones() -> dict[str, ResultData[Any]]:
     }
 
 
+def parse_alert_rule_models() -> dict[str, ResultData[Any]]:
+    data = get_file_data("src/sentry/incidents/models/alert_rule.py")
+    out: dict[str, ResultData[Any]] = {}
+    for node in ast.walk(data.tree):
+        match node:
+            case ast.ClassDef(
+                name="AlertRuleDetectionType",
+                body=elts,
+            ):
+                result: list[str] = []
+                for elt in elts:
+                    match elt:
+                        case ast.Assign(
+                            targets=[ast.Name(id=id)],
+                            value=ast.Tuple(elts=[ast.Constant(value=value), _]),
+                        ) if id.upper() == id:
+                            result.append(value)
+                        case _:
+                            pass
+                out["AlertRuleDetectionTypes"] = ResultData(
+                    github_url=data.github_url, result=result
+                )
+            case _:
+                pass
+    return out
+
+
+def parse_snuba_models() -> dict[str, ResultData[Any]]:
+    data = get_file_data("src/sentry/snuba/models.py")
+    out: dict[str, ResultData[Any]] = {}
+    for node in ast.walk(data.tree):
+        match node:
+            case ast.ClassDef(
+                name="ExtrapolationMode",
+                body=elts,
+            ):
+                result: list[str] = []
+                for elt in elts:
+                    match elt:
+                        case ast.Assign(targets=[ast.Name(id=id)]) if id.upper() == id:
+                            result.append(id.lower())
+                        case _:
+                            pass
+                out["ExtrapolationModes"] = ResultData(
+                    github_url=data.github_url, result=result
+                )
+            case _:
+                pass
+    return out
+
+
+def parse_snuba_datasets() -> dict[str, ResultData[Any]]:
+    data = get_file_data("src/sentry/snuba/dataset.py")
+    out: dict[str, ResultData[Any]] = {}
+    for node in ast.walk(data.tree):
+        match node:
+            case ast.ClassDef(
+                name="Dataset",
+                body=elts,
+            ):
+                result: list[str] = []
+                for elt in elts:
+                    match elt:
+                        case ast.Assign(value=ast.Constant(value=value)):
+                            result.append(value)
+                        case _:
+                            pass
+                out["SnubaDatasets"] = ResultData(
+                    github_url=data.github_url, result=result
+                )
+            case _:
+                pass
+    return out
+
+
 def parse_data_condition_types() -> dict[str, ResultData[Any]]:
     data = get_file_data("src/sentry/workflow_engine/models/data_condition.py")
     out: dict[str, ResultData[Any]] = {}
@@ -366,6 +441,9 @@ def main() -> None:
     result.update(parse_models_project())
     result.update(parse_intervals())
     result.update(get_timezones())
+    result.update(parse_alert_rule_models())
+    result.update(parse_snuba_models())
+    result.update(parse_snuba_datasets())
     result.update(parse_data_condition_types())
     result.update(parse_data_condition_group_types())
 

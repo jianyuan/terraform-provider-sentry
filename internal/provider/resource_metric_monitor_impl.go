@@ -13,7 +13,24 @@ import (
 func (r *MetricMonitorResource) getCreateJSONRequestBody(ctx context.Context, data MetricMonitorResourceModel) (*apiclient.CreateProjectMonitorJSONRequestBody, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	var dataSourceConfig apiclient.ProjectMonitorDataSourceConfigCron
+	dataSourceConfig := apiclient.ProjectMonitorDataSourceSnubaQuerySubscription{
+		Aggregate:  data.Aggregate.Get(),
+		Dataset:    data.Dataset.Get(),
+		EventTypes: data.EventTypes.DiagsGet(ctx, diags),
+	}
+	if data.Environment.IsKnown() {
+		dataSourceConfig.Environment = nullable.NewNullableWithValue(data.Environment.Get())
+	} else {
+		dataSourceConfig.Environment = nullable.NewNullNullable[string]()
+	}
+	if data.ExtrapolationMode.IsKnown() {
+		dataSourceConfig.ExtrapolationMode = nullable.NewNullableWithValue(data.ExtrapolationMode.Get())
+	} else {
+		dataSourceConfig.ExtrapolationMode = nullable.NewNullNullable[string]()
+	}
+	if diags.HasError() {
+		return nil, diags
+	}
 
 	inConditionGroup := data.ConditionGroup.DiagsGet(ctx, diags)
 	if diags.HasError() {
@@ -33,18 +50,24 @@ func (r *MetricMonitorResource) getCreateJSONRequestBody(ctx context.Context, da
 		})
 	}
 
+	inConfig := data.IssueDetection.DiagsGet(ctx, diags)
+	if diags.HasError() {
+		return nil, diags
+	}
+
 	out := apiclient.ProjectMonitorRequestMetricIssue{
 		Name:      data.Name.Get(),
 		ProjectId: data.Project.Get(),
-		DataSources: []apiclient.ProjectMonitorDataSource{
-			{
-				Name:   data.Name.Get(),
-				Config: dataSourceConfig,
-			},
+		DataSources: []apiclient.ProjectMonitorDataSourceSnubaQuerySubscription{
+			dataSourceConfig,
 		},
 		ConditionGroup: apiclient.ProjectMonitorConditionGroup{
 			LogicType:  apiclient.ProjectMonitorConditionGroupLogicType(inConditionGroup.LogicType.Get()),
 			Conditions: outConditions,
+		},
+		Config: &apiclient.ProjectMonitorConfig{
+			DetectionType:   inConfig.Type.GetPtr(),
+			ComparisonDelta: inConfig.ComparisonDelta.GetPtr(),
 		},
 		WorkflowIds: []string{},
 	}
@@ -125,19 +148,43 @@ func (m *MetricMonitorResourceModel) Fill(ctx context.Context, data apiclient.Pr
 		})
 	}
 
-	conditionGroup := &MetricMonitorResourceModelConditionGroup{
+	m.ConditionGroup = supertypes.NewSingleNestedObjectValueOf(ctx, &MetricMonitorResourceModelConditionGroup{
 		LogicType:  supertypes.NewStringValue(string(data.ConditionGroup.LogicType)),
 		Conditions: supertypes.NewListNestedObjectValueOfValueSlice(ctx, outConditions),
-	}
-	m.ConditionGroup = supertypes.NewSingleNestedObjectValueOf(ctx, conditionGroup)
+	})
 
-	// if len(data.DataSources) == 1 {
-	// 	configValue, err := data.DataSources[0].QueryObj.Config.ValueByDiscriminator()
-	// 	if err != nil {
-	// 		diags.AddError("Invalid config", err.Error())
-	// 		return
-	// 	}
-	// }
+	if len(data.DataSources) == 1 {
+		dataSource, err := data.DataSources[0].AsProjectMonitorDataSourceWrapperSnubaQuerySubscription()
+		if err != nil {
+			diags.AddError("Error unmarshalling JSON", err.Error())
+		}
+
+		m.Aggregate = supertypes.NewStringValue(dataSource.QueryObj.SnubaQuery.Aggregate)
+		m.Dataset = supertypes.NewStringValue(dataSource.QueryObj.SnubaQuery.Dataset)
+		if dataSource.QueryObj.SnubaQuery.Environment.IsSpecified() && !dataSource.QueryObj.SnubaQuery.Environment.IsNull() {
+			m.Environment = supertypes.NewStringValue(dataSource.QueryObj.SnubaQuery.Environment.MustGet())
+		} else {
+			m.Environment = supertypes.NewStringNull()
+		}
+		m.EventTypes = supertypes.NewSetValueOfSlice(ctx, dataSource.QueryObj.SnubaQuery.EventTypes)
+		if dataSource.QueryObj.SnubaQuery.ExtrapolationMode.IsSpecified() && !dataSource.QueryObj.SnubaQuery.ExtrapolationMode.IsNull() {
+			m.ExtrapolationMode = supertypes.NewStringValue(dataSource.QueryObj.SnubaQuery.ExtrapolationMode.MustGet())
+		} else {
+			m.ExtrapolationMode = supertypes.NewStringNull()
+		}
+	} else {
+		diags.AddError("Invalid data source", "Invalid config")
+
+		m.Aggregate = supertypes.NewStringNull()
+		m.Dataset = supertypes.NewStringNull()
+		m.Environment = supertypes.NewStringNull()
+		m.EventTypes = supertypes.NewSetValueOfNull[string](ctx)
+	}
+
+	m.IssueDetection = supertypes.NewSingleNestedObjectValueOf(ctx, &MetricMonitorResourceModelIssueDetection{
+		Type:            supertypes.NewStringPointerValueOrNull(data.Config.DetectionType),
+		ComparisonDelta: supertypes.NewInt64PointerValueOrNull(data.Config.ComparisonDelta),
+	})
 
 	return
 }
