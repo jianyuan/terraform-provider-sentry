@@ -77,13 +77,12 @@ func (r *CronMonitorResource) getCreateJSONRequestBody(ctx context.Context, data
 	if data.DefaultAssignee.IsKnown() {
 		defaultAssignee := data.DefaultAssignee.MustGet(ctx)
 		switch {
-		case defaultAssignee.Team.IsKnown():
-			out.Owner = nullable.NewNullableWithValue(fmt.Sprintf("team:%s", defaultAssignee.Team.Get()))
-		case defaultAssignee.User.IsKnown():
-			out.Owner = nullable.NewNullableWithValue(fmt.Sprintf("user:%s", defaultAssignee.User.Get()))
+		case defaultAssignee.TeamId.IsKnown():
+			out.Owner = nullable.NewNullableWithValue(fmt.Sprintf("team:%s", defaultAssignee.TeamId.Get()))
+		case defaultAssignee.UserId.IsKnown():
+			out.Owner = nullable.NewNullableWithValue(fmt.Sprintf("user:%s", defaultAssignee.UserId.Get()))
 		default:
-			diags.AddError("Provider Error", "Default assignee not implemented")
-			return nil, diags
+			out.Owner = nullable.NewNullNullable[string]()
 		}
 	} else {
 		out.Owner = nullable.NewNullNullable[string]()
@@ -109,18 +108,18 @@ func (m *CronMonitorResourceModel) Fill(ctx context.Context, data apiclient.Proj
 			return
 		}
 
-		defaultAssignee := &CronMonitorResourceModelDefaultAssignee{
-			User: supertypes.NewStringNull(),
-			Team: supertypes.NewStringNull(),
-		}
+		defaultAssignee := &CronMonitorResourceModelDefaultAssignee{}
 
 		switch ownerValue := ownerValue.(type) {
 		case apiclient.ProjectMonitorOwnerUser:
-			defaultAssignee.User = supertypes.NewStringValue(ownerValue.Id)
+			defaultAssignee.UserId = supertypes.NewStringValue(ownerValue.Id)
+			m.DefaultAssignee = supertypes.NewSingleNestedObjectValueOf(ctx, defaultAssignee)
 		case apiclient.ProjectMonitorOwnerTeam:
-			defaultAssignee.Team = supertypes.NewStringValue(ownerValue.Id)
+			defaultAssignee.TeamId = supertypes.NewStringValue(ownerValue.Id)
+			m.DefaultAssignee = supertypes.NewSingleNestedObjectValueOf(ctx, defaultAssignee)
+		default:
+			m.DefaultAssignee = supertypes.NewSingleNestedObjectValueOfNull[CronMonitorResourceModelDefaultAssignee](ctx)
 		}
-		m.DefaultAssignee = supertypes.NewSingleNestedObjectValueOf(ctx, defaultAssignee)
 	} else {
 		m.DefaultAssignee = supertypes.NewSingleNestedObjectValueOfNull[CronMonitorResourceModelDefaultAssignee](ctx)
 	}
@@ -132,11 +131,7 @@ func (m *CronMonitorResourceModel) Fill(ctx context.Context, data apiclient.Proj
 			return
 		}
 
-		schedule := &CronMonitorResourceModelSchedule{
-			Crontab:       supertypes.NewStringNull(),
-			IntervalValue: supertypes.NewInt64Null(),
-			IntervalUnit:  supertypes.NewStringNull(),
-		}
+		schedule := &CronMonitorResourceModelSchedule{}
 
 		switch configValue := configValue.(type) {
 		case apiclient.ProjectMonitorDataSourceConfigCronCrontab:
