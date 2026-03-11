@@ -311,9 +311,7 @@ export const RESOURCES: Array<Resource> = [
         description:
           "The organization slug or internal ID to create the monitor for.",
         computedOptionalRequired: "required",
-        skipFill: true,
         planModifiers: ["stringplanmodifier.RequiresReplace()"],
-        // REQUIRES REPLACE
       },
       {
         name: "project",
@@ -321,8 +319,14 @@ export const RESOURCES: Array<Resource> = [
         description:
           "The project slug or internal ID to create the monitor for.",
         computedOptionalRequired: "required",
-        skipFill: true,
         planModifiers: ["stringplanmodifier.RequiresReplace()"],
+      },
+      {
+        name: "enabled",
+        type: "bool",
+        description: "Whether the monitor is enabled. Defaults to true.",
+        computedOptionalRequired: "computed_optional",
+        default: `booldefault.StaticBool(true)`,
       },
       {
         name: "name",
@@ -339,12 +343,40 @@ export const RESOURCES: Array<Resource> = [
         nullable: true,
       },
       {
+        name: "default_assignee",
+        type: "single_nested",
+        description: "Sentry will assign new issues to this assignee.",
+        computedOptionalRequired: "optional",
+        nullable: true,
+        attributes: [
+          {
+            name: "user",
+            type: "string",
+            description:
+              "The user ID to assign new issues to. Conflicts with `team`.",
+            computedOptionalRequired: "optional",
+            validators: [
+              `stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("team"))`,
+            ],
+          },
+          {
+            name: "team",
+            type: "string",
+            description:
+              "The team slug or internal ID to assign new issues to. Conflicts with `user`.",
+            computedOptionalRequired: "optional",
+            validators: [
+              `stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("user"))`,
+            ],
+          },
+        ],
+      },
+      {
         name: "checkin_margin",
         type: "int",
         description:
           "Grace period. The number of minutes before a check-in is considered missed.",
         computedOptionalRequired: "required",
-        skipFill: true,
       },
       {
         name: "failure_issue_threshold",
@@ -352,7 +384,6 @@ export const RESOURCES: Array<Resource> = [
         description:
           "Failure tolerance. Create a new issue when this many consecutive missed or error check-ins are processed.",
         computedOptionalRequired: "required",
-        skipFill: true,
       },
       {
         name: "max_runtime",
@@ -360,27 +391,25 @@ export const RESOURCES: Array<Resource> = [
         description:
           "Maximum runtime. The number of minutes before an in-progress check-in is marked timed out.",
         computedOptionalRequired: "required",
-        skipFill: true,
       },
       {
         name: "recovery_threshold",
         type: "int",
         description:
-          "Recovery Tolerance. Resolve the issue when this many consecutive healthy check-ins are processed.",
+          "Recovery Tolerance. Resolve the issue when this many consecutive healthy check-ins are processed. Either `crontab` or `interval_value` and `interval_unit` must be provided.",
         computedOptionalRequired: "required",
-        skipFill: true,
       },
       {
         name: "schedule",
         type: "single_nested",
         description: "Set your schedule.",
         computedOptionalRequired: "required",
-        model: "Schedule",
         attributes: [
           {
             name: "crontab",
             type: "string",
-            description: "Use the crontab syntax. (e.g. 0 0 * * *)",
+            description:
+              "Use the crontab syntax (e.g. `0 0 * * *`). Conflicts with `interval_value` and `interval_unit`.",
             computedOptionalRequired: "optional",
             validators: [
               `stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("interval_value"), path.MatchRelative().AtParent().AtName("interval_unit"))`,
@@ -391,7 +420,8 @@ export const RESOURCES: Array<Resource> = [
           {
             name: "interval_value",
             type: "int",
-            description: "",
+            description:
+              "Interval value. Conflicts with `crontab`. Must be provided with `interval_unit`.",
             computedOptionalRequired: "optional",
             validators: [
               `int64validator.ConflictsWith(path.MatchRelative().AtParent().AtName("crontab"))`,
@@ -401,7 +431,8 @@ export const RESOURCES: Array<Resource> = [
           {
             name: "interval_unit",
             type: "string",
-            description: "",
+            description:
+              "Interval unit. Conflicts with `crontab`. Must be provided with `interval_value`.",
             computedOptionalRequired: "optional",
             enum: "sentrydata.Intervals",
             validators: [
@@ -418,7 +449,6 @@ export const RESOURCES: Array<Resource> = [
         computedOptionalRequired: "computed_optional",
         default: `stringdefault.StaticString("UTC")`,
         enum: "sentrydata.Timezones",
-        skipFill: true,
       },
     ],
   },

@@ -57,6 +57,10 @@ func testAccCronMonitorResourceConfig(teamName, projectName, name string) string
 				interval_value = 1
 				interval_unit = "day"
 			}
+
+			default_assignee = {
+				team = sentry_team.test.internal_id
+			}
 		}
 	`, name)
 }
