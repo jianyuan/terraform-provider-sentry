@@ -82,20 +82,20 @@ func (r *CronMonitorResource) Schema(ctx context.Context, req resource.SchemaReq
 				Optional:            true,
 				CustomType:          supertypes.NewSingleNestedObjectTypeOf[CronMonitorResourceModelDefaultAssignee](ctx),
 				Attributes: map[string]schema.Attribute{
-					"user": schema.StringAttribute{
-						MarkdownDescription: "The user ID to assign new issues to. Conflicts with `team`.",
+					"user_id": schema.StringAttribute{
+						MarkdownDescription: "The user ID to assign new issues to. Conflicts with `team_id`.",
 						Optional:            true,
 						CustomType:          supertypes.StringType{},
 						Validators: []validator.String{
-							stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("team")),
+							stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("team_id")),
 						},
 					},
-					"team": schema.StringAttribute{
-						MarkdownDescription: "The team slug or internal ID to assign new issues to. Conflicts with `user`.",
+					"team_id": schema.StringAttribute{
+						MarkdownDescription: "The team internal ID to assign new issues to. Conflicts with `user_id`.",
 						Optional:            true,
 						CustomType:          supertypes.StringType{},
 						Validators: []validator.String{
-							stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("user")),
+							stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("user_id")),
 						},
 					},
 				},
@@ -285,8 +285,8 @@ type CronMonitorResourceModel struct {
 }
 
 type CronMonitorResourceModelDefaultAssignee struct {
-	User supertypes.StringValue `tfsdk:"user"`
-	Team supertypes.StringValue `tfsdk:"team"`
+	UserId supertypes.StringValue `tfsdk:"user_id"`
+	TeamId supertypes.StringValue `tfsdk:"team_id"`
 }
 
 type CronMonitorResourceModelSchedule struct {
