@@ -68,7 +68,7 @@ export interface ObjectAttribute extends BaseAttribute {
 export interface SingleNestedAttribute extends BaseAttribute {
   type: "single_nested";
   attributes: Array<Attribute>;
-  model: string;
+  model?: string;
 }
 
 export interface BaseDataSourceApiStrategy {

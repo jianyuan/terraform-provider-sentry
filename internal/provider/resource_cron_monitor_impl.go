@@ -10,37 +10,37 @@ import (
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 )
 
-func (r *CronMonitorResource) getCreateJSONRequestBody(ctx context.Context, data CronMonitorResourceModel) (apiclient.CreateProjectMonitorJSONRequestBody, diag.Diagnostics) {
+func (r *CronMonitorResource) getCreateJSONRequestBody(ctx context.Context, data CronMonitorResourceModel) (*apiclient.CreateProjectMonitorJSONRequestBody, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	var dataSourceConfig apiclient.ProjectMonitorDataSourceConfigCron
 
 	inSchedule := data.Schedule.DiagsGet(ctx, diags)
 	if diags.HasError() {
-		return apiclient.CreateProjectMonitorJSONRequestBody{}, diags
+		return nil, diags
 	}
 
 	switch {
 	case inSchedule.Crontab.IsKnown():
 		dataSourceConfig.FromProjectMonitorDataSourceConfigCronCrontab(apiclient.ProjectMonitorDataSourceConfigCronCrontab{
-			CheckinMargin:         data.CheckinMargin.GetInt64(),
-			FailureIssueThreshold: data.FailureIssueThreshold.GetInt64(),
-			MaxRuntime:            data.MaxRuntime.GetInt64(),
-			RecoveryThreshold:     data.RecoveryThreshold.GetInt64(),
+			CheckinMargin:         data.CheckinMargin.Get(),
+			FailureIssueThreshold: data.FailureIssueThreshold.Get(),
+			MaxRuntime:            data.MaxRuntime.Get(),
+			RecoveryThreshold:     data.RecoveryThreshold.Get(),
 			Timezone:              data.Timezone.Get(),
 			Schedule:              inSchedule.Crontab.Get(),
 		})
 	case inSchedule.IntervalUnit.IsKnown() && inSchedule.IntervalValue.IsKnown():
 		var intervalValue apiclient.ProjectMonitorDataSourceConfigCronInterval_Schedule_Item
-		intervalValue.FromProjectMonitorDataSourceConfigCronIntervalValue(inSchedule.IntervalValue.GetInt64())
+		intervalValue.FromProjectMonitorDataSourceConfigCronIntervalValue(inSchedule.IntervalValue.Get())
 		var intervalUnit apiclient.ProjectMonitorDataSourceConfigCronInterval_Schedule_Item
 		intervalUnit.FromProjectMonitorDataSourceConfigCronIntervalUnit(apiclient.ProjectMonitorDataSourceConfigCronIntervalUnit(inSchedule.IntervalUnit.Get()))
 
 		dataSourceConfig.FromProjectMonitorDataSourceConfigCronInterval(apiclient.ProjectMonitorDataSourceConfigCronInterval{
-			CheckinMargin:         data.CheckinMargin.GetInt64(),
-			FailureIssueThreshold: data.FailureIssueThreshold.GetInt64(),
-			MaxRuntime:            data.MaxRuntime.GetInt64(),
-			RecoveryThreshold:     data.RecoveryThreshold.GetInt64(),
+			CheckinMargin:         data.CheckinMargin.Get(),
+			FailureIssueThreshold: data.FailureIssueThreshold.Get(),
+			MaxRuntime:            data.MaxRuntime.Get(),
+			RecoveryThreshold:     data.RecoveryThreshold.Get(),
 			Timezone:              data.Timezone.Get(),
 			Schedule: []apiclient.ProjectMonitorDataSourceConfigCronInterval_Schedule_Item{
 				intervalValue,
@@ -49,23 +49,44 @@ func (r *CronMonitorResource) getCreateJSONRequestBody(ctx context.Context, data
 		})
 	}
 
-	out := apiclient.CreateProjectMonitorJSONRequestBody{
+	out := &apiclient.CreateProjectMonitorJSONRequestBody{
 		Type:      apiclient.MonitorCheckInFailure,
-		Name:      data.Name.ValueString(),
-		ProjectId: data.Project.ValueString(),
+		Name:      data.Name.Get(),
+		ProjectId: data.Project.Get(),
 		DataSources: []apiclient.ProjectMonitorDataSource{
 			{
-				Name:   data.Name.ValueString(),
+				Name:   data.Name.Get(),
 				Config: dataSourceConfig,
 			},
 		},
 		WorkflowIds: []string{},
 	}
 
-	if data.Description.IsNull() {
-		out.Description = nullable.NewNullNullable[string]()
+	if data.Enabled.IsKnown() {
+		out.Enabled = nullable.NewNullableWithValue(data.Enabled.Get())
 	} else {
+		out.Enabled = nullable.NewNullNullable[bool]()
+	}
+
+	if data.Description.IsKnown() {
 		out.Description = nullable.NewNullableWithValue(data.Description.Get())
+	} else {
+		out.Description = nullable.NewNullNullable[string]()
+	}
+
+	if data.DefaultAssignee.IsKnown() {
+		defaultAssignee := data.DefaultAssignee.MustGet(ctx)
+		switch {
+		case defaultAssignee.Team.IsKnown():
+			out.Owner = nullable.NewNullableWithValue(fmt.Sprintf("team:%s", defaultAssignee.Team.Get()))
+		case defaultAssignee.User.IsKnown():
+			out.Owner = nullable.NewNullableWithValue(fmt.Sprintf("user:%s", defaultAssignee.User.Get()))
+		default:
+			diags.AddError("Provider Error", "Default assignee not implemented")
+			return nil, diags
+		}
+	} else {
+		out.Owner = nullable.NewNullNullable[string]()
 	}
 
 	return out, nil
@@ -78,6 +99,30 @@ func (m *CronMonitorResourceModel) Fill(ctx context.Context, data apiclient.Proj
 		m.Description = supertypes.NewStringValueOrNull(v)
 	} else {
 		m.Description = supertypes.NewStringNull()
+	}
+	m.Enabled = supertypes.NewBoolValue(data.Enabled)
+
+	if data.Owner.IsSpecified() && !data.Owner.IsNull() {
+		ownerValue, err := data.Owner.MustGet().ValueByDiscriminator()
+		if err != nil {
+			diags.AddError("Invalid owner", err.Error())
+			return
+		}
+
+		defaultAssignee := &CronMonitorResourceModelDefaultAssignee{
+			User: supertypes.NewStringNull(),
+			Team: supertypes.NewStringNull(),
+		}
+
+		switch ownerValue := ownerValue.(type) {
+		case apiclient.ProjectMonitorOwnerUser:
+			defaultAssignee.User = supertypes.NewStringValue(ownerValue.Id)
+		case apiclient.ProjectMonitorOwnerTeam:
+			defaultAssignee.Team = supertypes.NewStringValue(ownerValue.Id)
+		}
+		m.DefaultAssignee = supertypes.NewSingleNestedObjectValueOf(ctx, defaultAssignee)
+	} else {
+		m.DefaultAssignee = supertypes.NewSingleNestedObjectValueOfNull[CronMonitorResourceModelDefaultAssignee](ctx)
 	}
 
 	if len(data.DataSources) == 1 {

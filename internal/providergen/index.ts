@@ -657,7 +657,7 @@ function generateResource({ resource }: { resource: Resource }) {
       }),
     );
   }
-  createRequestParams.push("body");
+  createRequestParams.push("*body");
 
   const readRequestParams = ["ctx"];
   if (resource.api.readRequestAttributes) {
@@ -701,7 +701,7 @@ function generateResource({ resource }: { resource: Resource }) {
       }),
     );
   }
-  updateRequestParams.push("body");
+  updateRequestParams.push("*body");
 
   const deleteRequestParams = ["ctx"];
   if (resource.api.deleteRequestAttributes) {
@@ -771,6 +771,9 @@ func (r *${resourceName}) Create(ctx context.Context, req resource.CreateRequest
   body, diags := r.getCreateJSONRequestBody(ctx, data)
   resp.Diagnostics.Append(diags...)
   if resp.Diagnostics.HasError() {
+    return
+  } else if body == nil {
+    resp.Diagnostics.AddError("Provider Error", "getCreateJSONRequestBody returned a nil body")
     return
   }
 
