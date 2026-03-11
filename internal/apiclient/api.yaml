@@ -2256,7 +2256,6 @@ components:
         - name
         - description
         - owner
-        - dataSources
         - workflowIds
       properties:
         projectId:
@@ -2272,10 +2271,8 @@ components:
         owner:
           type: string
           nullable: true
-        dataSources:
-          type: array
-          items:
-            $ref: "#/components/schemas/ProjectMonitor_DataSource"
+        config:
+          $ref: "#/components/schemas/ProjectMonitor_Config"
         workflowIds:
           type: array
           items:
@@ -2286,12 +2283,17 @@ components:
         - type: object
           required:
             - type
+            - dataSources
             - conditionGroup
           properties:
             type:
               type: string
               enum:
                 - metric_issue
+            dataSources:
+              type: array
+              items:
+                $ref: "#/components/schemas/ProjectMonitor_DataSource_SnubaQuerySubscription"
             conditionGroup:
               $ref: "#/components/schemas/ProjectMonitor_ConditionGroup"
     ProjectMonitorRequest_MonitorCheckInFailure:
@@ -2300,11 +2302,16 @@ components:
         - type: object
           required:
             - type
+            - dataSources
           properties:
             type:
               type: string
               enum:
                 - monitor_check_in_failure
+            dataSources:
+              type: array
+              items:
+                $ref: "#/components/schemas/ProjectMonitor_DataSource_Cron"
     ProjectMonitorRequest:
       oneOf:
         - $ref: "#/components/schemas/ProjectMonitorRequest_MetricIssue"
@@ -2349,12 +2356,11 @@ components:
         dataSources:
           type: array
           items:
-            $ref: "#/components/schemas/ProjectMonitor_DataSource_Read"
+            $ref: "#/components/schemas/ProjectMonitor_DataSource_Wrapper"
         conditionGroup:
           $ref: "#/components/schemas/ProjectMonitor_ConditionGroup"
         config:
-          # TODO
-          type: object
+          $ref: "#/components/schemas/ProjectMonitor_Config"
         workflowIds:
           type: array
           items:
@@ -2365,13 +2371,52 @@ components:
         dateUpdated:
           type: string
           format: date-time
-    ProjectMonitor_DataSource_Read:
+    ProjectMonitor_Config:
+      type: object
+      properties:
+        detectionType:
+          type: string
+        comparisonDelta:
+          type: integer
+          format: int64
+    ProjectMonitor_DataSource_Wrapper:
+      oneOf:
+        - $ref: "#/components/schemas/ProjectMonitor_DataSource_Wrapper_CronMonitor"
+        - $ref: "#/components/schemas/ProjectMonitor_DataSource_Wrapper_SnubaQuerySubscription"
+      discriminator:
+        propertyName: type
+        mapping:
+          cron_monitor: "#/components/schemas/ProjectMonitor_DataSource_Wrapper_CronMonitor"
+          snuba_query_subscription: "#/components/schemas/ProjectMonitor_DataSource_Wrapper_SnubaQuerySubscription"
+    ProjectMonitor_DataSource_Wrapper_CronMonitor:
       type: object
       required:
+        - type
         - queryObj
       properties:
+        type:
+          type: string
+          enum:
+            - cron_monitor
         queryObj:
-          $ref: "#/components/schemas/ProjectMonitor_DataSource"
+          $ref: "#/components/schemas/ProjectMonitor_DataSource_Cron"
+    ProjectMonitor_DataSource_Wrapper_SnubaQuerySubscription:
+      type: object
+      required:
+        - type
+        - queryObj
+      properties:
+        type:
+          type: string
+          enum:
+            - snuba_query_subscription
+        queryObj:
+          type: object
+          required:
+            - snubaQuery
+          properties:
+            snubaQuery:
+              $ref: "#/components/schemas/ProjectMonitor_DataSource_SnubaQuerySubscription"
     ProjectMonitor_Owner:
       oneOf:
         - $ref: "#/components/schemas/ProjectMonitor_Owner_User"
@@ -2415,7 +2460,7 @@ components:
           type: string
         name:
           type: string
-    ProjectMonitor_DataSource:
+    ProjectMonitor_DataSource_Cron:
       type: object
       required:
         - name
@@ -2425,6 +2470,40 @@ components:
           type: string
         config:
           $ref: "#/components/schemas/ProjectMonitor_DataSource_Config_Cron"
+    ProjectMonitor_DataSource_SnubaQuerySubscription:
+      type: object
+      required:
+        - aggregate
+        - dataset
+        - environment
+        - eventTypes
+        - query
+        - queryType
+        - timeWindow
+        - extrapolationMode
+      properties:
+        aggregate:
+          type: string
+        dataset:
+          type: string
+        environment:
+          type: string
+          nullable: true
+        eventTypes:
+          type: array
+          items:
+            type: string
+        query:
+          type: string
+        queryType:
+          type: integer
+          format: int64
+        timeWindow:
+          type: integer
+          format: int64
+        extrapolationMode:
+          type: string
+          nullable: true
     ProjectMonitor_DataSource_Config_Cron:
       oneOf:
         - $ref: "#/components/schemas/ProjectMonitor_DataSource_Config_Cron_Crontab"

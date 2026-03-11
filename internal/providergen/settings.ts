@@ -372,6 +372,61 @@ export const RESOURCES: Array<Resource> = [
         ],
       },
       {
+        name: "aggregate",
+        type: "string",
+        description: "TODO",
+        computedOptionalRequired: "required",
+      },
+      {
+        name: "dataset",
+        type: "string",
+        description: "TODO",
+        computedOptionalRequired: "required",
+        enum: "sentrydata.SnubaDatasets",
+      },
+      {
+        name: "environment",
+        type: "string",
+        description: "TODO",
+        computedOptionalRequired: "optional",
+      },
+      {
+        name: "event_types",
+        type: "set",
+        elementType: "string",
+        description: "TODO",
+        computedOptionalRequired: "required",
+      },
+      {
+        name: "extrapolation_mode",
+        type: "string",
+        description: "TODO",
+        computedOptionalRequired: "computed_optional",
+        enum: "sentrydata.ExtrapolationModes",
+      },
+      {
+        name: "issue_detection",
+        type: "single_nested",
+        description: "The issue detection type configuration.",
+        computedOptionalRequired: "required",
+        attributes: [
+          {
+            name: "type",
+            type: "string",
+            description:
+              "`static`: Threshold based monitor; `percent`: Change based monitor; `dynamic`: Dynamic monitor.",
+            computedOptionalRequired: "required",
+            enum: "sentrydata.AlertRuleDetectionTypes",
+          },
+          {
+            name: "comparison_delta",
+            type: "int",
+            description: "TODO",
+            computedOptionalRequired: "optional",
+          },
+        ],
+      },
+      {
         name: "condition_group",
         type: "single_nested",
         description: "TODO",
