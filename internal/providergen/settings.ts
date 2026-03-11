@@ -350,23 +350,23 @@ export const RESOURCES: Array<Resource> = [
         nullable: true,
         attributes: [
           {
-            name: "user",
+            name: "user_id",
             type: "string",
             description:
-              "The user ID to assign new issues to. Conflicts with `team`.",
+              "The user ID to assign new issues to. Conflicts with `team_id`.",
             computedOptionalRequired: "optional",
             validators: [
-              `stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("team"))`,
+              `stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("team_id"))`,
             ],
           },
           {
-            name: "team",
+            name: "team_id",
             type: "string",
             description:
-              "The team slug or internal ID to assign new issues to. Conflicts with `user`.",
+              "The team internal ID to assign new issues to. Conflicts with `user_id`.",
             computedOptionalRequired: "optional",
             validators: [
-              `stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("user"))`,
+              `stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("user_id"))`,
             ],
           },
         ],
