@@ -2510,8 +2510,7 @@ components:
         conditions:
           type: array
           items:
-            # TODO
-            type: object
+            $ref: "#/components/schemas/ProjectMonitor_ConditionGroup_Condition"
         logicType:
           type: string
           enum:
@@ -2519,6 +2518,21 @@ components:
             - any-short
             - all
             - none
+    ProjectMonitor_ConditionGroup_Condition:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+        comparison:
+          type: integer
+          format: int64
+        conditionResult:
+          type: integer
+          format: int64
     SentryAppInstallation:
       type: object
       required:

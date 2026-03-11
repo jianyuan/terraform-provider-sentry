@@ -910,12 +910,19 @@ type ProjectMonitorRequestMonitorCheckInFailureType string
 
 // ProjectMonitorConditionGroup defines model for ProjectMonitor_ConditionGroup.
 type ProjectMonitorConditionGroup struct {
-	Conditions []map[string]interface{}              `json:"conditions"`
-	LogicType  ProjectMonitorConditionGroupLogicType `json:"logicType"`
+	Conditions []ProjectMonitorConditionGroupCondition `json:"conditions"`
+	LogicType  ProjectMonitorConditionGroupLogicType   `json:"logicType"`
 }
 
 // ProjectMonitorConditionGroupLogicType defines model for ProjectMonitorConditionGroup.LogicType.
 type ProjectMonitorConditionGroupLogicType string
+
+// ProjectMonitorConditionGroupCondition defines model for ProjectMonitor_ConditionGroup_Condition.
+type ProjectMonitorConditionGroupCondition struct {
+	Comparison      int64  `json:"comparison"`
+	ConditionResult int64  `json:"conditionResult"`
+	Type            string `json:"type"`
+}
 
 // ProjectMonitorDataSource defines model for ProjectMonitor_DataSource.
 type ProjectMonitorDataSource struct {

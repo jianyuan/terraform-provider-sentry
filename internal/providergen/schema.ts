@@ -9,6 +9,7 @@ export type Attribute =
   | IntAttribute
   | BoolAttribute
   | ListAttribute
+  | ListNestedAttribute
   | SetAttribute
   | SetNestedAttribute
   | ObjectAttribute
@@ -49,6 +50,12 @@ export interface ListAttribute extends BaseAttribute {
   elementType: "string";
 }
 
+export interface ListNestedAttribute extends BaseAttribute {
+  type: "list_nested";
+  attributes: Array<Attribute>;
+  model?: string;
+}
+
 export interface SetAttribute extends BaseAttribute {
   type: "set";
   elementType: "string";
@@ -57,7 +64,7 @@ export interface SetAttribute extends BaseAttribute {
 export interface SetNestedAttribute extends BaseAttribute {
   type: "set_nested";
   attributes: Array<Attribute>;
-  model: string;
+  model?: string;
 }
 
 export interface ObjectAttribute extends BaseAttribute {

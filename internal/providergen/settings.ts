@@ -385,6 +385,33 @@ export const RESOURCES: Array<Resource> = [
             default: `stringdefault.StaticString("any")`,
             enum: "sentrydata.DataConditionGroupTypes",
           },
+          {
+            name: "conditions",
+            type: "list_nested",
+            description: "TODO",
+            computedOptionalRequired: "required",
+            attributes: [
+              {
+                name: "type",
+                type: "string",
+                description: "TODO",
+                computedOptionalRequired: "required",
+                enum: "sentrydata.DataConditionTypes",
+              },
+              {
+                name: "comparison",
+                type: "int",
+                description: "TODO",
+                computedOptionalRequired: "required",
+              },
+              {
+                name: "condition_result",
+                type: "int",
+                description: "TODO",
+                computedOptionalRequired: "required",
+              },
+            ],
+          },
         ],
       },
     ],

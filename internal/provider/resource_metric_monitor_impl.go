@@ -20,6 +20,19 @@ func (r *MetricMonitorResource) getCreateJSONRequestBody(ctx context.Context, da
 		return nil, diags
 	}
 
+	inConditions := inConditionGroup.Conditions.DiagsGet(ctx, diags)
+	if diags.HasError() {
+		return nil, diags
+	}
+	var outConditions []apiclient.ProjectMonitorConditionGroupCondition
+	for _, inCondition := range inConditions {
+		outConditions = append(outConditions, apiclient.ProjectMonitorConditionGroupCondition{
+			Type:            inCondition.Type.Get(),
+			Comparison:      inCondition.Comparison.Get(),
+			ConditionResult: inCondition.ConditionResult.Get(),
+		})
+	}
+
 	out := apiclient.ProjectMonitorRequestMetricIssue{
 		Name:      data.Name.Get(),
 		ProjectId: data.Project.Get(),
@@ -30,7 +43,8 @@ func (r *MetricMonitorResource) getCreateJSONRequestBody(ctx context.Context, da
 			},
 		},
 		ConditionGroup: apiclient.ProjectMonitorConditionGroup{
-			LogicType: apiclient.ProjectMonitorConditionGroupLogicType(inConditionGroup.LogicType.Get()),
+			LogicType:  apiclient.ProjectMonitorConditionGroupLogicType(inConditionGroup.LogicType.Get()),
+			Conditions: outConditions,
 		},
 		WorkflowIds: []string{},
 	}
@@ -102,8 +116,18 @@ func (m *MetricMonitorResourceModel) Fill(ctx context.Context, data apiclient.Pr
 		m.DefaultAssignee = supertypes.NewSingleNestedObjectValueOfNull[MetricMonitorResourceModelDefaultAssignee](ctx)
 	}
 
+	var outConditions []MetricMonitorResourceModelConditionGroupConditionsItem
+	for _, inCondition := range data.ConditionGroup.Conditions {
+		outConditions = append(outConditions, MetricMonitorResourceModelConditionGroupConditionsItem{
+			Type:            supertypes.NewStringValue(inCondition.Type),
+			Comparison:      supertypes.NewInt64Value(inCondition.Comparison),
+			ConditionResult: supertypes.NewInt64Value(inCondition.ConditionResult),
+		})
+	}
+
 	conditionGroup := &MetricMonitorResourceModelConditionGroup{
-		LogicType: supertypes.NewStringValue(string(data.ConditionGroup.LogicType)),
+		LogicType:  supertypes.NewStringValue(string(data.ConditionGroup.LogicType)),
+		Conditions: supertypes.NewListNestedObjectValueOfValueSlice(ctx, outConditions),
 	}
 	m.ConditionGroup = supertypes.NewSingleNestedObjectValueOf(ctx, conditionGroup)
 
