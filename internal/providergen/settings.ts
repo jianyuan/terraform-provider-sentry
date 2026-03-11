@@ -283,8 +283,115 @@ export const DATASOURCES: Array<DataSource> = [
 ];
 export const RESOURCES: Array<Resource> = [
   {
+    name: "metric_monitor",
+    description: "Create a Metric Monitor for a Project.",
+    api: {
+      model: "ProjectMonitor",
+      createMethod: "CreateProjectMonitor",
+      createRequestAttributes: ["organization"],
+      readMethod: "GetProjectMonitor",
+      readRequestAttributes: ["organization", "id"],
+      deleteMethod: "DeleteProjectMonitor",
+      deleteRequestAttributes: ["organization", "id"],
+    },
+    generate: {
+      modelFillers: false,
+    },
+    attributes: [
+      {
+        name: "id",
+        type: "string",
+        description: "The internal ID of this monitor.",
+        computedOptionalRequired: "computed",
+        sourceAttribute: ["Id"],
+      },
+      {
+        name: "organization",
+        type: "string",
+        description:
+          "The organization slug or internal ID to create the monitor for.",
+        computedOptionalRequired: "required",
+        planModifiers: ["stringplanmodifier.RequiresReplace()"],
+      },
+      {
+        name: "project",
+        type: "string",
+        description:
+          "The project slug or internal ID to create the monitor for.",
+        computedOptionalRequired: "required",
+        planModifiers: ["stringplanmodifier.RequiresReplace()"],
+      },
+      {
+        name: "enabled",
+        type: "bool",
+        description: "Whether the monitor is enabled. Defaults to true.",
+        computedOptionalRequired: "computed_optional",
+        default: `booldefault.StaticBool(true)`,
+      },
+      {
+        name: "name",
+        type: "string",
+        description: "The name of this monitor.",
+        computedOptionalRequired: "required",
+      },
+      {
+        name: "description",
+        type: "string",
+        description:
+          "A description of the monitor. Will be used in the resulting issue.",
+        computedOptionalRequired: "optional",
+        nullable: true,
+      },
+      {
+        name: "default_assignee",
+        type: "single_nested",
+        description: "Sentry will assign new issues to this assignee.",
+        computedOptionalRequired: "optional",
+        nullable: true,
+        attributes: [
+          {
+            name: "user_id",
+            type: "string",
+            description:
+              "The user ID to assign new issues to. Conflicts with `team_id`.",
+            computedOptionalRequired: "optional",
+            validators: [
+              `stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("team_id"))`,
+            ],
+          },
+          {
+            name: "team_id",
+            type: "string",
+            description:
+              "The team internal ID to assign new issues to. Conflicts with `user_id`.",
+            computedOptionalRequired: "optional",
+            validators: [
+              `stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("user_id"))`,
+            ],
+          },
+        ],
+      },
+      {
+        name: "condition_group",
+        type: "single_nested",
+        description: "TODO",
+        computedOptionalRequired: "required",
+        attributes: [
+          {
+            name: "logic_type",
+            type: "string",
+            description: "TODO",
+            computedOptionalRequired: "computed_optional",
+            default: `stringdefault.StaticString("any")`,
+            enum: "sentrydata.DataConditionGroupTypes",
+          },
+        ],
+      },
+    ],
+  },
+  {
     name: "cron_monitor",
-    description: "Create a Monitor for a Project.",
+    description: "Create a Cron Monitor for a Project.",
     api: {
       model: "ProjectMonitor",
       createMethod: "CreateProjectMonitor",

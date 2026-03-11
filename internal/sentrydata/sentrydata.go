@@ -955,6 +955,47 @@ var Timezones = []string{
 	"Zulu",
 }
 
+// https://github.com/getsentry/sentry/blob/master/src/sentry/workflow_engine/models/data_condition.py
+var DataConditionTypes = []string{
+	"eq",
+	"gte",
+	"gt",
+	"lte",
+	"lt",
+	"ne",
+	"anomaly_detection",
+	"age_comparison",
+	"assigned_to",
+	"event_attribute",
+	"event_created_by_detector",
+	"event_seen_count",
+	"existing_high_priority_issue",
+	"first_seen_event",
+	"issue_category",
+	"issue_occurrences",
+	"issue_open_duration",
+	"issue_priority_equals",
+	"issue_priority_deescalating",
+	"issue_priority_greater_or_equal",
+	"issue_resolution_change",
+	"issue_resolved_trigger",
+	"issue_type",
+	"latest_adopted_release",
+	"latest_release",
+	"level",
+	"new_high_priority_issue",
+	"reappeared_event",
+	"regression_event",
+	"tagged_event",
+	"event_frequency_count",
+	"event_frequency_percent",
+	"event_unique_user_frequency_count",
+	"event_unique_user_frequency_percent",
+	"percent_sessions_count",
+	"percent_sessions_percent",
+	"every_event",
+}
+
 // https://github.com/getsentry/sentry/blob/master/src/sentry/workflow_engine/models/data_condition_group.py
 var DataConditionGroupTypes = []string{
 	"any",
