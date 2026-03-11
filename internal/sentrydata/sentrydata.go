@@ -228,6 +228,7 @@ var DashboardWidgetDisplayTypes = []string{
 	"rage_and_dead_clicks",
 	"server_tree",
 	"text",
+	"agents_traces_table",
 }
 
 // https://github.com/getsentry/sentry/blob/master/src/sentry/models/project.py
@@ -951,4 +952,12 @@ var Timezones = []string{
 	"W-SU",
 	"WET",
 	"Zulu",
+}
+
+// https://github.com/getsentry/sentry/blob/master/src/sentry/workflow_engine/models/data_condition_group.py
+var DataConditionGroupTypes = []string{
+	"any",
+	"any-short",
+	"all",
+	"none",
 }
