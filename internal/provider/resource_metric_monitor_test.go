@@ -47,7 +47,20 @@ func testAccMetricMonitorResourceConfig(teamName, projectName, name string) stri
 			project      = sentry_project.test.internal_id
 			name         = "%[1]s"
 
-			condition_group = {}
+			condition_group = {
+				conditions = [
+					{
+						type = "gt"
+						comparison = 100
+						condition_result = 75
+					},
+					{
+						type = "lte"
+						comparison = 50
+						condition_result = 0
+					},
+				]
+			}
 
 			default_assignee = {
 				team_id = sentry_team.test.internal_id
