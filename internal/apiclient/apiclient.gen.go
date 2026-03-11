@@ -113,6 +113,36 @@ func (e ProjectMonitorDataSourceConfigCronIntervalUnit) Valid() bool {
 	}
 }
 
+// Defines values for ProjectMonitorOwnerTeamType.
+const (
+	ProjectMonitorOwnerTeamTypeTeam ProjectMonitorOwnerTeamType = "team"
+)
+
+// Valid indicates whether the value is a known member of the ProjectMonitorOwnerTeamType enum.
+func (e ProjectMonitorOwnerTeamType) Valid() bool {
+	switch e {
+	case ProjectMonitorOwnerTeamTypeTeam:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ProjectMonitorOwnerUserType.
+const (
+	User ProjectMonitorOwnerUserType = "user"
+)
+
+// Valid indicates whether the value is a known member of the ProjectMonitorOwnerUserType enum.
+func (e ProjectMonitorOwnerUserType) Valid() bool {
+	switch e {
+	case User:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ProjectRuleActionAzureDevopsCreateTicketId.
 const (
 	SentryIntegrationsVstsNotifyActionAzureDevopsCreateTicketAction ProjectRuleActionAzureDevopsCreateTicketId = "sentry.integrations.vsts.notify_action.AzureDevopsCreateTicketAction"
@@ -777,15 +807,17 @@ type ProjectKey struct {
 
 // ProjectMonitor defines model for ProjectMonitor.
 type ProjectMonitor struct {
-	DataSources []ProjectMonitorDataSourceRead `json:"dataSources"`
-	DateCreated time.Time                      `json:"dateCreated"`
-	DateUpdated time.Time                      `json:"dateUpdated"`
-	Description nullable.Nullable[string]      `json:"description"`
-	Id          string                         `json:"id"`
-	Name        string                         `json:"name"`
-	ProjectId   string                         `json:"projectId"`
-	Type        string                         `json:"type"`
-	WorkflowIds []string                       `json:"workflowIds"`
+	DataSources []ProjectMonitorDataSourceRead         `json:"dataSources"`
+	DateCreated time.Time                              `json:"dateCreated"`
+	DateUpdated time.Time                              `json:"dateUpdated"`
+	Description nullable.Nullable[string]              `json:"description"`
+	Enabled     bool                                   `json:"enabled"`
+	Id          string                                 `json:"id"`
+	Name        string                                 `json:"name"`
+	Owner       nullable.Nullable[ProjectMonitorOwner] `json:"owner"`
+	ProjectId   string                                 `json:"projectId"`
+	Type        string                                 `json:"type"`
+	WorkflowIds []string                               `json:"workflowIds"`
 }
 
 // ProjectMonitorDataSource defines model for ProjectMonitor_DataSource.
@@ -851,6 +883,32 @@ type ProjectMonitorDataSourceConfigCronIntervalValue = int64
 type ProjectMonitorDataSourceRead struct {
 	QueryObj ProjectMonitorDataSource `json:"queryObj"`
 }
+
+// ProjectMonitorOwner defines model for ProjectMonitor_Owner.
+type ProjectMonitorOwner struct {
+	union json.RawMessage
+}
+
+// ProjectMonitorOwnerTeam defines model for ProjectMonitor_Owner_Team.
+type ProjectMonitorOwnerTeam struct {
+	Id   string                      `json:"id"`
+	Name string                      `json:"name"`
+	Type ProjectMonitorOwnerTeamType `json:"type"`
+}
+
+// ProjectMonitorOwnerTeamType defines model for ProjectMonitorOwnerTeam.Type.
+type ProjectMonitorOwnerTeamType string
+
+// ProjectMonitorOwnerUser defines model for ProjectMonitor_Owner_User.
+type ProjectMonitorOwnerUser struct {
+	Email string                      `json:"email"`
+	Id    string                      `json:"id"`
+	Name  string                      `json:"name"`
+	Type  ProjectMonitorOwnerUserType `json:"type"`
+}
+
+// ProjectMonitorOwnerUserType defines model for ProjectMonitorOwnerUser.Type.
+type ProjectMonitorOwnerUserType string
 
 // ProjectOwnership defines model for ProjectOwnership.
 type ProjectOwnership struct {
@@ -1360,7 +1418,9 @@ type TeamIdOrSlug = string
 type CreateProjectMonitorJSONBody struct {
 	DataSources []ProjectMonitorDataSource       `json:"dataSources"`
 	Description nullable.Nullable[string]        `json:"description"`
+	Enabled     nullable.Nullable[bool]          `json:"enabled,omitempty"`
 	Name        string                           `json:"name"`
+	Owner       nullable.Nullable[string]        `json:"owner"`
 	ProjectId   string                           `json:"projectId"`
 	Type        CreateProjectMonitorJSONBodyType `json:"type"`
 	WorkflowIds []string                         `json:"workflowIds"`
@@ -1949,6 +2009,95 @@ func (t ProjectMonitorDataSourceConfigCronInterval_Schedule_Item) MarshalJSON() 
 }
 
 func (t *ProjectMonitorDataSourceConfigCronInterval_Schedule_Item) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsProjectMonitorOwnerUser returns the union data inside the ProjectMonitorOwner as a ProjectMonitorOwnerUser
+func (t ProjectMonitorOwner) AsProjectMonitorOwnerUser() (ProjectMonitorOwnerUser, error) {
+	var body ProjectMonitorOwnerUser
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectMonitorOwnerUser overwrites any union data inside the ProjectMonitorOwner as the provided ProjectMonitorOwnerUser
+func (t *ProjectMonitorOwner) FromProjectMonitorOwnerUser(v ProjectMonitorOwnerUser) error {
+	v.Type = "user"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectMonitorOwnerUser performs a merge with any union data inside the ProjectMonitorOwner, using the provided ProjectMonitorOwnerUser
+func (t *ProjectMonitorOwner) MergeProjectMonitorOwnerUser(v ProjectMonitorOwnerUser) error {
+	v.Type = "user"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectMonitorOwnerTeam returns the union data inside the ProjectMonitorOwner as a ProjectMonitorOwnerTeam
+func (t ProjectMonitorOwner) AsProjectMonitorOwnerTeam() (ProjectMonitorOwnerTeam, error) {
+	var body ProjectMonitorOwnerTeam
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectMonitorOwnerTeam overwrites any union data inside the ProjectMonitorOwner as the provided ProjectMonitorOwnerTeam
+func (t *ProjectMonitorOwner) FromProjectMonitorOwnerTeam(v ProjectMonitorOwnerTeam) error {
+	v.Type = "team"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectMonitorOwnerTeam performs a merge with any union data inside the ProjectMonitorOwner, using the provided ProjectMonitorOwnerTeam
+func (t *ProjectMonitorOwner) MergeProjectMonitorOwnerTeam(v ProjectMonitorOwnerTeam) error {
+	v.Type = "team"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ProjectMonitorOwner) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t ProjectMonitorOwner) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "team":
+		return t.AsProjectMonitorOwnerTeam()
+	case "user":
+		return t.AsProjectMonitorOwnerUser()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t ProjectMonitorOwner) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ProjectMonitorOwner) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }

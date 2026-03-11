@@ -338,6 +338,7 @@ paths:
                 - type
                 - name
                 - description
+                - owner
                 - dataSources
                 - workflowIds
               properties:
@@ -350,6 +351,12 @@ paths:
                 name:
                   type: string
                 description:
+                  type: string
+                  nullable: true
+                enabled:
+                  type: boolean
+                  nullable: true
+                owner:
                   type: string
                   nullable: true
                 dataSources:
@@ -2281,9 +2288,11 @@ components:
       required:
         - id
         - projectId
+        - enabled
         - name
         - type
         - description
+        - owner
         - dataSources
         - workflowIds
         - dateCreated
@@ -2293,6 +2302,8 @@ components:
           type: string
         projectId:
           type: string
+        enabled:
+          type: boolean
         name:
           type: string
         type:
@@ -2300,6 +2311,8 @@ components:
         description:
           type: string
           nullable: true
+        owner:
+          $ref: "#/components/schemas/ProjectMonitor_Owner"
         dataSources:
           type: array
           items:
@@ -2321,6 +2334,49 @@ components:
       properties:
         queryObj:
           $ref: "#/components/schemas/ProjectMonitor_DataSource"
+    ProjectMonitor_Owner:
+      oneOf:
+        - $ref: "#/components/schemas/ProjectMonitor_Owner_User"
+        - $ref: "#/components/schemas/ProjectMonitor_Owner_Team"
+      discriminator:
+        propertyName: type
+        mapping:
+          user: "#/components/schemas/ProjectMonitor_Owner_User"
+          team: "#/components/schemas/ProjectMonitor_Owner_Team"
+      nullable: true
+    ProjectMonitor_Owner_User:
+      type: object
+      required:
+        - type
+        - id
+        - name
+        - email
+      properties:
+        type:
+          type: string
+          enum:
+            - user
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+    ProjectMonitor_Owner_Team:
+      type: object
+      required:
+        - type
+        - id
+        - name
+      properties:
+        type:
+          type: string
+          enum:
+            - team
+        id:
+          type: string
+        name:
+          type: string
     ProjectMonitor_DataSource:
       type: object
       required:

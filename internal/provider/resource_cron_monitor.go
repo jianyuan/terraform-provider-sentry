@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -59,6 +60,13 @@ func (r *CronMonitorResource) Schema(ctx context.Context, req resource.SchemaReq
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
+			"enabled": schema.BoolAttribute{
+				MarkdownDescription: "Whether the monitor is enabled. Defaults to true.",
+				Optional:            true,
+				Computed:            true,
+				Default:             booldefault.StaticBool(true),
+				CustomType:          supertypes.BoolType{},
+			},
 			"name": schema.StringAttribute{
 				MarkdownDescription: "The name of this monitor.",
 				Required:            true,
@@ -68,6 +76,29 @@ func (r *CronMonitorResource) Schema(ctx context.Context, req resource.SchemaReq
 				MarkdownDescription: "A description of the monitor. Will be used in the resulting issue.",
 				Optional:            true,
 				CustomType:          supertypes.StringType{},
+			},
+			"default_assignee": schema.SingleNestedAttribute{
+				MarkdownDescription: "Sentry will assign new issues to this assignee.",
+				Optional:            true,
+				CustomType:          supertypes.NewSingleNestedObjectTypeOf[CronMonitorResourceModelDefaultAssignee](ctx),
+				Attributes: map[string]schema.Attribute{
+					"user": schema.StringAttribute{
+						MarkdownDescription: "The user ID to assign new issues to. Conflicts with `team`.",
+						Optional:            true,
+						CustomType:          supertypes.StringType{},
+						Validators: []validator.String{
+							stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("team")),
+						},
+					},
+					"team": schema.StringAttribute{
+						MarkdownDescription: "The team slug or internal ID to assign new issues to. Conflicts with `user`.",
+						Optional:            true,
+						CustomType:          supertypes.StringType{},
+						Validators: []validator.String{
+							stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("user")),
+						},
+					},
+				},
 			},
 			"checkin_margin": schema.Int64Attribute{
 				MarkdownDescription: "Grace period. The number of minutes before a check-in is considered missed.",
@@ -85,7 +116,7 @@ func (r *CronMonitorResource) Schema(ctx context.Context, req resource.SchemaReq
 				CustomType:          supertypes.Int64Type{},
 			},
 			"recovery_threshold": schema.Int64Attribute{
-				MarkdownDescription: "Recovery Tolerance. Resolve the issue when this many consecutive healthy check-ins are processed.",
+				MarkdownDescription: "Recovery Tolerance. Resolve the issue when this many consecutive healthy check-ins are processed. Either `crontab` or `interval_value` and `interval_unit` must be provided.",
 				Required:            true,
 				CustomType:          supertypes.Int64Type{},
 			},
@@ -95,7 +126,7 @@ func (r *CronMonitorResource) Schema(ctx context.Context, req resource.SchemaReq
 				CustomType:          supertypes.NewSingleNestedObjectTypeOf[CronMonitorResourceModelSchedule](ctx),
 				Attributes: map[string]schema.Attribute{
 					"crontab": schema.StringAttribute{
-						MarkdownDescription: "Use the crontab syntax. (e.g. 0 0 * * *)",
+						MarkdownDescription: "Use the crontab syntax (e.g. `0 0 * * *`). Conflicts with `interval_value` and `interval_unit`.",
 						Optional:            true,
 						CustomType:          supertypes.StringType{},
 						Validators: []validator.String{
@@ -105,7 +136,7 @@ func (r *CronMonitorResource) Schema(ctx context.Context, req resource.SchemaReq
 						},
 					},
 					"interval_value": schema.Int64Attribute{
-						MarkdownDescription: "",
+						MarkdownDescription: "Interval value. Conflicts with `crontab`. Must be provided with `interval_unit`.",
 						Optional:            true,
 						CustomType:          supertypes.Int64Type{},
 						Validators: []validator.Int64{
@@ -115,7 +146,7 @@ func (r *CronMonitorResource) Schema(ctx context.Context, req resource.SchemaReq
 					},
 					"interval_unit": tfutils.WithEnumStringAttribute(
 						schema.StringAttribute{
-							MarkdownDescription: "",
+							MarkdownDescription: "Interval unit. Conflicts with `crontab`. Must be provided with `interval_value`.",
 							Optional:            true,
 							CustomType:          supertypes.StringType{},
 							Validators: []validator.String{
@@ -153,9 +184,12 @@ func (r *CronMonitorResource) Create(ctx context.Context, req resource.CreateReq
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
+	} else if body == nil {
+		resp.Diagnostics.AddError("Provider Error", "getCreateJSONRequestBody returned a nil body")
+		return
 	}
 
-	httpResp, err := r.apiClient.CreateProjectMonitorWithResponse(ctx, data.Organization.ValueString(), body)
+	httpResp, err := r.apiClient.CreateProjectMonitorWithResponse(ctx, data.Organization.ValueString(), *body)
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create, got error: %s", err))
 		return
@@ -235,17 +269,24 @@ func (r *CronMonitorResource) Delete(ctx context.Context, req resource.DeleteReq
 }
 
 type CronMonitorResourceModel struct {
-	Id                    supertypes.StringValue                                                 `tfsdk:"id"`
-	Organization          supertypes.StringValue                                                 `tfsdk:"organization"`
-	Project               supertypes.StringValue                                                 `tfsdk:"project"`
-	Name                  supertypes.StringValue                                                 `tfsdk:"name"`
-	Description           supertypes.StringValue                                                 `tfsdk:"description"`
-	CheckinMargin         supertypes.Int64Value                                                  `tfsdk:"checkin_margin"`
-	FailureIssueThreshold supertypes.Int64Value                                                  `tfsdk:"failure_issue_threshold"`
-	MaxRuntime            supertypes.Int64Value                                                  `tfsdk:"max_runtime"`
-	RecoveryThreshold     supertypes.Int64Value                                                  `tfsdk:"recovery_threshold"`
-	Schedule              supertypes.SingleNestedObjectValueOf[CronMonitorResourceModelSchedule] `tfsdk:"schedule"`
-	Timezone              supertypes.StringValue                                                 `tfsdk:"timezone"`
+	Id                    supertypes.StringValue                                                        `tfsdk:"id"`
+	Organization          supertypes.StringValue                                                        `tfsdk:"organization"`
+	Project               supertypes.StringValue                                                        `tfsdk:"project"`
+	Enabled               supertypes.BoolValue                                                          `tfsdk:"enabled"`
+	Name                  supertypes.StringValue                                                        `tfsdk:"name"`
+	Description           supertypes.StringValue                                                        `tfsdk:"description"`
+	DefaultAssignee       supertypes.SingleNestedObjectValueOf[CronMonitorResourceModelDefaultAssignee] `tfsdk:"default_assignee"`
+	CheckinMargin         supertypes.Int64Value                                                         `tfsdk:"checkin_margin"`
+	FailureIssueThreshold supertypes.Int64Value                                                         `tfsdk:"failure_issue_threshold"`
+	MaxRuntime            supertypes.Int64Value                                                         `tfsdk:"max_runtime"`
+	RecoveryThreshold     supertypes.Int64Value                                                         `tfsdk:"recovery_threshold"`
+	Schedule              supertypes.SingleNestedObjectValueOf[CronMonitorResourceModelSchedule]        `tfsdk:"schedule"`
+	Timezone              supertypes.StringValue                                                        `tfsdk:"timezone"`
+}
+
+type CronMonitorResourceModelDefaultAssignee struct {
+	User supertypes.StringValue `tfsdk:"user"`
+	Team supertypes.StringValue `tfsdk:"team"`
 }
 
 type CronMonitorResourceModelSchedule struct {
