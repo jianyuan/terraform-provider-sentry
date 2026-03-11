@@ -332,41 +332,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - projectId
-                - type
-                - name
-                - description
-                - owner
-                - dataSources
-                - workflowIds
-              properties:
-                projectId:
-                  type: string
-                type:
-                  type: string
-                  enum:
-                    - monitor_check_in_failure
-                name:
-                  type: string
-                description:
-                  type: string
-                  nullable: true
-                enabled:
-                  type: boolean
-                  nullable: true
-                owner:
-                  type: string
-                  nullable: true
-                dataSources:
-                  type: array
-                  items:
-                    $ref: "#/components/schemas/ProjectMonitor_DataSource"
-                workflowIds:
-                  type: array
-                  items:
-                    type: string
+              $ref: "#/components/schemas/ProjectMonitorRequest"
       responses:
         "201":
           description: Created
@@ -2273,6 +2239,71 @@ components:
           type: string
         codeownersAutoSync:
           type: boolean
+    ProjectMonitorRequest_Base:
+      type: object
+      required:
+        - projectId
+        - name
+        - description
+        - owner
+        - dataSources
+        - workflowIds
+      properties:
+        projectId:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        enabled:
+          type: boolean
+          nullable: true
+        owner:
+          type: string
+          nullable: true
+        dataSources:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectMonitor_DataSource"
+        workflowIds:
+          type: array
+          items:
+            type: string
+    ProjectMonitorRequest_MetricIssue:
+      allOf:
+        - $ref: "#/components/schemas/ProjectMonitorRequest_Base"
+        - type: object
+          required:
+            - type
+            - conditionGroup
+          properties:
+            type:
+              type: string
+              enum:
+                - metric_issue
+            conditionGroup:
+              $ref: "#/components/schemas/ProjectMonitor_ConditionGroup"
+    ProjectMonitorRequest_MonitorCheckInFailure:
+      allOf:
+        - $ref: "#/components/schemas/ProjectMonitorRequest_Base"
+        - type: object
+          required:
+            - type
+          properties:
+            type:
+              type: string
+              enum:
+                - monitor_check_in_failure
+    ProjectMonitorRequest:
+      oneOf:
+        - $ref: "#/components/schemas/ProjectMonitorRequest_MetricIssue"
+        - $ref: "#/components/schemas/ProjectMonitorRequest_MonitorCheckInFailure"
+      discriminator:
+        propertyName: type
+        mapping:
+          metric_issue: "#/components/schemas/ProjectMonitorRequest_MetricIssue"
+          monitor_check_in_failure: "#/components/schemas/ProjectMonitorRequest_MonitorCheckInFailure"
     ProjectMonitor:
       type: object
       required:
@@ -2284,6 +2315,8 @@ components:
         - description
         - owner
         - dataSources
+        - conditionGroup
+        - config
         - workflowIds
         - dateCreated
         - dateUpdated
@@ -2307,6 +2340,11 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ProjectMonitor_DataSource_Read"
+        conditionGroup:
+          $ref: "#/components/schemas/ProjectMonitor_ConditionGroup"
+        config:
+          # TODO
+          type: object
         workflowIds:
           type: array
           items:
@@ -2453,6 +2491,24 @@ components:
         - week
         - month
         - year
+    ProjectMonitor_ConditionGroup:
+      type: object
+      required:
+        - conditions
+        - logicType
+      properties:
+        conditions:
+          type: array
+          items:
+            # TODO
+            type: object
+        logicType:
+          type: string
+          enum:
+            - any
+            - any-short
+            - all
+            - none
     SentryAppInstallation:
       type: object
       required:

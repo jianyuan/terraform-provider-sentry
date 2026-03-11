@@ -303,6 +303,30 @@ def get_timezones() -> dict[str, ResultData[Any]]:
     }
 
 
+def parse_data_condition_types() -> dict[str, ResultData[Any]]:
+    data = get_file_data("src/sentry/workflow_engine/models/data_condition.py")
+    out: dict[str, ResultData[Any]] = {}
+    for node in ast.walk(data.tree):
+        match node:
+            case ast.ClassDef(
+                name="Condition",
+                body=elts,
+            ):
+                result: list[str] = []
+                for elt in elts:
+                    match elt:
+                        case ast.Assign(value=ast.Constant(value=value)):
+                            result.append(value)
+                        case _:
+                            pass
+                out["DataConditionTypes"] = ResultData(
+                    github_url=data.github_url, result=result
+                )
+            case _:
+                pass
+    return out
+
+
 def parse_data_condition_group_types() -> dict[str, ResultData[Any]]:
     data = get_file_data("src/sentry/workflow_engine/models/data_condition_group.py")
     out: dict[str, ResultData[Any]] = {}
@@ -342,6 +366,7 @@ def main() -> None:
     result.update(parse_models_project())
     result.update(parse_intervals())
     result.update(get_timezones())
+    result.update(parse_data_condition_types())
     result.update(parse_data_condition_group_types())
 
     env = get_jinja2_env()

@@ -49,8 +49,7 @@ func (r *CronMonitorResource) getCreateJSONRequestBody(ctx context.Context, data
 		})
 	}
 
-	out := &apiclient.CreateProjectMonitorJSONRequestBody{
-		Type:      apiclient.MonitorCheckInFailure,
+	out := apiclient.ProjectMonitorRequestMonitorCheckInFailure{
 		Name:      data.Name.Get(),
 		ProjectId: data.Project.Get(),
 		DataSources: []apiclient.ProjectMonitorDataSource{
@@ -88,7 +87,12 @@ func (r *CronMonitorResource) getCreateJSONRequestBody(ctx context.Context, data
 		out.Owner = nullable.NewNullNullable[string]()
 	}
 
-	return out, nil
+	var req apiclient.CreateProjectMonitorJSONRequestBody
+	if err := req.FromProjectMonitorRequestMonitorCheckInFailure(out); err != nil {
+		diags.AddError("Error marshalling JSON", err.Error())
+		return nil, diags
+	}
+	return &req, nil
 }
 
 func (m *CronMonitorResourceModel) Fill(ctx context.Context, data apiclient.ProjectMonitor) (diags diag.Diagnostics) {
