@@ -100,31 +100,31 @@ func (r *MetricMonitorResource) Schema(ctx context.Context, req resource.SchemaR
 				},
 			},
 			"aggregate": schema.StringAttribute{
-				MarkdownDescription: "TODO",
+				MarkdownDescription: "Aggregate query to run on the metric.",
 				Required:            true,
 				CustomType:          supertypes.StringType{},
 			},
 			"dataset": tfutils.WithEnumStringAttribute(
 				schema.StringAttribute{
-					MarkdownDescription: "TODO",
+					MarkdownDescription: "Dataset to run the aggregate query on.",
 					Required:            true,
 					CustomType:          supertypes.StringType{},
 				},
 				sentrydata.SnubaDatasets,
 			),
 			"environment": schema.StringAttribute{
-				MarkdownDescription: "TODO",
+				MarkdownDescription: "Environment to run the aggregate query on.",
 				Optional:            true,
 				CustomType:          supertypes.StringType{},
 			},
 			"event_types": schema.SetAttribute{
-				MarkdownDescription: "TODO",
+				MarkdownDescription: "Event types to run the aggregate query on.",
 				Required:            true,
 				CustomType:          supertypes.NewSetTypeOf[string](ctx),
 			},
 			"extrapolation_mode": tfutils.WithEnumStringAttribute(
 				schema.StringAttribute{
-					MarkdownDescription: "TODO",
+					MarkdownDescription: "Extrapolation mode to use for the aggregate query.",
 					Optional:            true,
 					Computed:            true,
 					CustomType:          supertypes.StringType{},

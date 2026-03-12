@@ -17,10 +17,10 @@ Create a Metric Monitor for a Project.
 
 ### Required
 
-- `aggregate` (String) TODO
+- `aggregate` (String) Aggregate query to run on the metric.
 - `condition_group` (Attributes) TODO (see [below for nested schema](#nestedatt--condition_group))
-- `dataset` (String) TODO Valid values are: `events`, `transactions`, `discover`, `outcomes`, `outcomes_raw`, `sessions`, `metrics`, `generic_metrics`, `replays`, `profiles`, `search_issues`, `functions`, `spans`, and `events_analytics_platform`.
-- `event_types` (Set of String) TODO
+- `dataset` (String) Dataset to run the aggregate query on. Valid values are: `events`, `transactions`, `discover`, `outcomes`, `outcomes_raw`, `sessions`, `metrics`, `generic_metrics`, `replays`, `profiles`, `search_issues`, `functions`, `spans`, and `events_analytics_platform`.
+- `event_types` (Set of String) Event types to run the aggregate query on.
 - `issue_detection` (Attributes) The issue detection type configuration. (see [below for nested schema](#nestedatt--issue_detection))
 - `name` (String) The name of this monitor.
 - `organization` (String) The organization slug or internal ID to create the monitor for.
@@ -31,8 +31,8 @@ Create a Metric Monitor for a Project.
 - `default_assignee` (Attributes) Sentry will assign new issues to this assignee. (see [below for nested schema](#nestedatt--default_assignee))
 - `description` (String) A description of the monitor. Will be used in the resulting issue.
 - `enabled` (Boolean) Whether the monitor is enabled. Defaults to true.
-- `environment` (String) TODO
-- `extrapolation_mode` (String) TODO Valid values are: `unknown`, `none`, `client_and_server_weighted`, and `server_weighted`.
+- `environment` (String) Environment to run the aggregate query on.
+- `extrapolation_mode` (String) Extrapolation mode to use for the aggregate query. Valid values are: `unknown`, `none`, `client_and_server_weighted`, and `server_weighted`.
 
 ### Read-Only
 
