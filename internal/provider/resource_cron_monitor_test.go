@@ -219,7 +219,7 @@ func testAccCronMonitorResourceConfig(teamName, projectName, name string) string
 	}) + fmt.Sprintf(`
 		resource "sentry_cron_monitor" "test" {
 			organization = data.sentry_organization.test.slug
-			project      = sentry_project.test.internal_id
+			project      = sentry_project.test.slug
 			name         = "%[1]s"
 
 			checkin_margin = 1
