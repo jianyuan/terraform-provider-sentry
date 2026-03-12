@@ -1741,9 +1741,6 @@ type CreateOrganizationTeamProjectJSONBody struct {
 	Slug         *string `json:"slug,omitempty"`
 }
 
-// CreateProjectMonitorJSONRequestBody defines body for CreateProjectMonitor for application/json ContentType.
-type CreateProjectMonitorJSONRequestBody = ProjectMonitorRequest
-
 // UpdateOrganizationIntegrationJSONRequestBody defines body for UpdateOrganizationIntegration for application/json ContentType.
 type UpdateOrganizationIntegrationJSONRequestBody UpdateOrganizationIntegrationJSONBody
 
@@ -1752,6 +1749,9 @@ type CreateOrganizationMemberJSONRequestBody CreateOrganizationMemberJSONBody
 
 // UpdateOrganizationMemberJSONRequestBody defines body for UpdateOrganizationMember for application/json ContentType.
 type UpdateOrganizationMemberJSONRequestBody UpdateOrganizationMemberJSONBody
+
+// CreateProjectMonitorJSONRequestBody defines body for CreateProjectMonitor for application/json ContentType.
+type CreateProjectMonitorJSONRequestBody = ProjectMonitorRequest
 
 // DisableSpikeProtectionJSONRequestBody defines body for DisableSpikeProtection for application/json ContentType.
 type DisableSpikeProtectionJSONRequestBody DisableSpikeProtectionJSONBody
@@ -3721,11 +3721,6 @@ type ClientInterface interface {
 	// GetOrganization request
 	GetOrganization(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// CreateProjectMonitorWithBody request with any body
-	CreateProjectMonitorWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	CreateProjectMonitor(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body CreateProjectMonitorJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
 	// DeleteProjectMonitor request
 	DeleteProjectMonitor(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -3764,6 +3759,11 @@ type ClientInterface interface {
 
 	// ListOrganizationProjects request
 	ListOrganizationProjects(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationProjectsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateProjectMonitorWithBody request with any body
+	CreateProjectMonitorWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateProjectMonitor(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body CreateProjectMonitorJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListSentryAppInstallations request
 	ListSentryAppInstallations(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListSentryAppInstallationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -3861,30 +3861,6 @@ func (c *Client) HealthCheck(ctx context.Context, reqEditors ...RequestEditorFn)
 
 func (c *Client) GetOrganization(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetOrganizationRequest(c.Server, organizationIdOrSlug)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) CreateProjectMonitorWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateProjectMonitorRequestWithBody(c.Server, organizationIdOrSlug, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) CreateProjectMonitor(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body CreateProjectMonitorJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateProjectMonitorRequest(c.Server, organizationIdOrSlug, body)
 	if err != nil {
 		return nil, err
 	}
@@ -4053,6 +4029,30 @@ func (c *Client) UpdateOrganizationMember(ctx context.Context, organizationIdOrS
 
 func (c *Client) ListOrganizationProjects(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationProjectsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListOrganizationProjectsRequest(c.Server, organizationIdOrSlug, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateProjectMonitorWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateProjectMonitorRequestWithBody(c.Server, organizationIdOrSlug, projectIdOrSlug, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateProjectMonitor(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body CreateProjectMonitorJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateProjectMonitorRequest(c.Server, organizationIdOrSlug, projectIdOrSlug, body)
 	if err != nil {
 		return nil, err
 	}
@@ -4480,53 +4480,6 @@ func NewGetOrganizationRequest(server string, organizationIdOrSlug OrganizationI
 	if err != nil {
 		return nil, err
 	}
-
-	return req, nil
-}
-
-// NewCreateProjectMonitorRequest calls the generic CreateProjectMonitor builder with application/json body
-func NewCreateProjectMonitorRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, body CreateProjectMonitorJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewCreateProjectMonitorRequestWithBody(server, organizationIdOrSlug, "application/json", bodyReader)
-}
-
-// NewCreateProjectMonitorRequestWithBody generates requests for CreateProjectMonitor with any type of body
-func NewCreateProjectMonitorRequestWithBody(server string, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/0/organizations/%s/detectors/", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -5087,6 +5040,60 @@ func NewListOrganizationProjectsRequest(server string, organizationIdOrSlug Orga
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewCreateProjectMonitorRequest calls the generic CreateProjectMonitor builder with application/json body
+func NewCreateProjectMonitorRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body CreateProjectMonitorJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateProjectMonitorRequestWithBody(server, organizationIdOrSlug, projectIdOrSlug, "application/json", bodyReader)
+}
+
+// NewCreateProjectMonitorRequestWithBody generates requests for CreateProjectMonitor with any type of body
+func NewCreateProjectMonitorRequestWithBody(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "project_id_or_slug", projectIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/projects/%s/detectors/", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -6213,11 +6220,6 @@ type ClientWithResponsesInterface interface {
 	// GetOrganizationWithResponse request
 	GetOrganizationWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*GetOrganizationResponse, error)
 
-	// CreateProjectMonitorWithBodyWithResponse request with any body
-	CreateProjectMonitorWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateProjectMonitorResponse, error)
-
-	CreateProjectMonitorWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body CreateProjectMonitorJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateProjectMonitorResponse, error)
-
 	// DeleteProjectMonitorWithResponse request
 	DeleteProjectMonitorWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, reqEditors ...RequestEditorFn) (*DeleteProjectMonitorResponse, error)
 
@@ -6256,6 +6258,11 @@ type ClientWithResponsesInterface interface {
 
 	// ListOrganizationProjectsWithResponse request
 	ListOrganizationProjectsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationProjectsParams, reqEditors ...RequestEditorFn) (*ListOrganizationProjectsResponse, error)
+
+	// CreateProjectMonitorWithBodyWithResponse request with any body
+	CreateProjectMonitorWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateProjectMonitorResponse, error)
+
+	CreateProjectMonitorWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body CreateProjectMonitorJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateProjectMonitorResponse, error)
 
 	// ListSentryAppInstallationsWithResponse request
 	ListSentryAppInstallationsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListSentryAppInstallationsParams, reqEditors ...RequestEditorFn) (*ListSentryAppInstallationsResponse, error)
@@ -6376,28 +6383,6 @@ func (r GetOrganizationResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetOrganizationResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type CreateProjectMonitorResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON201      *ProjectMonitor
-}
-
-// Status returns HTTPResponse.Status
-func (r CreateProjectMonitorResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r CreateProjectMonitorResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -6637,6 +6622,28 @@ func (r ListOrganizationProjectsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListOrganizationProjectsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateProjectMonitorResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *ProjectMonitor
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateProjectMonitorResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateProjectMonitorResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -7128,23 +7135,6 @@ func (c *ClientWithResponses) GetOrganizationWithResponse(ctx context.Context, o
 	return ParseGetOrganizationResponse(rsp)
 }
 
-// CreateProjectMonitorWithBodyWithResponse request with arbitrary body returning *CreateProjectMonitorResponse
-func (c *ClientWithResponses) CreateProjectMonitorWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateProjectMonitorResponse, error) {
-	rsp, err := c.CreateProjectMonitorWithBody(ctx, organizationIdOrSlug, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseCreateProjectMonitorResponse(rsp)
-}
-
-func (c *ClientWithResponses) CreateProjectMonitorWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body CreateProjectMonitorJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateProjectMonitorResponse, error) {
-	rsp, err := c.CreateProjectMonitor(ctx, organizationIdOrSlug, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseCreateProjectMonitorResponse(rsp)
-}
-
 // DeleteProjectMonitorWithResponse request returning *DeleteProjectMonitorResponse
 func (c *ClientWithResponses) DeleteProjectMonitorWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, reqEditors ...RequestEditorFn) (*DeleteProjectMonitorResponse, error) {
 	rsp, err := c.DeleteProjectMonitor(ctx, organizationIdOrSlug, detectorId, reqEditors...)
@@ -7266,6 +7256,23 @@ func (c *ClientWithResponses) ListOrganizationProjectsWithResponse(ctx context.C
 		return nil, err
 	}
 	return ParseListOrganizationProjectsResponse(rsp)
+}
+
+// CreateProjectMonitorWithBodyWithResponse request with arbitrary body returning *CreateProjectMonitorResponse
+func (c *ClientWithResponses) CreateProjectMonitorWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateProjectMonitorResponse, error) {
+	rsp, err := c.CreateProjectMonitorWithBody(ctx, organizationIdOrSlug, projectIdOrSlug, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateProjectMonitorResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateProjectMonitorWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body CreateProjectMonitorJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateProjectMonitorResponse, error) {
+	rsp, err := c.CreateProjectMonitor(ctx, organizationIdOrSlug, projectIdOrSlug, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateProjectMonitorResponse(rsp)
 }
 
 // ListSentryAppInstallationsWithResponse request returning *ListSentryAppInstallationsResponse
@@ -7571,32 +7578,6 @@ func ParseGetOrganizationResponse(rsp *http.Response) (*GetOrganizationResponse,
 	return response, nil
 }
 
-// ParseCreateProjectMonitorResponse parses an HTTP response from a CreateProjectMonitorWithResponse call
-func ParseCreateProjectMonitorResponse(rsp *http.Response) (*CreateProjectMonitorResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &CreateProjectMonitorResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
-		var dest ProjectMonitor
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON201 = &dest
-
-	}
-
-	return response, nil
-}
-
 // ParseDeleteProjectMonitorResponse parses an HTTP response from a DeleteProjectMonitorWithResponse call
 func ParseDeleteProjectMonitorResponse(rsp *http.Response) (*DeleteProjectMonitorResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -7847,6 +7828,32 @@ func ParseListOrganizationProjectsResponse(rsp *http.Response) (*ListOrganizatio
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateProjectMonitorResponse parses an HTTP response from a CreateProjectMonitorWithResponse call
+func ParseCreateProjectMonitorResponse(rsp *http.Response) (*CreateProjectMonitorResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateProjectMonitorResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest ProjectMonitor
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
 
 	}
 

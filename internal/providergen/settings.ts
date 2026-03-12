@@ -288,7 +288,7 @@ export const RESOURCES: Array<Resource> = [
     api: {
       model: "ProjectMonitor",
       createMethod: "CreateProjectMonitor",
-      createRequestAttributes: ["organization"],
+      createRequestAttributes: ["organization", "project"],
       readMethod: "GetProjectMonitor",
       readRequestAttributes: ["organization", "id"],
       deleteMethod: "DeleteProjectMonitor",
@@ -477,7 +477,7 @@ export const RESOURCES: Array<Resource> = [
     api: {
       model: "ProjectMonitor",
       createMethod: "CreateProjectMonitor",
-      createRequestAttributes: ["organization"],
+      createRequestAttributes: ["organization", "project"],
       readMethod: "GetProjectMonitor",
       readRequestAttributes: ["organization", "id"],
       deleteMethod: "DeleteProjectMonitor",

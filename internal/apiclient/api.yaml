@@ -321,9 +321,10 @@ paths:
           description: Forbidden
         "404":
           description: Not Found
-  /0/organizations/{organization_id_or_slug}/detectors/:
+  /0/organizations/{organization_id_or_slug}/projects/{project_id_or_slug}/detectors/:
     parameters:
       - $ref: "#/components/parameters/organization_id_or_slug"
+      - $ref: "#/components/parameters/project_id_or_slug"
     post:
       summary: Create a Monitor for a Project
       operationId: createProjectMonitor

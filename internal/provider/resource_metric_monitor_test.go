@@ -44,7 +44,7 @@ func testAccMetricMonitorResourceConfig(teamName, projectName, name string) stri
 	}) + fmt.Sprintf(`
 		resource "sentry_metric_monitor" "test" {
 			organization = data.sentry_organization.test.slug
-			project      = sentry_project.test.internal_id
+			project      = sentry_project.test.slug
 			name         = "%[1]s"
 
 			aggregate = "count()"

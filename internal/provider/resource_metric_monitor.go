@@ -216,7 +216,7 @@ func (r *MetricMonitorResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	httpResp, err := r.apiClient.CreateProjectMonitorWithResponse(ctx, data.Organization.ValueString(), *body)
+	httpResp, err := r.apiClient.CreateProjectMonitorWithResponse(ctx, data.Organization.ValueString(), data.Project.ValueString(), *body)
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create, got error: %s", err))
 		return

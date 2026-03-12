@@ -189,7 +189,7 @@ func (r *CronMonitorResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	httpResp, err := r.apiClient.CreateProjectMonitorWithResponse(ctx, data.Organization.ValueString(), *body)
+	httpResp, err := r.apiClient.CreateProjectMonitorWithResponse(ctx, data.Organization.ValueString(), data.Project.ValueString(), *body)
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create, got error: %s", err))
 		return
