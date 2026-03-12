@@ -228,6 +228,7 @@ var DashboardWidgetDisplayTypes = []string{
 	"rage_and_dead_clicks",
 	"server_tree",
 	"text",
+	"agents_traces_table",
 }
 
 // https://github.com/getsentry/sentry/blob/master/src/sentry/models/project.py
