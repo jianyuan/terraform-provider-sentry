@@ -17,6 +17,7 @@ Create an Alert for an Organization.
 
 ### Required
 
+- `action_filters` (Attributes List) The filters to run before the action will fire and the action(s) to fire. (see [below for nested schema](#nestedatt--action_filters))
 - `environment` (String) Name of the environment to create alerts in.
 - `frequency_minutes` (Number) How often the alert should fire in minutes.
 - `monitor_ids` (Set of String) The IDs of the monitors to create alerts for.
@@ -31,3 +32,40 @@ Create an Alert for an Organization.
 ### Read-Only
 
 - `id` (String) The internal ID of this alert.
+
+<a id="nestedatt--action_filters"></a>
+### Nested Schema for `action_filters`
+
+Required:
+
+- `actions` (Attributes List) TODO (see [below for nested schema](#nestedatt--action_filters--actions))
+- `logic_type` (String) The logic to apply to the conditions. Valid values are: `any`, `any-short`, `all`, and `none`.
+
+Optional:
+
+- `conditions` (Attributes List) TODO (see [below for nested schema](#nestedatt--action_filters--conditions))
+
+<a id="nestedatt--action_filters--actions"></a>
+### Nested Schema for `action_filters.actions`
+
+Optional:
+
+- `email` (Attributes) TODO (see [below for nested schema](#nestedatt--action_filters--actions--email))
+
+<a id="nestedatt--action_filters--actions--email"></a>
+### Nested Schema for `action_filters.actions.email`
+
+Required:
+
+- `target_type` (String) TODO Valid values are: `issue_owners`, `team`, and `user`.
+
+Optional:
+
+- `fallthrough_type` (String) TODO Valid values are: `AllMembers`, `ActiveMembers`, and `NoOne`.
+- `team_id` (String) TODO
+- `user_id` (String) TODO
+
+
+
+<a id="nestedatt--action_filters--conditions"></a>
+### Nested Schema for `action_filters.conditions`

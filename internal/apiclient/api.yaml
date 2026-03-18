@@ -2828,6 +2828,7 @@ components:
         - config
         - detectorIds
         - triggers
+        - actionFilters
       properties:
         name:
           type: string
@@ -2843,7 +2844,10 @@ components:
             type: string
         triggers:
           $ref: "#/components/schemas/OrganizationWorkflow_Trigger"
-      additionalProperties: true
+        actionFilters:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter"
     OrganizationWorkflow:
       type: object
       required:
@@ -2854,6 +2858,7 @@ components:
         - config
         - detectorIds
         - triggers
+        - actionFilters
       properties:
         id:
           type: string
@@ -2871,6 +2876,10 @@ components:
             type: string
         triggers:
           $ref: "#/components/schemas/OrganizationWorkflow_Trigger"
+        actionFilters:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter"
     OrganizationWorkflow_Config:
       type: object
       required:
@@ -2906,3 +2915,261 @@ components:
           type: boolean
         conditionResult:
           type: boolean
+    OrganizationWorkflow_ActionFilter:
+      type: object
+      required:
+        - logicType
+        - conditions
+        - actions
+      properties:
+        logicType:
+          type: string
+          enum:
+            - any
+            - any-short
+            - all
+            - none
+        # TODO
+        conditions:
+          type: array
+        actions:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action"
+    OrganizationWorkflow_ActionFilter_Action:
+      oneOf:
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Email"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Plugin"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Slack"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_PagerDuty"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Discord"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_MsTeams"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Opsgenie"
+      discriminator:
+        propertyName: type
+        mapping:
+          email: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Email"
+          plugin: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Plugin"
+          slack: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Slack"
+          pagerduty: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_PagerDuty"
+          discord: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Discord"
+          msteams: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_MsTeams"
+          opsgenie: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Opsgenie"
+    OrganizationWorkflow_ActionFilter_Action_Email:
+      type: object
+      required:
+        - type
+        - data
+        - config
+      properties:
+        type:
+          type: string
+          enum:
+            - email
+        data:
+          type: object
+          properties:
+            fallthroughType:
+              type: string
+              enum:
+                - AllMembers
+                - ActiveMembers
+                - NoOne
+        config:
+          type: object
+          required:
+            - targetType
+          properties:
+            targetType:
+              type: string
+              enum:
+                - issue_owners
+                - team
+                - user
+            targetIdentifier:
+              type: string
+    OrganizationWorkflow_ActionFilter_Action_Plugin:
+      type: object
+      required:
+        - type
+        - data
+        - config
+      properties:
+        type:
+          type: string
+          enum:
+            - plugin
+        data:
+          type: object
+        config:
+          type: object
+    OrganizationWorkflow_ActionFilter_Action_Slack:
+      type: object
+      required:
+        - type
+        - data
+        - config
+        - integrationId
+      properties:
+        type:
+          type: string
+          enum:
+            - slack
+        data:
+          type: object
+          properties:
+            tags:
+              type: string
+            notes:
+              type: string
+        config:
+          type: object
+          required:
+            - targetType
+            - targetIdentifier
+            - targetDisplay
+          properties:
+            targetType:
+              type: string
+              enum:
+                - specific
+            targetIdentifier:
+              type: string
+            targetDisplay:
+              type: string
+        integrationId:
+          type: string
+    OrganizationWorkflow_ActionFilter_Action_PagerDuty:
+      type: object
+      required:
+        - type
+        - data
+        - config
+        - integrationId
+      properties:
+        type:
+          type: string
+          enum:
+            - pagerduty
+        data:
+          type: object
+          properties:
+            priority:
+              type: string
+        config:
+          type: object
+          required:
+            - targetType
+            - targetIdentifier
+            - targetDisplay
+          properties:
+            targetType:
+              type: string
+              enum:
+                - specific
+            targetIdentifier:
+              type: string
+            targetDisplay:
+              type: string
+        integrationId:
+          type: string
+    OrganizationWorkflow_ActionFilter_Action_Discord:
+      type: object
+      required:
+        - type
+        - data
+        - config
+        - integrationId
+      properties:
+        type:
+          type: string
+          enum:
+            - discord
+        data:
+          type: object
+          properties:
+            tags:
+              type: string
+        config:
+          type: object
+          required:
+            - targetType
+            - targetIdentifier
+            - targetDisplay
+          properties:
+            targetType:
+              type: string
+              enum:
+                - specific
+            targetIdentifier:
+              type: string
+            targetDisplay:
+              type: string
+              nullable: true
+        integrationId:
+          type: string
+    OrganizationWorkflow_ActionFilter_Action_MsTeams:
+      type: object
+      required:
+        - type
+        - data
+        - config
+        - integrationId
+      properties:
+        type:
+          type: string
+          enum:
+            - msteams
+        data:
+          type: object
+        config:
+          type: object
+          required:
+            - targetType
+            - targetIdentifier
+            - targetDisplay
+          properties:
+            targetType:
+              type: string
+              enum:
+                - specific
+            targetIdentifier:
+              type: string
+            targetDisplay:
+              type: string
+        integrationId:
+          type: string
+    OrganizationWorkflow_ActionFilter_Action_Opsgenie:
+      type: object
+      required:
+        - type
+        - data
+        - config
+        - integrationId
+      properties:
+        type:
+          type: string
+          enum:
+            - opsgenie
+        data:
+          type: object
+          properties:
+            priority:
+              type: string
+        config:
+          type: object
+          required:
+            - targetType
+            - targetIdentifier
+            - targetDisplay
+          properties:
+            targetType:
+              type: string
+              enum:
+                - specific
+            targetIdentifier:
+              type: string
+            targetDisplay:
+              type: string
+        integrationId:
+          type: string

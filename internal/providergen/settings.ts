@@ -1,5 +1,6 @@
 import dedent from "dedent";
 import type { DataSource, Resource } from "./schema";
+import { decapsulate } from "crypto";
 
 export const DATASOURCES: Array<DataSource> = [
   {
@@ -435,7 +436,7 @@ export const RESOURCES: Array<Resource> = [
           {
             name: "logic_type",
             type: "string",
-            description: "TODO",
+            description: "The logic to apply to the conditions.",
             computedOptionalRequired: "computed_optional",
             default: `stringdefault.StaticString("any")`,
             enum: "sentrydata.DataConditionGroupTypes",
@@ -877,6 +878,262 @@ export const RESOURCES: Array<Resource> = [
         computedOptionalRequired: "required",
         elementType: "string",
         enum: "sentrydata.TriggerConditionTypes",
+      },
+      {
+        name: "action_filters",
+        type: "list_nested",
+        description:
+          "The filters to run before the action will fire and the action(s) to fire.",
+        computedOptionalRequired: "required",
+        validators: ["listvalidator.SizeAtLeast(1)"],
+        attributes: [
+          {
+            name: "logic_type",
+            type: "string",
+            description: "The logic to apply to the conditions.",
+            computedOptionalRequired: "required",
+            enum: "sentrydata.DataConditionGroupTypes",
+          },
+          {
+            name: "conditions",
+            type: "list_nested",
+            description: "TODO",
+            computedOptionalRequired: "computed_optional",
+            attributes: [],
+          },
+          {
+            name: "actions",
+            type: "list_nested",
+            description: "TODO",
+            computedOptionalRequired: "required",
+            validators: ["listvalidator.SizeAtLeast(1)"],
+            attributes: [
+              {
+                name: "email",
+                type: "single_nested",
+                description: "Notify on Preferred Channel.",
+                computedOptionalRequired: "optional",
+                attributes: [
+                  {
+                    name: "target_type",
+                    type: "string",
+                    description: "The type of recipient to notify.",
+                    computedOptionalRequired: "required",
+                    enum: `[]string{"issue_owners", "team", "user"}`,
+                  },
+                  {
+                    name: "target_id",
+                    type: "string",
+                    description:
+                      "The internal ID of the user or team. Only required if the target type is `team` or `user`.",
+                    computedOptionalRequired: "optional",
+                    validators: [
+                      `fstringvalidator.RequireIfAttributeIsOneOf(path.MatchRelative().AtParent().AtName("target_type"), []attr.Value{types.StringValue("team"), types.StringValue("user")})`,
+                    ],
+                  },
+                  {
+                    name: "fallthrough_type",
+                    type: "string",
+                    description:
+                      "The type of fallthrough to apply when choosing to notify issue owners. Only required if the target type is `issue_owners`.",
+                    computedOptionalRequired: "optional",
+                    enum: `[]string{"AllMembers", "ActiveMembers", "NoOne"}`,
+                    validators: [
+                      `fstringvalidator.RequireIfAttributeIsOneOf(path.MatchRelative().AtParent().AtName("target_type"), []attr.Value{types.StringValue("issue_owners")})`,
+                    ],
+                  },
+                ],
+              },
+              {
+                name: "plugin",
+                type: "single_nested",
+                description:
+                  "Send a notification to all legacy integrations (plugins).",
+                computedOptionalRequired: "optional",
+                attributes: [],
+              },
+              {
+                name: "slack",
+                type: "single_nested",
+                description: "Notify on Slack.",
+                computedOptionalRequired: "optional",
+                attributes: [
+                  {
+                    name: "integration_id",
+                    type: "string",
+                    description: "The ID of the Slack integration.",
+                    computedOptionalRequired: "required",
+                  },
+                  {
+                    name: "channel_name",
+                    type: "string",
+                    description:
+                      "The name of the Slack channel to send the notification to (e.g., #critical, Jane Schmidt).",
+                    computedOptionalRequired: "required",
+                  },
+                  {
+                    name: "channel_id",
+                    type: "string",
+                    description:
+                      "The Slack channel ID to send the notification to. This is an optional field that can be used to avoid rate-limiting.",
+                    computedOptionalRequired: "computed_optional",
+                  },
+                  {
+                    name: "tags",
+                    type: "string",
+                    description: "A list of tags to show in the notification.",
+                    computedOptionalRequired: "computed_optional",
+                  },
+                  {
+                    name: "notes",
+                    type: "string",
+                    description:
+                      "Text to show alongside the notification. To @ a user, include their user id like `@<USER_ID>`. To include a clickable link, format the link and title like `<http://example.com|Click Here>`.",
+                    computedOptionalRequired: "optional",
+                  },
+                ],
+              },
+              {
+                name: "pagerduty",
+                type: "single_nested",
+                description: "Notify on PagerDuty.",
+                computedOptionalRequired: "optional",
+                attributes: [
+                  {
+                    name: "integration_id",
+                    type: "string",
+                    description: "The ID of the PagerDuty integration.",
+                    computedOptionalRequired: "required",
+                  },
+                  {
+                    name: "service_name",
+                    type: "string",
+                    description:
+                      "The name of the service to create the ticket in.",
+                    computedOptionalRequired: "required",
+                  },
+                  {
+                    name: "service_id",
+                    type: "string",
+                    description: "The ID of the PagerDuty service.",
+                    computedOptionalRequired: "required",
+                  },
+                  {
+                    name: "severity",
+                    type: "string",
+                    description:
+                      "The PagerDuty severity level for the notification.",
+                    computedOptionalRequired: "required",
+                  },
+                ],
+              },
+              {
+                name: "discord",
+                type: "single_nested",
+                description: "Notify on Discord.",
+                computedOptionalRequired: "optional",
+                attributes: [
+                  {
+                    name: "integration_id",
+                    type: "string",
+                    description: "The ID of the Discord integration.",
+                    computedOptionalRequired: "required",
+                  },
+                  {
+                    name: "channel_id",
+                    type: "string",
+                    description:
+                      "The ID of the Discord channel to send the notification to.",
+                    computedOptionalRequired: "required",
+                  },
+                  {
+                    name: "tags",
+                    type: "string",
+                    description: "A list of tags to show in the notification.",
+                    computedOptionalRequired: "optional",
+                  },
+                ],
+              },
+              {
+                name: "msteams",
+                type: "single_nested",
+                description: "Notify on Microsoft Teams.",
+                computedOptionalRequired: "optional",
+                attributes: [
+                  {
+                    name: "integration_id",
+                    type: "string",
+                    description: "The ID of the Microsoft Teams integration.",
+                    computedOptionalRequired: "required",
+                  },
+                  {
+                    name: "team_id",
+                    type: "string",
+                    description:
+                      "The integration ID associated with the Microsoft Teams team.",
+                    computedOptionalRequired: "required",
+                  },
+                  {
+                    name: "channel_name",
+                    type: "string",
+                    description:
+                      "The name of the Microsoft Teams channel to send the notification to.",
+                    computedOptionalRequired: "required",
+                  },
+                ],
+              },
+              {
+                name: "opsgenie",
+                type: "single_nested",
+                description: "Notify on OpsGenie.",
+                computedOptionalRequired: "optional",
+                attributes: [
+                  {
+                    name: "integration_id",
+                    type: "string",
+                    description: "The ID of the OpsGenie integration.",
+                    computedOptionalRequired: "required",
+                  },
+                  {
+                    name: "team_name",
+                    type: "string",
+                    description: "The name of the Opsgenie team.",
+                    computedOptionalRequired: "required",
+                  },
+                  {
+                    name: "team_id",
+                    type: "string",
+                    description:
+                      "The ID of the Opsgenie team to send the notification to.",
+                    computedOptionalRequired: "required",
+                  },
+                  {
+                    name: "priority",
+                    type: "string",
+                    description: "The priority level for the notification.",
+                    computedOptionalRequired: "required",
+                  },
+                ],
+              },
+              {
+                name: "vsts",
+                type: "single_nested",
+                description: "Notify on Azure DevOps.",
+                computedOptionalRequired: "optional",
+                attributes: [
+                  // {
+                  //   name: "data",
+                  //   type: "map",
+                  //   description:
+                  //     "A list of any fields you want to include in the ticket as objects.",
+                  //   computedOptionalRequired: "optional",
+                  //   elementType: "string",
+                  // },
+                ],
+              },
+            ],
+          },
+        ],
       },
     ],
   },

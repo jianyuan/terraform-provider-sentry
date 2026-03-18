@@ -147,6 +147,11 @@ function generateTerraformAttribute({
           attribute.name,
         )}Item](ctx),`,
       );
+      if (attribute.validators) {
+        parts.push("Validators: []validator.List{");
+        parts.push(...attribute.validators.map((validator) => `${validator},`));
+        parts.push("},");
+      }
       parts.push("NestedObject: schema.NestedAttributeObject{");
       parts.push("Attributes: map[string]schema.Attribute{");
       for (const nestedAttribute of attribute.attributes) {
@@ -200,6 +205,11 @@ function generateTerraformAttribute({
           attribute.name,
         )}Item](ctx),`,
       );
+      if (attribute.validators) {
+        parts.push("Validators: []validator.Set{");
+        parts.push(...attribute.validators.map((validator) => `${validator},`));
+        parts.push("},");
+      }
       parts.push("NestedObject: schema.NestedAttributeObject{");
       parts.push("Attributes: map[string]schema.Attribute{");
       for (const nestedAttribute of attribute.attributes) {
@@ -619,6 +629,7 @@ package provider
 import (
   "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
   supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
+  fstringvalidator "github.com/orange-cloudavenue/terraform-plugin-framework-validators/stringvalidator"
 )
 
 var _ datasource.DataSource = &${dataSourceName}{}
@@ -788,6 +799,7 @@ package provider
 import (
   "github.com/hashicorp/terraform-plugin-framework/resource/schema"
   supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
+  fstringvalidator "github.com/orange-cloudavenue/terraform-plugin-framework-validators/stringvalidator"
 )
 
 var _ resource.Resource = &${resourceName}{}
