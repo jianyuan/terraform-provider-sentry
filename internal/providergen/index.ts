@@ -164,6 +164,9 @@ function generateTerraformAttribute({
     })
     .with({ type: "set", elementType: "string" }, (attribute) => {
       const parts: string[] = [];
+      if (attribute.enum) {
+        parts.push("tfutils.WithEnumSetAttributeStringElements(");
+      }
       parts.push("schema.SetAttribute{");
       parts.push(...commonParts);
       parts.push("CustomType: supertypes.NewSetTypeOf[string](ctx),");
@@ -179,7 +182,13 @@ function generateTerraformAttribute({
         );
         parts.push("},");
       }
-      parts.push("}");
+      if (attribute.enum) {
+        parts.push("},");
+        parts.push(`${attribute.enum},`);
+        parts.push(")");
+      } else {
+        parts.push("}");
+      }
       return parts.join("\n");
     })
     .with({ type: "set_nested" }, (attribute) => {
