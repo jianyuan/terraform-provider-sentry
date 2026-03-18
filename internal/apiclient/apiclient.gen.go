@@ -939,7 +939,6 @@ type ProjectMonitor struct {
 	Owner          nullable.Nullable[ProjectMonitorOwner] `json:"owner"`
 	ProjectId      string                                 `json:"projectId"`
 	Type           string                                 `json:"type"`
-	WorkflowIds    []string                               `json:"workflowIds"`
 }
 
 // ProjectMonitorRequest defines model for ProjectMonitorRequest.
@@ -955,7 +954,6 @@ type ProjectMonitorRequestBase struct {
 	Name        string                    `json:"name"`
 	Owner       nullable.Nullable[string] `json:"owner"`
 	ProjectId   string                    `json:"projectId"`
-	WorkflowIds []string                  `json:"workflowIds"`
 }
 
 // ProjectMonitorRequestMetricIssue defines model for ProjectMonitorRequest_MetricIssue.
@@ -969,7 +967,6 @@ type ProjectMonitorRequestMetricIssue struct {
 	Owner          nullable.Nullable[string]                        `json:"owner"`
 	ProjectId      string                                           `json:"projectId"`
 	Type           ProjectMonitorRequestMetricIssueType             `json:"type"`
-	WorkflowIds    []string                                         `json:"workflowIds"`
 }
 
 // ProjectMonitorRequestMetricIssueType defines model for ProjectMonitorRequestMetricIssue.Type.
@@ -985,7 +982,6 @@ type ProjectMonitorRequestMonitorCheckInFailure struct {
 	Owner       nullable.Nullable[string]                      `json:"owner"`
 	ProjectId   string                                         `json:"projectId"`
 	Type        ProjectMonitorRequestMonitorCheckInFailureType `json:"type"`
-	WorkflowIds []string                                       `json:"workflowIds"`
 }
 
 // ProjectMonitorRequestMonitorCheckInFailureType defines model for ProjectMonitorRequestMonitorCheckInFailure.Type.
@@ -1001,7 +997,6 @@ type ProjectMonitorRequestUptimeDomainFailure struct {
 	Owner       nullable.Nullable[string]                     `json:"owner"`
 	ProjectId   string                                        `json:"projectId"`
 	Type        ProjectMonitorRequestUptimeDomainFailureType  `json:"type"`
-	WorkflowIds []string                                      `json:"workflowIds"`
 }
 
 // ProjectMonitorRequestUptimeDomainFailureType defines model for ProjectMonitorRequestUptimeDomainFailure.Type.

@@ -2247,7 +2247,6 @@ components:
         - name
         - description
         - owner
-        - workflowIds
       properties:
         projectId:
           type: string
@@ -2264,10 +2263,6 @@ components:
           nullable: true
         config:
           $ref: "#/components/schemas/ProjectMonitor_Config"
-        workflowIds:
-          type: array
-          items:
-            type: string
     ProjectMonitorRequest_MetricIssue:
       allOf:
         - $ref: "#/components/schemas/ProjectMonitorRequest_Base"
@@ -2343,7 +2338,6 @@ components:
         - dataSources
         - conditionGroup
         - config
-        - workflowIds
         - dateCreated
         - dateUpdated
       properties:
@@ -2370,10 +2364,6 @@ components:
           $ref: "#/components/schemas/ProjectMonitor_ConditionGroup"
         config:
           $ref: "#/components/schemas/ProjectMonitor_Config"
-        workflowIds:
-          type: array
-          items:
-            type: string
         dateCreated:
           type: string
           format: date-time

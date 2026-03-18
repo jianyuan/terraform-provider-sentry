@@ -53,8 +53,7 @@ func (r *UptimeMonitorResource) getCreateJSONRequestBody(ctx context.Context, da
 		DataSources: []apiclient.ProjectMonitorDataSourceUptimeDomainFailure{
 			outDs,
 		},
-		WorkflowIds: []string{},
-		Config:      &outConfig,
+		Config: &outConfig,
 	}
 
 	if data.Enabled.IsKnown() {
