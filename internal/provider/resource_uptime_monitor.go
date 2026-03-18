@@ -136,11 +136,14 @@ func (r *UptimeMonitorResource) Schema(ctx context.Context, req resource.SchemaR
 					},
 				},
 			},
-			"interval_seconds": schema.Int64Attribute{
-				MarkdownDescription: "TODO",
-				Required:            true,
-				CustomType:          supertypes.Int64Type{},
-			},
+			"interval_seconds": tfutils.WithEnumInt64Attribute(
+				schema.Int64Attribute{
+					MarkdownDescription: "TODO",
+					Required:            true,
+					CustomType:          supertypes.Int64Type{},
+				},
+				sentrydata.UptimeSubscriptionIntervalSeconds,
+			),
 			"timeout_ms": schema.Int64Attribute{
 				MarkdownDescription: "TODO",
 				Required:            true,
