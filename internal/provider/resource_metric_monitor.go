@@ -158,7 +158,7 @@ func (r *MetricMonitorResource) Schema(ctx context.Context, req resource.SchemaR
 				Attributes: map[string]schema.Attribute{
 					"logic_type": tfutils.WithEnumStringAttribute(
 						schema.StringAttribute{
-							MarkdownDescription: "TODO",
+							MarkdownDescription: "The logic to apply to the conditions.",
 							Optional:            true,
 							Computed:            true,
 							Default:             stringdefault.StaticString("any"),

@@ -6,14 +6,20 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
+	fstringvalidator "github.com/orange-cloudavenue/terraform-plugin-framework-validators/stringvalidator"
 )
 
 var _ resource.Resource = &AlertResource{}
@@ -82,6 +88,225 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 				},
 				sentrydata.TriggerConditionTypes,
 			),
+			"action_filters": schema.ListNestedAttribute{
+				MarkdownDescription: "The filters to run before the action will fire and the action(s) to fire.",
+				Required:            true,
+				CustomType:          supertypes.NewListNestedObjectTypeOf[AlertResourceModelActionFiltersItem](ctx),
+				Validators: []validator.List{
+					listvalidator.SizeAtLeast(1),
+				},
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"logic_type": tfutils.WithEnumStringAttribute(
+							schema.StringAttribute{
+								MarkdownDescription: "The logic to apply to the conditions.",
+								Required:            true,
+								CustomType:          supertypes.StringType{},
+							},
+							sentrydata.DataConditionGroupTypes,
+						),
+						"conditions": schema.ListNestedAttribute{
+							MarkdownDescription: "TODO",
+							Optional:            true,
+							Computed:            true,
+							CustomType:          supertypes.NewListNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItem](ctx),
+							NestedObject: schema.NestedAttributeObject{
+								Attributes: map[string]schema.Attribute{},
+							},
+						},
+						"actions": schema.ListNestedAttribute{
+							MarkdownDescription: "TODO",
+							Required:            true,
+							CustomType:          supertypes.NewListNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItem](ctx),
+							Validators: []validator.List{
+								listvalidator.SizeAtLeast(1),
+							},
+							NestedObject: schema.NestedAttributeObject{
+								Attributes: map[string]schema.Attribute{
+									"email": schema.SingleNestedAttribute{
+										MarkdownDescription: "Notify on Preferred Channel.",
+										Optional:            true,
+										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemEmail](ctx),
+										Attributes: map[string]schema.Attribute{
+											"target_type": tfutils.WithEnumStringAttribute(
+												schema.StringAttribute{
+													MarkdownDescription: "The type of recipient to notify.",
+													Required:            true,
+													CustomType:          supertypes.StringType{},
+												},
+												[]string{"issue_owners", "team", "user"},
+											),
+											"target_id": schema.StringAttribute{
+												MarkdownDescription: "The internal ID of the user or team. Only required if the target type is `team` or `user`.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+												Validators: []validator.String{
+													fstringvalidator.RequireIfAttributeIsOneOf(path.MatchRelative().AtParent().AtName("target_type"), []attr.Value{types.StringValue("team"), types.StringValue("user")}),
+												},
+											},
+											"fallthrough_type": tfutils.WithEnumStringAttribute(
+												schema.StringAttribute{
+													MarkdownDescription: "The type of fallthrough to apply when choosing to notify issue owners. Only required if the target type is `issue_owners`.",
+													Optional:            true,
+													CustomType:          supertypes.StringType{},
+													Validators: []validator.String{
+														fstringvalidator.RequireIfAttributeIsOneOf(path.MatchRelative().AtParent().AtName("target_type"), []attr.Value{types.StringValue("issue_owners")}),
+													},
+												},
+												[]string{"AllMembers", "ActiveMembers", "NoOne"},
+											),
+										},
+									},
+									"plugin": schema.SingleNestedAttribute{
+										MarkdownDescription: "Send a notification to all legacy integrations (plugins).",
+										Optional:            true,
+										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemPlugin](ctx),
+										Attributes:          map[string]schema.Attribute{},
+									},
+									"slack": schema.SingleNestedAttribute{
+										MarkdownDescription: "Notify on Slack.",
+										Optional:            true,
+										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemSlack](ctx),
+										Attributes: map[string]schema.Attribute{
+											"integration_id": schema.StringAttribute{
+												MarkdownDescription: "The ID of the Slack integration.",
+												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"channel_name": schema.StringAttribute{
+												MarkdownDescription: "The name of the Slack channel to send the notification to (e.g., #critical, Jane Schmidt).",
+												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"channel_id": schema.StringAttribute{
+												MarkdownDescription: "The Slack channel ID to send the notification to. This is an optional field that can be used to avoid rate-limiting.",
+												Optional:            true,
+												Computed:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"tags": schema.StringAttribute{
+												MarkdownDescription: "A list of tags to show in the notification.",
+												Optional:            true,
+												Computed:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"notes": schema.StringAttribute{
+												MarkdownDescription: "Text to show alongside the notification. To @ a user, include their user id like `@<USER_ID>`. To include a clickable link, format the link and title like `<http://example.com|Click Here>`.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+											},
+										},
+									},
+									"pagerduty": schema.SingleNestedAttribute{
+										MarkdownDescription: "Notify on PagerDuty.",
+										Optional:            true,
+										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemPagerduty](ctx),
+										Attributes: map[string]schema.Attribute{
+											"integration_id": schema.StringAttribute{
+												MarkdownDescription: "The ID of the PagerDuty integration.",
+												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"service_name": schema.StringAttribute{
+												MarkdownDescription: "The name of the service to create the ticket in.",
+												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"service_id": schema.StringAttribute{
+												MarkdownDescription: "The ID of the PagerDuty service.",
+												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"severity": schema.StringAttribute{
+												MarkdownDescription: "The PagerDuty severity level for the notification.",
+												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+										},
+									},
+									"discord": schema.SingleNestedAttribute{
+										MarkdownDescription: "Notify on Discord.",
+										Optional:            true,
+										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemDiscord](ctx),
+										Attributes: map[string]schema.Attribute{
+											"integration_id": schema.StringAttribute{
+												MarkdownDescription: "The ID of the Discord integration.",
+												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"channel_id": schema.StringAttribute{
+												MarkdownDescription: "The ID of the Discord channel to send the notification to.",
+												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"tags": schema.StringAttribute{
+												MarkdownDescription: "A list of tags to show in the notification.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+											},
+										},
+									},
+									"msteams": schema.SingleNestedAttribute{
+										MarkdownDescription: "Notify on Microsoft Teams.",
+										Optional:            true,
+										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemMsteams](ctx),
+										Attributes: map[string]schema.Attribute{
+											"integration_id": schema.StringAttribute{
+												MarkdownDescription: "The ID of the Microsoft Teams integration.",
+												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"team_id": schema.StringAttribute{
+												MarkdownDescription: "The integration ID associated with the Microsoft Teams team.",
+												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"channel_name": schema.StringAttribute{
+												MarkdownDescription: "The name of the Microsoft Teams channel to send the notification to.",
+												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+										},
+									},
+									"opsgenie": schema.SingleNestedAttribute{
+										MarkdownDescription: "Notify on OpsGenie.",
+										Optional:            true,
+										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemOpsgenie](ctx),
+										Attributes: map[string]schema.Attribute{
+											"integration_id": schema.StringAttribute{
+												MarkdownDescription: "The ID of the OpsGenie integration.",
+												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"team_name": schema.StringAttribute{
+												MarkdownDescription: "The name of the Opsgenie team.",
+												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"team_id": schema.StringAttribute{
+												MarkdownDescription: "The ID of the Opsgenie team to send the notification to.",
+												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"priority": schema.StringAttribute{
+												MarkdownDescription: "The priority level for the notification.",
+												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+										},
+									},
+									"vsts": schema.SingleNestedAttribute{
+										MarkdownDescription: "Notify on Azure DevOps.",
+										Optional:            true,
+										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemVsts](ctx),
+										Attributes:          map[string]schema.Attribute{},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -183,12 +408,79 @@ func (r *AlertResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 }
 
 type AlertResourceModel struct {
-	Id                supertypes.StringValue        `tfsdk:"id"`
-	Organization      supertypes.StringValue        `tfsdk:"organization"`
-	Enabled           supertypes.BoolValue          `tfsdk:"enabled"`
-	Name              supertypes.StringValue        `tfsdk:"name"`
-	Environment       supertypes.StringValue        `tfsdk:"environment"`
-	MonitorIds        supertypes.SetValueOf[string] `tfsdk:"monitor_ids"`
-	FrequencyMinutes  supertypes.Int64Value         `tfsdk:"frequency_minutes"`
-	TriggerConditions supertypes.SetValueOf[string] `tfsdk:"trigger_conditions"`
+	Id                supertypes.StringValue                                                  `tfsdk:"id"`
+	Organization      supertypes.StringValue                                                  `tfsdk:"organization"`
+	Enabled           supertypes.BoolValue                                                    `tfsdk:"enabled"`
+	Name              supertypes.StringValue                                                  `tfsdk:"name"`
+	Environment       supertypes.StringValue                                                  `tfsdk:"environment"`
+	MonitorIds        supertypes.SetValueOf[string]                                           `tfsdk:"monitor_ids"`
+	FrequencyMinutes  supertypes.Int64Value                                                   `tfsdk:"frequency_minutes"`
+	TriggerConditions supertypes.SetValueOf[string]                                           `tfsdk:"trigger_conditions"`
+	ActionFilters     supertypes.ListNestedObjectValueOf[AlertResourceModelActionFiltersItem] `tfsdk:"action_filters"`
+}
+
+type AlertResourceModelActionFiltersItem struct {
+	LogicType  supertypes.StringValue                                                                `tfsdk:"logic_type"`
+	Conditions supertypes.ListNestedObjectValueOf[AlertResourceModelActionFiltersItemConditionsItem] `tfsdk:"conditions"`
+	Actions    supertypes.ListNestedObjectValueOf[AlertResourceModelActionFiltersItemActionsItem]    `tfsdk:"actions"`
+}
+
+type AlertResourceModelActionFiltersItemConditionsItem struct {
+}
+
+type AlertResourceModelActionFiltersItemActionsItem struct {
+	Email     supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemActionsItemEmail]     `tfsdk:"email"`
+	Plugin    supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemActionsItemPlugin]    `tfsdk:"plugin"`
+	Slack     supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemActionsItemSlack]     `tfsdk:"slack"`
+	Pagerduty supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemActionsItemPagerduty] `tfsdk:"pagerduty"`
+	Discord   supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemActionsItemDiscord]   `tfsdk:"discord"`
+	Msteams   supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemActionsItemMsteams]   `tfsdk:"msteams"`
+	Opsgenie  supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemActionsItemOpsgenie]  `tfsdk:"opsgenie"`
+	Vsts      supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemActionsItemVsts]      `tfsdk:"vsts"`
+}
+
+type AlertResourceModelActionFiltersItemActionsItemEmail struct {
+	TargetType      supertypes.StringValue `tfsdk:"target_type"`
+	TargetId        supertypes.StringValue `tfsdk:"target_id"`
+	FallthroughType supertypes.StringValue `tfsdk:"fallthrough_type"`
+}
+
+type AlertResourceModelActionFiltersItemActionsItemPlugin struct {
+}
+
+type AlertResourceModelActionFiltersItemActionsItemSlack struct {
+	IntegrationId supertypes.StringValue `tfsdk:"integration_id"`
+	ChannelName   supertypes.StringValue `tfsdk:"channel_name"`
+	ChannelId     supertypes.StringValue `tfsdk:"channel_id"`
+	Tags          supertypes.StringValue `tfsdk:"tags"`
+	Notes         supertypes.StringValue `tfsdk:"notes"`
+}
+
+type AlertResourceModelActionFiltersItemActionsItemPagerduty struct {
+	IntegrationId supertypes.StringValue `tfsdk:"integration_id"`
+	ServiceName   supertypes.StringValue `tfsdk:"service_name"`
+	ServiceId     supertypes.StringValue `tfsdk:"service_id"`
+	Severity      supertypes.StringValue `tfsdk:"severity"`
+}
+
+type AlertResourceModelActionFiltersItemActionsItemDiscord struct {
+	IntegrationId supertypes.StringValue `tfsdk:"integration_id"`
+	ChannelId     supertypes.StringValue `tfsdk:"channel_id"`
+	Tags          supertypes.StringValue `tfsdk:"tags"`
+}
+
+type AlertResourceModelActionFiltersItemActionsItemMsteams struct {
+	IntegrationId supertypes.StringValue `tfsdk:"integration_id"`
+	TeamId        supertypes.StringValue `tfsdk:"team_id"`
+	ChannelName   supertypes.StringValue `tfsdk:"channel_name"`
+}
+
+type AlertResourceModelActionFiltersItemActionsItemOpsgenie struct {
+	IntegrationId supertypes.StringValue `tfsdk:"integration_id"`
+	TeamName      supertypes.StringValue `tfsdk:"team_name"`
+	TeamId        supertypes.StringValue `tfsdk:"team_id"`
+	Priority      supertypes.StringValue `tfsdk:"priority"`
+}
+
+type AlertResourceModelActionFiltersItemActionsItemVsts struct {
 }

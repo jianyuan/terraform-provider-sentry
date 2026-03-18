@@ -25,13 +25,13 @@ const (
 
 // Defines values for OrganizationIntegrationOpsgenieProviderKey.
 const (
-	Opsgenie OrganizationIntegrationOpsgenieProviderKey = "opsgenie"
+	OrganizationIntegrationOpsgenieProviderKeyOpsgenie OrganizationIntegrationOpsgenieProviderKey = "opsgenie"
 )
 
 // Valid indicates whether the value is a known member of the OrganizationIntegrationOpsgenieProviderKey enum.
 func (e OrganizationIntegrationOpsgenieProviderKey) Valid() bool {
 	switch e {
-	case Opsgenie:
+	case OrganizationIntegrationOpsgenieProviderKeyOpsgenie:
 		return true
 	default:
 		return false
@@ -40,13 +40,259 @@ func (e OrganizationIntegrationOpsgenieProviderKey) Valid() bool {
 
 // Defines values for OrganizationIntegrationPagerDutyProviderKey.
 const (
-	Pagerduty OrganizationIntegrationPagerDutyProviderKey = "pagerduty"
+	OrganizationIntegrationPagerDutyProviderKeyPagerduty OrganizationIntegrationPagerDutyProviderKey = "pagerduty"
 )
 
 // Valid indicates whether the value is a known member of the OrganizationIntegrationPagerDutyProviderKey enum.
 func (e OrganizationIntegrationPagerDutyProviderKey) Valid() bool {
 	switch e {
-	case Pagerduty:
+	case OrganizationIntegrationPagerDutyProviderKeyPagerduty:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterLogicType.
+const (
+	OrganizationWorkflowActionFilterLogicTypeAll      OrganizationWorkflowActionFilterLogicType = "all"
+	OrganizationWorkflowActionFilterLogicTypeAny      OrganizationWorkflowActionFilterLogicType = "any"
+	OrganizationWorkflowActionFilterLogicTypeAnyShort OrganizationWorkflowActionFilterLogicType = "any-short"
+	OrganizationWorkflowActionFilterLogicTypeNone     OrganizationWorkflowActionFilterLogicType = "none"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterLogicType enum.
+func (e OrganizationWorkflowActionFilterLogicType) Valid() bool {
+	switch e {
+	case OrganizationWorkflowActionFilterLogicTypeAll:
+		return true
+	case OrganizationWorkflowActionFilterLogicTypeAny:
+		return true
+	case OrganizationWorkflowActionFilterLogicTypeAnyShort:
+		return true
+	case OrganizationWorkflowActionFilterLogicTypeNone:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionDiscordConfigTargetType.
+const (
+	OrganizationWorkflowActionFilterActionDiscordConfigTargetTypeSpecific OrganizationWorkflowActionFilterActionDiscordConfigTargetType = "specific"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionDiscordConfigTargetType enum.
+func (e OrganizationWorkflowActionFilterActionDiscordConfigTargetType) Valid() bool {
+	switch e {
+	case OrganizationWorkflowActionFilterActionDiscordConfigTargetTypeSpecific:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionDiscordType.
+const (
+	Discord OrganizationWorkflowActionFilterActionDiscordType = "discord"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionDiscordType enum.
+func (e OrganizationWorkflowActionFilterActionDiscordType) Valid() bool {
+	switch e {
+	case Discord:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionEmailConfigTargetType.
+const (
+	OrganizationWorkflowActionFilterActionEmailConfigTargetTypeIssueOwners OrganizationWorkflowActionFilterActionEmailConfigTargetType = "issue_owners"
+	OrganizationWorkflowActionFilterActionEmailConfigTargetTypeTeam        OrganizationWorkflowActionFilterActionEmailConfigTargetType = "team"
+	OrganizationWorkflowActionFilterActionEmailConfigTargetTypeUser        OrganizationWorkflowActionFilterActionEmailConfigTargetType = "user"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionEmailConfigTargetType enum.
+func (e OrganizationWorkflowActionFilterActionEmailConfigTargetType) Valid() bool {
+	switch e {
+	case OrganizationWorkflowActionFilterActionEmailConfigTargetTypeIssueOwners:
+		return true
+	case OrganizationWorkflowActionFilterActionEmailConfigTargetTypeTeam:
+		return true
+	case OrganizationWorkflowActionFilterActionEmailConfigTargetTypeUser:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionEmailDataFallthroughType.
+const (
+	ActiveMembers OrganizationWorkflowActionFilterActionEmailDataFallthroughType = "ActiveMembers"
+	AllMembers    OrganizationWorkflowActionFilterActionEmailDataFallthroughType = "AllMembers"
+	NoOne         OrganizationWorkflowActionFilterActionEmailDataFallthroughType = "NoOne"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionEmailDataFallthroughType enum.
+func (e OrganizationWorkflowActionFilterActionEmailDataFallthroughType) Valid() bool {
+	switch e {
+	case ActiveMembers:
+		return true
+	case AllMembers:
+		return true
+	case NoOne:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionEmailType.
+const (
+	Email OrganizationWorkflowActionFilterActionEmailType = "email"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionEmailType enum.
+func (e OrganizationWorkflowActionFilterActionEmailType) Valid() bool {
+	switch e {
+	case Email:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionMsTeamsConfigTargetType.
+const (
+	OrganizationWorkflowActionFilterActionMsTeamsConfigTargetTypeSpecific OrganizationWorkflowActionFilterActionMsTeamsConfigTargetType = "specific"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionMsTeamsConfigTargetType enum.
+func (e OrganizationWorkflowActionFilterActionMsTeamsConfigTargetType) Valid() bool {
+	switch e {
+	case OrganizationWorkflowActionFilterActionMsTeamsConfigTargetTypeSpecific:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionMsTeamsType.
+const (
+	Msteams OrganizationWorkflowActionFilterActionMsTeamsType = "msteams"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionMsTeamsType enum.
+func (e OrganizationWorkflowActionFilterActionMsTeamsType) Valid() bool {
+	switch e {
+	case Msteams:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionOpsgenieConfigTargetType.
+const (
+	OrganizationWorkflowActionFilterActionOpsgenieConfigTargetTypeSpecific OrganizationWorkflowActionFilterActionOpsgenieConfigTargetType = "specific"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionOpsgenieConfigTargetType enum.
+func (e OrganizationWorkflowActionFilterActionOpsgenieConfigTargetType) Valid() bool {
+	switch e {
+	case OrganizationWorkflowActionFilterActionOpsgenieConfigTargetTypeSpecific:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionOpsgenieType.
+const (
+	OrganizationWorkflowActionFilterActionOpsgenieTypeOpsgenie OrganizationWorkflowActionFilterActionOpsgenieType = "opsgenie"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionOpsgenieType enum.
+func (e OrganizationWorkflowActionFilterActionOpsgenieType) Valid() bool {
+	switch e {
+	case OrganizationWorkflowActionFilterActionOpsgenieTypeOpsgenie:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionPagerDutyConfigTargetType.
+const (
+	OrganizationWorkflowActionFilterActionPagerDutyConfigTargetTypeSpecific OrganizationWorkflowActionFilterActionPagerDutyConfigTargetType = "specific"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionPagerDutyConfigTargetType enum.
+func (e OrganizationWorkflowActionFilterActionPagerDutyConfigTargetType) Valid() bool {
+	switch e {
+	case OrganizationWorkflowActionFilterActionPagerDutyConfigTargetTypeSpecific:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionPagerDutyType.
+const (
+	OrganizationWorkflowActionFilterActionPagerDutyTypePagerduty OrganizationWorkflowActionFilterActionPagerDutyType = "pagerduty"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionPagerDutyType enum.
+func (e OrganizationWorkflowActionFilterActionPagerDutyType) Valid() bool {
+	switch e {
+	case OrganizationWorkflowActionFilterActionPagerDutyTypePagerduty:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionPluginType.
+const (
+	Plugin OrganizationWorkflowActionFilterActionPluginType = "plugin"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionPluginType enum.
+func (e OrganizationWorkflowActionFilterActionPluginType) Valid() bool {
+	switch e {
+	case Plugin:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionSlackConfigTargetType.
+const (
+	Specific OrganizationWorkflowActionFilterActionSlackConfigTargetType = "specific"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionSlackConfigTargetType enum.
+func (e OrganizationWorkflowActionFilterActionSlackConfigTargetType) Valid() bool {
+	switch e {
+	case Specific:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionSlackType.
+const (
+	Slack OrganizationWorkflowActionFilterActionSlackType = "slack"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionSlackType enum.
+func (e OrganizationWorkflowActionFilterActionSlackType) Valid() bool {
+	switch e {
+	case Slack:
 		return true
 	default:
 		return false
@@ -115,22 +361,22 @@ func (e ProjectMonitorRequestUptimeDomainFailureType) Valid() bool {
 
 // Defines values for ProjectMonitorConditionGroupLogicType.
 const (
-	ProjectMonitorConditionGroupLogicTypeAll      ProjectMonitorConditionGroupLogicType = "all"
-	ProjectMonitorConditionGroupLogicTypeAny      ProjectMonitorConditionGroupLogicType = "any"
-	ProjectMonitorConditionGroupLogicTypeAnyShort ProjectMonitorConditionGroupLogicType = "any-short"
-	ProjectMonitorConditionGroupLogicTypeNone     ProjectMonitorConditionGroupLogicType = "none"
+	All      ProjectMonitorConditionGroupLogicType = "all"
+	Any      ProjectMonitorConditionGroupLogicType = "any"
+	AnyShort ProjectMonitorConditionGroupLogicType = "any-short"
+	None     ProjectMonitorConditionGroupLogicType = "none"
 )
 
 // Valid indicates whether the value is a known member of the ProjectMonitorConditionGroupLogicType enum.
 func (e ProjectMonitorConditionGroupLogicType) Valid() bool {
 	switch e {
-	case ProjectMonitorConditionGroupLogicTypeAll:
+	case All:
 		return true
-	case ProjectMonitorConditionGroupLogicTypeAny:
+	case Any:
 		return true
-	case ProjectMonitorConditionGroupLogicTypeAnyShort:
+	case AnyShort:
 		return true
-	case ProjectMonitorConditionGroupLogicTypeNone:
+	case None:
 		return true
 	default:
 		return false
@@ -892,25 +1138,171 @@ type OrganizationRoleListItem struct {
 
 // OrganizationWorkflow defines model for OrganizationWorkflow.
 type OrganizationWorkflow struct {
-	Config      OrganizationWorkflowConfig  `json:"config"`
-	DetectorIds []string                    `json:"detectorIds"`
-	Enabled     bool                        `json:"enabled"`
-	Environment string                      `json:"environment"`
-	Id          string                      `json:"id"`
-	Name        string                      `json:"name"`
-	Triggers    OrganizationWorkflowTrigger `json:"triggers"`
+	ActionFilters []OrganizationWorkflowActionFilter `json:"actionFilters"`
+	Config        OrganizationWorkflowConfig         `json:"config"`
+	DetectorIds   []string                           `json:"detectorIds"`
+	Enabled       bool                               `json:"enabled"`
+	Environment   string                             `json:"environment"`
+	Id            string                             `json:"id"`
+	Name          string                             `json:"name"`
+	Triggers      OrganizationWorkflowTrigger        `json:"triggers"`
 }
 
 // OrganizationWorkflowRequest defines model for OrganizationWorkflowRequest.
 type OrganizationWorkflowRequest struct {
-	Config               OrganizationWorkflowConfig  `json:"config"`
-	DetectorIds          []string                    `json:"detectorIds"`
-	Enabled              bool                        `json:"enabled"`
-	Environment          string                      `json:"environment"`
-	Name                 string                      `json:"name"`
-	Triggers             OrganizationWorkflowTrigger `json:"triggers"`
-	AdditionalProperties map[string]interface{}      `json:"-"`
+	ActionFilters []OrganizationWorkflowActionFilter `json:"actionFilters"`
+	Config        OrganizationWorkflowConfig         `json:"config"`
+	DetectorIds   []string                           `json:"detectorIds"`
+	Enabled       bool                               `json:"enabled"`
+	Environment   string                             `json:"environment"`
+	Name          string                             `json:"name"`
+	Triggers      OrganizationWorkflowTrigger        `json:"triggers"`
 }
+
+// OrganizationWorkflowActionFilter defines model for OrganizationWorkflow_ActionFilter.
+type OrganizationWorkflowActionFilter struct {
+	Actions    []OrganizationWorkflowActionFilterAction  `json:"actions"`
+	Conditions []interface{}                             `json:"conditions"`
+	LogicType  OrganizationWorkflowActionFilterLogicType `json:"logicType"`
+}
+
+// OrganizationWorkflowActionFilterLogicType defines model for OrganizationWorkflowActionFilter.LogicType.
+type OrganizationWorkflowActionFilterLogicType string
+
+// OrganizationWorkflowActionFilterAction defines model for OrganizationWorkflow_ActionFilter_Action.
+type OrganizationWorkflowActionFilterAction struct {
+	union json.RawMessage
+}
+
+// OrganizationWorkflowActionFilterActionDiscord defines model for OrganizationWorkflow_ActionFilter_Action_Discord.
+type OrganizationWorkflowActionFilterActionDiscord struct {
+	Config struct {
+		TargetDisplay    nullable.Nullable[string]                                     `json:"targetDisplay"`
+		TargetIdentifier string                                                        `json:"targetIdentifier"`
+		TargetType       OrganizationWorkflowActionFilterActionDiscordConfigTargetType `json:"targetType"`
+	} `json:"config"`
+	Data struct {
+		Tags *string `json:"tags,omitempty"`
+	} `json:"data"`
+	IntegrationId string                                            `json:"integrationId"`
+	Type          OrganizationWorkflowActionFilterActionDiscordType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterActionDiscordConfigTargetType defines model for OrganizationWorkflowActionFilterActionDiscord.Config.TargetType.
+type OrganizationWorkflowActionFilterActionDiscordConfigTargetType string
+
+// OrganizationWorkflowActionFilterActionDiscordType defines model for OrganizationWorkflowActionFilterActionDiscord.Type.
+type OrganizationWorkflowActionFilterActionDiscordType string
+
+// OrganizationWorkflowActionFilterActionEmail defines model for OrganizationWorkflow_ActionFilter_Action_Email.
+type OrganizationWorkflowActionFilterActionEmail struct {
+	Config struct {
+		TargetIdentifier *string                                                     `json:"targetIdentifier,omitempty"`
+		TargetType       OrganizationWorkflowActionFilterActionEmailConfigTargetType `json:"targetType"`
+	} `json:"config"`
+	Data struct {
+		FallthroughType *OrganizationWorkflowActionFilterActionEmailDataFallthroughType `json:"fallthroughType,omitempty"`
+	} `json:"data"`
+	Type OrganizationWorkflowActionFilterActionEmailType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterActionEmailConfigTargetType defines model for OrganizationWorkflowActionFilterActionEmail.Config.TargetType.
+type OrganizationWorkflowActionFilterActionEmailConfigTargetType string
+
+// OrganizationWorkflowActionFilterActionEmailDataFallthroughType defines model for OrganizationWorkflowActionFilterActionEmail.Data.FallthroughType.
+type OrganizationWorkflowActionFilterActionEmailDataFallthroughType string
+
+// OrganizationWorkflowActionFilterActionEmailType defines model for OrganizationWorkflowActionFilterActionEmail.Type.
+type OrganizationWorkflowActionFilterActionEmailType string
+
+// OrganizationWorkflowActionFilterActionMsTeams defines model for OrganizationWorkflow_ActionFilter_Action_MsTeams.
+type OrganizationWorkflowActionFilterActionMsTeams struct {
+	Config struct {
+		TargetDisplay    string                                                        `json:"targetDisplay"`
+		TargetIdentifier string                                                        `json:"targetIdentifier"`
+		TargetType       OrganizationWorkflowActionFilterActionMsTeamsConfigTargetType `json:"targetType"`
+	} `json:"config"`
+	Data          map[string]interface{}                            `json:"data"`
+	IntegrationId string                                            `json:"integrationId"`
+	Type          OrganizationWorkflowActionFilterActionMsTeamsType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterActionMsTeamsConfigTargetType defines model for OrganizationWorkflowActionFilterActionMsTeams.Config.TargetType.
+type OrganizationWorkflowActionFilterActionMsTeamsConfigTargetType string
+
+// OrganizationWorkflowActionFilterActionMsTeamsType defines model for OrganizationWorkflowActionFilterActionMsTeams.Type.
+type OrganizationWorkflowActionFilterActionMsTeamsType string
+
+// OrganizationWorkflowActionFilterActionOpsgenie defines model for OrganizationWorkflow_ActionFilter_Action_Opsgenie.
+type OrganizationWorkflowActionFilterActionOpsgenie struct {
+	Config struct {
+		TargetDisplay    string                                                         `json:"targetDisplay"`
+		TargetIdentifier string                                                         `json:"targetIdentifier"`
+		TargetType       OrganizationWorkflowActionFilterActionOpsgenieConfigTargetType `json:"targetType"`
+	} `json:"config"`
+	Data struct {
+		Priority *string `json:"priority,omitempty"`
+	} `json:"data"`
+	IntegrationId string                                             `json:"integrationId"`
+	Type          OrganizationWorkflowActionFilterActionOpsgenieType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterActionOpsgenieConfigTargetType defines model for OrganizationWorkflowActionFilterActionOpsgenie.Config.TargetType.
+type OrganizationWorkflowActionFilterActionOpsgenieConfigTargetType string
+
+// OrganizationWorkflowActionFilterActionOpsgenieType defines model for OrganizationWorkflowActionFilterActionOpsgenie.Type.
+type OrganizationWorkflowActionFilterActionOpsgenieType string
+
+// OrganizationWorkflowActionFilterActionPagerDuty defines model for OrganizationWorkflow_ActionFilter_Action_PagerDuty.
+type OrganizationWorkflowActionFilterActionPagerDuty struct {
+	Config struct {
+		TargetDisplay    string                                                          `json:"targetDisplay"`
+		TargetIdentifier string                                                          `json:"targetIdentifier"`
+		TargetType       OrganizationWorkflowActionFilterActionPagerDutyConfigTargetType `json:"targetType"`
+	} `json:"config"`
+	Data struct {
+		Priority *string `json:"priority,omitempty"`
+	} `json:"data"`
+	IntegrationId string                                              `json:"integrationId"`
+	Type          OrganizationWorkflowActionFilterActionPagerDutyType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterActionPagerDutyConfigTargetType defines model for OrganizationWorkflowActionFilterActionPagerDuty.Config.TargetType.
+type OrganizationWorkflowActionFilterActionPagerDutyConfigTargetType string
+
+// OrganizationWorkflowActionFilterActionPagerDutyType defines model for OrganizationWorkflowActionFilterActionPagerDuty.Type.
+type OrganizationWorkflowActionFilterActionPagerDutyType string
+
+// OrganizationWorkflowActionFilterActionPlugin defines model for OrganizationWorkflow_ActionFilter_Action_Plugin.
+type OrganizationWorkflowActionFilterActionPlugin struct {
+	Config map[string]interface{}                           `json:"config"`
+	Data   map[string]interface{}                           `json:"data"`
+	Type   OrganizationWorkflowActionFilterActionPluginType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterActionPluginType defines model for OrganizationWorkflowActionFilterActionPlugin.Type.
+type OrganizationWorkflowActionFilterActionPluginType string
+
+// OrganizationWorkflowActionFilterActionSlack defines model for OrganizationWorkflow_ActionFilter_Action_Slack.
+type OrganizationWorkflowActionFilterActionSlack struct {
+	Config struct {
+		TargetDisplay    string                                                      `json:"targetDisplay"`
+		TargetIdentifier string                                                      `json:"targetIdentifier"`
+		TargetType       OrganizationWorkflowActionFilterActionSlackConfigTargetType `json:"targetType"`
+	} `json:"config"`
+	Data struct {
+		Notes *string `json:"notes,omitempty"`
+		Tags  *string `json:"tags,omitempty"`
+	} `json:"data"`
+	IntegrationId string                                          `json:"integrationId"`
+	Type          OrganizationWorkflowActionFilterActionSlackType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterActionSlackConfigTargetType defines model for OrganizationWorkflowActionFilterActionSlack.Config.TargetType.
+type OrganizationWorkflowActionFilterActionSlackConfigTargetType string
+
+// OrganizationWorkflowActionFilterActionSlackType defines model for OrganizationWorkflowActionFilterActionSlack.Type.
+type OrganizationWorkflowActionFilterActionSlackType string
 
 // OrganizationWorkflowConfig defines model for OrganizationWorkflow_Config.
 type OrganizationWorkflowConfig struct {
@@ -1954,139 +2346,6 @@ type UpdateProjectRuleJSONRequestBody UpdateProjectRuleJSONBody
 // CreateOrganizationTeamProjectJSONRequestBody defines body for CreateOrganizationTeamProject for application/json ContentType.
 type CreateOrganizationTeamProjectJSONRequestBody CreateOrganizationTeamProjectJSONBody
 
-// Getter for additional properties for OrganizationWorkflowRequest. Returns the specified
-// element and whether it was found
-func (a OrganizationWorkflowRequest) Get(fieldName string) (value interface{}, found bool) {
-	if a.AdditionalProperties != nil {
-		value, found = a.AdditionalProperties[fieldName]
-	}
-	return
-}
-
-// Setter for additional properties for OrganizationWorkflowRequest
-func (a *OrganizationWorkflowRequest) Set(fieldName string, value interface{}) {
-	if a.AdditionalProperties == nil {
-		a.AdditionalProperties = make(map[string]interface{})
-	}
-	a.AdditionalProperties[fieldName] = value
-}
-
-// Override default JSON handling for OrganizationWorkflowRequest to handle AdditionalProperties
-func (a *OrganizationWorkflowRequest) UnmarshalJSON(b []byte) error {
-	object := make(map[string]json.RawMessage)
-	err := json.Unmarshal(b, &object)
-	if err != nil {
-		return err
-	}
-
-	if raw, found := object["config"]; found {
-		err = json.Unmarshal(raw, &a.Config)
-		if err != nil {
-			return fmt.Errorf("error reading 'config': %w", err)
-		}
-		delete(object, "config")
-	}
-
-	if raw, found := object["detectorIds"]; found {
-		err = json.Unmarshal(raw, &a.DetectorIds)
-		if err != nil {
-			return fmt.Errorf("error reading 'detectorIds': %w", err)
-		}
-		delete(object, "detectorIds")
-	}
-
-	if raw, found := object["enabled"]; found {
-		err = json.Unmarshal(raw, &a.Enabled)
-		if err != nil {
-			return fmt.Errorf("error reading 'enabled': %w", err)
-		}
-		delete(object, "enabled")
-	}
-
-	if raw, found := object["environment"]; found {
-		err = json.Unmarshal(raw, &a.Environment)
-		if err != nil {
-			return fmt.Errorf("error reading 'environment': %w", err)
-		}
-		delete(object, "environment")
-	}
-
-	if raw, found := object["name"]; found {
-		err = json.Unmarshal(raw, &a.Name)
-		if err != nil {
-			return fmt.Errorf("error reading 'name': %w", err)
-		}
-		delete(object, "name")
-	}
-
-	if raw, found := object["triggers"]; found {
-		err = json.Unmarshal(raw, &a.Triggers)
-		if err != nil {
-			return fmt.Errorf("error reading 'triggers': %w", err)
-		}
-		delete(object, "triggers")
-	}
-
-	if len(object) != 0 {
-		a.AdditionalProperties = make(map[string]interface{})
-		for fieldName, fieldBuf := range object {
-			var fieldVal interface{}
-			err := json.Unmarshal(fieldBuf, &fieldVal)
-			if err != nil {
-				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
-			}
-			a.AdditionalProperties[fieldName] = fieldVal
-		}
-	}
-	return nil
-}
-
-// Override default JSON handling for OrganizationWorkflowRequest to handle AdditionalProperties
-func (a OrganizationWorkflowRequest) MarshalJSON() ([]byte, error) {
-	var err error
-	object := make(map[string]json.RawMessage)
-
-	object["config"], err = json.Marshal(a.Config)
-	if err != nil {
-		return nil, fmt.Errorf("error marshaling 'config': %w", err)
-	}
-
-	if a.DetectorIds != nil {
-		object["detectorIds"], err = json.Marshal(a.DetectorIds)
-		if err != nil {
-			return nil, fmt.Errorf("error marshaling 'detectorIds': %w", err)
-		}
-	}
-
-	object["enabled"], err = json.Marshal(a.Enabled)
-	if err != nil {
-		return nil, fmt.Errorf("error marshaling 'enabled': %w", err)
-	}
-
-	object["environment"], err = json.Marshal(a.Environment)
-	if err != nil {
-		return nil, fmt.Errorf("error marshaling 'environment': %w", err)
-	}
-
-	object["name"], err = json.Marshal(a.Name)
-	if err != nil {
-		return nil, fmt.Errorf("error marshaling 'name': %w", err)
-	}
-
-	object["triggers"], err = json.Marshal(a.Triggers)
-	if err != nil {
-		return nil, fmt.Errorf("error marshaling 'triggers': %w", err)
-	}
-
-	for fieldName, field := range a.AdditionalProperties {
-		object[fieldName], err = json.Marshal(field)
-		if err != nil {
-			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
-		}
-	}
-	return json.Marshal(object)
-}
-
 // AsOrganizationIntegrationOpsgenie returns the union data inside the OrganizationIntegration as a OrganizationIntegrationOpsgenie
 func (t OrganizationIntegration) AsOrganizationIntegrationOpsgenie() (OrganizationIntegrationOpsgenie, error) {
 	var body OrganizationIntegrationOpsgenie
@@ -2325,6 +2584,245 @@ func (t *OrganizationIntegration) UnmarshalJSON(b []byte) error {
 		}
 	}
 
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterActionEmail returns the union data inside the OrganizationWorkflowActionFilterAction as a OrganizationWorkflowActionFilterActionEmail
+func (t OrganizationWorkflowActionFilterAction) AsOrganizationWorkflowActionFilterActionEmail() (OrganizationWorkflowActionFilterActionEmail, error) {
+	var body OrganizationWorkflowActionFilterActionEmail
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterActionEmail overwrites any union data inside the OrganizationWorkflowActionFilterAction as the provided OrganizationWorkflowActionFilterActionEmail
+func (t *OrganizationWorkflowActionFilterAction) FromOrganizationWorkflowActionFilterActionEmail(v OrganizationWorkflowActionFilterActionEmail) error {
+	v.Type = "email"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterActionEmail performs a merge with any union data inside the OrganizationWorkflowActionFilterAction, using the provided OrganizationWorkflowActionFilterActionEmail
+func (t *OrganizationWorkflowActionFilterAction) MergeOrganizationWorkflowActionFilterActionEmail(v OrganizationWorkflowActionFilterActionEmail) error {
+	v.Type = "email"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterActionPlugin returns the union data inside the OrganizationWorkflowActionFilterAction as a OrganizationWorkflowActionFilterActionPlugin
+func (t OrganizationWorkflowActionFilterAction) AsOrganizationWorkflowActionFilterActionPlugin() (OrganizationWorkflowActionFilterActionPlugin, error) {
+	var body OrganizationWorkflowActionFilterActionPlugin
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterActionPlugin overwrites any union data inside the OrganizationWorkflowActionFilterAction as the provided OrganizationWorkflowActionFilterActionPlugin
+func (t *OrganizationWorkflowActionFilterAction) FromOrganizationWorkflowActionFilterActionPlugin(v OrganizationWorkflowActionFilterActionPlugin) error {
+	v.Type = "plugin"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterActionPlugin performs a merge with any union data inside the OrganizationWorkflowActionFilterAction, using the provided OrganizationWorkflowActionFilterActionPlugin
+func (t *OrganizationWorkflowActionFilterAction) MergeOrganizationWorkflowActionFilterActionPlugin(v OrganizationWorkflowActionFilterActionPlugin) error {
+	v.Type = "plugin"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterActionSlack returns the union data inside the OrganizationWorkflowActionFilterAction as a OrganizationWorkflowActionFilterActionSlack
+func (t OrganizationWorkflowActionFilterAction) AsOrganizationWorkflowActionFilterActionSlack() (OrganizationWorkflowActionFilterActionSlack, error) {
+	var body OrganizationWorkflowActionFilterActionSlack
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterActionSlack overwrites any union data inside the OrganizationWorkflowActionFilterAction as the provided OrganizationWorkflowActionFilterActionSlack
+func (t *OrganizationWorkflowActionFilterAction) FromOrganizationWorkflowActionFilterActionSlack(v OrganizationWorkflowActionFilterActionSlack) error {
+	v.Type = "slack"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterActionSlack performs a merge with any union data inside the OrganizationWorkflowActionFilterAction, using the provided OrganizationWorkflowActionFilterActionSlack
+func (t *OrganizationWorkflowActionFilterAction) MergeOrganizationWorkflowActionFilterActionSlack(v OrganizationWorkflowActionFilterActionSlack) error {
+	v.Type = "slack"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterActionPagerDuty returns the union data inside the OrganizationWorkflowActionFilterAction as a OrganizationWorkflowActionFilterActionPagerDuty
+func (t OrganizationWorkflowActionFilterAction) AsOrganizationWorkflowActionFilterActionPagerDuty() (OrganizationWorkflowActionFilterActionPagerDuty, error) {
+	var body OrganizationWorkflowActionFilterActionPagerDuty
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterActionPagerDuty overwrites any union data inside the OrganizationWorkflowActionFilterAction as the provided OrganizationWorkflowActionFilterActionPagerDuty
+func (t *OrganizationWorkflowActionFilterAction) FromOrganizationWorkflowActionFilterActionPagerDuty(v OrganizationWorkflowActionFilterActionPagerDuty) error {
+	v.Type = "pagerduty"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterActionPagerDuty performs a merge with any union data inside the OrganizationWorkflowActionFilterAction, using the provided OrganizationWorkflowActionFilterActionPagerDuty
+func (t *OrganizationWorkflowActionFilterAction) MergeOrganizationWorkflowActionFilterActionPagerDuty(v OrganizationWorkflowActionFilterActionPagerDuty) error {
+	v.Type = "pagerduty"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterActionDiscord returns the union data inside the OrganizationWorkflowActionFilterAction as a OrganizationWorkflowActionFilterActionDiscord
+func (t OrganizationWorkflowActionFilterAction) AsOrganizationWorkflowActionFilterActionDiscord() (OrganizationWorkflowActionFilterActionDiscord, error) {
+	var body OrganizationWorkflowActionFilterActionDiscord
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterActionDiscord overwrites any union data inside the OrganizationWorkflowActionFilterAction as the provided OrganizationWorkflowActionFilterActionDiscord
+func (t *OrganizationWorkflowActionFilterAction) FromOrganizationWorkflowActionFilterActionDiscord(v OrganizationWorkflowActionFilterActionDiscord) error {
+	v.Type = "discord"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterActionDiscord performs a merge with any union data inside the OrganizationWorkflowActionFilterAction, using the provided OrganizationWorkflowActionFilterActionDiscord
+func (t *OrganizationWorkflowActionFilterAction) MergeOrganizationWorkflowActionFilterActionDiscord(v OrganizationWorkflowActionFilterActionDiscord) error {
+	v.Type = "discord"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterActionMsTeams returns the union data inside the OrganizationWorkflowActionFilterAction as a OrganizationWorkflowActionFilterActionMsTeams
+func (t OrganizationWorkflowActionFilterAction) AsOrganizationWorkflowActionFilterActionMsTeams() (OrganizationWorkflowActionFilterActionMsTeams, error) {
+	var body OrganizationWorkflowActionFilterActionMsTeams
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterActionMsTeams overwrites any union data inside the OrganizationWorkflowActionFilterAction as the provided OrganizationWorkflowActionFilterActionMsTeams
+func (t *OrganizationWorkflowActionFilterAction) FromOrganizationWorkflowActionFilterActionMsTeams(v OrganizationWorkflowActionFilterActionMsTeams) error {
+	v.Type = "msteams"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterActionMsTeams performs a merge with any union data inside the OrganizationWorkflowActionFilterAction, using the provided OrganizationWorkflowActionFilterActionMsTeams
+func (t *OrganizationWorkflowActionFilterAction) MergeOrganizationWorkflowActionFilterActionMsTeams(v OrganizationWorkflowActionFilterActionMsTeams) error {
+	v.Type = "msteams"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterActionOpsgenie returns the union data inside the OrganizationWorkflowActionFilterAction as a OrganizationWorkflowActionFilterActionOpsgenie
+func (t OrganizationWorkflowActionFilterAction) AsOrganizationWorkflowActionFilterActionOpsgenie() (OrganizationWorkflowActionFilterActionOpsgenie, error) {
+	var body OrganizationWorkflowActionFilterActionOpsgenie
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterActionOpsgenie overwrites any union data inside the OrganizationWorkflowActionFilterAction as the provided OrganizationWorkflowActionFilterActionOpsgenie
+func (t *OrganizationWorkflowActionFilterAction) FromOrganizationWorkflowActionFilterActionOpsgenie(v OrganizationWorkflowActionFilterActionOpsgenie) error {
+	v.Type = "opsgenie"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterActionOpsgenie performs a merge with any union data inside the OrganizationWorkflowActionFilterAction, using the provided OrganizationWorkflowActionFilterActionOpsgenie
+func (t *OrganizationWorkflowActionFilterAction) MergeOrganizationWorkflowActionFilterActionOpsgenie(v OrganizationWorkflowActionFilterActionOpsgenie) error {
+	v.Type = "opsgenie"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t OrganizationWorkflowActionFilterAction) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t OrganizationWorkflowActionFilterAction) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "discord":
+		return t.AsOrganizationWorkflowActionFilterActionDiscord()
+	case "email":
+		return t.AsOrganizationWorkflowActionFilterActionEmail()
+	case "msteams":
+		return t.AsOrganizationWorkflowActionFilterActionMsTeams()
+	case "opsgenie":
+		return t.AsOrganizationWorkflowActionFilterActionOpsgenie()
+	case "pagerduty":
+		return t.AsOrganizationWorkflowActionFilterActionPagerDuty()
+	case "plugin":
+		return t.AsOrganizationWorkflowActionFilterActionPlugin()
+	case "slack":
+		return t.AsOrganizationWorkflowActionFilterActionSlack()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t OrganizationWorkflowActionFilterAction) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *OrganizationWorkflowActionFilterAction) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
 	return err
 }
 

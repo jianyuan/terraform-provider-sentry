@@ -47,7 +47,7 @@ Required:
 
 Optional:
 
-- `logic_type` (String) TODO Valid values are: `any`, `any-short`, `all`, and `none`.
+- `logic_type` (String) The logic to apply to the conditions. Valid values are: `any`, `any-short`, `all`, and `none`.
 
 <a id="nestedatt--condition_group--conditions"></a>
 ### Nested Schema for `condition_group.conditions`

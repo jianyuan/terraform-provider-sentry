@@ -12,6 +12,7 @@ export type Attribute =
   | ListNestedAttribute
   | SetAttribute
   | SetNestedAttribute
+  | MapAttribute
   | ObjectAttribute
   | SingleNestedAttribute;
 
@@ -65,6 +66,11 @@ export interface SetNestedAttribute extends BaseAttribute {
   type: "set_nested";
   attributes: Array<Attribute>;
   model?: string;
+}
+
+export interface MapAttribute extends BaseAttribute {
+  type: "map";
+  elementType: "string";
 }
 
 export interface ObjectAttribute extends BaseAttribute {
