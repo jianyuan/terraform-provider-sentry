@@ -71,6 +71,9 @@ function generateTerraformAttribute({
     })
     .with({ type: "int" }, (attribute) => {
       const parts: string[] = [];
+      if (attribute.enum) {
+        parts.push("tfutils.WithEnumInt64Attribute(");
+      }
       parts.push("schema.Int64Attribute{");
       parts.push(...commonParts);
       parts.push("CustomType: supertypes.Int64Type{},");
@@ -86,7 +89,13 @@ function generateTerraformAttribute({
         );
         parts.push("},");
       }
-      parts.push("}");
+      if (attribute.enum) {
+        parts.push("},");
+        parts.push(`${attribute.enum},`);
+        parts.push(")");
+      } else {
+        parts.push("}");
+      }
       return parts.join("\n");
     })
     .with({ type: "bool" }, () => {

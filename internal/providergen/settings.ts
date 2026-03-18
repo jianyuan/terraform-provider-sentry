@@ -775,6 +775,7 @@ export const RESOURCES: Array<Resource> = [
         type: "int",
         description: "TODO",
         computedOptionalRequired: "required",
+        enum: "sentrydata.UptimeSubscriptionIntervalSeconds",
       },
       {
         name: "timeout_ms",
