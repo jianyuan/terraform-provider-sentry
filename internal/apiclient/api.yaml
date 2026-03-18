@@ -2313,15 +2313,33 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/ProjectMonitor_DataSource_Cron"
+    ProjectMonitorRequest_UptimeDomainFailure:
+      allOf:
+        - $ref: "#/components/schemas/ProjectMonitorRequest_Base"
+        - type: object
+          required:
+            - type
+            - dataSources
+          properties:
+            type:
+              type: string
+              enum:
+                - uptime_domain_failure
+            dataSources:
+              type: array
+              items:
+                $ref: "#/components/schemas/ProjectMonitor_DataSource_UptimeDomainFailure"
     ProjectMonitorRequest:
       oneOf:
         - $ref: "#/components/schemas/ProjectMonitorRequest_MetricIssue"
         - $ref: "#/components/schemas/ProjectMonitorRequest_MonitorCheckInFailure"
+        - $ref: "#/components/schemas/ProjectMonitorRequest_UptimeDomainFailure"
       discriminator:
         propertyName: type
         mapping:
           metric_issue: "#/components/schemas/ProjectMonitorRequest_MetricIssue"
           monitor_check_in_failure: "#/components/schemas/ProjectMonitorRequest_MonitorCheckInFailure"
+          uptime_domain_failure: "#/components/schemas/ProjectMonitorRequest_UptimeDomainFailure"
     ProjectMonitor:
       type: object
       required:
@@ -2373,6 +2391,10 @@ components:
           type: string
           format: date-time
     ProjectMonitor_Config:
+      oneOf:
+        - $ref: "#/components/schemas/ProjectMonitor_Config_MetricIssue"
+        - $ref: "#/components/schemas/ProjectMonitor_Config_UptimeDomainFailure"
+    ProjectMonitor_Config_MetricIssue:
       type: object
       properties:
         detectionType:
@@ -2380,15 +2402,40 @@ components:
         comparisonDelta:
           type: integer
           format: int64
+    ProjectMonitor_Config_UptimeDomainFailure:
+      type: object
+      required:
+        - mode
+        - environment
+        - recoveryThreshold
+        - downtimeThreshold
+      properties:
+        mode:
+          type: integer
+          format: int64
+          enum:
+            - 1
+            - 2
+            - 3
+        environment:
+          type: string
+        recoveryThreshold:
+          type: integer
+          format: int64
+        downtimeThreshold:
+          type: integer
+          format: int64
     ProjectMonitor_DataSource_Wrapper:
       oneOf:
         - $ref: "#/components/schemas/ProjectMonitor_DataSource_Wrapper_CronMonitor"
         - $ref: "#/components/schemas/ProjectMonitor_DataSource_Wrapper_SnubaQuerySubscription"
+        - $ref: "#/components/schemas/ProjectMonitor_DataSource_Wrapper_UptimeSubscription"
       discriminator:
         propertyName: type
         mapping:
           cron_monitor: "#/components/schemas/ProjectMonitor_DataSource_Wrapper_CronMonitor"
           snuba_query_subscription: "#/components/schemas/ProjectMonitor_DataSource_Wrapper_SnubaQuerySubscription"
+          uptime_subscription: "#/components/schemas/ProjectMonitor_DataSource_Wrapper_UptimeSubscription"
     ProjectMonitor_DataSource_Wrapper_CronMonitor:
       type: object
       required:
@@ -2418,6 +2465,18 @@ components:
           properties:
             snubaQuery:
               $ref: "#/components/schemas/ProjectMonitor_DataSource_SnubaQuerySubscription"
+    ProjectMonitor_DataSource_Wrapper_UptimeSubscription:
+      type: object
+      required:
+        - type
+        - queryObj
+      properties:
+        type:
+          type: string
+          enum:
+            - uptime_subscription
+        queryObj:
+          $ref: "#/components/schemas/ProjectMonitor_DataSource_UptimeDomainFailure"
     ProjectMonitor_Owner:
       oneOf:
         - $ref: "#/components/schemas/ProjectMonitor_Owner_User"
@@ -2471,6 +2530,41 @@ components:
           type: string
         config:
           $ref: "#/components/schemas/ProjectMonitor_DataSource_Config_Cron"
+    ProjectMonitor_DataSource_UptimeDomainFailure:
+      type: object
+      required:
+        - url
+        - method
+        - body
+        - headers
+        - intervalSeconds
+        - timeoutMs
+        - traceSampling
+        - assertion
+      properties:
+        url:
+          type: string
+        method:
+          type: string
+        body:
+          type: string
+          nullable: true
+        headers:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+        intervalSeconds:
+          type: integer
+          format: int64
+        timeoutMs:
+          type: integer
+          format: int64
+        traceSampling:
+          type: boolean
+        assertion:
+          type: object # TODO
     ProjectMonitor_DataSource_SnubaQuerySubscription:
       type: object
       required:
@@ -2608,8 +2702,10 @@ components:
         type:
           type: string
         comparison:
-          type: integer
-          format: int64
+          oneOf:
+            - type: string
+            - type: integer
+              format: int64
         conditionResult:
           type: integer
           format: int64

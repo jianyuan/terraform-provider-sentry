@@ -641,4 +641,169 @@ export const RESOURCES: Array<Resource> = [
       },
     ],
   },
+  {
+    name: "uptime_monitor",
+    description: "Create an Uptime Monitor for a Project.",
+    api: {
+      model: "ProjectMonitor",
+      createMethod: "CreateProjectMonitor",
+      createRequestAttributes: ["organization", "project"],
+      readMethod: "GetProjectMonitor",
+      readRequestAttributes: ["organization", "id"],
+      deleteMethod: "DeleteProjectMonitor",
+      deleteRequestAttributes: ["organization", "id"],
+    },
+    generate: {
+      modelFillers: false,
+    },
+    attributes: [
+      {
+        name: "id",
+        type: "string",
+        description: "The internal ID of this monitor.",
+        computedOptionalRequired: "computed",
+        sourceAttribute: ["Id"],
+      },
+      {
+        name: "organization",
+        type: "string",
+        description:
+          "The organization slug or internal ID to create the monitor for.",
+        computedOptionalRequired: "required",
+        planModifiers: ["stringplanmodifier.RequiresReplace()"],
+      },
+      {
+        name: "project",
+        type: "string",
+        description:
+          "The project slug or internal ID to create the monitor for.",
+        computedOptionalRequired: "required",
+        planModifiers: ["stringplanmodifier.RequiresReplace()"],
+      },
+      {
+        name: "enabled",
+        type: "bool",
+        description: "Whether the monitor is enabled. Defaults to true.",
+        computedOptionalRequired: "computed_optional",
+        default: `booldefault.StaticBool(true)`,
+      },
+      {
+        name: "name",
+        type: "string",
+        description: "The name of this monitor.",
+        computedOptionalRequired: "required",
+      },
+      {
+        name: "description",
+        type: "string",
+        description:
+          "A description of the monitor. Will be used in the resulting issue.",
+        computedOptionalRequired: "optional",
+        nullable: true,
+      },
+      {
+        name: "default_assignee",
+        type: "single_nested",
+        description: "Sentry will assign new issues to this assignee.",
+        computedOptionalRequired: "optional",
+        nullable: true,
+        attributes: [
+          {
+            name: "user_id",
+            type: "string",
+            description:
+              "The user ID to assign new issues to. Conflicts with `team_id`.",
+            computedOptionalRequired: "optional",
+            validators: [
+              `stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("team_id"))`,
+            ],
+          },
+          {
+            name: "team_id",
+            type: "string",
+            description:
+              "The team internal ID to assign new issues to. Conflicts with `user_id`.",
+            computedOptionalRequired: "optional",
+            validators: [
+              `stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("user_id"))`,
+            ],
+          },
+        ],
+      },
+      {
+        name: "url",
+        type: "string",
+        description: "TODO",
+        computedOptionalRequired: "required",
+      },
+      {
+        name: "method",
+        type: "string",
+        description: "TODO",
+        computedOptionalRequired: "required",
+        enum: "sentrydata.UptimeSubscriptionSupportedHttpMethods",
+      },
+      {
+        name: "body",
+        type: "string",
+        description: "TODO",
+        computedOptionalRequired: "optional",
+        nullable: true,
+      },
+      {
+        name: "headers",
+        type: "list_nested",
+        description: "TODO",
+        computedOptionalRequired: "optional",
+        attributes: [
+          {
+            name: "key",
+            type: "string",
+            description: "TODO",
+            computedOptionalRequired: "required",
+          },
+          {
+            name: "value",
+            type: "string",
+            description: "TODO",
+            computedOptionalRequired: "required",
+          },
+        ],
+      },
+      {
+        name: "interval_seconds",
+        type: "int",
+        description: "TODO",
+        computedOptionalRequired: "required",
+      },
+      {
+        name: "timeout_ms",
+        type: "int",
+        description: "TODO",
+        computedOptionalRequired: "required",
+      },
+      {
+        name: "environment",
+        type: "string",
+        description: "Name of the environment to create uptime issues in.",
+        computedOptionalRequired: "required",
+      },
+      {
+        name: "recovery_threshold",
+        type: "int",
+        description:
+          "Number of consecutive successful checks required to mark monitor as recovered. Defaults to 1.",
+        computedOptionalRequired: "computed_optional",
+        default: `int64default.StaticInt64(1)`,
+      },
+      {
+        name: "downtime_threshold",
+        type: "int",
+        description:
+          "Number of consecutive failed checks required to mark monitor as down. Defaults to 3.",
+        computedOptionalRequired: "computed_optional",
+        default: `int64default.StaticInt64(3)`,
+      },
+    ],
+  },
 ];
