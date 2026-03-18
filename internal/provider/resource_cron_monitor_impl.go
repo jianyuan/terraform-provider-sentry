@@ -58,7 +58,6 @@ func (r *CronMonitorResource) getCreateJSONRequestBody(ctx context.Context, data
 				Config: outDs,
 			},
 		},
-		WorkflowIds: []string{},
 	}
 
 	if data.Enabled.IsKnown() {
@@ -163,20 +162,24 @@ func (m *CronMonitorResourceModel) Fill(ctx context.Context, data apiclient.Proj
 		m.RecoveryThreshold = supertypes.NewInt64Value(configValue.RecoveryThreshold)
 		m.Timezone = supertypes.NewStringValue(configValue.Timezone)
 
-		if len(configValue.Schedule) == 2 {
-			if intervalValue, err := configValue.Schedule[0].AsProjectMonitorDataSourceConfigCronIntervalValue(); err == nil {
-				schedule.IntervalValue = supertypes.NewInt64Value(intervalValue)
-			} else {
-				diags.AddError("Invalid schedule", "Invalid schedule")
-			}
-
-			if intervalUnit, err := configValue.Schedule[1].AsProjectMonitorDataSourceConfigCronIntervalUnit(); err == nil {
-				schedule.IntervalUnit = supertypes.NewStringValue(string(intervalUnit))
-			} else {
-				diags.AddError("Invalid schedule", "Invalid schedule")
-			}
-		} else {
+		if len(configValue.Schedule) != 2 {
 			diags.AddError("Invalid schedule", fmt.Sprintf("Expected 2 items, got %d", len(configValue.Schedule)))
+
+			return
+		}
+
+		if intervalValue, err := configValue.Schedule[0].AsProjectMonitorDataSourceConfigCronIntervalValue(); err == nil {
+			schedule.IntervalValue = supertypes.NewInt64Value(intervalValue)
+		} else {
+			diags.AddError("Invalid schedule", "Invalid interval value")
+			return
+		}
+
+		if intervalUnit, err := configValue.Schedule[1].AsProjectMonitorDataSourceConfigCronIntervalUnit(); err == nil {
+			schedule.IntervalUnit = supertypes.NewStringValue(string(intervalUnit))
+		} else {
+			diags.AddError("Invalid schedule", "Invalid interval unit")
+			return
 		}
 	}
 

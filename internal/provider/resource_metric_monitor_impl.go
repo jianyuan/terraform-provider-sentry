@@ -79,8 +79,7 @@ func (r *MetricMonitorResource) getCreateJSONRequestBody(ctx context.Context, da
 			LogicType:  apiclient.ProjectMonitorConditionGroupLogicType(inConditionGroup.LogicType.Get()),
 			Conditions: outConditions,
 		},
-		Config:      &outConfig,
-		WorkflowIds: []string{},
+		Config: &outConfig,
 	}
 
 	if data.Enabled.IsKnown() {
@@ -181,14 +180,14 @@ func (m *MetricMonitorResourceModel) Fill(ctx context.Context, data apiclient.Pr
 
 	m.Aggregate = supertypes.NewStringValue(dataSource.QueryObj.SnubaQuery.Aggregate)
 	m.Dataset = supertypes.NewStringValue(dataSource.QueryObj.SnubaQuery.Dataset)
-	if dataSource.QueryObj.SnubaQuery.Environment.IsSpecified() && !dataSource.QueryObj.SnubaQuery.Environment.IsNull() {
-		m.Environment = supertypes.NewStringValue(dataSource.QueryObj.SnubaQuery.Environment.MustGet())
+	if v, err := dataSource.QueryObj.SnubaQuery.Environment.Get(); err == nil {
+		m.Environment = supertypes.NewStringValue(v)
 	} else {
 		m.Environment = supertypes.NewStringNull()
 	}
 	m.EventTypes = supertypes.NewSetValueOfSlice(ctx, dataSource.QueryObj.SnubaQuery.EventTypes)
-	if dataSource.QueryObj.SnubaQuery.ExtrapolationMode.IsSpecified() && !dataSource.QueryObj.SnubaQuery.ExtrapolationMode.IsNull() {
-		m.ExtrapolationMode = supertypes.NewStringValue(dataSource.QueryObj.SnubaQuery.ExtrapolationMode.MustGet())
+	if v, err := dataSource.QueryObj.SnubaQuery.ExtrapolationMode.Get(); err == nil {
+		m.ExtrapolationMode = supertypes.NewStringValue(v)
 	} else {
 		m.ExtrapolationMode = supertypes.NewStringNull()
 	}
