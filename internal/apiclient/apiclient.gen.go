@@ -53,6 +53,21 @@ func (e OrganizationIntegrationPagerDutyProviderKey) Valid() bool {
 	}
 }
 
+// Defines values for OrganizationWorkflowTriggerLogicType.
+const (
+	OrganizationWorkflowTriggerLogicTypeAnyShort OrganizationWorkflowTriggerLogicType = "any-short"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowTriggerLogicType enum.
+func (e OrganizationWorkflowTriggerLogicType) Valid() bool {
+	switch e {
+	case OrganizationWorkflowTriggerLogicTypeAnyShort:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ProjectMonitorRequestMetricIssueType.
 const (
 	MetricIssue ProjectMonitorRequestMetricIssueType = "metric_issue"
@@ -100,22 +115,22 @@ func (e ProjectMonitorRequestUptimeDomainFailureType) Valid() bool {
 
 // Defines values for ProjectMonitorConditionGroupLogicType.
 const (
-	All      ProjectMonitorConditionGroupLogicType = "all"
-	Any      ProjectMonitorConditionGroupLogicType = "any"
-	AnyShort ProjectMonitorConditionGroupLogicType = "any-short"
-	None     ProjectMonitorConditionGroupLogicType = "none"
+	ProjectMonitorConditionGroupLogicTypeAll      ProjectMonitorConditionGroupLogicType = "all"
+	ProjectMonitorConditionGroupLogicTypeAny      ProjectMonitorConditionGroupLogicType = "any"
+	ProjectMonitorConditionGroupLogicTypeAnyShort ProjectMonitorConditionGroupLogicType = "any-short"
+	ProjectMonitorConditionGroupLogicTypeNone     ProjectMonitorConditionGroupLogicType = "none"
 )
 
 // Valid indicates whether the value is a known member of the ProjectMonitorConditionGroupLogicType enum.
 func (e ProjectMonitorConditionGroupLogicType) Valid() bool {
 	switch e {
-	case All:
+	case ProjectMonitorConditionGroupLogicTypeAll:
 		return true
-	case Any:
+	case ProjectMonitorConditionGroupLogicTypeAny:
 		return true
-	case AnyShort:
+	case ProjectMonitorConditionGroupLogicTypeAnyShort:
 		return true
-	case None:
+	case ProjectMonitorConditionGroupLogicTypeNone:
 		return true
 	default:
 		return false
@@ -873,6 +888,49 @@ type OrganizationRoleListItem struct {
 	MinimumTeamRole string   `json:"minimumTeamRole"`
 	Name            string   `json:"name"`
 	Scopes          []string `json:"scopes"`
+}
+
+// OrganizationWorkflow defines model for OrganizationWorkflow.
+type OrganizationWorkflow struct {
+	Config      OrganizationWorkflowConfig  `json:"config"`
+	DetectorIds []string                    `json:"detectorIds"`
+	Enabled     bool                        `json:"enabled"`
+	Environment string                      `json:"environment"`
+	Id          string                      `json:"id"`
+	Name        string                      `json:"name"`
+	Triggers    OrganizationWorkflowTrigger `json:"triggers"`
+}
+
+// OrganizationWorkflowRequest defines model for OrganizationWorkflowRequest.
+type OrganizationWorkflowRequest struct {
+	Config               OrganizationWorkflowConfig  `json:"config"`
+	DetectorIds          []string                    `json:"detectorIds"`
+	Enabled              bool                        `json:"enabled"`
+	Environment          string                      `json:"environment"`
+	Name                 string                      `json:"name"`
+	Triggers             OrganizationWorkflowTrigger `json:"triggers"`
+	AdditionalProperties map[string]interface{}      `json:"-"`
+}
+
+// OrganizationWorkflowConfig defines model for OrganizationWorkflow_Config.
+type OrganizationWorkflowConfig struct {
+	Frequency int64 `json:"frequency"`
+}
+
+// OrganizationWorkflowTrigger defines model for OrganizationWorkflow_Trigger.
+type OrganizationWorkflowTrigger struct {
+	Conditions []OrganizationWorkflowTriggerCondition `json:"conditions"`
+	LogicType  OrganizationWorkflowTriggerLogicType   `json:"logicType"`
+}
+
+// OrganizationWorkflowTriggerLogicType defines model for OrganizationWorkflowTrigger.LogicType.
+type OrganizationWorkflowTriggerLogicType string
+
+// OrganizationWorkflowTriggerCondition defines model for OrganizationWorkflow_Trigger_Condition.
+type OrganizationWorkflowTriggerCondition struct {
+	Comparison      bool   `json:"comparison"`
+	ConditionResult bool   `json:"conditionResult"`
+	Type            string `json:"type"`
 }
 
 // Project defines model for Project.
@@ -1858,6 +1916,12 @@ type DisableSpikeProtectionJSONRequestBody DisableSpikeProtectionJSONBody
 // EnableSpikeProtectionJSONRequestBody defines body for EnableSpikeProtection for application/json ContentType.
 type EnableSpikeProtectionJSONRequestBody EnableSpikeProtectionJSONBody
 
+// CreateOrganizationAlertJSONRequestBody defines body for CreateOrganizationAlert for application/json ContentType.
+type CreateOrganizationAlertJSONRequestBody = OrganizationWorkflowRequest
+
+// UpdateOrganizationAlertJSONRequestBody defines body for UpdateOrganizationAlert for application/json ContentType.
+type UpdateOrganizationAlertJSONRequestBody = OrganizationWorkflowRequest
+
 // UpdateOrganizationProjectJSONRequestBody defines body for UpdateOrganizationProject for application/json ContentType.
 type UpdateOrganizationProjectJSONRequestBody UpdateOrganizationProjectJSONBody
 
@@ -1878,6 +1942,139 @@ type UpdateProjectRuleJSONRequestBody UpdateProjectRuleJSONBody
 
 // CreateOrganizationTeamProjectJSONRequestBody defines body for CreateOrganizationTeamProject for application/json ContentType.
 type CreateOrganizationTeamProjectJSONRequestBody CreateOrganizationTeamProjectJSONBody
+
+// Getter for additional properties for OrganizationWorkflowRequest. Returns the specified
+// element and whether it was found
+func (a OrganizationWorkflowRequest) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for OrganizationWorkflowRequest
+func (a *OrganizationWorkflowRequest) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for OrganizationWorkflowRequest to handle AdditionalProperties
+func (a *OrganizationWorkflowRequest) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["config"]; found {
+		err = json.Unmarshal(raw, &a.Config)
+		if err != nil {
+			return fmt.Errorf("error reading 'config': %w", err)
+		}
+		delete(object, "config")
+	}
+
+	if raw, found := object["detectorIds"]; found {
+		err = json.Unmarshal(raw, &a.DetectorIds)
+		if err != nil {
+			return fmt.Errorf("error reading 'detectorIds': %w", err)
+		}
+		delete(object, "detectorIds")
+	}
+
+	if raw, found := object["enabled"]; found {
+		err = json.Unmarshal(raw, &a.Enabled)
+		if err != nil {
+			return fmt.Errorf("error reading 'enabled': %w", err)
+		}
+		delete(object, "enabled")
+	}
+
+	if raw, found := object["environment"]; found {
+		err = json.Unmarshal(raw, &a.Environment)
+		if err != nil {
+			return fmt.Errorf("error reading 'environment': %w", err)
+		}
+		delete(object, "environment")
+	}
+
+	if raw, found := object["name"]; found {
+		err = json.Unmarshal(raw, &a.Name)
+		if err != nil {
+			return fmt.Errorf("error reading 'name': %w", err)
+		}
+		delete(object, "name")
+	}
+
+	if raw, found := object["triggers"]; found {
+		err = json.Unmarshal(raw, &a.Triggers)
+		if err != nil {
+			return fmt.Errorf("error reading 'triggers': %w", err)
+		}
+		delete(object, "triggers")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for OrganizationWorkflowRequest to handle AdditionalProperties
+func (a OrganizationWorkflowRequest) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	object["config"], err = json.Marshal(a.Config)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'config': %w", err)
+	}
+
+	if a.DetectorIds != nil {
+		object["detectorIds"], err = json.Marshal(a.DetectorIds)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'detectorIds': %w", err)
+		}
+	}
+
+	object["enabled"], err = json.Marshal(a.Enabled)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'enabled': %w", err)
+	}
+
+	object["environment"], err = json.Marshal(a.Environment)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'environment': %w", err)
+	}
+
+	object["name"], err = json.Marshal(a.Name)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'name': %w", err)
+	}
+
+	object["triggers"], err = json.Marshal(a.Triggers)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'triggers': %w", err)
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
 
 // AsOrganizationIntegrationOpsgenie returns the union data inside the OrganizationIntegration as a OrganizationIntegrationOpsgenie
 func (t OrganizationIntegration) AsOrganizationIntegrationOpsgenie() (OrganizationIntegrationOpsgenie, error) {
@@ -3999,6 +4196,22 @@ type ClientInterface interface {
 
 	EnableSpikeProtection(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body EnableSpikeProtectionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreateOrganizationAlertWithBody request with any body
+	CreateOrganizationAlertWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateOrganizationAlert(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationAlertJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteOrganizationAlert request
+	DeleteOrganizationAlert(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetOrganizationAlert request
+	GetOrganizationAlert(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateOrganizationAlertWithBody request with any body
+	UpdateOrganizationAlertWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateOrganizationAlert(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, body UpdateOrganizationAlertJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// DeleteOrganizationProject request
 	DeleteOrganizationProject(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -4334,6 +4547,78 @@ func (c *Client) EnableSpikeProtectionWithBody(ctx context.Context, organization
 
 func (c *Client) EnableSpikeProtection(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body EnableSpikeProtectionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewEnableSpikeProtectionRequest(c.Server, organizationIdOrSlug, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateOrganizationAlertWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateOrganizationAlertRequestWithBody(c.Server, organizationIdOrSlug, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateOrganizationAlert(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationAlertJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateOrganizationAlertRequest(c.Server, organizationIdOrSlug, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteOrganizationAlert(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteOrganizationAlertRequest(c.Server, organizationIdOrSlug, workflowId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetOrganizationAlert(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetOrganizationAlertRequest(c.Server, organizationIdOrSlug, workflowId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateOrganizationAlertWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateOrganizationAlertRequestWithBody(c.Server, organizationIdOrSlug, workflowId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateOrganizationAlert(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, body UpdateOrganizationAlertJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateOrganizationAlertRequest(c.Server, organizationIdOrSlug, workflowId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -5469,6 +5754,189 @@ func NewEnableSpikeProtectionRequestWithBody(server string, organizationIdOrSlug
 	return req, nil
 }
 
+// NewCreateOrganizationAlertRequest calls the generic CreateOrganizationAlert builder with application/json body
+func NewCreateOrganizationAlertRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationAlertJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateOrganizationAlertRequestWithBody(server, organizationIdOrSlug, "application/json", bodyReader)
+}
+
+// NewCreateOrganizationAlertRequestWithBody generates requests for CreateOrganizationAlert with any type of body
+func NewCreateOrganizationAlertRequestWithBody(server string, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/workflows/", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteOrganizationAlertRequest generates requests for DeleteOrganizationAlert
+func NewDeleteOrganizationAlertRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, workflowId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "workflow_id", workflowId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/workflows/%s/", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetOrganizationAlertRequest generates requests for GetOrganizationAlert
+func NewGetOrganizationAlertRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, workflowId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "workflow_id", workflowId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/workflows/%s/", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateOrganizationAlertRequest calls the generic UpdateOrganizationAlert builder with application/json body
+func NewUpdateOrganizationAlertRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, body UpdateOrganizationAlertJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateOrganizationAlertRequestWithBody(server, organizationIdOrSlug, workflowId, "application/json", bodyReader)
+}
+
+// NewUpdateOrganizationAlertRequestWithBody generates requests for UpdateOrganizationAlert with any type of body
+func NewUpdateOrganizationAlertRequestWithBody(server string, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "workflow_id", workflowId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/workflows/%s/", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewDeleteOrganizationProjectRequest generates requests for DeleteOrganizationProject
 func NewDeleteOrganizationProjectRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug) (*http.Request, error) {
 	var err error
@@ -6498,6 +6966,22 @@ type ClientWithResponsesInterface interface {
 
 	EnableSpikeProtectionWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body EnableSpikeProtectionJSONRequestBody, reqEditors ...RequestEditorFn) (*EnableSpikeProtectionResponse, error)
 
+	// CreateOrganizationAlertWithBodyWithResponse request with any body
+	CreateOrganizationAlertWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOrganizationAlertResponse, error)
+
+	CreateOrganizationAlertWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationAlertJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateOrganizationAlertResponse, error)
+
+	// DeleteOrganizationAlertWithResponse request
+	DeleteOrganizationAlertWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, reqEditors ...RequestEditorFn) (*DeleteOrganizationAlertResponse, error)
+
+	// GetOrganizationAlertWithResponse request
+	GetOrganizationAlertWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, reqEditors ...RequestEditorFn) (*GetOrganizationAlertResponse, error)
+
+	// UpdateOrganizationAlertWithBodyWithResponse request with any body
+	UpdateOrganizationAlertWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateOrganizationAlertResponse, error)
+
+	UpdateOrganizationAlertWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, body UpdateOrganizationAlertJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateOrganizationAlertResponse, error)
+
 	// DeleteOrganizationProjectWithResponse request
 	DeleteOrganizationProjectWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, reqEditors ...RequestEditorFn) (*DeleteOrganizationProjectResponse, error)
 
@@ -6929,6 +7413,93 @@ func (r EnableSpikeProtectionResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r EnableSpikeProtectionResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateOrganizationAlertResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *OrganizationWorkflow
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateOrganizationAlertResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateOrganizationAlertResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteOrganizationAlertResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteOrganizationAlertResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteOrganizationAlertResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetOrganizationAlertResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *OrganizationWorkflow
+}
+
+// Status returns HTTPResponse.Status
+func (r GetOrganizationAlertResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetOrganizationAlertResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateOrganizationAlertResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *OrganizationWorkflow
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateOrganizationAlertResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateOrganizationAlertResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -7539,6 +8110,58 @@ func (c *ClientWithResponses) EnableSpikeProtectionWithResponse(ctx context.Cont
 	return ParseEnableSpikeProtectionResponse(rsp)
 }
 
+// CreateOrganizationAlertWithBodyWithResponse request with arbitrary body returning *CreateOrganizationAlertResponse
+func (c *ClientWithResponses) CreateOrganizationAlertWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOrganizationAlertResponse, error) {
+	rsp, err := c.CreateOrganizationAlertWithBody(ctx, organizationIdOrSlug, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateOrganizationAlertResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateOrganizationAlertWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationAlertJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateOrganizationAlertResponse, error) {
+	rsp, err := c.CreateOrganizationAlert(ctx, organizationIdOrSlug, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateOrganizationAlertResponse(rsp)
+}
+
+// DeleteOrganizationAlertWithResponse request returning *DeleteOrganizationAlertResponse
+func (c *ClientWithResponses) DeleteOrganizationAlertWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, reqEditors ...RequestEditorFn) (*DeleteOrganizationAlertResponse, error) {
+	rsp, err := c.DeleteOrganizationAlert(ctx, organizationIdOrSlug, workflowId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteOrganizationAlertResponse(rsp)
+}
+
+// GetOrganizationAlertWithResponse request returning *GetOrganizationAlertResponse
+func (c *ClientWithResponses) GetOrganizationAlertWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, reqEditors ...RequestEditorFn) (*GetOrganizationAlertResponse, error) {
+	rsp, err := c.GetOrganizationAlert(ctx, organizationIdOrSlug, workflowId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetOrganizationAlertResponse(rsp)
+}
+
+// UpdateOrganizationAlertWithBodyWithResponse request with arbitrary body returning *UpdateOrganizationAlertResponse
+func (c *ClientWithResponses) UpdateOrganizationAlertWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateOrganizationAlertResponse, error) {
+	rsp, err := c.UpdateOrganizationAlertWithBody(ctx, organizationIdOrSlug, workflowId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateOrganizationAlertResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateOrganizationAlertWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, body UpdateOrganizationAlertJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateOrganizationAlertResponse, error) {
+	rsp, err := c.UpdateOrganizationAlert(ctx, organizationIdOrSlug, workflowId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateOrganizationAlertResponse(rsp)
+}
+
 // DeleteOrganizationProjectWithResponse request returning *DeleteOrganizationProjectResponse
 func (c *ClientWithResponses) DeleteOrganizationProjectWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, reqEditors ...RequestEditorFn) (*DeleteOrganizationProjectResponse, error) {
 	rsp, err := c.DeleteOrganizationProject(ctx, organizationIdOrSlug, projectIdOrSlug, reqEditors...)
@@ -8134,6 +8757,100 @@ func ParseEnableSpikeProtectionResponse(rsp *http.Response) (*EnableSpikeProtect
 	response := &EnableSpikeProtectionResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseCreateOrganizationAlertResponse parses an HTTP response from a CreateOrganizationAlertWithResponse call
+func ParseCreateOrganizationAlertResponse(rsp *http.Response) (*CreateOrganizationAlertResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateOrganizationAlertResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest OrganizationWorkflow
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteOrganizationAlertResponse parses an HTTP response from a DeleteOrganizationAlertWithResponse call
+func ParseDeleteOrganizationAlertResponse(rsp *http.Response) (*DeleteOrganizationAlertResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteOrganizationAlertResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetOrganizationAlertResponse parses an HTTP response from a GetOrganizationAlertWithResponse call
+func ParseGetOrganizationAlertResponse(rsp *http.Response) (*GetOrganizationAlertResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetOrganizationAlertResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest OrganizationWorkflow
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateOrganizationAlertResponse parses an HTTP response from a UpdateOrganizationAlertWithResponse call
+func ParseUpdateOrganizationAlertResponse(rsp *http.Response) (*UpdateOrganizationAlertResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateOrganizationAlertResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest OrganizationWorkflow
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	}
 
 	return response, nil
