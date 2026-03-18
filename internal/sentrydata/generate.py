@@ -18,15 +18,15 @@ TEMPLATE = """package sentrydata
 // {{ value.github_url }}
 {% endif %}
 var {{ key }}{{ ' = ' }}{% if value.result|is_list %}
-[]string{
+[]{{ value.result|first|togotype }}{
 {% for v in value.result %}
-    "{{ v }}",
+    {{ v|tojson }},
 {% endfor %}
 }
 {% else %}
-map[string]string{
+map[{{ value.result.keys()|first|togotype }}]{{ value.result.values()|first|togotype }}{
 {% for k, v in value.result.items() %}
-    "{{ k }}": "{{ v }}",
+    {{ k|tojson }}: {{ v|tojson }},
 {% endfor %}
 }
 {% endif %}
@@ -44,7 +44,19 @@ def get_jinja2_env() -> jinja2.Environment:
     def is_list(value: Any) -> TypeGuard[list[Any]]:
         return isinstance(value, list)
 
+    def togotype(value: Any) -> str:
+        match value:
+            case str():
+                return "string"
+            case int():
+                return "int64"
+            case bool():
+                return "bool"
+            case _:
+                raise ValueError(f"Value type {type(value)} is not supported")
+
     env.filters["is_list"] = is_list
+    env.filters["togotype"] = togotype
 
     return env
 
@@ -330,6 +342,96 @@ def parse_alert_rule_models() -> dict[str, ResultData[Any]]:
     return out
 
 
+def parse_uptime_models() -> dict[str, ResultData[Any]]:
+    data = get_file_data("src/sentry/uptime/models.py")
+    out: dict[str, ResultData[Any]] = {
+        "UptimeSubscriptionSupportedHttpMethods": ResultData(
+            github_url=data.github_url,
+            result=[],
+        ),
+        "UptimeSubscriptionIntervalSeconds": ResultData(
+            github_url=data.github_url,
+            result=[],
+        ),
+    }
+    for node in ast.walk(data.tree):
+        match node:
+            case ast.ClassDef(
+                name="UptimeSubscription",
+                body=body,
+            ):
+                for body_node in body:
+                    match body_node:
+                        case ast.ClassDef(name="SupportedHTTPMethods", body=elts):
+                            for elt in elts:
+                                match elt:
+                                    case ast.Assign(
+                                        value=ast.Tuple(
+                                            elts=[ast.Constant(value=value), _]
+                                        )
+                                    ):
+                                        out[
+                                            "UptimeSubscriptionSupportedHttpMethods"
+                                        ].result.append(value)
+                                    case _:
+                                        pass
+                        case ast.ClassDef(name="IntervalSeconds", body=elts):
+                            for elt in elts:
+                                match elt:
+                                    case ast.Assign(
+                                        value=ast.Tuple(
+                                            elts=[ast.Constant(value=value), _]
+                                        )
+                                    ):
+                                        out[
+                                            "UptimeSubscriptionIntervalSeconds"
+                                        ].result.append(value)
+                                    case _:
+                                        pass
+                        case _:
+                            pass
+            case _:
+                pass
+    return out
+
+
+def parse_uptime_types() -> dict[str, ResultData[Any]]:
+    data = get_file_data("src/sentry/uptime/types.py")
+    out: dict[str, ResultData[Any]] = {}
+    for node in ast.walk(data.tree):
+        match node:
+            case ast.ClassDef(
+                name="UptimeMonitorMode",
+                body=elts,
+            ):
+                out["UptimeMonitorModes"] = ResultData(
+                    github_url=data.github_url,
+                    result=[],
+                )
+                out["UptimeMonitorModeNameToId"] = ResultData(
+                    github_url=data.github_url,
+                    result=OrderedDict(),
+                )
+                out["UptimeMonitorModeIdToName"] = ResultData(
+                    github_url=data.github_url,
+                    result=OrderedDict(),
+                )
+                for elt in elts:
+                    match elt:
+                        case ast.Assign(
+                            targets=[ast.Name(id=id)],
+                            value=ast.Constant(value=value),
+                        ) if id.upper() == id:
+                            out["UptimeMonitorModes"].result.append(id)
+                            out["UptimeMonitorModeNameToId"].result[id] = value
+                            out["UptimeMonitorModeIdToName"].result[value] = id
+                        case _:
+                            pass
+            case _:
+                pass
+    return out
+
+
 def parse_snuba_models() -> dict[str, ResultData[Any]]:
     data = get_file_data("src/sentry/snuba/models.py")
     out: dict[str, ResultData[Any]] = {}
@@ -442,6 +544,8 @@ def main() -> None:
     result.update(parse_intervals())
     result.update(get_timezones())
     result.update(parse_alert_rule_models())
+    result.update(parse_uptime_models())
+    result.update(parse_uptime_types())
     result.update(parse_snuba_models())
     result.update(parse_snuba_datasets())
     result.update(parse_data_condition_types())

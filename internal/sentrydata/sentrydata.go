@@ -962,6 +962,48 @@ var AlertRuleDetectionTypes = []string{
 	"dynamic",
 }
 
+// https://github.com/getsentry/sentry/blob/master/src/sentry/uptime/models.py
+var UptimeSubscriptionSupportedHttpMethods = []string{
+	"GET",
+	"POST",
+	"HEAD",
+	"PUT",
+	"DELETE",
+	"PATCH",
+	"OPTIONS",
+}
+
+// https://github.com/getsentry/sentry/blob/master/src/sentry/uptime/models.py
+var UptimeSubscriptionIntervalSeconds = []int64{
+	60,
+	300,
+	600,
+	1200,
+	1800,
+	3600,
+}
+
+// https://github.com/getsentry/sentry/blob/master/src/sentry/uptime/types.py
+var UptimeMonitorModes = []string{
+	"MANUAL",
+	"AUTO_DETECTED_ONBOARDING",
+	"AUTO_DETECTED_ACTIVE",
+}
+
+// https://github.com/getsentry/sentry/blob/master/src/sentry/uptime/types.py
+var UptimeMonitorModeNameToId = map[string]int64{
+	"MANUAL":                   1,
+	"AUTO_DETECTED_ONBOARDING": 2,
+	"AUTO_DETECTED_ACTIVE":     3,
+}
+
+// https://github.com/getsentry/sentry/blob/master/src/sentry/uptime/types.py
+var UptimeMonitorModeIdToName = map[int64]string{
+	1: "MANUAL",
+	2: "AUTO_DETECTED_ONBOARDING",
+	3: "AUTO_DETECTED_ACTIVE",
+}
+
 // https://github.com/getsentry/sentry/blob/master/src/sentry/snuba/models.py
 var ExtrapolationModes = []string{
 	"unknown",
