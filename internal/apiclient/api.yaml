@@ -321,6 +321,91 @@ paths:
           description: Forbidden
         "404":
           description: Not Found
+  /0/organizations/{organization_id_or_slug}/workflows/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+    post:
+      summary: Create an Alert for an Organization
+      operationId: createOrganizationAlert
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrganizationWorkflowRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrganizationWorkflow"
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+  /0/organizations/{organization_id_or_slug}/workflows/{workflow_id}/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+      - name: workflow_id
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Retrieve an Alert for an Organization
+      operationId: getOrganizationAlert
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrganizationWorkflow"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+    put:
+      summary: Update an Alert for an Organization
+      operationId: updateOrganizationAlert
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrganizationWorkflowRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrganizationWorkflow"
+        "400":
+          description: Bad Request
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+    delete:
+      summary: Delete an Alert for an Organization
+      operationId: deleteOrganizationAlert
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
   /0/organizations/{organization_id_or_slug}/projects/{project_id_or_slug}/detectors/:
     parameters:
       - $ref: "#/components/parameters/organization_id_or_slug"
@@ -2744,3 +2829,90 @@ components:
           type: string
         name:
           type: string
+    OrganizationWorkflowRequest:
+      type: object
+      required:
+        - name
+        - enabled
+        - environment
+        - config
+        - detectorIds
+        - triggers
+      properties:
+        name:
+          type: string
+        enabled:
+          type: boolean
+        environment:
+          type: string
+        config:
+          $ref: "#/components/schemas/OrganizationWorkflow_Config"
+        detectorIds:
+          type: array
+          items:
+            type: string
+        triggers:
+          $ref: "#/components/schemas/OrganizationWorkflow_Trigger"
+      additionalProperties: true
+    OrganizationWorkflow:
+      type: object
+      required:
+        - id
+        - name
+        - enabled
+        - environment
+        - config
+        - detectorIds
+        - triggers
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        enabled:
+          type: boolean
+        environment:
+          type: string
+        config:
+          $ref: "#/components/schemas/OrganizationWorkflow_Config"
+        detectorIds:
+          type: array
+          items:
+            type: string
+        triggers:
+          $ref: "#/components/schemas/OrganizationWorkflow_Trigger"
+    OrganizationWorkflow_Config:
+      type: object
+      required:
+        - frequency
+      properties:
+        frequency:
+          type: integer
+          format: int64
+    OrganizationWorkflow_Trigger:
+      type: object
+      required:
+        - logicType
+        - conditions
+      properties:
+        logicType:
+          type: string
+          enum:
+            - any-short
+        conditions:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrganizationWorkflow_Trigger_Condition"
+    OrganizationWorkflow_Trigger_Condition:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+        comparison:
+          type: boolean
+        conditionResult:
+          type: boolean

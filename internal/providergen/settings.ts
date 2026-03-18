@@ -807,4 +807,77 @@ export const RESOURCES: Array<Resource> = [
       },
     ],
   },
+  {
+    name: "alert",
+    description: "Create an Alert for an Organization.",
+    api: {
+      model: "OrganizationWorkflow",
+      createMethod: "CreateOrganizationAlert",
+      createRequestAttributes: ["organization"],
+      readMethod: "GetOrganizationAlert",
+      readRequestAttributes: ["organization", "id"],
+      deleteMethod: "DeleteOrganizationAlert",
+      deleteRequestAttributes: ["organization", "id"],
+    },
+    generate: {
+      modelFillers: false,
+    },
+    attributes: [
+      {
+        name: "id",
+        type: "string",
+        description: "The internal ID of this alert.",
+        computedOptionalRequired: "computed",
+        sourceAttribute: ["Id"],
+      },
+      {
+        name: "organization",
+        type: "string",
+        description:
+          "The organization slug or internal ID to create the alert for.",
+        computedOptionalRequired: "required",
+        planModifiers: ["stringplanmodifier.RequiresReplace()"],
+      },
+      {
+        name: "enabled",
+        type: "bool",
+        description: "Whether the alert is enabled. Defaults to true.",
+        computedOptionalRequired: "computed_optional",
+        default: `booldefault.StaticBool(true)`,
+      },
+      {
+        name: "name",
+        type: "string",
+        description: "The name of this alert.",
+        computedOptionalRequired: "required",
+      },
+      {
+        name: "environment",
+        type: "string",
+        description: "Name of the environment to create alerts in.",
+        computedOptionalRequired: "required",
+      },
+      {
+        name: "monitor_ids",
+        type: "set",
+        description: "The IDs of the monitors to create alerts for.",
+        computedOptionalRequired: "required",
+        elementType: "string",
+      },
+      {
+        name: "frequency_minutes",
+        type: "int",
+        description: "How often the alert should fire in minutes.",
+        computedOptionalRequired: "required",
+      },
+      {
+        name: "trigger_conditions",
+        type: "set",
+        description: "The conditions on which the alert will trigger.",
+        computedOptionalRequired: "required",
+        elementType: "string",
+        enum: "sentrydata.TriggerConditionTypes",
+      },
+    ],
+  },
 ];

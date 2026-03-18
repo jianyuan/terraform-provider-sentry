@@ -482,23 +482,45 @@ def parse_snuba_datasets() -> dict[str, ResultData[Any]]:
 
 def parse_data_condition_types() -> dict[str, ResultData[Any]]:
     data = get_file_data("src/sentry/workflow_engine/models/data_condition.py")
-    out: dict[str, ResultData[Any]] = {}
+    out: dict[str, ResultData[Any]] = {
+        "DataConditionTypes": ResultData(github_url=data.github_url, result=[]),
+        "TriggerConditionTypes": ResultData(github_url=data.github_url, result=[]),
+    }
+    condition_types: dict[str, str] = {}
+
     for node in ast.walk(data.tree):
         match node:
             case ast.ClassDef(
                 name="Condition",
                 body=elts,
             ):
-                result: list[str] = []
                 for elt in elts:
                     match elt:
-                        case ast.Assign(value=ast.Constant(value=value)):
-                            result.append(value)
+                        case ast.Assign(
+                            targets=[ast.Name(id=key)],
+                            value=ast.Constant(value=value),
+                        ):
+                            out["DataConditionTypes"].result.append(value)
+                            condition_types[key] = value
                         case _:
                             pass
-                out["DataConditionTypes"] = ResultData(
-                    github_url=data.github_url, result=result
-                )
+            case _:
+                pass
+
+    for node in ast.walk(data.tree):
+        match node:
+            case ast.Assign(
+                targets=[ast.Name(id="TRIGGER_CONDITIONS")],
+                value=ast.List(elts=elts),
+            ):
+                for elt in elts:
+                    match elt:
+                        case ast.Attribute(value=ast.Name(id="Condition"), attr=attr):
+                            out["TriggerConditionTypes"].result.append(
+                                condition_types[attr]
+                            )
+                        case _:
+                            pass
             case _:
                 pass
     return out
