@@ -83,6 +83,21 @@ func (e ProjectMonitorRequestMonitorCheckInFailureType) Valid() bool {
 	}
 }
 
+// Defines values for ProjectMonitorRequestUptimeDomainFailureType.
+const (
+	UptimeDomainFailure ProjectMonitorRequestUptimeDomainFailureType = "uptime_domain_failure"
+)
+
+// Valid indicates whether the value is a known member of the ProjectMonitorRequestUptimeDomainFailureType enum.
+func (e ProjectMonitorRequestUptimeDomainFailureType) Valid() bool {
+	switch e {
+	case UptimeDomainFailure:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ProjectMonitorConditionGroupLogicType.
 const (
 	All      ProjectMonitorConditionGroupLogicType = "all"
@@ -101,6 +116,27 @@ func (e ProjectMonitorConditionGroupLogicType) Valid() bool {
 	case AnyShort:
 		return true
 	case None:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ProjectMonitorConfigUptimeDomainFailureMode.
+const (
+	N1 ProjectMonitorConfigUptimeDomainFailureMode = 1
+	N2 ProjectMonitorConfigUptimeDomainFailureMode = 2
+	N3 ProjectMonitorConfigUptimeDomainFailureMode = 3
+)
+
+// Valid indicates whether the value is a known member of the ProjectMonitorConfigUptimeDomainFailureMode enum.
+func (e ProjectMonitorConfigUptimeDomainFailureMode) Valid() bool {
+	switch e {
+	case N1:
+		return true
+	case N2:
+		return true
+	case N3:
 		return true
 	default:
 		return false
@@ -191,6 +227,21 @@ const (
 func (e ProjectMonitorDataSourceWrapperSnubaQuerySubscriptionType) Valid() bool {
 	switch e {
 	case SnubaQuerySubscription:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ProjectMonitorDataSourceWrapperUptimeSubscriptionType.
+const (
+	UptimeSubscription ProjectMonitorDataSourceWrapperUptimeSubscriptionType = "uptime_subscription"
+)
+
+// Valid indicates whether the value is a known member of the ProjectMonitorDataSourceWrapperUptimeSubscriptionType enum.
+func (e ProjectMonitorDataSourceWrapperUptimeSubscriptionType) Valid() bool {
+	switch e {
+	case UptimeSubscription:
 		return true
 	default:
 		return false
@@ -940,6 +991,22 @@ type ProjectMonitorRequestMonitorCheckInFailure struct {
 // ProjectMonitorRequestMonitorCheckInFailureType defines model for ProjectMonitorRequestMonitorCheckInFailure.Type.
 type ProjectMonitorRequestMonitorCheckInFailureType string
 
+// ProjectMonitorRequestUptimeDomainFailure defines model for ProjectMonitorRequest_UptimeDomainFailure.
+type ProjectMonitorRequestUptimeDomainFailure struct {
+	Config      *ProjectMonitorConfig                         `json:"config,omitempty"`
+	DataSources []ProjectMonitorDataSourceUptimeDomainFailure `json:"dataSources"`
+	Description nullable.Nullable[string]                     `json:"description"`
+	Enabled     nullable.Nullable[bool]                       `json:"enabled,omitempty"`
+	Name        string                                        `json:"name"`
+	Owner       nullable.Nullable[string]                     `json:"owner"`
+	ProjectId   string                                        `json:"projectId"`
+	Type        ProjectMonitorRequestUptimeDomainFailureType  `json:"type"`
+	WorkflowIds []string                                      `json:"workflowIds"`
+}
+
+// ProjectMonitorRequestUptimeDomainFailureType defines model for ProjectMonitorRequestUptimeDomainFailure.Type.
+type ProjectMonitorRequestUptimeDomainFailureType string
+
 // ProjectMonitorConditionGroup defines model for ProjectMonitor_ConditionGroup.
 type ProjectMonitorConditionGroup struct {
 	Conditions []ProjectMonitorConditionGroupCondition `json:"conditions"`
@@ -951,16 +1018,43 @@ type ProjectMonitorConditionGroupLogicType string
 
 // ProjectMonitorConditionGroupCondition defines model for ProjectMonitor_ConditionGroup_Condition.
 type ProjectMonitorConditionGroupCondition struct {
-	Comparison      int64  `json:"comparison"`
-	ConditionResult int64  `json:"conditionResult"`
-	Type            string `json:"type"`
+	Comparison      ProjectMonitorConditionGroupCondition_Comparison `json:"comparison"`
+	ConditionResult int64                                            `json:"conditionResult"`
+	Type            string                                           `json:"type"`
+}
+
+// ProjectMonitorConditionGroupConditionComparison0 defines model for .
+type ProjectMonitorConditionGroupConditionComparison0 = string
+
+// ProjectMonitorConditionGroupConditionComparison1 defines model for .
+type ProjectMonitorConditionGroupConditionComparison1 = int64
+
+// ProjectMonitorConditionGroupCondition_Comparison defines model for ProjectMonitorConditionGroupCondition.Comparison.
+type ProjectMonitorConditionGroupCondition_Comparison struct {
+	union json.RawMessage
 }
 
 // ProjectMonitorConfig defines model for ProjectMonitor_Config.
 type ProjectMonitorConfig struct {
+	union json.RawMessage
+}
+
+// ProjectMonitorConfigMetricIssue defines model for ProjectMonitor_Config_MetricIssue.
+type ProjectMonitorConfigMetricIssue struct {
 	ComparisonDelta *int64  `json:"comparisonDelta,omitempty"`
 	DetectionType   *string `json:"detectionType,omitempty"`
 }
+
+// ProjectMonitorConfigUptimeDomainFailure defines model for ProjectMonitor_Config_UptimeDomainFailure.
+type ProjectMonitorConfigUptimeDomainFailure struct {
+	DowntimeThreshold int64                                       `json:"downtimeThreshold"`
+	Environment       string                                      `json:"environment"`
+	Mode              ProjectMonitorConfigUptimeDomainFailureMode `json:"mode"`
+	RecoveryThreshold int64                                       `json:"recoveryThreshold"`
+}
+
+// ProjectMonitorConfigUptimeDomainFailureMode defines model for ProjectMonitorConfigUptimeDomainFailure.Mode.
+type ProjectMonitorConfigUptimeDomainFailureMode int64
 
 // ProjectMonitorDataSourceConfigCron defines model for ProjectMonitor_DataSource_Config_Cron.
 type ProjectMonitorDataSourceConfigCron struct {
@@ -1033,6 +1127,18 @@ type ProjectMonitorDataSourceSnubaQuerySubscription struct {
 	TimeWindow        int64                     `json:"timeWindow"`
 }
 
+// ProjectMonitorDataSourceUptimeDomainFailure defines model for ProjectMonitor_DataSource_UptimeDomainFailure.
+type ProjectMonitorDataSourceUptimeDomainFailure struct {
+	Assertion       map[string]interface{}    `json:"assertion"`
+	Body            nullable.Nullable[string] `json:"body"`
+	Headers         [][]string                `json:"headers"`
+	IntervalSeconds int64                     `json:"intervalSeconds"`
+	Method          string                    `json:"method"`
+	TimeoutMs       int64                     `json:"timeoutMs"`
+	TraceSampling   bool                      `json:"traceSampling"`
+	Url             string                    `json:"url"`
+}
+
 // ProjectMonitorDataSourceWrapper defines model for ProjectMonitor_DataSource_Wrapper.
 type ProjectMonitorDataSourceWrapper struct {
 	union json.RawMessage
@@ -1057,6 +1163,15 @@ type ProjectMonitorDataSourceWrapperSnubaQuerySubscription struct {
 
 // ProjectMonitorDataSourceWrapperSnubaQuerySubscriptionType defines model for ProjectMonitorDataSourceWrapperSnubaQuerySubscription.Type.
 type ProjectMonitorDataSourceWrapperSnubaQuerySubscriptionType string
+
+// ProjectMonitorDataSourceWrapperUptimeSubscription defines model for ProjectMonitor_DataSource_Wrapper_UptimeSubscription.
+type ProjectMonitorDataSourceWrapperUptimeSubscription struct {
+	QueryObj ProjectMonitorDataSourceUptimeDomainFailure           `json:"queryObj"`
+	Type     ProjectMonitorDataSourceWrapperUptimeSubscriptionType `json:"type"`
+}
+
+// ProjectMonitorDataSourceWrapperUptimeSubscriptionType defines model for ProjectMonitorDataSourceWrapperUptimeSubscription.Type.
+type ProjectMonitorDataSourceWrapperUptimeSubscriptionType string
 
 // ProjectMonitorOwner defines model for ProjectMonitor_Owner.
 type ProjectMonitorOwner struct {
@@ -2066,6 +2181,34 @@ func (t *ProjectMonitorRequest) MergeProjectMonitorRequestMonitorCheckInFailure(
 	return err
 }
 
+// AsProjectMonitorRequestUptimeDomainFailure returns the union data inside the ProjectMonitorRequest as a ProjectMonitorRequestUptimeDomainFailure
+func (t ProjectMonitorRequest) AsProjectMonitorRequestUptimeDomainFailure() (ProjectMonitorRequestUptimeDomainFailure, error) {
+	var body ProjectMonitorRequestUptimeDomainFailure
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectMonitorRequestUptimeDomainFailure overwrites any union data inside the ProjectMonitorRequest as the provided ProjectMonitorRequestUptimeDomainFailure
+func (t *ProjectMonitorRequest) FromProjectMonitorRequestUptimeDomainFailure(v ProjectMonitorRequestUptimeDomainFailure) error {
+	v.Type = "uptime_domain_failure"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectMonitorRequestUptimeDomainFailure performs a merge with any union data inside the ProjectMonitorRequest, using the provided ProjectMonitorRequestUptimeDomainFailure
+func (t *ProjectMonitorRequest) MergeProjectMonitorRequestUptimeDomainFailure(v ProjectMonitorRequestUptimeDomainFailure) error {
+	v.Type = "uptime_domain_failure"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
 func (t ProjectMonitorRequest) Discriminator() (string, error) {
 	var discriminator struct {
 		Discriminator string `json:"type"`
@@ -2084,6 +2227,8 @@ func (t ProjectMonitorRequest) ValueByDiscriminator() (interface{}, error) {
 		return t.AsProjectMonitorRequestMetricIssue()
 	case "monitor_check_in_failure":
 		return t.AsProjectMonitorRequestMonitorCheckInFailure()
+	case "uptime_domain_failure":
+		return t.AsProjectMonitorRequestUptimeDomainFailure()
 	default:
 		return nil, errors.New("unknown discriminator value: " + discriminator)
 	}
@@ -2095,6 +2240,130 @@ func (t ProjectMonitorRequest) MarshalJSON() ([]byte, error) {
 }
 
 func (t *ProjectMonitorRequest) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsProjectMonitorConditionGroupConditionComparison0 returns the union data inside the ProjectMonitorConditionGroupCondition_Comparison as a ProjectMonitorConditionGroupConditionComparison0
+func (t ProjectMonitorConditionGroupCondition_Comparison) AsProjectMonitorConditionGroupConditionComparison0() (ProjectMonitorConditionGroupConditionComparison0, error) {
+	var body ProjectMonitorConditionGroupConditionComparison0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectMonitorConditionGroupConditionComparison0 overwrites any union data inside the ProjectMonitorConditionGroupCondition_Comparison as the provided ProjectMonitorConditionGroupConditionComparison0
+func (t *ProjectMonitorConditionGroupCondition_Comparison) FromProjectMonitorConditionGroupConditionComparison0(v ProjectMonitorConditionGroupConditionComparison0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectMonitorConditionGroupConditionComparison0 performs a merge with any union data inside the ProjectMonitorConditionGroupCondition_Comparison, using the provided ProjectMonitorConditionGroupConditionComparison0
+func (t *ProjectMonitorConditionGroupCondition_Comparison) MergeProjectMonitorConditionGroupConditionComparison0(v ProjectMonitorConditionGroupConditionComparison0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectMonitorConditionGroupConditionComparison1 returns the union data inside the ProjectMonitorConditionGroupCondition_Comparison as a ProjectMonitorConditionGroupConditionComparison1
+func (t ProjectMonitorConditionGroupCondition_Comparison) AsProjectMonitorConditionGroupConditionComparison1() (ProjectMonitorConditionGroupConditionComparison1, error) {
+	var body ProjectMonitorConditionGroupConditionComparison1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectMonitorConditionGroupConditionComparison1 overwrites any union data inside the ProjectMonitorConditionGroupCondition_Comparison as the provided ProjectMonitorConditionGroupConditionComparison1
+func (t *ProjectMonitorConditionGroupCondition_Comparison) FromProjectMonitorConditionGroupConditionComparison1(v ProjectMonitorConditionGroupConditionComparison1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectMonitorConditionGroupConditionComparison1 performs a merge with any union data inside the ProjectMonitorConditionGroupCondition_Comparison, using the provided ProjectMonitorConditionGroupConditionComparison1
+func (t *ProjectMonitorConditionGroupCondition_Comparison) MergeProjectMonitorConditionGroupConditionComparison1(v ProjectMonitorConditionGroupConditionComparison1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ProjectMonitorConditionGroupCondition_Comparison) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ProjectMonitorConditionGroupCondition_Comparison) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsProjectMonitorConfigMetricIssue returns the union data inside the ProjectMonitorConfig as a ProjectMonitorConfigMetricIssue
+func (t ProjectMonitorConfig) AsProjectMonitorConfigMetricIssue() (ProjectMonitorConfigMetricIssue, error) {
+	var body ProjectMonitorConfigMetricIssue
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectMonitorConfigMetricIssue overwrites any union data inside the ProjectMonitorConfig as the provided ProjectMonitorConfigMetricIssue
+func (t *ProjectMonitorConfig) FromProjectMonitorConfigMetricIssue(v ProjectMonitorConfigMetricIssue) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectMonitorConfigMetricIssue performs a merge with any union data inside the ProjectMonitorConfig, using the provided ProjectMonitorConfigMetricIssue
+func (t *ProjectMonitorConfig) MergeProjectMonitorConfigMetricIssue(v ProjectMonitorConfigMetricIssue) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectMonitorConfigUptimeDomainFailure returns the union data inside the ProjectMonitorConfig as a ProjectMonitorConfigUptimeDomainFailure
+func (t ProjectMonitorConfig) AsProjectMonitorConfigUptimeDomainFailure() (ProjectMonitorConfigUptimeDomainFailure, error) {
+	var body ProjectMonitorConfigUptimeDomainFailure
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectMonitorConfigUptimeDomainFailure overwrites any union data inside the ProjectMonitorConfig as the provided ProjectMonitorConfigUptimeDomainFailure
+func (t *ProjectMonitorConfig) FromProjectMonitorConfigUptimeDomainFailure(v ProjectMonitorConfigUptimeDomainFailure) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectMonitorConfigUptimeDomainFailure performs a merge with any union data inside the ProjectMonitorConfig, using the provided ProjectMonitorConfigUptimeDomainFailure
+func (t *ProjectMonitorConfig) MergeProjectMonitorConfigUptimeDomainFailure(v ProjectMonitorConfigUptimeDomainFailure) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ProjectMonitorConfig) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ProjectMonitorConfig) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -2306,6 +2575,34 @@ func (t *ProjectMonitorDataSourceWrapper) MergeProjectMonitorDataSourceWrapperSn
 	return err
 }
 
+// AsProjectMonitorDataSourceWrapperUptimeSubscription returns the union data inside the ProjectMonitorDataSourceWrapper as a ProjectMonitorDataSourceWrapperUptimeSubscription
+func (t ProjectMonitorDataSourceWrapper) AsProjectMonitorDataSourceWrapperUptimeSubscription() (ProjectMonitorDataSourceWrapperUptimeSubscription, error) {
+	var body ProjectMonitorDataSourceWrapperUptimeSubscription
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectMonitorDataSourceWrapperUptimeSubscription overwrites any union data inside the ProjectMonitorDataSourceWrapper as the provided ProjectMonitorDataSourceWrapperUptimeSubscription
+func (t *ProjectMonitorDataSourceWrapper) FromProjectMonitorDataSourceWrapperUptimeSubscription(v ProjectMonitorDataSourceWrapperUptimeSubscription) error {
+	v.Type = "uptime_subscription"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectMonitorDataSourceWrapperUptimeSubscription performs a merge with any union data inside the ProjectMonitorDataSourceWrapper, using the provided ProjectMonitorDataSourceWrapperUptimeSubscription
+func (t *ProjectMonitorDataSourceWrapper) MergeProjectMonitorDataSourceWrapperUptimeSubscription(v ProjectMonitorDataSourceWrapperUptimeSubscription) error {
+	v.Type = "uptime_subscription"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
 func (t ProjectMonitorDataSourceWrapper) Discriminator() (string, error) {
 	var discriminator struct {
 		Discriminator string `json:"type"`
@@ -2324,6 +2621,8 @@ func (t ProjectMonitorDataSourceWrapper) ValueByDiscriminator() (interface{}, er
 		return t.AsProjectMonitorDataSourceWrapperCronMonitor()
 	case "snuba_query_subscription":
 		return t.AsProjectMonitorDataSourceWrapperSnubaQuerySubscription()
+	case "uptime_subscription":
+		return t.AsProjectMonitorDataSourceWrapperUptimeSubscription()
 	default:
 		return nil, errors.New("unknown discriminator value: " + discriminator)
 	}

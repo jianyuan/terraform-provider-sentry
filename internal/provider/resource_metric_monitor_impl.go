@@ -13,20 +13,20 @@ import (
 func (r *MetricMonitorResource) getCreateJSONRequestBody(ctx context.Context, data MetricMonitorResourceModel) (*apiclient.CreateProjectMonitorJSONRequestBody, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	dataSourceConfig := apiclient.ProjectMonitorDataSourceSnubaQuerySubscription{
+	outDs := apiclient.ProjectMonitorDataSourceSnubaQuerySubscription{
 		Aggregate:  data.Aggregate.Get(),
 		Dataset:    data.Dataset.Get(),
 		EventTypes: data.EventTypes.DiagsGet(ctx, diags),
 	}
 	if data.Environment.IsKnown() {
-		dataSourceConfig.Environment = nullable.NewNullableWithValue(data.Environment.Get())
+		outDs.Environment = nullable.NewNullableWithValue(data.Environment.Get())
 	} else {
-		dataSourceConfig.Environment = nullable.NewNullNullable[string]()
+		outDs.Environment = nullable.NewNullNullable[string]()
 	}
 	if data.ExtrapolationMode.IsKnown() {
-		dataSourceConfig.ExtrapolationMode = nullable.NewNullableWithValue(data.ExtrapolationMode.Get())
+		outDs.ExtrapolationMode = nullable.NewNullableWithValue(data.ExtrapolationMode.Get())
 	} else {
-		dataSourceConfig.ExtrapolationMode = nullable.NewNullNullable[string]()
+		outDs.ExtrapolationMode = nullable.NewNullNullable[string]()
 	}
 	if diags.HasError() {
 		return nil, diags
@@ -43,9 +43,14 @@ func (r *MetricMonitorResource) getCreateJSONRequestBody(ctx context.Context, da
 	}
 	var outConditions []apiclient.ProjectMonitorConditionGroupCondition
 	for _, inCondition := range inConditions {
+		var outComparison apiclient.ProjectMonitorConditionGroupCondition_Comparison
+		if err := outComparison.FromProjectMonitorConditionGroupConditionComparison1(inCondition.Comparison.Get()); err != nil {
+			diags.AddError("Error marshalling JSON", err.Error())
+			return nil, diags
+		}
 		outConditions = append(outConditions, apiclient.ProjectMonitorConditionGroupCondition{
 			Type:            inCondition.Type.Get(),
-			Comparison:      inCondition.Comparison.Get(),
+			Comparison:      outComparison,
 			ConditionResult: inCondition.ConditionResult.Get(),
 		})
 	}
@@ -55,20 +60,26 @@ func (r *MetricMonitorResource) getCreateJSONRequestBody(ctx context.Context, da
 		return nil, diags
 	}
 
+	var outConfig apiclient.ProjectMonitorConfig
+	if err := outConfig.FromProjectMonitorConfigMetricIssue(apiclient.ProjectMonitorConfigMetricIssue{
+		DetectionType:   inConfig.Type.GetPtr(),
+		ComparisonDelta: inConfig.ComparisonDelta.GetPtr(),
+	}); err != nil {
+		diags.AddError("Error marshalling JSON", err.Error())
+		return nil, diags
+	}
+
 	out := apiclient.ProjectMonitorRequestMetricIssue{
 		Name:      data.Name.Get(),
 		ProjectId: data.Project.Get(),
 		DataSources: []apiclient.ProjectMonitorDataSourceSnubaQuerySubscription{
-			dataSourceConfig,
+			outDs,
 		},
 		ConditionGroup: apiclient.ProjectMonitorConditionGroup{
 			LogicType:  apiclient.ProjectMonitorConditionGroupLogicType(inConditionGroup.LogicType.Get()),
 			Conditions: outConditions,
 		},
-		Config: &apiclient.ProjectMonitorConfig{
-			DetectionType:   inConfig.Type.GetPtr(),
-			ComparisonDelta: inConfig.ComparisonDelta.GetPtr(),
-		},
+		Config:      &outConfig,
 		WorkflowIds: []string{},
 	}
 
@@ -141,9 +152,14 @@ func (m *MetricMonitorResourceModel) Fill(ctx context.Context, data apiclient.Pr
 
 	var outConditions []MetricMonitorResourceModelConditionGroupConditionsItem
 	for _, inCondition := range data.ConditionGroup.Conditions {
+		inComparison, err := inCondition.Comparison.AsProjectMonitorConditionGroupConditionComparison1()
+		if err != nil {
+			diags.AddError("Invalid comparison", err.Error())
+			return
+		}
 		outConditions = append(outConditions, MetricMonitorResourceModelConditionGroupConditionsItem{
 			Type:            supertypes.NewStringValue(inCondition.Type),
-			Comparison:      supertypes.NewInt64Value(inCondition.Comparison),
+			Comparison:      supertypes.NewInt64Value(inComparison),
 			ConditionResult: supertypes.NewInt64Value(inCondition.ConditionResult),
 		})
 	}
@@ -153,38 +169,39 @@ func (m *MetricMonitorResourceModel) Fill(ctx context.Context, data apiclient.Pr
 		Conditions: supertypes.NewListNestedObjectValueOfValueSlice(ctx, outConditions),
 	})
 
-	if len(data.DataSources) == 1 {
-		dataSource, err := data.DataSources[0].AsProjectMonitorDataSourceWrapperSnubaQuerySubscription()
-		if err != nil {
-			diags.AddError("Error unmarshalling JSON", err.Error())
-		}
-
-		m.Aggregate = supertypes.NewStringValue(dataSource.QueryObj.SnubaQuery.Aggregate)
-		m.Dataset = supertypes.NewStringValue(dataSource.QueryObj.SnubaQuery.Dataset)
-		if dataSource.QueryObj.SnubaQuery.Environment.IsSpecified() && !dataSource.QueryObj.SnubaQuery.Environment.IsNull() {
-			m.Environment = supertypes.NewStringValue(dataSource.QueryObj.SnubaQuery.Environment.MustGet())
-		} else {
-			m.Environment = supertypes.NewStringNull()
-		}
-		m.EventTypes = supertypes.NewSetValueOfSlice(ctx, dataSource.QueryObj.SnubaQuery.EventTypes)
-		if dataSource.QueryObj.SnubaQuery.ExtrapolationMode.IsSpecified() && !dataSource.QueryObj.SnubaQuery.ExtrapolationMode.IsNull() {
-			m.ExtrapolationMode = supertypes.NewStringValue(dataSource.QueryObj.SnubaQuery.ExtrapolationMode.MustGet())
-		} else {
-			m.ExtrapolationMode = supertypes.NewStringNull()
-		}
-	} else {
-		diags.AddError("Invalid data source", "Invalid config")
-
-		m.Aggregate = supertypes.NewStringNull()
-		m.Dataset = supertypes.NewStringNull()
-		m.Environment = supertypes.NewStringNull()
-		m.EventTypes = supertypes.NewSetValueOfNull[string](ctx)
+	if len(data.DataSources) != 1 {
+		diags.AddError("Invalid data source", fmt.Sprintf("Expected 1 data source, got %d", len(data.DataSources)))
+		return
 	}
 
-	m.IssueDetection = supertypes.NewSingleNestedObjectValueOf(ctx, &MetricMonitorResourceModelIssueDetection{
-		Type:            supertypes.NewStringPointerValueOrNull(data.Config.DetectionType),
-		ComparisonDelta: supertypes.NewInt64PointerValueOrNull(data.Config.ComparisonDelta),
-	})
+	dataSource, err := data.DataSources[0].AsProjectMonitorDataSourceWrapperSnubaQuerySubscription()
+	if err != nil {
+		diags.AddError("Error unmarshalling JSON", err.Error())
+	}
+
+	m.Aggregate = supertypes.NewStringValue(dataSource.QueryObj.SnubaQuery.Aggregate)
+	m.Dataset = supertypes.NewStringValue(dataSource.QueryObj.SnubaQuery.Dataset)
+	if dataSource.QueryObj.SnubaQuery.Environment.IsSpecified() && !dataSource.QueryObj.SnubaQuery.Environment.IsNull() {
+		m.Environment = supertypes.NewStringValue(dataSource.QueryObj.SnubaQuery.Environment.MustGet())
+	} else {
+		m.Environment = supertypes.NewStringNull()
+	}
+	m.EventTypes = supertypes.NewSetValueOfSlice(ctx, dataSource.QueryObj.SnubaQuery.EventTypes)
+	if dataSource.QueryObj.SnubaQuery.ExtrapolationMode.IsSpecified() && !dataSource.QueryObj.SnubaQuery.ExtrapolationMode.IsNull() {
+		m.ExtrapolationMode = supertypes.NewStringValue(dataSource.QueryObj.SnubaQuery.ExtrapolationMode.MustGet())
+	} else {
+		m.ExtrapolationMode = supertypes.NewStringNull()
+	}
+
+	if inConfig, err := data.Config.AsProjectMonitorConfigMetricIssue(); err == nil {
+		m.IssueDetection = supertypes.NewSingleNestedObjectValueOf(ctx, &MetricMonitorResourceModelIssueDetection{
+			Type:            supertypes.NewStringPointerValueOrNull(inConfig.DetectionType),
+			ComparisonDelta: supertypes.NewInt64PointerValueOrNull(inConfig.ComparisonDelta),
+		})
+	} else {
+		diags.AddError("Invalid config", "Invalid config")
+		m.IssueDetection = supertypes.NewSingleNestedObjectValueOfNull[MetricMonitorResourceModelIssueDetection](ctx)
+	}
 
 	return
 }
