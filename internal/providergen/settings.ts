@@ -1121,14 +1121,98 @@ export const RESOURCES: Array<Resource> = [
                 description: "Notify on Azure DevOps.",
                 computedOptionalRequired: "optional",
                 attributes: [
-                  // {
-                  //   name: "data",
-                  //   type: "map",
-                  //   description:
-                  //     "A list of any fields you want to include in the ticket as objects.",
-                  //   computedOptionalRequired: "optional",
-                  //   elementType: "string",
-                  // },
+                  {
+                    name: "integration_id",
+                    type: "string",
+                    description: "The ID of the OpsGenie integration.",
+                    computedOptionalRequired: "required",
+                  },
+                  {
+                    name: "data",
+                    type: "map",
+                    description:
+                      "A list of any fields you want to include in the ticket as objects.",
+                    computedOptionalRequired: "optional",
+                    elementType: "string",
+                  },
+                ],
+              },
+              {
+                name: "jira",
+                type: "single_nested",
+                description: "Create a Jira ticket.",
+                computedOptionalRequired: "optional",
+                attributes: [
+                  {
+                    name: "integration_id",
+                    type: "string",
+                    description: "The ID of the Jira integration.",
+                    computedOptionalRequired: "required",
+                  },
+                  {
+                    name: "data",
+                    type: "map",
+                    description:
+                      "A list of any fields you want to include in the ticket as objects.",
+                    computedOptionalRequired: "optional",
+                    elementType: "string",
+                  },
+                ],
+              },
+              {
+                name: "jira_server",
+                type: "single_nested",
+                description: "Create a Jira Server ticket.",
+                computedOptionalRequired: "optional",
+                attributes: [
+                  {
+                    name: "integration_id",
+                    type: "string",
+                    description: "The ID of the Jira Server integration.",
+                    computedOptionalRequired: "required",
+                  },
+                  {
+                    name: "data",
+                    type: "map",
+                    description:
+                      "A list of any fields you want to include in the ticket as objects.",
+                    computedOptionalRequired: "optional",
+                    elementType: "string",
+                  },
+                ],
+              },
+              {
+                name: "github",
+                type: "single_nested",
+                description: "Create a GitHub issue.",
+                computedOptionalRequired: "optional",
+                attributes: [
+                  {
+                    name: "integration_id",
+                    type: "string",
+                    description: "The ID of the GitHub integration.",
+                    computedOptionalRequired: "required",
+                  },
+                  {
+                    name: "repo",
+                    type: "string",
+                    description:
+                      "The name of the repository to create the issue in.",
+                    computedOptionalRequired: "required",
+                  },
+                  {
+                    name: "assignee",
+                    type: "string",
+                    description: "The GitHub user to assign the issue to.",
+                    computedOptionalRequired: "optional",
+                  },
+                  {
+                    name: "labels",
+                    type: "set",
+                    description: "A list of labels to assign to the issue.",
+                    computedOptionalRequired: "optional",
+                    elementType: "string",
+                  },
                 ],
               },
             ],

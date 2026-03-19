@@ -21,6 +21,7 @@ require (
 	github.com/oapi-codegen/runtime v1.3.0
 	github.com/orange-cloudavenue/terraform-plugin-framework-superschema v1.11.0
 	github.com/orange-cloudavenue/terraform-plugin-framework-supertypes v1.2.0
+	github.com/orange-cloudavenue/terraform-plugin-framework-validators v1.16.0
 	github.com/peterhellberg/link v1.2.0
 	github.com/samber/lo v1.53.0
 	golang.org/x/sync v0.20.0
@@ -85,7 +86,6 @@ require (
 	github.com/oasdiff/yaml v0.0.0-20250309154309-f31be36b4037 // indirect
 	github.com/oasdiff/yaml3 v0.0.0-20250309153720-d2182401db90 // indirect
 	github.com/oklog/run v1.2.0 // indirect
-	github.com/orange-cloudavenue/terraform-plugin-framework-validators v1.16.0 // indirect
 	github.com/perimeterx/marshmallow v1.1.5 // indirect
 	github.com/posener/complete v1.2.3 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect

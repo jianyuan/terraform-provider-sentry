@@ -299,7 +299,79 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										MarkdownDescription: "Notify on Azure DevOps.",
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemVsts](ctx),
-										Attributes:          map[string]schema.Attribute{},
+										Attributes: map[string]schema.Attribute{
+											"integration_id": schema.StringAttribute{
+												MarkdownDescription: "The ID of the OpsGenie integration.",
+												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"data": schema.MapAttribute{
+												MarkdownDescription: "A list of any fields you want to include in the ticket as objects.",
+												Optional:            true,
+												CustomType:          supertypes.NewMapTypeOf[string](ctx),
+											},
+										},
+									},
+									"jira": schema.SingleNestedAttribute{
+										MarkdownDescription: "Create a Jira ticket.",
+										Optional:            true,
+										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemJira](ctx),
+										Attributes: map[string]schema.Attribute{
+											"integration_id": schema.StringAttribute{
+												MarkdownDescription: "The ID of the Jira integration.",
+												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"data": schema.MapAttribute{
+												MarkdownDescription: "A list of any fields you want to include in the ticket as objects.",
+												Optional:            true,
+												CustomType:          supertypes.NewMapTypeOf[string](ctx),
+											},
+										},
+									},
+									"jira_server": schema.SingleNestedAttribute{
+										MarkdownDescription: "Create a Jira Server ticket.",
+										Optional:            true,
+										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemJiraServer](ctx),
+										Attributes: map[string]schema.Attribute{
+											"integration_id": schema.StringAttribute{
+												MarkdownDescription: "The ID of the Jira Server integration.",
+												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"data": schema.MapAttribute{
+												MarkdownDescription: "A list of any fields you want to include in the ticket as objects.",
+												Optional:            true,
+												CustomType:          supertypes.NewMapTypeOf[string](ctx),
+											},
+										},
+									},
+									"github": schema.SingleNestedAttribute{
+										MarkdownDescription: "Create a GitHub issue.",
+										Optional:            true,
+										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemGithub](ctx),
+										Attributes: map[string]schema.Attribute{
+											"integration_id": schema.StringAttribute{
+												MarkdownDescription: "The ID of the GitHub integration.",
+												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"repo": schema.StringAttribute{
+												MarkdownDescription: "The name of the repository to create the issue in.",
+												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"assignee": schema.StringAttribute{
+												MarkdownDescription: "The GitHub user to assign the issue to.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"labels": schema.SetAttribute{
+												MarkdownDescription: "A list of labels to assign to the issue.",
+												Optional:            true,
+												CustomType:          supertypes.NewSetTypeOf[string](ctx),
+											},
+										},
 									},
 								},
 							},
@@ -429,14 +501,17 @@ type AlertResourceModelActionFiltersItemConditionsItem struct {
 }
 
 type AlertResourceModelActionFiltersItemActionsItem struct {
-	Email     supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemActionsItemEmail]     `tfsdk:"email"`
-	Plugin    supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemActionsItemPlugin]    `tfsdk:"plugin"`
-	Slack     supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemActionsItemSlack]     `tfsdk:"slack"`
-	Pagerduty supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemActionsItemPagerduty] `tfsdk:"pagerduty"`
-	Discord   supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemActionsItemDiscord]   `tfsdk:"discord"`
-	Msteams   supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemActionsItemMsteams]   `tfsdk:"msteams"`
-	Opsgenie  supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemActionsItemOpsgenie]  `tfsdk:"opsgenie"`
-	Vsts      supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemActionsItemVsts]      `tfsdk:"vsts"`
+	Email      supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemActionsItemEmail]      `tfsdk:"email"`
+	Plugin     supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemActionsItemPlugin]     `tfsdk:"plugin"`
+	Slack      supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemActionsItemSlack]      `tfsdk:"slack"`
+	Pagerduty  supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemActionsItemPagerduty]  `tfsdk:"pagerduty"`
+	Discord    supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemActionsItemDiscord]    `tfsdk:"discord"`
+	Msteams    supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemActionsItemMsteams]    `tfsdk:"msteams"`
+	Opsgenie   supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemActionsItemOpsgenie]   `tfsdk:"opsgenie"`
+	Vsts       supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemActionsItemVsts]       `tfsdk:"vsts"`
+	Jira       supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemActionsItemJira]       `tfsdk:"jira"`
+	JiraServer supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemActionsItemJiraServer] `tfsdk:"jira_server"`
+	Github     supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemActionsItemGithub]     `tfsdk:"github"`
 }
 
 type AlertResourceModelActionFiltersItemActionsItemEmail struct {
@@ -483,4 +558,23 @@ type AlertResourceModelActionFiltersItemActionsItemOpsgenie struct {
 }
 
 type AlertResourceModelActionFiltersItemActionsItemVsts struct {
+	IntegrationId supertypes.StringValue        `tfsdk:"integration_id"`
+	Data          supertypes.MapValueOf[string] `tfsdk:"data"`
+}
+
+type AlertResourceModelActionFiltersItemActionsItemJira struct {
+	IntegrationId supertypes.StringValue        `tfsdk:"integration_id"`
+	Data          supertypes.MapValueOf[string] `tfsdk:"data"`
+}
+
+type AlertResourceModelActionFiltersItemActionsItemJiraServer struct {
+	IntegrationId supertypes.StringValue        `tfsdk:"integration_id"`
+	Data          supertypes.MapValueOf[string] `tfsdk:"data"`
+}
+
+type AlertResourceModelActionFiltersItemActionsItemGithub struct {
+	IntegrationId supertypes.StringValue        `tfsdk:"integration_id"`
+	Repo          supertypes.StringValue        `tfsdk:"repo"`
+	Assignee      supertypes.StringValue        `tfsdk:"assignee"`
+	Labels        supertypes.SetValueOf[string] `tfsdk:"labels"`
 }

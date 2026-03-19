@@ -164,6 +164,96 @@ func (e OrganizationWorkflowActionFilterActionEmailType) Valid() bool {
 	}
 }
 
+// Defines values for OrganizationWorkflowActionFilterActionGitHubConfigTargetType.
+const (
+	OrganizationWorkflowActionFilterActionGitHubConfigTargetTypeSpecific OrganizationWorkflowActionFilterActionGitHubConfigTargetType = "specific"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionGitHubConfigTargetType enum.
+func (e OrganizationWorkflowActionFilterActionGitHubConfigTargetType) Valid() bool {
+	switch e {
+	case OrganizationWorkflowActionFilterActionGitHubConfigTargetTypeSpecific:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionGitHubType.
+const (
+	Github OrganizationWorkflowActionFilterActionGitHubType = "github"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionGitHubType enum.
+func (e OrganizationWorkflowActionFilterActionGitHubType) Valid() bool {
+	switch e {
+	case Github:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionJiraConfigTargetType.
+const (
+	OrganizationWorkflowActionFilterActionJiraConfigTargetTypeSpecific OrganizationWorkflowActionFilterActionJiraConfigTargetType = "specific"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionJiraConfigTargetType enum.
+func (e OrganizationWorkflowActionFilterActionJiraConfigTargetType) Valid() bool {
+	switch e {
+	case OrganizationWorkflowActionFilterActionJiraConfigTargetTypeSpecific:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionJiraType.
+const (
+	Jira OrganizationWorkflowActionFilterActionJiraType = "jira"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionJiraType enum.
+func (e OrganizationWorkflowActionFilterActionJiraType) Valid() bool {
+	switch e {
+	case Jira:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionJiraServerConfigTargetType.
+const (
+	OrganizationWorkflowActionFilterActionJiraServerConfigTargetTypeSpecific OrganizationWorkflowActionFilterActionJiraServerConfigTargetType = "specific"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionJiraServerConfigTargetType enum.
+func (e OrganizationWorkflowActionFilterActionJiraServerConfigTargetType) Valid() bool {
+	switch e {
+	case OrganizationWorkflowActionFilterActionJiraServerConfigTargetTypeSpecific:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionJiraServerType.
+const (
+	JiraServer OrganizationWorkflowActionFilterActionJiraServerType = "jira_server"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionJiraServerType enum.
+func (e OrganizationWorkflowActionFilterActionJiraServerType) Valid() bool {
+	switch e {
+	case JiraServer:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for OrganizationWorkflowActionFilterActionMsTeamsConfigTargetType.
 const (
 	OrganizationWorkflowActionFilterActionMsTeamsConfigTargetTypeSpecific OrganizationWorkflowActionFilterActionMsTeamsConfigTargetType = "specific"
@@ -271,13 +361,13 @@ func (e OrganizationWorkflowActionFilterActionPluginType) Valid() bool {
 
 // Defines values for OrganizationWorkflowActionFilterActionSlackConfigTargetType.
 const (
-	Specific OrganizationWorkflowActionFilterActionSlackConfigTargetType = "specific"
+	OrganizationWorkflowActionFilterActionSlackConfigTargetTypeSpecific OrganizationWorkflowActionFilterActionSlackConfigTargetType = "specific"
 )
 
 // Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionSlackConfigTargetType enum.
 func (e OrganizationWorkflowActionFilterActionSlackConfigTargetType) Valid() bool {
 	switch e {
-	case Specific:
+	case OrganizationWorkflowActionFilterActionSlackConfigTargetTypeSpecific:
 		return true
 	default:
 		return false
@@ -293,6 +383,36 @@ const (
 func (e OrganizationWorkflowActionFilterActionSlackType) Valid() bool {
 	switch e {
 	case Slack:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionVstsConfigTargetType.
+const (
+	Specific OrganizationWorkflowActionFilterActionVstsConfigTargetType = "specific"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionVstsConfigTargetType enum.
+func (e OrganizationWorkflowActionFilterActionVstsConfigTargetType) Valid() bool {
+	switch e {
+	case Specific:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionVstsType.
+const (
+	Vsts OrganizationWorkflowActionFilterActionVstsType = "vsts"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionVstsType enum.
+func (e OrganizationWorkflowActionFilterActionVstsType) Valid() bool {
+	switch e {
+	case Vsts:
 		return true
 	default:
 		return false
@@ -1215,6 +1335,61 @@ type OrganizationWorkflowActionFilterActionEmailDataFallthroughType string
 // OrganizationWorkflowActionFilterActionEmailType defines model for OrganizationWorkflowActionFilterActionEmail.Type.
 type OrganizationWorkflowActionFilterActionEmailType string
 
+// OrganizationWorkflowActionFilterActionGitHub defines model for OrganizationWorkflow_ActionFilter_Action_GitHub.
+type OrganizationWorkflowActionFilterActionGitHub struct {
+	Config struct {
+		TargetType OrganizationWorkflowActionFilterActionGitHubConfigTargetType `json:"targetType"`
+	} `json:"config"`
+	Data struct {
+		AdditionalFields struct {
+			Assignee    string   `json:"assignee"`
+			Integration string   `json:"integration"`
+			Labels      []string `json:"labels"`
+			Repo        string   `json:"repo"`
+		} `json:"additionalFields"`
+	} `json:"data"`
+	IntegrationId string                                           `json:"integrationId"`
+	Type          OrganizationWorkflowActionFilterActionGitHubType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterActionGitHubConfigTargetType defines model for OrganizationWorkflowActionFilterActionGitHub.Config.TargetType.
+type OrganizationWorkflowActionFilterActionGitHubConfigTargetType string
+
+// OrganizationWorkflowActionFilterActionGitHubType defines model for OrganizationWorkflowActionFilterActionGitHub.Type.
+type OrganizationWorkflowActionFilterActionGitHubType string
+
+// OrganizationWorkflowActionFilterActionJira defines model for OrganizationWorkflow_ActionFilter_Action_Jira.
+type OrganizationWorkflowActionFilterActionJira struct {
+	Config struct {
+		TargetType OrganizationWorkflowActionFilterActionJiraConfigTargetType `json:"targetType"`
+	} `json:"config"`
+	Data          map[string]string                              `json:"data"`
+	IntegrationId string                                         `json:"integrationId"`
+	Type          OrganizationWorkflowActionFilterActionJiraType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterActionJiraConfigTargetType defines model for OrganizationWorkflowActionFilterActionJira.Config.TargetType.
+type OrganizationWorkflowActionFilterActionJiraConfigTargetType string
+
+// OrganizationWorkflowActionFilterActionJiraType defines model for OrganizationWorkflowActionFilterActionJira.Type.
+type OrganizationWorkflowActionFilterActionJiraType string
+
+// OrganizationWorkflowActionFilterActionJiraServer defines model for OrganizationWorkflow_ActionFilter_Action_JiraServer.
+type OrganizationWorkflowActionFilterActionJiraServer struct {
+	Config struct {
+		TargetType OrganizationWorkflowActionFilterActionJiraServerConfigTargetType `json:"targetType"`
+	} `json:"config"`
+	Data          map[string]string                                    `json:"data"`
+	IntegrationId string                                               `json:"integrationId"`
+	Type          OrganizationWorkflowActionFilterActionJiraServerType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterActionJiraServerConfigTargetType defines model for OrganizationWorkflowActionFilterActionJiraServer.Config.TargetType.
+type OrganizationWorkflowActionFilterActionJiraServerConfigTargetType string
+
+// OrganizationWorkflowActionFilterActionJiraServerType defines model for OrganizationWorkflowActionFilterActionJiraServer.Type.
+type OrganizationWorkflowActionFilterActionJiraServerType string
+
 // OrganizationWorkflowActionFilterActionMsTeams defines model for OrganizationWorkflow_ActionFilter_Action_MsTeams.
 type OrganizationWorkflowActionFilterActionMsTeams struct {
 	Config struct {
@@ -1303,6 +1478,22 @@ type OrganizationWorkflowActionFilterActionSlackConfigTargetType string
 
 // OrganizationWorkflowActionFilterActionSlackType defines model for OrganizationWorkflowActionFilterActionSlack.Type.
 type OrganizationWorkflowActionFilterActionSlackType string
+
+// OrganizationWorkflowActionFilterActionVsts defines model for OrganizationWorkflow_ActionFilter_Action_Vsts.
+type OrganizationWorkflowActionFilterActionVsts struct {
+	Config struct {
+		TargetType OrganizationWorkflowActionFilterActionVstsConfigTargetType `json:"targetType"`
+	} `json:"config"`
+	Data          map[string]string                              `json:"data"`
+	IntegrationId string                                         `json:"integrationId"`
+	Type          OrganizationWorkflowActionFilterActionVstsType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterActionVstsConfigTargetType defines model for OrganizationWorkflowActionFilterActionVsts.Config.TargetType.
+type OrganizationWorkflowActionFilterActionVstsConfigTargetType string
+
+// OrganizationWorkflowActionFilterActionVstsType defines model for OrganizationWorkflowActionFilterActionVsts.Type.
+type OrganizationWorkflowActionFilterActionVstsType string
 
 // OrganizationWorkflowConfig defines model for OrganizationWorkflow_Config.
 type OrganizationWorkflowConfig struct {
@@ -2783,6 +2974,118 @@ func (t *OrganizationWorkflowActionFilterAction) MergeOrganizationWorkflowAction
 	return err
 }
 
+// AsOrganizationWorkflowActionFilterActionVsts returns the union data inside the OrganizationWorkflowActionFilterAction as a OrganizationWorkflowActionFilterActionVsts
+func (t OrganizationWorkflowActionFilterAction) AsOrganizationWorkflowActionFilterActionVsts() (OrganizationWorkflowActionFilterActionVsts, error) {
+	var body OrganizationWorkflowActionFilterActionVsts
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterActionVsts overwrites any union data inside the OrganizationWorkflowActionFilterAction as the provided OrganizationWorkflowActionFilterActionVsts
+func (t *OrganizationWorkflowActionFilterAction) FromOrganizationWorkflowActionFilterActionVsts(v OrganizationWorkflowActionFilterActionVsts) error {
+	v.Type = "vsts"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterActionVsts performs a merge with any union data inside the OrganizationWorkflowActionFilterAction, using the provided OrganizationWorkflowActionFilterActionVsts
+func (t *OrganizationWorkflowActionFilterAction) MergeOrganizationWorkflowActionFilterActionVsts(v OrganizationWorkflowActionFilterActionVsts) error {
+	v.Type = "vsts"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterActionJira returns the union data inside the OrganizationWorkflowActionFilterAction as a OrganizationWorkflowActionFilterActionJira
+func (t OrganizationWorkflowActionFilterAction) AsOrganizationWorkflowActionFilterActionJira() (OrganizationWorkflowActionFilterActionJira, error) {
+	var body OrganizationWorkflowActionFilterActionJira
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterActionJira overwrites any union data inside the OrganizationWorkflowActionFilterAction as the provided OrganizationWorkflowActionFilterActionJira
+func (t *OrganizationWorkflowActionFilterAction) FromOrganizationWorkflowActionFilterActionJira(v OrganizationWorkflowActionFilterActionJira) error {
+	v.Type = "jira"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterActionJira performs a merge with any union data inside the OrganizationWorkflowActionFilterAction, using the provided OrganizationWorkflowActionFilterActionJira
+func (t *OrganizationWorkflowActionFilterAction) MergeOrganizationWorkflowActionFilterActionJira(v OrganizationWorkflowActionFilterActionJira) error {
+	v.Type = "jira"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterActionJiraServer returns the union data inside the OrganizationWorkflowActionFilterAction as a OrganizationWorkflowActionFilterActionJiraServer
+func (t OrganizationWorkflowActionFilterAction) AsOrganizationWorkflowActionFilterActionJiraServer() (OrganizationWorkflowActionFilterActionJiraServer, error) {
+	var body OrganizationWorkflowActionFilterActionJiraServer
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterActionJiraServer overwrites any union data inside the OrganizationWorkflowActionFilterAction as the provided OrganizationWorkflowActionFilterActionJiraServer
+func (t *OrganizationWorkflowActionFilterAction) FromOrganizationWorkflowActionFilterActionJiraServer(v OrganizationWorkflowActionFilterActionJiraServer) error {
+	v.Type = "jira_server"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterActionJiraServer performs a merge with any union data inside the OrganizationWorkflowActionFilterAction, using the provided OrganizationWorkflowActionFilterActionJiraServer
+func (t *OrganizationWorkflowActionFilterAction) MergeOrganizationWorkflowActionFilterActionJiraServer(v OrganizationWorkflowActionFilterActionJiraServer) error {
+	v.Type = "jira_server"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterActionGitHub returns the union data inside the OrganizationWorkflowActionFilterAction as a OrganizationWorkflowActionFilterActionGitHub
+func (t OrganizationWorkflowActionFilterAction) AsOrganizationWorkflowActionFilterActionGitHub() (OrganizationWorkflowActionFilterActionGitHub, error) {
+	var body OrganizationWorkflowActionFilterActionGitHub
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterActionGitHub overwrites any union data inside the OrganizationWorkflowActionFilterAction as the provided OrganizationWorkflowActionFilterActionGitHub
+func (t *OrganizationWorkflowActionFilterAction) FromOrganizationWorkflowActionFilterActionGitHub(v OrganizationWorkflowActionFilterActionGitHub) error {
+	v.Type = "github"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterActionGitHub performs a merge with any union data inside the OrganizationWorkflowActionFilterAction, using the provided OrganizationWorkflowActionFilterActionGitHub
+func (t *OrganizationWorkflowActionFilterAction) MergeOrganizationWorkflowActionFilterActionGitHub(v OrganizationWorkflowActionFilterActionGitHub) error {
+	v.Type = "github"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
 func (t OrganizationWorkflowActionFilterAction) Discriminator() (string, error) {
 	var discriminator struct {
 		Discriminator string `json:"type"`
@@ -2801,6 +3104,12 @@ func (t OrganizationWorkflowActionFilterAction) ValueByDiscriminator() (interfac
 		return t.AsOrganizationWorkflowActionFilterActionDiscord()
 	case "email":
 		return t.AsOrganizationWorkflowActionFilterActionEmail()
+	case "github":
+		return t.AsOrganizationWorkflowActionFilterActionGitHub()
+	case "jira":
+		return t.AsOrganizationWorkflowActionFilterActionJira()
+	case "jira_server":
+		return t.AsOrganizationWorkflowActionFilterActionJiraServer()
 	case "msteams":
 		return t.AsOrganizationWorkflowActionFilterActionMsTeams()
 	case "opsgenie":
@@ -2811,6 +3120,8 @@ func (t OrganizationWorkflowActionFilterAction) ValueByDiscriminator() (interfac
 		return t.AsOrganizationWorkflowActionFilterActionPlugin()
 	case "slack":
 		return t.AsOrganizationWorkflowActionFilterActionSlack()
+	case "vsts":
+		return t.AsOrganizationWorkflowActionFilterActionVsts()
 	default:
 		return nil, errors.New("unknown discriminator value: " + discriminator)
 	}

@@ -167,6 +167,97 @@ func (r *AlertResource) getCreateJSONRequestBody(ctx context.Context, data Alert
 					return nil, diags
 				}
 
+			case inAction.Vsts.IsKnown():
+				inVsts := inAction.Vsts.DiagsGet(ctx, diags)
+				if diags.HasError() {
+					return nil, diags
+				}
+
+				var outVsts apiclient.OrganizationWorkflowActionFilterActionVsts
+				outVsts.IntegrationId = inVsts.IntegrationId.Get()
+				outVsts.Config.TargetType = "specific"
+				if inVsts.Data.IsKnown() {
+					outVsts.Data = inVsts.Data.DiagsGet(ctx, diags)
+				} else {
+					outVsts.Data = map[string]string{}
+				}
+				if diags.HasError() {
+					return nil, diags
+				}
+
+				if err := outAction.FromOrganizationWorkflowActionFilterActionVsts(outVsts); err != nil {
+					diags.AddError("Failed to create action", err.Error())
+					return nil, diags
+				}
+
+			case inAction.Jira.IsKnown():
+				inJira := inAction.Jira.DiagsGet(ctx, diags)
+				if diags.HasError() {
+					return nil, diags
+				}
+
+				var outJira apiclient.OrganizationWorkflowActionFilterActionJira
+				outJira.IntegrationId = inJira.IntegrationId.Get()
+				outJira.Config.TargetType = "specific"
+				if inJira.Data.IsKnown() {
+					outJira.Data = inJira.Data.DiagsGet(ctx, diags)
+				} else {
+					outJira.Data = map[string]string{}
+				}
+				if diags.HasError() {
+					return nil, diags
+				}
+
+				if err := outAction.FromOrganizationWorkflowActionFilterActionJira(outJira); err != nil {
+					diags.AddError("Failed to create action", err.Error())
+					return nil, diags
+				}
+
+			case inAction.JiraServer.IsKnown():
+				inJiraServer := inAction.JiraServer.DiagsGet(ctx, diags)
+				if diags.HasError() {
+					return nil, diags
+				}
+
+				var outJiraServer apiclient.OrganizationWorkflowActionFilterActionJiraServer
+				outJiraServer.IntegrationId = inJiraServer.IntegrationId.Get()
+				outJiraServer.Config.TargetType = "specific"
+				if inJiraServer.Data.IsKnown() {
+					outJiraServer.Data = inJiraServer.Data.DiagsGet(ctx, diags)
+				} else {
+					outJiraServer.Data = map[string]string{}
+				}
+				if diags.HasError() {
+					return nil, diags
+				}
+
+				if err := outAction.FromOrganizationWorkflowActionFilterActionJiraServer(outJiraServer); err != nil {
+					diags.AddError("Failed to create action", err.Error())
+					return nil, diags
+				}
+
+			case inAction.Github.IsKnown():
+				inGithub := inAction.Github.DiagsGet(ctx, diags)
+				if diags.HasError() {
+					return nil, diags
+				}
+
+				var outGithub apiclient.OrganizationWorkflowActionFilterActionGitHub
+				outGithub.IntegrationId = inGithub.IntegrationId.Get()
+				outGithub.Config.TargetType = "specific"
+				outGithub.Data.AdditionalFields.Repo = inGithub.Repo.Get()
+				outGithub.Data.AdditionalFields.Assignee = inGithub.Assignee.Get()
+				outGithub.Data.AdditionalFields.Labels = inGithub.Labels.DiagsGet(ctx, diags)
+				outGithub.Data.AdditionalFields.Integration = inGithub.IntegrationId.Get()
+				if diags.HasError() {
+					return nil, diags
+				}
+
+				if err := outAction.FromOrganizationWorkflowActionFilterActionGitHub(outGithub); err != nil {
+					diags.AddError("Failed to create action", err.Error())
+					return nil, diags
+				}
+
 			}
 
 			outActions = append(outActions, outAction)
@@ -216,13 +307,17 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 		var outActions []AlertResourceModelActionFiltersItemActionsItem
 		for _, action := range actionFilter.Actions {
 			outAction := AlertResourceModelActionFiltersItemActionsItem{
-				Email:     supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemActionsItemEmail](ctx),
-				Plugin:    supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemActionsItemPlugin](ctx),
-				Slack:     supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemActionsItemSlack](ctx),
-				Pagerduty: supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemActionsItemPagerduty](ctx),
-				Discord:   supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemActionsItemDiscord](ctx),
-				Msteams:   supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemActionsItemMsteams](ctx),
-				Opsgenie:  supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemActionsItemOpsgenie](ctx),
+				Email:      supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemActionsItemEmail](ctx),
+				Plugin:     supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemActionsItemPlugin](ctx),
+				Slack:      supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemActionsItemSlack](ctx),
+				Pagerduty:  supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemActionsItemPagerduty](ctx),
+				Discord:    supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemActionsItemDiscord](ctx),
+				Msteams:    supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemActionsItemMsteams](ctx),
+				Opsgenie:   supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemActionsItemOpsgenie](ctx),
+				Vsts:       supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemActionsItemVsts](ctx),
+				Jira:       supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemActionsItemJira](ctx),
+				JiraServer: supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemActionsItemJiraServer](ctx),
+				Github:     supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemActionsItemGithub](ctx),
 			}
 
 			actionValue, err := action.ValueByDiscriminator()
@@ -298,6 +393,50 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 				outOpsgenie.Priority = supertypes.NewStringValue(string(*actionValue.Data.Priority))
 
 				outAction.Opsgenie = supertypes.NewSingleNestedObjectValueOf(ctx, &outOpsgenie)
+
+			case apiclient.OrganizationWorkflowActionFilterActionVsts:
+				var outVsts AlertResourceModelActionFiltersItemActionsItemVsts
+				outVsts.IntegrationId = supertypes.NewStringValue(actionValue.IntegrationId)
+				outVsts.Data.DiagsSet(ctx, diags, actionValue.Data)
+				if diags.HasError() {
+					return
+				}
+
+				outAction.Vsts = supertypes.NewSingleNestedObjectValueOf(ctx, &outVsts)
+
+			case apiclient.OrganizationWorkflowActionFilterActionJira:
+				var outJira AlertResourceModelActionFiltersItemActionsItemJira
+				outJira.IntegrationId = supertypes.NewStringValue(actionValue.IntegrationId)
+				outJira.Data.DiagsSet(ctx, diags, actionValue.Data)
+				if diags.HasError() {
+					return
+				}
+
+				outAction.Jira = supertypes.NewSingleNestedObjectValueOf(ctx, &outJira)
+
+			case apiclient.OrganizationWorkflowActionFilterActionJiraServer:
+				var outJiraServer AlertResourceModelActionFiltersItemActionsItemJiraServer
+				outJiraServer.IntegrationId = supertypes.NewStringValue(actionValue.IntegrationId)
+				outJiraServer.Data.DiagsSet(ctx, diags, actionValue.Data)
+				if diags.HasError() {
+					return
+				}
+
+				outAction.JiraServer = supertypes.NewSingleNestedObjectValueOf(ctx, &outJiraServer)
+
+			case apiclient.OrganizationWorkflowActionFilterActionGitHub:
+				var outGithub AlertResourceModelActionFiltersItemActionsItemGithub
+				outGithub.IntegrationId = supertypes.NewStringValue(actionValue.IntegrationId)
+				outGithub.Repo = supertypes.NewStringValue(actionValue.Data.AdditionalFields.Repo)
+				if actionValue.Data.AdditionalFields.Assignee != "" {
+					outGithub.Assignee = supertypes.NewStringValue(actionValue.Data.AdditionalFields.Assignee)
+				}
+				outGithub.Labels = supertypes.NewSetValueOfSlice(ctx, actionValue.Data.AdditionalFields.Labels)
+				if diags.HasError() {
+					return
+				}
+
+				outAction.Github = supertypes.NewSingleNestedObjectValueOf(ctx, &outGithub)
 			}
 
 			outActions = append(outActions, outAction)

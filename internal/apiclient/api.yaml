@@ -2955,6 +2955,10 @@ components:
         - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Discord"
         - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_MsTeams"
         - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Opsgenie"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Vsts"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Jira"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_JiraServer"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_GitHub"
       discriminator:
         propertyName: type
         mapping:
@@ -2965,6 +2969,10 @@ components:
           discord: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Discord"
           msteams: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_MsTeams"
           opsgenie: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Opsgenie"
+          vsts: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Vsts"
+          jira: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Jira"
+          jira_server: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_JiraServer"
+          github: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_GitHub"
     OrganizationWorkflow_ActionFilter_Action_Email:
       type: object
       required:
@@ -3181,5 +3189,132 @@ components:
               type: string
             targetDisplay:
               type: string
+        integrationId:
+          type: string
+    OrganizationWorkflow_ActionFilter_Action_Vsts:
+      type: object
+      required:
+        - type
+        - data
+        - config
+        - integrationId
+      properties:
+        type:
+          type: string
+          enum:
+            - vsts
+        data:
+          type: object
+          additionalProperties:
+            type: string
+        config:
+          type: object
+          required:
+            - targetType
+          properties:
+            targetType:
+              type: string
+              enum:
+                - specific
+        integrationId:
+          type: string
+    OrganizationWorkflow_ActionFilter_Action_Jira:
+      type: object
+      required:
+        - type
+        - data
+        - config
+        - integrationId
+      properties:
+        type:
+          type: string
+          enum:
+            - jira
+        data:
+          type: object
+          additionalProperties:
+            type: string
+        config:
+          type: object
+          required:
+            - targetType
+          properties:
+            targetType:
+              type: string
+              enum:
+                - specific
+        integrationId:
+          type: string
+    OrganizationWorkflow_ActionFilter_Action_JiraServer:
+      type: object
+      required:
+        - type
+        - data
+        - config
+        - integrationId
+      properties:
+        type:
+          type: string
+          enum:
+            - jira_server
+        data:
+          type: object
+          additionalProperties:
+            type: string
+        config:
+          type: object
+          required:
+            - targetType
+          properties:
+            targetType:
+              type: string
+              enum:
+                - specific
+        integrationId:
+          type: string
+    OrganizationWorkflow_ActionFilter_Action_GitHub:
+      type: object
+      required:
+        - type
+        - data
+        - config
+        - integrationId
+      properties:
+        type:
+          type: string
+          enum:
+            - github
+        data:
+          type: object
+          required:
+            - additionalFields
+          properties:
+            additionalFields:
+              type: object
+              required:
+                - repo
+                - labels
+                - assignee
+                - integration
+              properties:
+                repo:
+                  type: string
+                labels:
+                  type: array
+                  items:
+                    type: string
+                assignee:
+                  type: string
+                integration:
+                  type: string
+        config:
+          type: object
+          required:
+            - targetType
+          properties:
+            targetType:
+              type: string
+              enum:
+                - specific
         integrationId:
           type: string
