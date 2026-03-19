@@ -6,8 +6,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 	"github.com/oapi-codegen/nullable"
-	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 )
 
 func (r *CronMonitorResource) getCreateJSONRequestBody(ctx context.Context, data CronMonitorResourceModel) (*apiclient.CreateProjectMonitorJSONRequestBody, diag.Diagnostics) {
@@ -15,7 +15,7 @@ func (r *CronMonitorResource) getCreateJSONRequestBody(ctx context.Context, data
 
 	var outDs apiclient.ProjectMonitorDataSourceConfigCron
 
-	inSchedule := data.Schedule.DiagsGet(ctx, diags)
+	inSchedule := tfutils.MergeDiagnostics(data.Schedule.Get(ctx))(&diags)
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -73,7 +73,11 @@ func (r *CronMonitorResource) getCreateJSONRequestBody(ctx context.Context, data
 	}
 
 	if data.DefaultAssignee.IsKnown() {
-		defaultAssignee := data.DefaultAssignee.MustGet(ctx)
+		defaultAssignee := tfutils.MergeDiagnostics(data.DefaultAssignee.Get(ctx))(&diags)
+		if diags.HasError() {
+			return nil, diags
+		}
+
 		switch {
 		case defaultAssignee.TeamId.IsKnown():
 			out.Owner = nullable.NewNullableWithValue(fmt.Sprintf("team:%s", defaultAssignee.TeamId.Get()))
@@ -94,18 +98,28 @@ func (r *CronMonitorResource) getCreateJSONRequestBody(ctx context.Context, data
 	return &req, nil
 }
 
+func (r *CronMonitorResource) getUpdateJSONRequestBody(ctx context.Context, data CronMonitorResourceModel) (*apiclient.UpdateProjectMonitorJSONRequestBody, diag.Diagnostics) {
+	return r.getCreateJSONRequestBody(ctx, data)
+}
+
 func (m *CronMonitorResourceModel) Fill(ctx context.Context, data apiclient.ProjectMonitor) (diags diag.Diagnostics) {
-	m.Id = supertypes.NewStringValue(data.Id)
-	m.Name = supertypes.NewStringValue(data.Name)
+	m.Id.Set(data.Id)
+	m.Name.Set(data.Name)
 	if v, err := data.Description.Get(); err == nil {
-		m.Description = supertypes.NewStringValueOrNull(v)
+		m.Description.Set(v)
 	} else {
-		m.Description = supertypes.NewStringNull()
+		m.Description.SetNull()
 	}
-	m.Enabled = supertypes.NewBoolValue(data.Enabled)
+	m.Enabled.Set(data.Enabled)
 
 	if data.Owner.IsSpecified() && !data.Owner.IsNull() {
-		ownerValue, err := data.Owner.MustGet().ValueByDiscriminator()
+		owner, err := data.Owner.Get()
+		if err != nil {
+			diags.AddError("Invalid owner", err.Error())
+			return
+		}
+
+		ownerValue, err := owner.ValueByDiscriminator()
 		if err != nil {
 			diags.AddError("Invalid owner", err.Error())
 			return
@@ -115,16 +129,20 @@ func (m *CronMonitorResourceModel) Fill(ctx context.Context, data apiclient.Proj
 
 		switch ownerValue := ownerValue.(type) {
 		case apiclient.ProjectMonitorOwnerUser:
-			defaultAssignee.UserId = supertypes.NewStringValue(ownerValue.Id)
-			m.DefaultAssignee = supertypes.NewSingleNestedObjectValueOf(ctx, defaultAssignee)
+			defaultAssignee.UserId.Set(ownerValue.Id)
+			diags.Append(m.DefaultAssignee.Set(ctx, defaultAssignee)...)
 		case apiclient.ProjectMonitorOwnerTeam:
-			defaultAssignee.TeamId = supertypes.NewStringValue(ownerValue.Id)
-			m.DefaultAssignee = supertypes.NewSingleNestedObjectValueOf(ctx, defaultAssignee)
+			defaultAssignee.TeamId.Set(ownerValue.Id)
+			diags.Append(m.DefaultAssignee.Set(ctx, defaultAssignee)...)
 		default:
-			m.DefaultAssignee = supertypes.NewSingleNestedObjectValueOfNull[CronMonitorResourceModelDefaultAssignee](ctx)
+			m.DefaultAssignee.SetNull(ctx)
 		}
 	} else {
-		m.DefaultAssignee = supertypes.NewSingleNestedObjectValueOfNull[CronMonitorResourceModelDefaultAssignee](ctx)
+		m.DefaultAssignee.SetNull(ctx)
+	}
+
+	if diags.HasError() {
+		return
 	}
 
 	if len(data.DataSources) != 1 {
@@ -148,19 +166,19 @@ func (m *CronMonitorResourceModel) Fill(ctx context.Context, data apiclient.Proj
 
 	switch configValue := configValue.(type) {
 	case apiclient.ProjectMonitorDataSourceConfigCronCrontab:
-		m.CheckinMargin = supertypes.NewInt64Value(configValue.CheckinMargin)
-		m.FailureIssueThreshold = supertypes.NewInt64Value(configValue.FailureIssueThreshold)
-		m.MaxRuntime = supertypes.NewInt64Value(configValue.MaxRuntime)
-		m.RecoveryThreshold = supertypes.NewInt64Value(configValue.RecoveryThreshold)
-		m.Timezone = supertypes.NewStringValue(configValue.Timezone)
-		schedule.Crontab = supertypes.NewStringValue(configValue.Schedule)
+		m.CheckinMargin.Set(configValue.CheckinMargin)
+		m.FailureIssueThreshold.Set(configValue.FailureIssueThreshold)
+		m.MaxRuntime.Set(configValue.MaxRuntime)
+		m.RecoveryThreshold.Set(configValue.RecoveryThreshold)
+		m.Timezone.Set(configValue.Timezone)
+		schedule.Crontab.Set(configValue.Schedule)
 
 	case apiclient.ProjectMonitorDataSourceConfigCronInterval:
-		m.CheckinMargin = supertypes.NewInt64Value(configValue.CheckinMargin)
-		m.FailureIssueThreshold = supertypes.NewInt64Value(configValue.FailureIssueThreshold)
-		m.MaxRuntime = supertypes.NewInt64Value(configValue.MaxRuntime)
-		m.RecoveryThreshold = supertypes.NewInt64Value(configValue.RecoveryThreshold)
-		m.Timezone = supertypes.NewStringValue(configValue.Timezone)
+		m.CheckinMargin.Set(configValue.CheckinMargin)
+		m.FailureIssueThreshold.Set(configValue.FailureIssueThreshold)
+		m.MaxRuntime.Set(configValue.MaxRuntime)
+		m.RecoveryThreshold.Set(configValue.RecoveryThreshold)
+		m.Timezone.Set(configValue.Timezone)
 
 		if len(configValue.Schedule) != 2 {
 			diags.AddError("Invalid schedule", fmt.Sprintf("Expected 2 items, got %d", len(configValue.Schedule)))
@@ -169,21 +187,21 @@ func (m *CronMonitorResourceModel) Fill(ctx context.Context, data apiclient.Proj
 		}
 
 		if intervalValue, err := configValue.Schedule[0].AsProjectMonitorDataSourceConfigCronIntervalValue(); err == nil {
-			schedule.IntervalValue = supertypes.NewInt64Value(intervalValue)
+			schedule.IntervalValue.Set(intervalValue)
 		} else {
 			diags.AddError("Invalid schedule", "Invalid interval value")
 			return
 		}
 
 		if intervalUnit, err := configValue.Schedule[1].AsProjectMonitorDataSourceConfigCronIntervalUnit(); err == nil {
-			schedule.IntervalUnit = supertypes.NewStringValue(string(intervalUnit))
+			schedule.IntervalUnit.Set(intervalUnit)
 		} else {
 			diags.AddError("Invalid schedule", "Invalid interval unit")
 			return
 		}
 	}
 
-	m.Schedule = supertypes.NewSingleNestedObjectValueOf(ctx, schedule)
+	diags.Append(m.Schedule.Set(ctx, schedule)...)
 
 	return
 }

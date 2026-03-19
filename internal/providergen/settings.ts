@@ -482,6 +482,8 @@ export const RESOURCES: Array<Resource> = [
       createRequestAttributes: ["organization", "project"],
       readMethod: "GetProjectMonitor",
       readRequestAttributes: ["organization", "id"],
+      updateMethod: "UpdateProjectMonitor",
+      updateRequestAttributes: ["organization", "id"],
       deleteMethod: "DeleteProjectMonitor",
       deleteRequestAttributes: ["organization", "id"],
     },

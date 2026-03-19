@@ -452,6 +452,28 @@ paths:
           description: Forbidden
         "404":
           description: Not Found
+    put:
+      summary: Update a Monitor
+      operationId: updateProjectMonitor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectMonitorRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectMonitor"
+        "400":
+          description: Bad Request
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
     delete:
       summary: Delete a Monitor
       operationId: deleteProjectMonitor
@@ -2733,13 +2755,6 @@ components:
       format: int64
     ProjectMonitor_DataSource_Config_Cron_Interval_Unit:
       type: string
-      enum:
-        - minute
-        - hour
-        - day
-        - week
-        - month
-        - year
     ProjectMonitor_ConditionGroup:
       type: object
       required:
