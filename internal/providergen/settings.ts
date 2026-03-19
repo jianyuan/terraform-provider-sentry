@@ -474,9 +474,11 @@ export const RESOURCES: Array<Resource> = [
   },
   {
     name: "cron_monitor",
-    description: `⚠️ This resource is currently in beta and may be subject to change. It is supported by [New Monitors and Alerts](https://docs.sentry.io/product/new-monitors-and-alerts/) and may not be viewable in the UI today.
+    description: dedent.withOptions({ trimWhitespace: true })`
+      ⚠️ This resource is currently in beta and may be subject to change. It is supported by [New Monitors and Alerts](https://docs.sentry.io/product/new-monitors-and-alerts/) and may not be viewable in the UI today.
 
-Create a Cron Monitor for a Project.`,
+      Create a Cron Monitor for a Project.
+    `,
     api: {
       model: "ProjectMonitor",
       createMethod: "CreateProjectMonitor",
@@ -651,19 +653,26 @@ Create a Cron Monitor for a Project.`,
   },
   {
     name: "uptime_monitor",
-    description: "Create an Uptime Monitor for a Project.",
+    description: dedent.withOptions({ trimWhitespace: true })`
+      ⚠️ This resource is currently in beta and may be subject to change. It is supported by [New Monitors and Alerts](https://docs.sentry.io/product/new-monitors-and-alerts/) and may not be viewable in the UI today.
+
+      Create an Uptime Monitor for a Project.
+    `,
     api: {
       model: "ProjectMonitor",
       createMethod: "CreateProjectMonitor",
       createRequestAttributes: ["organization", "project"],
       readMethod: "GetProjectMonitor",
       readRequestAttributes: ["organization", "id"],
+      updateMethod: "UpdateProjectMonitor",
+      updateRequestAttributes: ["organization", "id"],
       deleteMethod: "DeleteProjectMonitor",
       deleteRequestAttributes: ["organization", "id"],
     },
     generate: {
       modelFillers: false,
     },
+    importStateAttributes: ["organization", "project", "id"],
     attributes: [
       {
         name: "id",
@@ -724,6 +733,7 @@ Create a Cron Monitor for a Project.`,
               "The user ID to assign new issues to. Conflicts with `team_id`.",
             computedOptionalRequired: "optional",
             validators: [
+              `stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("team_id"))`,
               `stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("team_id"))`,
             ],
           },
@@ -742,39 +752,40 @@ Create a Cron Monitor for a Project.`,
       {
         name: "url",
         type: "string",
-        description: "TODO",
+        description: "The URL to monitor.",
         computedOptionalRequired: "required",
       },
       {
         name: "method",
         type: "string",
-        description: "TODO",
+        description: "The HTTP method to use for the request.",
         computedOptionalRequired: "required",
         enum: "sentrydata.UptimeSubscriptionSupportedHttpMethods",
       },
       {
         name: "body",
         type: "string",
-        description: "TODO",
+        description:
+          "The request body to send. Only applicable for methods that support a body.",
         computedOptionalRequired: "optional",
         nullable: true,
       },
       {
         name: "headers",
         type: "list_nested",
-        description: "TODO",
+        description: "The headers to send with the request.",
         computedOptionalRequired: "optional",
         attributes: [
           {
             name: "key",
             type: "string",
-            description: "TODO",
+            description: "The header key.",
             computedOptionalRequired: "required",
           },
           {
             name: "value",
             type: "string",
-            description: "TODO",
+            description: "The header value.",
             computedOptionalRequired: "required",
           },
         ],
@@ -782,14 +793,14 @@ Create a Cron Monitor for a Project.`,
       {
         name: "interval_seconds",
         type: "int",
-        description: "TODO",
+        description: "The amount of time between each uptime check request.",
         computedOptionalRequired: "required",
         enum: "sentrydata.UptimeSubscriptionIntervalSeconds",
       },
       {
         name: "timeout_ms",
         type: "int",
-        description: "TODO",
+        description: "The request timeout in milliseconds.",
         computedOptionalRequired: "required",
       },
       {
