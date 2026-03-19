@@ -2,9 +2,12 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
+	"slices"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/jianyuan/go-utils/must"
 	"github.com/jianyuan/go-utils/ptr"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
@@ -625,6 +628,23 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 	var outActionFilters []AlertResourceModelActionFiltersItem
 	for _, actionFilter := range data.ActionFilters {
 		// Conditions
+
+		// NOTE: The API returns conditions in a random order, so we need to sort them by ID to ensure that the
+		// order is deterministic.
+		slices.SortFunc(actionFilter.Conditions, func(a, b apiclient.OrganizationWorkflowActionFilterCondition) int {
+			var aData struct {
+				Id string `json:"id"`
+			}
+			var bData struct {
+				Id string `json:"id"`
+			}
+			must.Do(json.Unmarshal(must.Get(a.MarshalJSON()), &aData))
+			must.Do(json.Unmarshal(must.Get(b.MarshalJSON()), &bData))
+			aId := must.Get(strconv.Atoi(aData.Id))
+			bId := must.Get(strconv.Atoi(bData.Id))
+			return aId - bId
+		})
+
 		outConditions := []AlertResourceModelActionFiltersItemConditionsItem{}
 		for _, condition := range actionFilter.Conditions {
 			outCondition := AlertResourceModelActionFiltersItemConditionsItem{
