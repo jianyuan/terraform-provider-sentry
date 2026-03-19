@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -18,9 +19,11 @@ import (
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
+	fint64validator "github.com/orange-cloudavenue/terraform-plugin-framework-validators/int64validator"
 )
 
 var _ resource.Resource = &MetricMonitorResource{}
+var _ resource.ResourceWithImportState = &MetricMonitorResource{}
 
 func NewMetricMonitorResource() resource.Resource {
 	return &MetricMonitorResource{}
@@ -36,7 +39,7 @@ func (r *MetricMonitorResource) Metadata(ctx context.Context, req resource.Metad
 
 func (r *MetricMonitorResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Create a Metric Monitor for a Project.",
+		MarkdownDescription: "⚠️ This resource is currently in beta and may be subject to change. It is supported by [New Monitors and Alerts](https://docs.sentry.io/product/new-monitors-and-alerts/) and may not be viewable in the UI today.\n\nCreate a Metric Monitor for a Project.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				MarkdownDescription: "The internal ID of this monitor.",
@@ -89,6 +92,7 @@ func (r *MetricMonitorResource) Schema(ctx context.Context, req resource.SchemaR
 						Optional:            true,
 						CustomType:          supertypes.StringType{},
 						Validators: []validator.String{
+							stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("team_id")),
 							stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("team_id")),
 						},
 					},
@@ -148,14 +152,18 @@ func (r *MetricMonitorResource) Schema(ctx context.Context, req resource.SchemaR
 						sentrydata.AlertRuleDetectionTypes,
 					),
 					"comparison_delta": schema.Int64Attribute{
-						MarkdownDescription: "TODO",
+						MarkdownDescription: "The comparison delta in seconds to use for the aggregate query. Only required for `percent` type.",
 						Optional:            true,
 						CustomType:          supertypes.Int64Type{},
+						Validators: []validator.Int64{
+							fint64validator.RequireIfAttributeIsOneOf(path.MatchRelative().AtParent().AtName("type"), []attr.Value{supertypes.NewStringValue("percent")}),
+							fint64validator.NullIfAttributeIsOneOf(path.MatchRelative().AtParent().AtName("type"), []attr.Value{supertypes.NewStringValue("static"), supertypes.NewStringValue("dynamic")}),
+						},
 					},
 				},
 			},
 			"condition_group": schema.SingleNestedAttribute{
-				MarkdownDescription: "TODO",
+				MarkdownDescription: "Issue detection condition group configuration.",
 				Required:            true,
 				CustomType:          supertypes.NewSingleNestedObjectTypeOf[MetricMonitorResourceModelConditionGroup](ctx),
 				Attributes: map[string]schema.Attribute{
@@ -170,7 +178,7 @@ func (r *MetricMonitorResource) Schema(ctx context.Context, req resource.SchemaR
 						sentrydata.DataConditionGroupTypes,
 					),
 					"conditions": schema.ListNestedAttribute{
-						MarkdownDescription: "TODO",
+						MarkdownDescription: "Issue detection conditions.",
 						Required:            true,
 						CustomType:          supertypes.NewListNestedObjectTypeOf[MetricMonitorResourceModelConditionGroupConditionsItem](ctx),
 						NestedObject: schema.NestedAttributeObject{
@@ -275,7 +283,37 @@ func (r *MetricMonitorResource) Read(ctx context.Context, req resource.ReadReque
 }
 
 func (r *MetricMonitorResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	resp.Diagnostics.AddError("Not Supported", "Update is not supported for this resource")
+	var data MetricMonitorResourceModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	body, diags := r.getUpdateJSONRequestBody(ctx, data)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	httpResp, err := r.apiClient.UpdateProjectMonitorWithResponse(ctx, data.Organization.ValueString(), data.Id.ValueString(), *body)
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update, got error: %s", err))
+		return
+	} else if httpResp.StatusCode() != http.StatusOK {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update, got status code %d: %s", httpResp.StatusCode(), string(httpResp.Body)))
+		return
+	} else if httpResp.JSON200 == nil {
+		resp.Diagnostics.AddError("Client Error", "Unable to update, got empty response body")
+		return
+	}
+
+	resp.Diagnostics.Append(data.Fill(ctx, *httpResp.JSON200)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *MetricMonitorResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -296,6 +334,24 @@ func (r *MetricMonitorResource) Delete(ctx context.Context, req resource.DeleteR
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete, got status code %d: %s", httpResp.StatusCode(), string(httpResp.Body)))
 		return
 	}
+}
+
+func (r *MetricMonitorResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	first, second, third, err := tfutils.SplitThreePartId(req.ID, "organization", "project", "id")
+	if err != nil {
+		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Error parsing ID: %s", err.Error()))
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.SetAttribute(
+		ctx, path.Root("organization"), first,
+	)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(
+		ctx, path.Root("project"), second,
+	)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(
+		ctx, path.Root("id"), third,
+	)...)
 }
 
 type MetricMonitorResourceModel struct {
