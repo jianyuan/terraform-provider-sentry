@@ -24,6 +24,7 @@ import (
 )
 
 var _ resource.Resource = &AlertResource{}
+var _ resource.ResourceWithImportState = &AlertResource{}
 
 func NewAlertResource() resource.Resource {
 	return &AlertResource{}
@@ -39,7 +40,7 @@ func (r *AlertResource) Metadata(ctx context.Context, req resource.MetadataReque
 
 func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Create an Alert for an Organization.",
+		MarkdownDescription: "⚠️ This resource is currently in beta and may be subject to change. It is supported by [New Monitors and Alerts](https://docs.sentry.io/product/new-monitors-and-alerts/) and may not be viewable in the UI today.\n\nCreate an Alert for an Organization.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				MarkdownDescription: "The internal ID of this alert.",
@@ -879,6 +880,21 @@ func (r *AlertResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete, got status code %d: %s", httpResp.StatusCode(), string(httpResp.Body)))
 		return
 	}
+}
+
+func (r *AlertResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	first, second, err := tfutils.SplitTwoPartId(req.ID, "organization", "id")
+	if err != nil {
+		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Error parsing ID: %s", err.Error()))
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.SetAttribute(
+		ctx, path.Root("organization"), first,
+	)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(
+		ctx, path.Root("id"), second,
+	)...)
 }
 
 type AlertResourceModel struct {

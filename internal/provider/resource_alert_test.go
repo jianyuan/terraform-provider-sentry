@@ -41,6 +41,12 @@ func TestAccAlertResource_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(alertName+"-updated")),
 				),
 			},
+			{
+				ResourceName:      rn,
+				ImportState:       true,
+				ImportStateIdFunc: acctest.TwoPartImportStateIdFunc(rn, "organization"),
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
