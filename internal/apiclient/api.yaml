@@ -326,7 +326,7 @@ paths:
       - $ref: "#/components/parameters/organization_id_or_slug"
     post:
       summary: Create an Alert for an Organization
-      operationId: createOrganizationAlert
+      operationId: createOrganizationWorkflow
       requestBody:
         required: true
         content:
@@ -358,7 +358,7 @@ paths:
           type: string
     get:
       summary: Retrieve an Alert for an Organization
-      operationId: getOrganizationAlert
+      operationId: getOrganizationWorkflow
       responses:
         "200":
           description: OK
@@ -374,13 +374,13 @@ paths:
           description: Not Found
     put:
       summary: Update an Alert for an Organization
-      operationId: updateOrganizationAlert
+      operationId: updateOrganizationWorkflow
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/OrganizationWorkflowRequest"
+              $ref: "#/components/schemas/UpdateOrganizationWorkflowRequest"
       responses:
         "200":
           description: OK
@@ -396,7 +396,7 @@ paths:
           description: Not Found
     delete:
       summary: Delete an Alert for an Organization
-      operationId: deleteOrganizationAlert
+      operationId: deleteOrganizationWorkflow
       responses:
         "204":
           description: No Content
@@ -2848,6 +2848,15 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter"
+    UpdateOrganizationWorkflowRequest:
+      allOf:
+        - $ref: "#/components/schemas/OrganizationWorkflowRequest"
+        - type: object
+          required:
+            - id
+          properties:
+            id:
+              type: string
     OrganizationWorkflow:
       type: object
       required:

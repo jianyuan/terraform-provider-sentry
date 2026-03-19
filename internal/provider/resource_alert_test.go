@@ -34,6 +34,13 @@ func TestAccAlertResource_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(alertName)),
 				),
 			},
+			{
+				Config: testAccAlertResourceConfig(teamName, projectName, monitorName, alertName+"-updated", opsgenieTeamName),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(alertName+"-updated")),
+				),
+			},
 		},
 	})
 }

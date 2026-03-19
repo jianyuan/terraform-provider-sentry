@@ -305,6 +305,7 @@ export const RESOURCES: Array<Resource> = [
         description: "The internal ID of this monitor.",
         computedOptionalRequired: "computed",
         sourceAttribute: ["Id"],
+        planModifiers: ["stringplanmodifier.UseStateForUnknown()"],
       },
       {
         name: "organization",
@@ -494,6 +495,7 @@ export const RESOURCES: Array<Resource> = [
         description: "The internal ID of this monitor.",
         computedOptionalRequired: "computed",
         sourceAttribute: ["Id"],
+        planModifiers: ["stringplanmodifier.UseStateForUnknown()"],
       },
       {
         name: "organization",
@@ -664,6 +666,7 @@ export const RESOURCES: Array<Resource> = [
         description: "The internal ID of this monitor.",
         computedOptionalRequired: "computed",
         sourceAttribute: ["Id"],
+        planModifiers: ["stringplanmodifier.UseStateForUnknown()"],
       },
       {
         name: "organization",
@@ -813,11 +816,13 @@ export const RESOURCES: Array<Resource> = [
     description: "Create an Alert for an Organization.",
     api: {
       model: "OrganizationWorkflow",
-      createMethod: "CreateOrganizationAlert",
+      createMethod: "CreateOrganizationWorkflow",
       createRequestAttributes: ["organization"],
-      readMethod: "GetOrganizationAlert",
+      readMethod: "GetOrganizationWorkflow",
       readRequestAttributes: ["organization", "id"],
-      deleteMethod: "DeleteOrganizationAlert",
+      updateMethod: "UpdateOrganizationWorkflow",
+      updateRequestAttributes: ["organization", "id"],
+      deleteMethod: "DeleteOrganizationWorkflow",
       deleteRequestAttributes: ["organization", "id"],
     },
     generate: {
@@ -830,6 +835,7 @@ export const RESOURCES: Array<Resource> = [
         description: "The internal ID of this alert.",
         computedOptionalRequired: "computed",
         sourceAttribute: ["Id"],
+        planModifiers: ["stringplanmodifier.UseStateForUnknown()"],
       },
       {
         name: "organization",

@@ -42,6 +42,9 @@ func (r *MetricMonitorResource) Schema(ctx context.Context, req resource.SchemaR
 				MarkdownDescription: "The internal ID of this monitor.",
 				Computed:            true,
 				CustomType:          supertypes.StringType{},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"organization": schema.StringAttribute{
 				MarkdownDescription: "The organization slug or internal ID to create the monitor for.",
