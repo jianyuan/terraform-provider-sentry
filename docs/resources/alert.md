@@ -50,22 +50,318 @@ Optional:
 
 Optional:
 
-- `email` (Attributes) TODO (see [below for nested schema](#nestedatt--action_filters--actions--email))
+- `discord` (Attributes) Notify on Discord. (see [below for nested schema](#nestedatt--action_filters--actions--discord))
+- `email` (Attributes) Notify on Preferred Channel. (see [below for nested schema](#nestedatt--action_filters--actions--email))
+- `github` (Attributes) Create a GitHub issue. (see [below for nested schema](#nestedatt--action_filters--actions--github))
+- `jira` (Attributes) Create a Jira ticket. (see [below for nested schema](#nestedatt--action_filters--actions--jira))
+- `jira_server` (Attributes) Create a Jira Server ticket. (see [below for nested schema](#nestedatt--action_filters--actions--jira_server))
+- `msteams` (Attributes) Notify on Microsoft Teams. (see [below for nested schema](#nestedatt--action_filters--actions--msteams))
+- `opsgenie` (Attributes) Notify on OpsGenie. (see [below for nested schema](#nestedatt--action_filters--actions--opsgenie))
+- `pagerduty` (Attributes) Notify on PagerDuty. (see [below for nested schema](#nestedatt--action_filters--actions--pagerduty))
+- `plugin` (Attributes) Send a notification to all legacy integrations (plugins). (see [below for nested schema](#nestedatt--action_filters--actions--plugin))
+- `slack` (Attributes) Notify on Slack. (see [below for nested schema](#nestedatt--action_filters--actions--slack))
+- `vsts` (Attributes) Notify on Azure DevOps. (see [below for nested schema](#nestedatt--action_filters--actions--vsts))
+
+<a id="nestedatt--action_filters--actions--discord"></a>
+### Nested Schema for `action_filters.actions.discord`
+
+Required:
+
+- `channel_id` (String) The ID of the Discord channel to send the notification to.
+- `integration_id` (String) The ID of the Discord integration.
+
+Optional:
+
+- `tags` (String) A list of tags to show in the notification.
+
 
 <a id="nestedatt--action_filters--actions--email"></a>
 ### Nested Schema for `action_filters.actions.email`
 
 Required:
 
-- `target_type` (String) TODO Valid values are: `issue_owners`, `team`, and `user`.
+- `target_type` (String) The type of recipient to notify. Valid values are: `issue_owners`, `team`, and `user`.
 
 Optional:
 
-- `fallthrough_type` (String) TODO Valid values are: `AllMembers`, `ActiveMembers`, and `NoOne`.
-- `team_id` (String) TODO
-- `user_id` (String) TODO
+- `fallthrough_type` (String) The type of fallthrough to apply when choosing to notify issue owners. Only required if the target type is `issue_owners`. Valid values are: `AllMembers`, `ActiveMembers`, and `NoOne`.
+- `target_id` (String) The internal ID of the user or team. Only required if the target type is `team` or `user`.
+
+
+<a id="nestedatt--action_filters--actions--github"></a>
+### Nested Schema for `action_filters.actions.github`
+
+Required:
+
+- `integration_id` (String) The ID of the GitHub integration.
+- `repo` (String) The name of the repository to create the issue in.
+
+Optional:
+
+- `assignee` (String) The GitHub user to assign the issue to.
+- `labels` (Set of String) A list of labels to assign to the issue.
+
+
+<a id="nestedatt--action_filters--actions--jira"></a>
+### Nested Schema for `action_filters.actions.jira`
+
+Required:
+
+- `integration_id` (String) The ID of the Jira integration.
+
+Optional:
+
+- `data` (Map of String) A list of any fields you want to include in the ticket as objects.
+
+
+<a id="nestedatt--action_filters--actions--jira_server"></a>
+### Nested Schema for `action_filters.actions.jira_server`
+
+Required:
+
+- `integration_id` (String) The ID of the Jira Server integration.
+
+Optional:
+
+- `data` (Map of String) A list of any fields you want to include in the ticket as objects.
+
+
+<a id="nestedatt--action_filters--actions--msteams"></a>
+### Nested Schema for `action_filters.actions.msteams`
+
+Required:
+
+- `channel_name` (String) The name of the Microsoft Teams channel to send the notification to.
+- `integration_id` (String) The ID of the Microsoft Teams integration.
+- `team_id` (String) The integration ID associated with the Microsoft Teams team.
+
+
+<a id="nestedatt--action_filters--actions--opsgenie"></a>
+### Nested Schema for `action_filters.actions.opsgenie`
+
+Required:
+
+- `integration_id` (String) The ID of the OpsGenie integration.
+- `priority` (String) The priority level for the notification.
+- `team_id` (String) The ID of the Opsgenie team to send the notification to.
+- `team_name` (String) The name of the Opsgenie team.
+
+
+<a id="nestedatt--action_filters--actions--pagerduty"></a>
+### Nested Schema for `action_filters.actions.pagerduty`
+
+Required:
+
+- `integration_id` (String) The ID of the PagerDuty integration.
+- `service_id` (String) The ID of the PagerDuty service.
+- `service_name` (String) The name of the service to create the ticket in.
+- `severity` (String) The PagerDuty severity level for the notification.
+
+
+<a id="nestedatt--action_filters--actions--plugin"></a>
+### Nested Schema for `action_filters.actions.plugin`
+
+
+<a id="nestedatt--action_filters--actions--slack"></a>
+### Nested Schema for `action_filters.actions.slack`
+
+Required:
+
+- `channel_name` (String) The name of the Slack channel to send the notification to (e.g., #critical, Jane Schmidt).
+- `integration_id` (String) The ID of the Slack integration.
+
+Optional:
+
+- `channel_id` (String) The Slack channel ID to send the notification to. This is an optional field that can be used to avoid rate-limiting.
+- `notes` (String) Text to show alongside the notification. To @ a user, include their user id like `@<USER_ID>`. To include a clickable link, format the link and title like `<http://example.com|Click Here>`.
+- `tags` (String) A list of tags to show in the notification.
+
+
+<a id="nestedatt--action_filters--actions--vsts"></a>
+### Nested Schema for `action_filters.actions.vsts`
+
+Required:
+
+- `integration_id` (String) The ID of the OpsGenie integration.
+
+Optional:
+
+- `data` (Map of String) A list of any fields you want to include in the ticket as objects.
 
 
 
 <a id="nestedatt--action_filters--conditions"></a>
 ### Nested Schema for `action_filters.conditions`
+
+Optional:
+
+- `age_comparison` (Attributes) Issue age. (see [below for nested schema](#nestedatt--action_filters--conditions--age_comparison))
+- `assigned_to` (Attributes) Issue assignment. (see [below for nested schema](#nestedatt--action_filters--conditions--assigned_to))
+- `event_attribute` (Attributes) The event's `attribute` value `match` `value`. (see [below for nested schema](#nestedatt--action_filters--conditions--event_attribute))
+- `event_frequency_count` (Attributes) Number of events. (see [below for nested schema](#nestedatt--action_filters--conditions--event_frequency_count))
+- `event_frequency_percent` (Attributes) Percent of events. (see [below for nested schema](#nestedatt--action_filters--conditions--event_frequency_percent))
+- `event_unique_user_frequency_count` (Attributes) Number of users affected. (see [below for nested schema](#nestedatt--action_filters--conditions--event_unique_user_frequency_count))
+- `issue_category` (Attributes) Issue category. (see [below for nested schema](#nestedatt--action_filters--conditions--issue_category))
+- `issue_occurrences` (Attributes) Issue frequency. (see [below for nested schema](#nestedatt--action_filters--conditions--issue_occurrences))
+- `issue_priority_deescalating` (Attributes) De-escalation. (see [below for nested schema](#nestedatt--action_filters--conditions--issue_priority_deescalating))
+- `issue_priority_greater_or_equal` (Attributes) Issue priority. (see [below for nested schema](#nestedatt--action_filters--conditions--issue_priority_greater_or_equal))
+- `latest_adopted_release` (Attributes) The `release_age_type` adopted release associated with the event's issue is `age_comparison` than the latest adopted release in `environment`. (see [below for nested schema](#nestedatt--action_filters--conditions--latest_adopted_release))
+- `latest_release` (Attributes) The event is from the latest release. (see [below for nested schema](#nestedatt--action_filters--conditions--latest_release))
+- `level` (Attributes) The event's level match `level`. (see [below for nested schema](#nestedatt--action_filters--conditions--level))
+- `percent_sessions_count` (Attributes) Percentage of sessions affected count. (see [below for nested schema](#nestedatt--action_filters--conditions--percent_sessions_count))
+- `percent_sessions_percent` (Attributes) Percentage of sessions affected percent. (see [below for nested schema](#nestedatt--action_filters--conditions--percent_sessions_percent))
+- `tagged_event` (Attributes) The event's tags `key` match `value`. (see [below for nested schema](#nestedatt--action_filters--conditions--tagged_event))
+
+<a id="nestedatt--action_filters--conditions--age_comparison"></a>
+### Nested Schema for `action_filters.conditions.age_comparison`
+
+Required:
+
+- `comparison_type` (String) Valid values are: `older`, and `newer`.
+- `time` (String) TODO Valid values are: `minute`, `hour`, `day`, and `week`.
+- `value` (Number) TODO
+
+
+<a id="nestedatt--action_filters--conditions--assigned_to"></a>
+### Nested Schema for `action_filters.conditions.assigned_to`
+
+Optional:
+
+- `target_id` (String) The internal ID of the user or team. Only required if the target type is `Member` or `Team`.
+- `target_type` (String) Who the issue is assigned to. Valid values are: `Unassigned`, `Member`, and `Team`.
+
+
+<a id="nestedatt--action_filters--conditions--event_attribute"></a>
+### Nested Schema for `action_filters.conditions.event_attribute`
+
+Required:
+
+- `attribute` (String) The attribute to evaluate.
+- `match` (String) The match type.
+- `value` (String) The value to compare against.
+
+
+<a id="nestedatt--action_filters--conditions--event_frequency_count"></a>
+### Nested Schema for `action_filters.conditions.event_frequency_count`
+
+Required:
+
+- `interval` (String) The time period in which to evaluate the value. e.g. Number of events in an issue is more than `value` in `interval`. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
+- `value` (Number) A positive integer representing the number of events in an issue that must come in before the alert will fire.
+
+
+<a id="nestedatt--action_filters--conditions--event_frequency_percent"></a>
+### Nested Schema for `action_filters.conditions.event_frequency_percent`
+
+Required:
+
+- `comparison_interval` (String) The time period to compare against. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
+- `interval` (String) The time period in which to evaluate the value. e.g. Number of events in an issue is `comparisonInterval` percent higher `value` compared to `interval`. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
+- `value` (Number) A positive integer representing the number of events in an issue that must come in before the alert will fire.
+
+
+<a id="nestedatt--action_filters--conditions--event_unique_user_frequency_count"></a>
+### Nested Schema for `action_filters.conditions.event_unique_user_frequency_count`
+
+Required:
+
+- `interval` (String) The time period in which to evaluate the value. e.g. Number of users affected by an issue is more than `value` in `interval`. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
+- `value` (Number) A positive integer representing the number of users that must be affected before the alert will fire.
+
+Optional:
+
+- `filters` (Attributes List) A list of additional sub-filters to evaluate before the alert will fire. (see [below for nested schema](#nestedatt--action_filters--conditions--event_unique_user_frequency_count--filters))
+
+<a id="nestedatt--action_filters--conditions--event_unique_user_frequency_count--filters"></a>
+### Nested Schema for `action_filters.conditions.event_unique_user_frequency_count.filters`
+
+Optional:
+
+- `attribute` (String) The attribute of the filter. Conflicts with `key`.
+- `key` (String) The key of the filter. Conflicts with `attribute`.
+- `match` (String) The match type of the filter.
+- `value` (String) The value of the filter.
+
+
+
+<a id="nestedatt--action_filters--conditions--issue_category"></a>
+### Nested Schema for `action_filters.conditions.issue_category`
+
+Required:
+
+- `value` (Number) The issue category to filter to.
+
+
+<a id="nestedatt--action_filters--conditions--issue_occurrences"></a>
+### Nested Schema for `action_filters.conditions.issue_occurrences`
+
+Required:
+
+- `value` (Number) A positive integer representing how many times the issue has to happen before the alert will fire.
+
+
+<a id="nestedatt--action_filters--conditions--issue_priority_deescalating"></a>
+### Nested Schema for `action_filters.conditions.issue_priority_deescalating`
+
+
+<a id="nestedatt--action_filters--conditions--issue_priority_greater_or_equal"></a>
+### Nested Schema for `action_filters.conditions.issue_priority_greater_or_equal`
+
+Required:
+
+- `comparison` (Number) he priority the issue must be for the alert to fire.
+
+
+<a id="nestedatt--action_filters--conditions--latest_adopted_release"></a>
+### Nested Schema for `action_filters.conditions.latest_adopted_release`
+
+Required:
+
+- `age_comparison` (String) The age comparison to use. Valid values are: `older`, and `newer`.
+- `environment` (String) The environment to compare against.
+- `release_age_type` (String) The release age type to use. Valid values are: `oldest`, and `newest`.
+
+
+<a id="nestedatt--action_filters--conditions--latest_release"></a>
+### Nested Schema for `action_filters.conditions.latest_release`
+
+
+<a id="nestedatt--action_filters--conditions--level"></a>
+### Nested Schema for `action_filters.conditions.level`
+
+Required:
+
+- `level` (Number) The level to compare against.
+- `match` (String) The comparison operator.
+
+
+<a id="nestedatt--action_filters--conditions--percent_sessions_count"></a>
+### Nested Schema for `action_filters.conditions.percent_sessions_count`
+
+Required:
+
+- `interval` (String) The time period in which to evaluate the value. e.g. Percentage of sessions affected by an issue is more than `value` in `interval`. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
+- `value` (Number) A positive integer representing the number of events in an issue that must come in before the alert will fire.
+
+
+<a id="nestedatt--action_filters--conditions--percent_sessions_percent"></a>
+### Nested Schema for `action_filters.conditions.percent_sessions_percent`
+
+Required:
+
+- `comparison_interval` (String) The time period to compare against. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
+- `interval` (String) The time period in which to evaluate the value. e.g. Percentage of sessions affected by an issue is `comparisonInterval` percent higher `value` compared to `interval`. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
+- `value` (Number) A positive integer representing the number of events in an issue that must come in before the alert will fire.
+
+
+<a id="nestedatt--action_filters--conditions--tagged_event"></a>
+### Nested Schema for `action_filters.conditions.tagged_event`
+
+Required:
+
+- `key` (String) The tag value.
+- `match` (String) The comparison operator.
+
+Optional:
+
+- `value` (String) A string. Not required when match is `is` or `ns`.
