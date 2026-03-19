@@ -58,6 +58,116 @@ func testAccAlertResourceConfig(teamName, projectName, monitorName, name, opsgen
 			action_filters = [
 				{
 					logic_type = "all"
+					conditions = [
+						{
+							age_comparison = {
+								value = 1
+								time = "minute"
+								comparison_type = "older"
+							}
+						},
+						{
+							assigned_to = {
+								target_type = "Team"
+								target_id = sentry_team.test.internal_id
+							}
+						},
+						{
+							issue_category = {
+								value = 1
+							}
+						},
+						{
+							issue_occurrences = {
+								value = 1
+							}
+						},
+						{
+							issue_priority_deescalating = {}
+						},
+						{
+							issue_priority_greater_or_equal = {
+								comparison = 75
+							}
+						},
+						{
+							event_unique_user_frequency_count = {
+								value = 1
+								interval = "5m"
+							}
+						},
+						{
+							event_unique_user_frequency_count = {
+								value = 1
+								filters = [
+									{ "key": "foo", "match": "eq", "value": "bar" }
+								]
+								interval = "1m"
+							}
+						},
+						{
+							event_frequency_count = {
+								value = 100
+								interval = "1m"
+							}
+						},
+						{
+							event_frequency_percent = {
+								value = 100
+								interval = "1h"
+								comparison_interval = "1w"
+							}
+						},
+						{
+							percent_sessions_count = {
+								value = 10
+								interval = "1h"
+							}
+						},
+						{
+							percent_sessions_percent = {
+								value = 10
+								interval = "1h"
+								comparison_interval = "1w"
+							}
+						},
+						{
+							event_attribute = {
+								attribute = "message"
+								match = "co"
+								value = "bar"
+							}
+						},
+						{
+							tagged_event = {
+								key = "level"
+								match = "eq"
+								value = "error"
+							}
+						},
+						{
+							tagged_event = {
+								key = "level"
+								match = "is"
+							}
+						},
+						{
+							latest_release = {}
+						},
+						{
+							latest_adopted_release = {
+								environment = "test"
+								age_comparison = "older"
+								release_age_type = "oldest"
+							}
+						},
+						{
+							level = {
+								match = "eq"
+								level = 50
+							}
+						}
+					]
 					actions = [
 						{
 							email = {

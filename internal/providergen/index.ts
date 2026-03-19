@@ -406,6 +406,8 @@ function generatePrimitiveToTerraform({
           return model
         }, ${srcVarName}))`,
     )
+    .with({ type: "single_nested" }, (attribute) => "TODO")
+    .with({ type: "map" }, (attribute) => "TODO")
     .exhaustive();
 }
 

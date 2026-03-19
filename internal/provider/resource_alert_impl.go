@@ -2,11 +2,13 @@ package provider
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/jianyuan/go-utils/ptr"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
+	"github.com/samber/lo"
 )
 
 func (r *AlertResource) getCreateJSONRequestBody(ctx context.Context, data AlertResourceModel) (*apiclient.CreateOrganizationAlertJSONRequestBody, diag.Diagnostics) {
@@ -36,6 +38,284 @@ func (r *AlertResource) getCreateJSONRequestBody(ctx context.Context, data Alert
 	}
 	var outActionFilters []apiclient.OrganizationWorkflowActionFilter
 	for _, inActionFilter := range inActionFilters {
+		// Conditions
+		inConditions := inActionFilter.Conditions.DiagsGet(ctx, diags)
+		if diags.HasError() {
+			return nil, diags
+		}
+
+		outConditions := []apiclient.OrganizationWorkflowActionFilterCondition{}
+		for _, inCondition := range inConditions {
+			var outCondition apiclient.OrganizationWorkflowActionFilterCondition
+			switch {
+			case inCondition.AgeComparison.IsKnown():
+				inAgeComparison := inCondition.AgeComparison.DiagsGet(ctx, diags)
+				if diags.HasError() {
+					return nil, diags
+				}
+
+				var outAgeComparison apiclient.OrganizationWorkflowActionFilterConditionAgeComparison
+				outAgeComparison.Comparison.ComparisonType = apiclient.OrganizationWorkflowActionFilterConditionAgeComparisonComparisonComparisonType(inAgeComparison.ComparisonType.Get())
+				outAgeComparison.Comparison.Time = apiclient.OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTime(inAgeComparison.Time.Get())
+				outAgeComparison.Comparison.Value = inAgeComparison.Value.Get()
+				outAgeComparison.ConditionResult = true
+
+				if err := outCondition.FromOrganizationWorkflowActionFilterConditionAgeComparison(outAgeComparison); err != nil {
+					diags.AddError("Failed to create condition", err.Error())
+					return nil, diags
+				}
+
+			case inCondition.AssignedTo.IsKnown():
+				inAssignedTo := inCondition.AssignedTo.DiagsGet(ctx, diags)
+				if diags.HasError() {
+					return nil, diags
+				}
+
+				var outAssignedTo apiclient.OrganizationWorkflowActionFilterConditionAssignedTo
+				outAssignedTo.Comparison.TargetType = apiclient.OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetType(inAssignedTo.TargetType.Get())
+				if inAssignedTo.TargetId.IsKnown() {
+					outAssignedTo.Comparison.TargetIdentifier.FromOrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0(inAssignedTo.TargetId.Get())
+				} else {
+					outAssignedTo.Comparison.TargetIdentifier.FromOrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0("")
+				}
+				outAssignedTo.ConditionResult = true
+
+				if err := outCondition.FromOrganizationWorkflowActionFilterConditionAssignedTo(outAssignedTo); err != nil {
+					diags.AddError("Failed to create condition", err.Error())
+					return nil, diags
+				}
+
+			case inCondition.IssueCategory.IsKnown():
+				inIssueCategory := inCondition.IssueCategory.DiagsGet(ctx, diags)
+				if diags.HasError() {
+					return nil, diags
+				}
+
+				var outIssueCategory apiclient.OrganizationWorkflowActionFilterConditionIssueCategory
+				outIssueCategory.Comparison.Value = inIssueCategory.Value.Get()
+				outIssueCategory.ConditionResult = true
+
+				if err := outCondition.FromOrganizationWorkflowActionFilterConditionIssueCategory(outIssueCategory); err != nil {
+					diags.AddError("Failed to create condition", err.Error())
+					return nil, diags
+				}
+
+			case inCondition.IssueOccurrences.IsKnown():
+				inIssueOccurrences := inCondition.IssueOccurrences.DiagsGet(ctx, diags)
+				if diags.HasError() {
+					return nil, diags
+				}
+
+				var outIssueOccurrences apiclient.OrganizationWorkflowActionFilterConditionIssueOccurrences
+				outIssueOccurrences.Comparison.Value = inIssueOccurrences.Value.Get()
+				outIssueOccurrences.ConditionResult = true
+
+				if err := outCondition.FromOrganizationWorkflowActionFilterConditionIssueOccurrences(outIssueOccurrences); err != nil {
+					diags.AddError("Failed to create condition", err.Error())
+					return nil, diags
+				}
+
+			case inCondition.IssuePriorityDeescalating.IsKnown():
+				var outIssuePriorityDeescalating apiclient.OrganizationWorkflowActionFilterConditionIssuePriorityDeescalating
+				outIssuePriorityDeescalating.Comparison = true
+				outIssuePriorityDeescalating.ConditionResult = true
+
+				if err := outCondition.FromOrganizationWorkflowActionFilterConditionIssuePriorityDeescalating(outIssuePriorityDeescalating); err != nil {
+					diags.AddError("Failed to create condition", err.Error())
+					return nil, diags
+				}
+
+			case inCondition.IssuePriorityGreaterOrEqual.IsKnown():
+				inIssuePriorityGreaterOrEqual := inCondition.IssuePriorityGreaterOrEqual.DiagsGet(ctx, diags)
+				if diags.HasError() {
+					return nil, diags
+				}
+
+				var outIssuePriorityGreaterOrEqual apiclient.OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual
+				outIssuePriorityGreaterOrEqual.Comparison = inIssuePriorityGreaterOrEqual.Comparison.Get()
+				outIssuePriorityGreaterOrEqual.ConditionResult = true
+
+				if err := outCondition.FromOrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual(outIssuePriorityGreaterOrEqual); err != nil {
+					diags.AddError("Failed to create condition", err.Error())
+					return nil, diags
+				}
+
+			case inCondition.EventUniqueUserFrequencyCount.IsKnown():
+				inEventUniqueUserFrequencyCount := inCondition.EventUniqueUserFrequencyCount.DiagsGet(ctx, diags)
+				if diags.HasError() {
+					return nil, diags
+				}
+
+				inFilters := inEventUniqueUserFrequencyCount.Filters.DiagsGet(ctx, diags)
+				if diags.HasError() {
+					return nil, diags
+				}
+
+				var outEventUniqueUserFrequencyCount apiclient.OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount
+				outEventUniqueUserFrequencyCount.Comparison.Value = inEventUniqueUserFrequencyCount.Value.Get()
+				outEventUniqueUserFrequencyCount.Comparison.Filters = lo.Map(inFilters, func(inFilter *AlertResourceModelActionFiltersItemConditionsItemEventUniqueUserFrequencyCountFiltersItem, _ int) apiclient.OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCountFilter {
+					return apiclient.OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCountFilter{
+						Attribute: inFilter.Attribute.GetPtr(),
+						Key:       inFilter.Key.GetPtr(),
+						Match:     inFilter.Match.GetPtr(),
+						Value:     inFilter.Value.GetPtr(),
+					}
+				})
+				outEventUniqueUserFrequencyCount.Comparison.Interval = inEventUniqueUserFrequencyCount.Interval.Get()
+				outEventUniqueUserFrequencyCount.ConditionResult = true
+
+				if err := outCondition.FromOrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount(outEventUniqueUserFrequencyCount); err != nil {
+					diags.AddError("Failed to create condition", err.Error())
+					return nil, diags
+				}
+
+			case inCondition.EventFrequencyCount.IsKnown():
+				inEventFrequencyCount := inCondition.EventFrequencyCount.DiagsGet(ctx, diags)
+				if diags.HasError() {
+					return nil, diags
+				}
+
+				var outEventFrequencyCount apiclient.OrganizationWorkflowActionFilterConditionEventFrequencyCount
+				outEventFrequencyCount.Comparison.Value = inEventFrequencyCount.Value.Get()
+				outEventFrequencyCount.Comparison.Interval = inEventFrequencyCount.Interval.Get()
+				outEventFrequencyCount.ConditionResult = true
+
+				if err := outCondition.FromOrganizationWorkflowActionFilterConditionEventFrequencyCount(outEventFrequencyCount); err != nil {
+					diags.AddError("Failed to create condition", err.Error())
+					return nil, diags
+				}
+
+			case inCondition.EventFrequencyPercent.IsKnown():
+				inEventFrequencyPercent := inCondition.EventFrequencyPercent.DiagsGet(ctx, diags)
+				if diags.HasError() {
+					return nil, diags
+				}
+
+				var outEventFrequencyPercent apiclient.OrganizationWorkflowActionFilterConditionEventFrequencyPercent
+				outEventFrequencyPercent.Comparison.Value = inEventFrequencyPercent.Value.Get()
+				outEventFrequencyPercent.Comparison.Interval = inEventFrequencyPercent.Interval.Get()
+				outEventFrequencyPercent.Comparison.ComparisonInterval = inEventFrequencyPercent.ComparisonInterval.Get()
+				outEventFrequencyPercent.ConditionResult = true
+
+				if err := outCondition.FromOrganizationWorkflowActionFilterConditionEventFrequencyPercent(outEventFrequencyPercent); err != nil {
+					diags.AddError("Failed to create condition", err.Error())
+					return nil, diags
+				}
+
+			case inCondition.PercentSessionsCount.IsKnown():
+				inPercentSessionsCount := inCondition.PercentSessionsCount.DiagsGet(ctx, diags)
+				if diags.HasError() {
+					return nil, diags
+				}
+
+				var outPercentSessionsCount apiclient.OrganizationWorkflowActionFilterConditionPercentSessionsCount
+				outPercentSessionsCount.Comparison.Value = inPercentSessionsCount.Value.Get()
+				outPercentSessionsCount.Comparison.Interval = inPercentSessionsCount.Interval.Get()
+				outPercentSessionsCount.ConditionResult = true
+
+				if err := outCondition.FromOrganizationWorkflowActionFilterConditionPercentSessionsCount(outPercentSessionsCount); err != nil {
+					diags.AddError("Failed to create condition", err.Error())
+					return nil, diags
+				}
+
+			case inCondition.PercentSessionsPercent.IsKnown():
+				inPercentSessionsPercent := inCondition.PercentSessionsPercent.DiagsGet(ctx, diags)
+				if diags.HasError() {
+					return nil, diags
+				}
+
+				var outPercentSessionsPercent apiclient.OrganizationWorkflowActionFilterConditionPercentSessionsPercent
+				outPercentSessionsPercent.Comparison.Value = inPercentSessionsPercent.Value.Get()
+				outPercentSessionsPercent.Comparison.Interval = inPercentSessionsPercent.Interval.Get()
+				outPercentSessionsPercent.Comparison.ComparisonInterval = inPercentSessionsPercent.ComparisonInterval.Get()
+				outPercentSessionsPercent.ConditionResult = true
+
+				if err := outCondition.FromOrganizationWorkflowActionFilterConditionPercentSessionsPercent(outPercentSessionsPercent); err != nil {
+					diags.AddError("Failed to create condition", err.Error())
+					return nil, diags
+				}
+
+			case inCondition.EventAttribute.IsKnown():
+				inEventAttribute := inCondition.EventAttribute.DiagsGet(ctx, diags)
+				if diags.HasError() {
+					return nil, diags
+				}
+
+				var outEventAttribute apiclient.OrganizationWorkflowActionFilterConditionEventAttribute
+				outEventAttribute.Comparison.Attribute = inEventAttribute.Attribute.Get()
+				outEventAttribute.Comparison.Match = inEventAttribute.Match.Get()
+				outEventAttribute.Comparison.Value = inEventAttribute.Value.Get()
+				outEventAttribute.ConditionResult = true
+
+				if err := outCondition.FromOrganizationWorkflowActionFilterConditionEventAttribute(outEventAttribute); err != nil {
+					diags.AddError("Failed to create condition", err.Error())
+					return nil, diags
+				}
+
+			case inCondition.TaggedEvent.IsKnown():
+				inTaggedEvent := inCondition.TaggedEvent.DiagsGet(ctx, diags)
+				if diags.HasError() {
+					return nil, diags
+				}
+
+				var outTaggedEvent apiclient.OrganizationWorkflowActionFilterConditionTaggedEvent
+				outTaggedEvent.Comparison.Key = inTaggedEvent.Key.Get()
+				outTaggedEvent.Comparison.Match = inTaggedEvent.Match.Get()
+				outTaggedEvent.Comparison.Value = inTaggedEvent.Value.GetPtr()
+				outTaggedEvent.ConditionResult = true
+
+				if err := outCondition.FromOrganizationWorkflowActionFilterConditionTaggedEvent(outTaggedEvent); err != nil {
+					diags.AddError("Failed to create condition", err.Error())
+					return nil, diags
+				}
+
+			case inCondition.LatestRelease.IsKnown():
+				var outLatestRelease apiclient.OrganizationWorkflowActionFilterConditionLatestRelease
+				outLatestRelease.Comparison = true
+				outLatestRelease.ConditionResult = true
+
+				if err := outCondition.FromOrganizationWorkflowActionFilterConditionLatestRelease(outLatestRelease); err != nil {
+					diags.AddError("Failed to create condition", err.Error())
+					return nil, diags
+				}
+
+			case inCondition.LatestAdoptedRelease.IsKnown():
+				inLatestAdoptedRelease := inCondition.LatestAdoptedRelease.DiagsGet(ctx, diags)
+				if diags.HasError() {
+					return nil, diags
+				}
+
+				var outLatestAdoptedRelease apiclient.OrganizationWorkflowActionFilterConditionLatestAdoptedRelease
+				outLatestAdoptedRelease.Comparison.Environment = inLatestAdoptedRelease.Environment.Get()
+				outLatestAdoptedRelease.Comparison.AgeComparison = inLatestAdoptedRelease.AgeComparison.Get()
+				outLatestAdoptedRelease.Comparison.ReleaseAgeType = inLatestAdoptedRelease.ReleaseAgeType.Get()
+				outLatestAdoptedRelease.ConditionResult = true
+
+				if err := outCondition.FromOrganizationWorkflowActionFilterConditionLatestAdoptedRelease(outLatestAdoptedRelease); err != nil {
+					diags.AddError("Failed to create condition", err.Error())
+					return nil, diags
+				}
+
+			case inCondition.Level.IsKnown():
+				inLevel := inCondition.Level.DiagsGet(ctx, diags)
+				if diags.HasError() {
+					return nil, diags
+				}
+
+				var outLevel apiclient.OrganizationWorkflowActionFilterConditionLevel
+				outLevel.Comparison.Match = inLevel.Match.Get()
+				outLevel.Comparison.Level = inLevel.Level.Get()
+				outLevel.ConditionResult = true
+
+				if err := outCondition.FromOrganizationWorkflowActionFilterConditionLevel(outLevel); err != nil {
+					diags.AddError("Failed to create condition", err.Error())
+					return nil, diags
+				}
+			}
+			outConditions = append(outConditions, outCondition)
+		}
+
+		// Actions
 		inActions := inActionFilter.Actions.DiagsGet(ctx, diags)
 		if diags.HasError() {
 			return nil, diags
@@ -265,7 +545,7 @@ func (r *AlertResource) getCreateJSONRequestBody(ctx context.Context, data Alert
 
 		outActionFilters = append(outActionFilters, apiclient.OrganizationWorkflowActionFilter{
 			LogicType:  apiclient.OrganizationWorkflowActionFilterLogicType(inActionFilter.LogicType.Get()),
-			Conditions: []interface{}{},
+			Conditions: outConditions,
 			Actions:    outActions,
 		})
 	}
@@ -304,6 +584,170 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 
 	var outActionFilters []AlertResourceModelActionFiltersItem
 	for _, actionFilter := range data.ActionFilters {
+		// Conditions
+		outConditions := []AlertResourceModelActionFiltersItemConditionsItem{}
+		for _, condition := range actionFilter.Conditions {
+			outCondition := AlertResourceModelActionFiltersItemConditionsItem{
+				AgeComparison:                 supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemConditionsItemAgeComparison](ctx),
+				AssignedTo:                    supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemConditionsItemAssignedTo](ctx),
+				IssueCategory:                 supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemConditionsItemIssueCategory](ctx),
+				IssueOccurrences:              supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemConditionsItemIssueOccurrences](ctx),
+				IssuePriorityDeescalating:     supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemConditionsItemIssuePriorityDeescalating](ctx),
+				IssuePriorityGreaterOrEqual:   supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemConditionsItemIssuePriorityGreaterOrEqual](ctx),
+				EventUniqueUserFrequencyCount: supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemConditionsItemEventUniqueUserFrequencyCount](ctx),
+				EventFrequencyCount:           supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemConditionsItemEventFrequencyCount](ctx),
+				EventFrequencyPercent:         supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemConditionsItemEventFrequencyPercent](ctx),
+				PercentSessionsCount:          supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemConditionsItemPercentSessionsCount](ctx),
+				PercentSessionsPercent:        supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemConditionsItemPercentSessionsPercent](ctx),
+				EventAttribute:                supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemConditionsItemEventAttribute](ctx),
+				TaggedEvent:                   supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemConditionsItemTaggedEvent](ctx),
+				LatestRelease:                 supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemConditionsItemLatestRelease](ctx),
+				LatestAdoptedRelease:          supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemConditionsItemLatestAdoptedRelease](ctx),
+				Level:                         supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemConditionsItemLevel](ctx),
+			}
+
+			conditionValue, err := condition.ValueByDiscriminator()
+			if err != nil {
+				diags.AddError("Failed to get condition value", err.Error())
+				return
+			}
+
+			switch conditionValue := conditionValue.(type) {
+			case apiclient.OrganizationWorkflowActionFilterConditionAgeComparison:
+				var outAgeComparison AlertResourceModelActionFiltersItemConditionsItemAgeComparison
+				outAgeComparison.Time = supertypes.NewStringValue(string(conditionValue.Comparison.Time))
+				outAgeComparison.Value = supertypes.NewInt64Value(conditionValue.Comparison.Value)
+				outAgeComparison.ComparisonType = supertypes.NewStringValue(string(conditionValue.Comparison.ComparisonType))
+
+				outCondition.AgeComparison = supertypes.NewSingleNestedObjectValueOf(ctx, &outAgeComparison)
+
+			case apiclient.OrganizationWorkflowActionFilterConditionAssignedTo:
+				var assignedTo AlertResourceModelActionFiltersItemConditionsItemAssignedTo
+				assignedTo.TargetType = supertypes.NewStringValue(string(conditionValue.Comparison.TargetType))
+				if v, err := conditionValue.Comparison.TargetIdentifier.AsOrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0(); err == nil {
+					if v == "" {
+						assignedTo.TargetId = supertypes.NewStringNull()
+					} else {
+						assignedTo.TargetId = supertypes.NewStringValue(v)
+					}
+				} else if v, err := conditionValue.Comparison.TargetIdentifier.AsOrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier1(); err == nil {
+					assignedTo.TargetId = supertypes.NewStringValue(strconv.FormatInt(v, 10))
+				}
+
+				outCondition.AssignedTo = supertypes.NewSingleNestedObjectValueOf(ctx, &assignedTo)
+
+			case apiclient.OrganizationWorkflowActionFilterConditionIssueCategory:
+				var issueCategory AlertResourceModelActionFiltersItemConditionsItemIssueCategory
+				issueCategory.Value = supertypes.NewInt64Value(conditionValue.Comparison.Value)
+
+				outCondition.IssueCategory = supertypes.NewSingleNestedObjectValueOf(ctx, &issueCategory)
+
+			case apiclient.OrganizationWorkflowActionFilterConditionIssueOccurrences:
+				var issueOccurrences AlertResourceModelActionFiltersItemConditionsItemIssueOccurrences
+				issueOccurrences.Value = supertypes.NewInt64Value(conditionValue.Comparison.Value)
+
+				outCondition.IssueOccurrences = supertypes.NewSingleNestedObjectValueOf(ctx, &issueOccurrences)
+
+			case apiclient.OrganizationWorkflowActionFilterConditionIssuePriorityDeescalating:
+				var issuePriorityDeescalating AlertResourceModelActionFiltersItemConditionsItemIssuePriorityDeescalating
+
+				outCondition.IssuePriorityDeescalating = supertypes.NewSingleNestedObjectValueOf(ctx, &issuePriorityDeescalating)
+
+			case apiclient.OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual:
+				var issuePriorityGreaterOrEqual AlertResourceModelActionFiltersItemConditionsItemIssuePriorityGreaterOrEqual
+				issuePriorityGreaterOrEqual.Comparison = supertypes.NewInt64Value(conditionValue.Comparison)
+
+				outCondition.IssuePriorityGreaterOrEqual = supertypes.NewSingleNestedObjectValueOf(ctx, &issuePriorityGreaterOrEqual)
+
+			case apiclient.OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount:
+				var eventUniqueUserFrequencyCount AlertResourceModelActionFiltersItemConditionsItemEventUniqueUserFrequencyCount
+				eventUniqueUserFrequencyCount.Value = supertypes.NewInt64Value(conditionValue.Comparison.Value)
+				eventUniqueUserFrequencyCount.Interval = supertypes.NewStringValue(conditionValue.Comparison.Interval)
+
+				outFilters := []AlertResourceModelActionFiltersItemConditionsItemEventUniqueUserFrequencyCountFiltersItem{}
+				for _, filter := range conditionValue.Comparison.Filters {
+					outFilters = append(outFilters, AlertResourceModelActionFiltersItemConditionsItemEventUniqueUserFrequencyCountFiltersItem{
+						Attribute: supertypes.NewStringPointerValueOrNull(filter.Attribute),
+						Key:       supertypes.NewStringPointerValueOrNull(filter.Key),
+						Match:     supertypes.NewStringPointerValueOrNull(filter.Match),
+						Value:     supertypes.NewStringPointerValueOrNull(filter.Value),
+					})
+				}
+				eventUniqueUserFrequencyCount.Filters = supertypes.NewListNestedObjectValueOfValueSlice(ctx, outFilters)
+
+				outCondition.EventUniqueUserFrequencyCount = supertypes.NewSingleNestedObjectValueOf(ctx, &eventUniqueUserFrequencyCount)
+
+			case apiclient.OrganizationWorkflowActionFilterConditionEventFrequencyCount:
+				var eventFrequencyCount AlertResourceModelActionFiltersItemConditionsItemEventFrequencyCount
+				eventFrequencyCount.Value = supertypes.NewInt64Value(conditionValue.Comparison.Value)
+				eventFrequencyCount.Interval = supertypes.NewStringValue(conditionValue.Comparison.Interval)
+
+				outCondition.EventFrequencyCount = supertypes.NewSingleNestedObjectValueOf(ctx, &eventFrequencyCount)
+
+			case apiclient.OrganizationWorkflowActionFilterConditionEventFrequencyPercent:
+				var eventFrequencyPercent AlertResourceModelActionFiltersItemConditionsItemEventFrequencyPercent
+				eventFrequencyPercent.Value = supertypes.NewInt64Value(conditionValue.Comparison.Value)
+				eventFrequencyPercent.Interval = supertypes.NewStringValue(conditionValue.Comparison.Interval)
+				eventFrequencyPercent.ComparisonInterval = supertypes.NewStringValue(conditionValue.Comparison.ComparisonInterval)
+
+				outCondition.EventFrequencyPercent = supertypes.NewSingleNestedObjectValueOf(ctx, &eventFrequencyPercent)
+
+			case apiclient.OrganizationWorkflowActionFilterConditionPercentSessionsCount:
+				var percentSessionsCount AlertResourceModelActionFiltersItemConditionsItemPercentSessionsCount
+				percentSessionsCount.Value = supertypes.NewInt64Value(conditionValue.Comparison.Value)
+				percentSessionsCount.Interval = supertypes.NewStringValue(conditionValue.Comparison.Interval)
+
+				outCondition.PercentSessionsCount = supertypes.NewSingleNestedObjectValueOf(ctx, &percentSessionsCount)
+
+			case apiclient.OrganizationWorkflowActionFilterConditionPercentSessionsPercent:
+				var percentSessionsPercent AlertResourceModelActionFiltersItemConditionsItemPercentSessionsPercent
+				percentSessionsPercent.Value = supertypes.NewInt64Value(conditionValue.Comparison.Value)
+				percentSessionsPercent.Interval = supertypes.NewStringValue(conditionValue.Comparison.Interval)
+				percentSessionsPercent.ComparisonInterval = supertypes.NewStringValue(conditionValue.Comparison.ComparisonInterval)
+
+				outCondition.PercentSessionsPercent = supertypes.NewSingleNestedObjectValueOf(ctx, &percentSessionsPercent)
+
+			case apiclient.OrganizationWorkflowActionFilterConditionEventAttribute:
+				var eventAttribute AlertResourceModelActionFiltersItemConditionsItemEventAttribute
+				eventAttribute.Attribute = supertypes.NewStringValue(conditionValue.Comparison.Attribute)
+				eventAttribute.Match = supertypes.NewStringValue(conditionValue.Comparison.Match)
+				eventAttribute.Value = supertypes.NewStringValue(conditionValue.Comparison.Value)
+
+				outCondition.EventAttribute = supertypes.NewSingleNestedObjectValueOf(ctx, &eventAttribute)
+
+			case apiclient.OrganizationWorkflowActionFilterConditionTaggedEvent:
+				var taggedEvent AlertResourceModelActionFiltersItemConditionsItemTaggedEvent
+				taggedEvent.Key = supertypes.NewStringValue(conditionValue.Comparison.Key)
+				taggedEvent.Match = supertypes.NewStringValue(conditionValue.Comparison.Match)
+				taggedEvent.Value = supertypes.NewStringPointerValueOrNull(conditionValue.Comparison.Value)
+
+				outCondition.TaggedEvent = supertypes.NewSingleNestedObjectValueOf(ctx, &taggedEvent)
+
+			case apiclient.OrganizationWorkflowActionFilterConditionLatestRelease:
+				var latestRelease AlertResourceModelActionFiltersItemConditionsItemLatestRelease
+
+				outCondition.LatestRelease = supertypes.NewSingleNestedObjectValueOf(ctx, &latestRelease)
+
+			case apiclient.OrganizationWorkflowActionFilterConditionLatestAdoptedRelease:
+				var latestAdoptedRelease AlertResourceModelActionFiltersItemConditionsItemLatestAdoptedRelease
+				latestAdoptedRelease.Environment = supertypes.NewStringValue(conditionValue.Comparison.Environment)
+				latestAdoptedRelease.AgeComparison = supertypes.NewStringValue(conditionValue.Comparison.AgeComparison)
+				latestAdoptedRelease.ReleaseAgeType = supertypes.NewStringValue(conditionValue.Comparison.ReleaseAgeType)
+
+				outCondition.LatestAdoptedRelease = supertypes.NewSingleNestedObjectValueOf(ctx, &latestAdoptedRelease)
+
+			case apiclient.OrganizationWorkflowActionFilterConditionLevel:
+				var level AlertResourceModelActionFiltersItemConditionsItemLevel
+				level.Match = supertypes.NewStringValue(conditionValue.Comparison.Match)
+				level.Level = supertypes.NewInt64Value(conditionValue.Comparison.Level)
+
+				outCondition.Level = supertypes.NewSingleNestedObjectValueOf(ctx, &level)
+			}
+
+			outConditions = append(outConditions, outCondition)
+		}
+
+		// Actions
 		var outActions []AlertResourceModelActionFiltersItemActionsItem
 		for _, action := range actionFilter.Actions {
 			outAction := AlertResourceModelActionFiltersItemActionsItem{
@@ -444,7 +888,7 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 
 		outActionFilters = append(outActionFilters, AlertResourceModelActionFiltersItem{
 			LogicType:  supertypes.NewStringValue(string(actionFilter.LogicType)),
-			Conditions: supertypes.NewListNestedObjectValueOfValueSlice(ctx, []AlertResourceModelActionFiltersItemConditionsItem{}),
+			Conditions: supertypes.NewListNestedObjectValueOfValueSlice(ctx, outConditions),
 			Actions:    supertypes.NewListNestedObjectValueOfValueSlice(ctx, outActions),
 		})
 	}

@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -15,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
@@ -111,7 +112,373 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 							Computed:            true,
 							CustomType:          supertypes.NewListNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItem](ctx),
 							NestedObject: schema.NestedAttributeObject{
-								Attributes: map[string]schema.Attribute{},
+								Attributes: map[string]schema.Attribute{
+									"age_comparison": schema.SingleNestedAttribute{
+										MarkdownDescription: "Issue age.",
+										Optional:            true,
+										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemAgeComparison](ctx),
+										Attributes: map[string]schema.Attribute{
+											"time": tfutils.WithEnumStringAttribute(
+												schema.StringAttribute{
+													MarkdownDescription: "TODO",
+													Required:            true,
+													CustomType:          supertypes.StringType{},
+												},
+												[]string{"minute", "hour", "day", "week"},
+											),
+											"value": schema.Int64Attribute{
+												MarkdownDescription: "TODO",
+												Required:            true,
+												CustomType:          supertypes.Int64Type{},
+												Validators: []validator.Int64{
+													int64validator.AtLeast(1),
+												},
+											},
+											"comparison_type": tfutils.WithEnumStringAttribute(
+												schema.StringAttribute{
+													MarkdownDescription: "",
+													Required:            true,
+													CustomType:          supertypes.StringType{},
+												},
+												[]string{"older", "newer"},
+											),
+										},
+									},
+									"assigned_to": schema.SingleNestedAttribute{
+										MarkdownDescription: "Issue assignment.",
+										Optional:            true,
+										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemAssignedTo](ctx),
+										Attributes: map[string]schema.Attribute{
+											"target_type": tfutils.WithEnumStringAttribute(
+												schema.StringAttribute{
+													MarkdownDescription: "Who the issue is assigned to.",
+													Optional:            true,
+													CustomType:          supertypes.StringType{},
+												},
+												[]string{"Unassigned", "Member", "Team"},
+											),
+											"target_id": schema.StringAttribute{
+												MarkdownDescription: "The internal ID of the user or team. Only required if the target type is `Member` or `Team`.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+												Validators: []validator.String{
+													fstringvalidator.RequireIfAttributeIsOneOf(path.MatchRelative().AtParent().AtName("target_type"), []attr.Value{supertypes.NewStringValue("Member"), supertypes.NewStringValue("Team")}),
+													fstringvalidator.NullIfAttributeIsOneOf(path.MatchRelative().AtParent().AtName("target_type"), []attr.Value{supertypes.NewStringValue("Unassigned")}),
+												},
+											},
+										},
+									},
+									"issue_category": schema.SingleNestedAttribute{
+										MarkdownDescription: "Issue category.",
+										Optional:            true,
+										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemIssueCategory](ctx),
+										Attributes: map[string]schema.Attribute{
+											"value": schema.Int64Attribute{
+												MarkdownDescription: "The issue category to filter to.",
+												Required:            true,
+												CustomType:          supertypes.Int64Type{},
+											},
+										},
+									},
+									"issue_occurrences": schema.SingleNestedAttribute{
+										MarkdownDescription: "Issue frequency.",
+										Optional:            true,
+										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemIssueOccurrences](ctx),
+										Attributes: map[string]schema.Attribute{
+											"value": schema.Int64Attribute{
+												MarkdownDescription: "A positive integer representing how many times the issue has to happen before the alert will fire.",
+												Required:            true,
+												CustomType:          supertypes.Int64Type{},
+												Validators: []validator.Int64{
+													int64validator.AtLeast(1),
+												},
+											},
+										},
+									},
+									"issue_priority_deescalating": schema.SingleNestedAttribute{
+										MarkdownDescription: "De-escalation.",
+										Optional:            true,
+										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemIssuePriorityDeescalating](ctx),
+										Attributes:          map[string]schema.Attribute{},
+									},
+									"issue_priority_greater_or_equal": schema.SingleNestedAttribute{
+										MarkdownDescription: "Issue priority.",
+										Optional:            true,
+										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemIssuePriorityGreaterOrEqual](ctx),
+										Attributes: map[string]schema.Attribute{
+											"comparison": schema.Int64Attribute{
+												MarkdownDescription: "he priority the issue must be for the alert to fire.",
+												Required:            true,
+												CustomType:          supertypes.Int64Type{},
+											},
+										},
+									},
+									"event_unique_user_frequency_count": schema.SingleNestedAttribute{
+										MarkdownDescription: "Number of users affected.",
+										Optional:            true,
+										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemEventUniqueUserFrequencyCount](ctx),
+										Attributes: map[string]schema.Attribute{
+											"value": schema.Int64Attribute{
+												MarkdownDescription: "A positive integer representing the number of users that must be affected before the alert will fire.",
+												Required:            true,
+												CustomType:          supertypes.Int64Type{},
+												Validators: []validator.Int64{
+													int64validator.AtLeast(1),
+												},
+											},
+											"filters": schema.ListNestedAttribute{
+												MarkdownDescription: "A list of additional sub-filters to evaluate before the alert will fire.",
+												Optional:            true,
+												Computed:            true,
+												CustomType:          supertypes.NewListNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemEventUniqueUserFrequencyCountFiltersItem](ctx),
+												NestedObject: schema.NestedAttributeObject{
+													Attributes: map[string]schema.Attribute{
+														"key": schema.StringAttribute{
+															MarkdownDescription: "The key of the filter. Conflicts with `attribute`.",
+															Optional:            true,
+															CustomType:          supertypes.StringType{},
+															Validators: []validator.String{
+																stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("attribute")),
+															},
+														},
+														"attribute": schema.StringAttribute{
+															MarkdownDescription: "The attribute of the filter. Conflicts with `key`.",
+															Optional:            true,
+															CustomType:          supertypes.StringType{},
+															Validators: []validator.String{
+																stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("key")),
+															},
+														},
+														"match": schema.StringAttribute{
+															MarkdownDescription: "The match type of the filter.",
+															Optional:            true,
+															CustomType:          supertypes.StringType{},
+														},
+														"value": schema.StringAttribute{
+															MarkdownDescription: "The value of the filter.",
+															Optional:            true,
+															CustomType:          supertypes.StringType{},
+														},
+													},
+												},
+											},
+											"interval": tfutils.WithEnumStringAttribute(
+												schema.StringAttribute{
+													MarkdownDescription: "The time period in which to evaluate the value. e.g. Number of users affected by an issue is more than `value` in `interval`.",
+													Required:            true,
+													CustomType:          supertypes.StringType{},
+												},
+												sentrydata.EventFrequencyStandardIntervals,
+											),
+										},
+									},
+									"event_frequency_count": schema.SingleNestedAttribute{
+										MarkdownDescription: "Number of events.",
+										Optional:            true,
+										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemEventFrequencyCount](ctx),
+										Attributes: map[string]schema.Attribute{
+											"value": schema.Int64Attribute{
+												MarkdownDescription: "A positive integer representing the number of events in an issue that must come in before the alert will fire.",
+												Required:            true,
+												CustomType:          supertypes.Int64Type{},
+												Validators: []validator.Int64{
+													int64validator.AtLeast(1),
+												},
+											},
+											"interval": tfutils.WithEnumStringAttribute(
+												schema.StringAttribute{
+													MarkdownDescription: "The time period in which to evaluate the value. e.g. Number of events in an issue is more than `value` in `interval`.",
+													Required:            true,
+													CustomType:          supertypes.StringType{},
+												},
+												sentrydata.EventFrequencyStandardIntervals,
+											),
+										},
+									},
+									"event_frequency_percent": schema.SingleNestedAttribute{
+										MarkdownDescription: "Percent of events.",
+										Optional:            true,
+										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemEventFrequencyPercent](ctx),
+										Attributes: map[string]schema.Attribute{
+											"value": schema.Int64Attribute{
+												MarkdownDescription: "A positive integer representing the number of events in an issue that must come in before the alert will fire.",
+												Required:            true,
+												CustomType:          supertypes.Int64Type{},
+												Validators: []validator.Int64{
+													int64validator.AtLeast(1),
+												},
+											},
+											"interval": tfutils.WithEnumStringAttribute(
+												schema.StringAttribute{
+													MarkdownDescription: "The time period in which to evaluate the value. e.g. Number of events in an issue is `comparisonInterval` percent higher `value` compared to `interval`.",
+													Required:            true,
+													CustomType:          supertypes.StringType{},
+												},
+												sentrydata.EventFrequencyStandardIntervals,
+											),
+											"comparison_interval": tfutils.WithEnumStringAttribute(
+												schema.StringAttribute{
+													MarkdownDescription: "The time period to compare against.",
+													Required:            true,
+													CustomType:          supertypes.StringType{},
+												},
+												sentrydata.EventFrequencyStandardIntervals,
+											),
+										},
+									},
+									"percent_sessions_count": schema.SingleNestedAttribute{
+										MarkdownDescription: "Percentage of sessions affected count.",
+										Optional:            true,
+										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemPercentSessionsCount](ctx),
+										Attributes: map[string]schema.Attribute{
+											"value": schema.Int64Attribute{
+												MarkdownDescription: "A positive integer representing the number of events in an issue that must come in before the alert will fire.",
+												Required:            true,
+												CustomType:          supertypes.Int64Type{},
+												Validators: []validator.Int64{
+													int64validator.AtLeast(1),
+												},
+											},
+											"interval": tfutils.WithEnumStringAttribute(
+												schema.StringAttribute{
+													MarkdownDescription: "The time period in which to evaluate the value. e.g. Percentage of sessions affected by an issue is more than `value` in `interval`.",
+													Required:            true,
+													CustomType:          supertypes.StringType{},
+												},
+												sentrydata.EventFrequencyStandardIntervals,
+											),
+										},
+									},
+									"percent_sessions_percent": schema.SingleNestedAttribute{
+										MarkdownDescription: "Percentage of sessions affected percent.",
+										Optional:            true,
+										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemPercentSessionsPercent](ctx),
+										Attributes: map[string]schema.Attribute{
+											"value": schema.Int64Attribute{
+												MarkdownDescription: "A positive integer representing the number of events in an issue that must come in before the alert will fire.",
+												Required:            true,
+												CustomType:          supertypes.Int64Type{},
+												Validators: []validator.Int64{
+													int64validator.AtLeast(1),
+												},
+											},
+											"interval": tfutils.WithEnumStringAttribute(
+												schema.StringAttribute{
+													MarkdownDescription: "The time period in which to evaluate the value. e.g. Percentage of sessions affected by an issue is `comparisonInterval` percent higher `value` compared to `interval`.",
+													Required:            true,
+													CustomType:          supertypes.StringType{},
+												},
+												sentrydata.EventFrequencyStandardIntervals,
+											),
+											"comparison_interval": tfutils.WithEnumStringAttribute(
+												schema.StringAttribute{
+													MarkdownDescription: "The time period to compare against.",
+													Required:            true,
+													CustomType:          supertypes.StringType{},
+												},
+												sentrydata.EventFrequencyStandardIntervals,
+											),
+										},
+									},
+									"event_attribute": schema.SingleNestedAttribute{
+										MarkdownDescription: "The event's `attribute` value `match` `value`.",
+										Optional:            true,
+										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemEventAttribute](ctx),
+										Attributes: map[string]schema.Attribute{
+											"attribute": schema.StringAttribute{
+												MarkdownDescription: "The attribute to evaluate.",
+												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"match": schema.StringAttribute{
+												MarkdownDescription: "The match type.",
+												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"value": schema.StringAttribute{
+												MarkdownDescription: "The value to compare against.",
+												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+										},
+									},
+									"tagged_event": schema.SingleNestedAttribute{
+										MarkdownDescription: "The event's tags `key` match `value`.",
+										Optional:            true,
+										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemTaggedEvent](ctx),
+										Attributes: map[string]schema.Attribute{
+											"key": schema.StringAttribute{
+												MarkdownDescription: "The tag value.",
+												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"match": schema.StringAttribute{
+												MarkdownDescription: "The comparison operator.",
+												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"value": schema.StringAttribute{
+												MarkdownDescription: "A string. Not required when match is `is` or `ns`.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+												Validators: []validator.String{
+													fstringvalidator.NullIfAttributeIsOneOf(path.MatchRelative().AtParent().AtName("match"), []attr.Value{supertypes.NewStringValue("is"), supertypes.NewStringValue("ns")}),
+												},
+											},
+										},
+									},
+									"latest_release": schema.SingleNestedAttribute{
+										MarkdownDescription: "The event is from the latest release.",
+										Optional:            true,
+										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemLatestRelease](ctx),
+										Attributes:          map[string]schema.Attribute{},
+									},
+									"latest_adopted_release": schema.SingleNestedAttribute{
+										MarkdownDescription: "The `release_age_type` adopted release associated with the event's issue is `age_comparison` than the latest adopted release in `environment`.",
+										Optional:            true,
+										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemLatestAdoptedRelease](ctx),
+										Attributes: map[string]schema.Attribute{
+											"environment": schema.StringAttribute{
+												MarkdownDescription: "The environment to compare against.",
+												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"age_comparison": tfutils.WithEnumStringAttribute(
+												schema.StringAttribute{
+													MarkdownDescription: "The age comparison to use.",
+													Required:            true,
+													CustomType:          supertypes.StringType{},
+												},
+												[]string{"older", "newer"},
+											),
+											"release_age_type": tfutils.WithEnumStringAttribute(
+												schema.StringAttribute{
+													MarkdownDescription: "The release age type to use.",
+													Required:            true,
+													CustomType:          supertypes.StringType{},
+												},
+												[]string{"oldest", "newest"},
+											),
+										},
+									},
+									"level": schema.SingleNestedAttribute{
+										MarkdownDescription: "The event's level match `level`.",
+										Optional:            true,
+										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemLevel](ctx),
+										Attributes: map[string]schema.Attribute{
+											"match": schema.StringAttribute{
+												MarkdownDescription: "The comparison operator.",
+												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"level": schema.Int64Attribute{
+												MarkdownDescription: "The level to compare against.",
+												Required:            true,
+												CustomType:          supertypes.Int64Type{},
+											},
+										},
+									},
+								},
 							},
 						},
 						"actions": schema.ListNestedAttribute{
@@ -141,7 +508,8 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 												Optional:            true,
 												CustomType:          supertypes.StringType{},
 												Validators: []validator.String{
-													fstringvalidator.RequireIfAttributeIsOneOf(path.MatchRelative().AtParent().AtName("target_type"), []attr.Value{types.StringValue("team"), types.StringValue("user")}),
+													fstringvalidator.RequireIfAttributeIsOneOf(path.MatchRelative().AtParent().AtName("target_type"), []attr.Value{supertypes.NewStringValue("team"), supertypes.NewStringValue("user")}),
+													fstringvalidator.NullIfAttributeIsOneOf(path.MatchRelative().AtParent().AtName("target_type"), []attr.Value{supertypes.NewStringValue("issue_owners")}),
 												},
 											},
 											"fallthrough_type": tfutils.WithEnumStringAttribute(
@@ -150,7 +518,8 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 													Optional:            true,
 													CustomType:          supertypes.StringType{},
 													Validators: []validator.String{
-														fstringvalidator.RequireIfAttributeIsOneOf(path.MatchRelative().AtParent().AtName("target_type"), []attr.Value{types.StringValue("issue_owners")}),
+														fstringvalidator.RequireIfAttributeIsOneOf(path.MatchRelative().AtParent().AtName("target_type"), []attr.Value{supertypes.NewStringValue("issue_owners")}),
+														fstringvalidator.NullIfAttributeIsOneOf(path.MatchRelative().AtParent().AtName("target_type"), []attr.Value{supertypes.NewStringValue("team"), supertypes.NewStringValue("user")}),
 													},
 												},
 												[]string{"AllMembers", "ActiveMembers", "NoOne"},
@@ -498,6 +867,109 @@ type AlertResourceModelActionFiltersItem struct {
 }
 
 type AlertResourceModelActionFiltersItemConditionsItem struct {
+	AgeComparison                 supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemConditionsItemAgeComparison]                 `tfsdk:"age_comparison"`
+	AssignedTo                    supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemConditionsItemAssignedTo]                    `tfsdk:"assigned_to"`
+	IssueCategory                 supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemConditionsItemIssueCategory]                 `tfsdk:"issue_category"`
+	IssueOccurrences              supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemConditionsItemIssueOccurrences]              `tfsdk:"issue_occurrences"`
+	IssuePriorityDeescalating     supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemConditionsItemIssuePriorityDeescalating]     `tfsdk:"issue_priority_deescalating"`
+	IssuePriorityGreaterOrEqual   supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemConditionsItemIssuePriorityGreaterOrEqual]   `tfsdk:"issue_priority_greater_or_equal"`
+	EventUniqueUserFrequencyCount supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemConditionsItemEventUniqueUserFrequencyCount] `tfsdk:"event_unique_user_frequency_count"`
+	EventFrequencyCount           supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemConditionsItemEventFrequencyCount]           `tfsdk:"event_frequency_count"`
+	EventFrequencyPercent         supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemConditionsItemEventFrequencyPercent]         `tfsdk:"event_frequency_percent"`
+	PercentSessionsCount          supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemConditionsItemPercentSessionsCount]          `tfsdk:"percent_sessions_count"`
+	PercentSessionsPercent        supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemConditionsItemPercentSessionsPercent]        `tfsdk:"percent_sessions_percent"`
+	EventAttribute                supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemConditionsItemEventAttribute]                `tfsdk:"event_attribute"`
+	TaggedEvent                   supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemConditionsItemTaggedEvent]                   `tfsdk:"tagged_event"`
+	LatestRelease                 supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemConditionsItemLatestRelease]                 `tfsdk:"latest_release"`
+	LatestAdoptedRelease          supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemConditionsItemLatestAdoptedRelease]          `tfsdk:"latest_adopted_release"`
+	Level                         supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemConditionsItemLevel]                         `tfsdk:"level"`
+}
+
+type AlertResourceModelActionFiltersItemConditionsItemAgeComparison struct {
+	Time           supertypes.StringValue `tfsdk:"time"`
+	Value          supertypes.Int64Value  `tfsdk:"value"`
+	ComparisonType supertypes.StringValue `tfsdk:"comparison_type"`
+}
+
+type AlertResourceModelActionFiltersItemConditionsItemAssignedTo struct {
+	TargetType supertypes.StringValue `tfsdk:"target_type"`
+	TargetId   supertypes.StringValue `tfsdk:"target_id"`
+}
+
+type AlertResourceModelActionFiltersItemConditionsItemIssueCategory struct {
+	Value supertypes.Int64Value `tfsdk:"value"`
+}
+
+type AlertResourceModelActionFiltersItemConditionsItemIssueOccurrences struct {
+	Value supertypes.Int64Value `tfsdk:"value"`
+}
+
+type AlertResourceModelActionFiltersItemConditionsItemIssuePriorityDeescalating struct {
+}
+
+type AlertResourceModelActionFiltersItemConditionsItemIssuePriorityGreaterOrEqual struct {
+	Comparison supertypes.Int64Value `tfsdk:"comparison"`
+}
+
+type AlertResourceModelActionFiltersItemConditionsItemEventUniqueUserFrequencyCount struct {
+	Value    supertypes.Int64Value                                                                                                         `tfsdk:"value"`
+	Filters  supertypes.ListNestedObjectValueOf[AlertResourceModelActionFiltersItemConditionsItemEventUniqueUserFrequencyCountFiltersItem] `tfsdk:"filters"`
+	Interval supertypes.StringValue                                                                                                        `tfsdk:"interval"`
+}
+
+type AlertResourceModelActionFiltersItemConditionsItemEventUniqueUserFrequencyCountFiltersItem struct {
+	Key       supertypes.StringValue `tfsdk:"key"`
+	Attribute supertypes.StringValue `tfsdk:"attribute"`
+	Match     supertypes.StringValue `tfsdk:"match"`
+	Value     supertypes.StringValue `tfsdk:"value"`
+}
+
+type AlertResourceModelActionFiltersItemConditionsItemEventFrequencyCount struct {
+	Value    supertypes.Int64Value  `tfsdk:"value"`
+	Interval supertypes.StringValue `tfsdk:"interval"`
+}
+
+type AlertResourceModelActionFiltersItemConditionsItemEventFrequencyPercent struct {
+	Value              supertypes.Int64Value  `tfsdk:"value"`
+	Interval           supertypes.StringValue `tfsdk:"interval"`
+	ComparisonInterval supertypes.StringValue `tfsdk:"comparison_interval"`
+}
+
+type AlertResourceModelActionFiltersItemConditionsItemPercentSessionsCount struct {
+	Value    supertypes.Int64Value  `tfsdk:"value"`
+	Interval supertypes.StringValue `tfsdk:"interval"`
+}
+
+type AlertResourceModelActionFiltersItemConditionsItemPercentSessionsPercent struct {
+	Value              supertypes.Int64Value  `tfsdk:"value"`
+	Interval           supertypes.StringValue `tfsdk:"interval"`
+	ComparisonInterval supertypes.StringValue `tfsdk:"comparison_interval"`
+}
+
+type AlertResourceModelActionFiltersItemConditionsItemEventAttribute struct {
+	Attribute supertypes.StringValue `tfsdk:"attribute"`
+	Match     supertypes.StringValue `tfsdk:"match"`
+	Value     supertypes.StringValue `tfsdk:"value"`
+}
+
+type AlertResourceModelActionFiltersItemConditionsItemTaggedEvent struct {
+	Key   supertypes.StringValue `tfsdk:"key"`
+	Match supertypes.StringValue `tfsdk:"match"`
+	Value supertypes.StringValue `tfsdk:"value"`
+}
+
+type AlertResourceModelActionFiltersItemConditionsItemLatestRelease struct {
+}
+
+type AlertResourceModelActionFiltersItemConditionsItemLatestAdoptedRelease struct {
+	Environment    supertypes.StringValue `tfsdk:"environment"`
+	AgeComparison  supertypes.StringValue `tfsdk:"age_comparison"`
+	ReleaseAgeType supertypes.StringValue `tfsdk:"release_age_type"`
+}
+
+type AlertResourceModelActionFiltersItemConditionsItemLevel struct {
+	Match supertypes.StringValue `tfsdk:"match"`
+	Level supertypes.Int64Value  `tfsdk:"level"`
 }
 
 type AlertResourceModelActionFiltersItemActionsItem struct {
