@@ -18,6 +18,7 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
+				PlanOnly: true,
 				Config: `
 					resource "sentry_cron_monitor" "test" {
 						organization = "1"
@@ -30,27 +31,10 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 						recovery_threshold = 4
 					}
 				`,
-				ExpectError: regexp.MustCompile(`The argument "schedule" is required, but no definition was found.`),
+				ExpectError: regexp.MustCompile(regexp.QuoteMeta(`The argument "schedule" is required, but no definition was found.`)),
 			},
 			{
-				Config: `
-					resource "sentry_cron_monitor" "test" {
-						organization = "1"
-						project      = "2"
-						name         = "cron monitor name"
-
-						checkin_margin = 1
-						failure_issue_threshold = 2
-						max_runtime = 3
-						recovery_threshold = 4
-
-						schedule = {}
-					}
-				`,
-				ExpectError: regexp.MustCompile(
-					`At least one attribute out of\n\[schedule.crontab.<.interval_value,schedule.crontab\] must be specified`),
-			},
-			{
+				PlanOnly: true,
 				Config: `
 					resource "sentry_cron_monitor" "test" {
 						organization = "1"
@@ -66,9 +50,35 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 					}
 				`,
 				ExpectError: regexp.MustCompile(
-					`At least one attribute out of\n\[schedule.crontab.<.interval_unit,schedule.crontab\] must be specified`),
+					regexp.QuoteMeta(
+						"At least one attribute out of\n[schedule.crontab.<.interval_value,schedule.crontab] must be specified",
+					),
+				),
 			},
 			{
+				PlanOnly: true,
+				Config: `
+					resource "sentry_cron_monitor" "test" {
+						organization = "1"
+						project      = "2"
+						name         = "cron monitor name"
+
+						checkin_margin = 1
+						failure_issue_threshold = 2
+						max_runtime = 3
+						recovery_threshold = 4
+
+						schedule = {}
+					}
+				`,
+				ExpectError: regexp.MustCompile(
+					regexp.QuoteMeta(
+						"At least one attribute out of\n[schedule.crontab.<.interval_unit,schedule.crontab] must be specified",
+					),
+				),
+			},
+			{
+				PlanOnly: true,
 				Config: `
 					resource "sentry_cron_monitor" "test" {
 						organization = "1"
@@ -88,9 +98,13 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 					}
 				`,
 				ExpectError: regexp.MustCompile(
-					`Attribute "schedule.interval_value" cannot be specified when\n"schedule.crontab" is specified`),
+					regexp.QuoteMeta(
+						"Attribute \"schedule.interval_value\" cannot be specified when\n\"schedule.crontab\" is specified",
+					),
+				),
 			},
 			{
+				PlanOnly: true,
 				Config: `
 					resource "sentry_cron_monitor" "test" {
 						organization = "1"
@@ -110,9 +124,13 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 					}
 				`,
 				ExpectError: regexp.MustCompile(
-					`Attribute "schedule.interval_unit" cannot be specified when\n"schedule.crontab" is specified`),
+					regexp.QuoteMeta(
+						"Attribute \"schedule.interval_unit\" cannot be specified when\n\"schedule.crontab\" is specified",
+					),
+				),
 			},
 			{
+				PlanOnly: true,
 				Config: `
 					resource "sentry_cron_monitor" "test" {
 						organization = "1"
@@ -130,9 +148,13 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 					}
 				`,
 				ExpectError: regexp.MustCompile(
-					`Attribute "schedule.interval_unit" must be specified when\n"schedule.interval_value" is specified`),
+					regexp.QuoteMeta(
+						"Attribute \"schedule.interval_unit\" must be specified when\n\"schedule.interval_value\" is specified",
+					),
+				),
 			},
 			{
+				PlanOnly: true,
 				Config: `
 					resource "sentry_cron_monitor" "test" {
 						organization = "1"
@@ -155,9 +177,13 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 					}
 				`,
 				ExpectError: regexp.MustCompile(
-					`Attribute "default_assignee.team_id" cannot be specified when\n"default_assignee.user_id" is specified`),
+					regexp.QuoteMeta(
+						"Attribute \"default_assignee.team_id\" cannot be specified when\n\"default_assignee.user_id\" is specified",
+					),
+				),
 			},
 			{
+				PlanOnly: true,
 				Config: `
 					resource "sentry_cron_monitor" "test" {
 						organization = "1"
@@ -180,7 +206,36 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 					}
 				`,
 				ExpectError: regexp.MustCompile(
-					`Attribute "default_assignee.user_id" cannot be specified when\n"default_assignee.team_id" is specified`),
+					regexp.QuoteMeta(
+						"Attribute \"default_assignee.user_id\" cannot be specified when\n\"default_assignee.team_id\" is specified",
+					),
+				),
+			},
+			{
+				PlanOnly: true,
+				Config: `
+					resource "sentry_cron_monitor" "test" {
+						organization = "1"
+						project      = "2"
+						name         = "cron monitor name"
+
+						checkin_margin = 1
+						failure_issue_threshold = 2
+						max_runtime = 3
+						recovery_threshold = 4
+
+						schedule = {
+							crontab = "0 0 * * *"
+						}
+
+						default_assignee = {}
+					}
+				`,
+				ExpectError: regexp.MustCompile(
+					regexp.QuoteMeta(
+						"No attribute specified when one (and only one) of\n[default_assignee.user_id.<.team_id] is required",
+					),
+				),
 			},
 		},
 	})
