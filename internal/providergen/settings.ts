@@ -284,19 +284,26 @@ export const DATASOURCES: Array<DataSource> = [
 export const RESOURCES: Array<Resource> = [
   {
     name: "metric_monitor",
-    description: "Create a Metric Monitor for a Project.",
+    description: dedent.withOptions({ trimWhitespace: true })`
+      ⚠️ This resource is currently in beta and may be subject to change. It is supported by [New Monitors and Alerts](https://docs.sentry.io/product/new-monitors-and-alerts/) and may not be viewable in the UI today.
+
+      Create a Metric Monitor for a Project.
+    `,
     api: {
       model: "ProjectMonitor",
       createMethod: "CreateProjectMonitor",
       createRequestAttributes: ["organization", "project"],
       readMethod: "GetProjectMonitor",
       readRequestAttributes: ["organization", "id"],
+      updateMethod: "UpdateProjectMonitor",
+      updateRequestAttributes: ["organization", "id"],
       deleteMethod: "DeleteProjectMonitor",
       deleteRequestAttributes: ["organization", "id"],
     },
     generate: {
       modelFillers: false,
     },
+    importStateAttributes: ["organization", "project", "id"],
     attributes: [
       {
         name: "id",
@@ -357,6 +364,7 @@ export const RESOURCES: Array<Resource> = [
               "The user ID to assign new issues to. Conflicts with `team_id`.",
             computedOptionalRequired: "optional",
             validators: [
+              `stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("team_id"))`,
               `stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("team_id"))`,
             ],
           },
@@ -422,15 +430,20 @@ export const RESOURCES: Array<Resource> = [
           {
             name: "comparison_delta",
             type: "int",
-            description: "TODO",
+            description:
+              "The comparison delta in seconds to use for the aggregate query. Only required for `percent` type.",
             computedOptionalRequired: "optional",
+            validators: [
+              `fint64validator.RequireIfAttributeIsOneOf(path.MatchRelative().AtParent().AtName("type"), []attr.Value{supertypes.NewStringValue("percent")})`,
+              `fint64validator.NullIfAttributeIsOneOf(path.MatchRelative().AtParent().AtName("type"), []attr.Value{supertypes.NewStringValue("static"), supertypes.NewStringValue("dynamic")})`,
+            ],
           },
         ],
       },
       {
         name: "condition_group",
         type: "single_nested",
-        description: "TODO",
+        description: "Issue detection condition group configuration.",
         computedOptionalRequired: "required",
         attributes: [
           {
@@ -444,7 +457,7 @@ export const RESOURCES: Array<Resource> = [
           {
             name: "conditions",
             type: "list_nested",
-            description: "TODO",
+            description: "Issue detection conditions.",
             computedOptionalRequired: "required",
             attributes: [
               {

@@ -651,6 +651,7 @@ package provider
 import (
   "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
   supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
+  fint64validator "github.com/orange-cloudavenue/terraform-plugin-framework-validators/int64validator"
   fstringvalidator "github.com/orange-cloudavenue/terraform-plugin-framework-validators/stringvalidator"
 )
 
@@ -821,6 +822,7 @@ package provider
 import (
   "github.com/hashicorp/terraform-plugin-framework/resource/schema"
   supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
+  fint64validator "github.com/orange-cloudavenue/terraform-plugin-framework-validators/int64validator"
   fstringvalidator "github.com/orange-cloudavenue/terraform-plugin-framework-validators/stringvalidator"
 )
 
