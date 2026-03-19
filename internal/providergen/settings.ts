@@ -1,6 +1,5 @@
 import dedent from "dedent";
 import type { DataSource, Resource } from "./schema";
-import { decapsulate } from "crypto";
 
 export const DATASOURCES: Array<DataSource> = [
   {
@@ -475,7 +474,9 @@ export const RESOURCES: Array<Resource> = [
   },
   {
     name: "cron_monitor",
-    description: "Create a Cron Monitor for a Project.",
+    description: `⚠️ This resource is currently in beta and may be subject to change. It is supported by [New Monitors and Alerts](https://docs.sentry.io/product/new-monitors-and-alerts/) and may not be viewable in the UI today.
+
+Create a Cron Monitor for a Project.`,
     api: {
       model: "ProjectMonitor",
       createMethod: "CreateProjectMonitor",
@@ -490,6 +491,7 @@ export const RESOURCES: Array<Resource> = [
     generate: {
       modelFillers: false,
     },
+    importStateAttributes: ["organization", "project", "id"],
     attributes: [
       {
         name: "id",

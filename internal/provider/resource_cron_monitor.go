@@ -22,6 +22,7 @@ import (
 )
 
 var _ resource.Resource = &CronMonitorResource{}
+var _ resource.ResourceWithImportState = &CronMonitorResource{}
 
 func NewCronMonitorResource() resource.Resource {
 	return &CronMonitorResource{}
@@ -37,7 +38,7 @@ func (r *CronMonitorResource) Metadata(ctx context.Context, req resource.Metadat
 
 func (r *CronMonitorResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Create a Cron Monitor for a Project.",
+		MarkdownDescription: "⚠️ This resource is currently in beta and may be subject to change. It is supported by [New Monitors and Alerts](https://docs.sentry.io/product/new-monitors-and-alerts/) and may not be viewable in the UI today.\n\nCreate a Cron Monitor for a Project.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				MarkdownDescription: "The internal ID of this monitor.",
@@ -300,6 +301,24 @@ func (r *CronMonitorResource) Delete(ctx context.Context, req resource.DeleteReq
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete, got status code %d: %s", httpResp.StatusCode(), string(httpResp.Body)))
 		return
 	}
+}
+
+func (r *CronMonitorResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	first, second, third, err := tfutils.SplitThreePartId(req.ID, "organization", "project", "id")
+	if err != nil {
+		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Error parsing ID: %s", err.Error()))
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.SetAttribute(
+		ctx, path.Root("organization"), first,
+	)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(
+		ctx, path.Root("project"), second,
+	)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(
+		ctx, path.Root("id"), third,
+	)...)
 }
 
 type CronMonitorResourceModel struct {
