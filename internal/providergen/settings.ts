@@ -842,7 +842,11 @@ export const RESOURCES: Array<Resource> = [
   },
   {
     name: "alert",
-    description: "Create an Alert for an Organization.",
+    description: dedent.withOptions({ trimWhitespace: true })`
+      ⚠️ This resource is currently in beta and may be subject to change. It is supported by [New Monitors and Alerts](https://docs.sentry.io/product/new-monitors-and-alerts/) and may not be viewable in the UI today.
+
+      Create an Alert for an Organization.
+    `,
     api: {
       model: "OrganizationWorkflow",
       createMethod: "CreateOrganizationWorkflow",
@@ -857,6 +861,7 @@ export const RESOURCES: Array<Resource> = [
     generate: {
       modelFillers: false,
     },
+    importStateAttributes: ["organization", "id"],
     attributes: [
       {
         name: "id",
