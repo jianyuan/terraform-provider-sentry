@@ -119,6 +119,14 @@ func testAccAlertResourceConfig(teamName, projectName, monitorName, name, opsgen
 								priority       = "P1"
 							}
 						},
+						{
+							github = {
+								integration_id = data.sentry_organization_integration.github.id
+								repo           = "terraform-provider-sentry"
+								assignee       = "jianyuan"
+								labels         = ["bug"]
+							}
+						},
 					]
 				}
 			]
@@ -164,6 +172,13 @@ func testAccAlertResourceConfig(teamName, projectName, monitorName, name, opsgen
 			integration_id  = data.sentry_organization_integration.opsgenie.id
 			integration_key = "%[1]s"
 			team            = "%[2]s"
+		}
+
+		# GitHub
+		data "sentry_organization_integration" "github" {
+			organization = sentry_project.test.organization
+			provider_key = "github"
+			name         = "jianyuan"
 		}
 	`, acctest.TestOpsgenieIntegrationKey, opsgenieTeamName)
 }

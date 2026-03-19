@@ -245,6 +245,26 @@ function generateTerraformAttribute({
       parts.push("}");
       return parts.join("\n");
     })
+    .with({ type: "map" }, (attribute) => {
+      const parts: string[] = [];
+      parts.push("schema.MapAttribute{");
+      parts.push(...commonParts);
+      parts.push("CustomType: supertypes.NewMapTypeOf[string](ctx),");
+      if (attribute.validators) {
+        parts.push("Validators: []validator.Map{");
+        parts.push(...attribute.validators.map((validator) => `${validator},`));
+        parts.push("},");
+      }
+      if (attribute.planModifiers) {
+        parts.push("PlanModifiers: []planmodifier.Map{");
+        parts.push(
+          ...attribute.planModifiers.map((modifier) => `${modifier},`),
+        );
+        parts.push("},");
+      }
+      parts.push("}");
+      return parts.join("\n");
+    })
     .exhaustive();
 }
 
@@ -288,6 +308,7 @@ function generateTerraformValueType({
           attribute.name,
         )}]`,
     )
+    .with({ type: "map" }, () => "supertypes.MapValueOf[string]")
     .exhaustive();
 }
 
@@ -385,7 +406,6 @@ function generatePrimitiveToTerraform({
           return model
         }, ${srcVarName}))`,
     )
-    .with({ type: "single_nested" }, (attribute) => "TODO")
     .exhaustive();
 }
 
