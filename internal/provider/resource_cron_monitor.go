@@ -90,6 +90,7 @@ func (r *CronMonitorResource) Schema(ctx context.Context, req resource.SchemaReq
 						Optional:            true,
 						CustomType:          supertypes.StringType{},
 						Validators: []validator.String{
+							stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("team_id")),
 							stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("team_id")),
 						},
 					},

@@ -550,6 +550,7 @@ export const RESOURCES: Array<Resource> = [
               "The user ID to assign new issues to. Conflicts with `team_id`.",
             computedOptionalRequired: "optional",
             validators: [
+              `stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("team_id"))`,
               `stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("team_id"))`,
             ],
           },
