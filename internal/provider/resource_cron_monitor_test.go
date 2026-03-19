@@ -315,7 +315,8 @@ func TestAccCronMonitorResource_basic(t *testing.T) {
 						"interval_unit":  knownvalue.Null(),
 					})),
 				),
-			}, {
+			},
+			{
 				Config: testAccCronMonitorResourceConfig(teamName, projectName, monitorName+"-updated", `
 					enabled = false
 					checkin_margin = 10
@@ -341,6 +342,12 @@ func TestAccCronMonitorResource_basic(t *testing.T) {
 						"interval_unit":  knownvalue.Null(),
 					})),
 				),
+			},
+			{
+				ResourceName:      rn,
+				ImportState:       true,
+				ImportStateIdFunc: acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
+				ImportStateVerify: true,
 			},
 		},
 	})
