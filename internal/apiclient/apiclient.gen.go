@@ -419,6 +419,309 @@ func (e OrganizationWorkflowActionFilterActionVstsType) Valid() bool {
 	}
 }
 
+// Defines values for OrganizationWorkflowActionFilterConditionAgeComparisonComparisonComparisonType.
+const (
+	Newer OrganizationWorkflowActionFilterConditionAgeComparisonComparisonComparisonType = "newer"
+	Older OrganizationWorkflowActionFilterConditionAgeComparisonComparisonComparisonType = "older"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionAgeComparisonComparisonComparisonType enum.
+func (e OrganizationWorkflowActionFilterConditionAgeComparisonComparisonComparisonType) Valid() bool {
+	switch e {
+	case Newer:
+		return true
+	case Older:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTime.
+const (
+	OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTimeDay    OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTime = "day"
+	OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTimeHour   OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTime = "hour"
+	OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTimeMinute OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTime = "minute"
+	OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTimeWeek   OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTime = "week"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTime enum.
+func (e OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTime) Valid() bool {
+	switch e {
+	case OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTimeDay:
+		return true
+	case OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTimeHour:
+		return true
+	case OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTimeMinute:
+		return true
+	case OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTimeWeek:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionAgeComparisonType.
+const (
+	AgeComparison OrganizationWorkflowActionFilterConditionAgeComparisonType = "age_comparison"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionAgeComparisonType enum.
+func (e OrganizationWorkflowActionFilterConditionAgeComparisonType) Valid() bool {
+	switch e {
+	case AgeComparison:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetType.
+const (
+	OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetTypeMember OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetType = "Member"
+	OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetTypeNoOne  OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetType = "NoOne"
+	OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetTypeTeam   OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetType = "Team"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetType enum.
+func (e OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetType) Valid() bool {
+	switch e {
+	case OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetTypeMember:
+		return true
+	case OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetTypeNoOne:
+		return true
+	case OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetTypeTeam:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionAssignedToType.
+const (
+	AssignedTo OrganizationWorkflowActionFilterConditionAssignedToType = "assigned_to"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionAssignedToType enum.
+func (e OrganizationWorkflowActionFilterConditionAssignedToType) Valid() bool {
+	switch e {
+	case AssignedTo:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionEventAttributeType.
+const (
+	EventAttribute OrganizationWorkflowActionFilterConditionEventAttributeType = "event_attribute"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionEventAttributeType enum.
+func (e OrganizationWorkflowActionFilterConditionEventAttributeType) Valid() bool {
+	switch e {
+	case EventAttribute:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionEventFrequencyCountType.
+const (
+	EventFrequencyCount OrganizationWorkflowActionFilterConditionEventFrequencyCountType = "event_frequency_count"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionEventFrequencyCountType enum.
+func (e OrganizationWorkflowActionFilterConditionEventFrequencyCountType) Valid() bool {
+	switch e {
+	case EventFrequencyCount:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionEventFrequencyPercentType.
+const (
+	EventFrequencyPercent OrganizationWorkflowActionFilterConditionEventFrequencyPercentType = "event_frequency_percent"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionEventFrequencyPercentType enum.
+func (e OrganizationWorkflowActionFilterConditionEventFrequencyPercentType) Valid() bool {
+	switch e {
+	case EventFrequencyPercent:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCountType.
+const (
+	EventUniqueUserFrequencyCount OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCountType = "event_unique_user_frequency_count"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCountType enum.
+func (e OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCountType) Valid() bool {
+	switch e {
+	case EventUniqueUserFrequencyCount:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionIssueCategoryType.
+const (
+	IssueCategory OrganizationWorkflowActionFilterConditionIssueCategoryType = "issue_category"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionIssueCategoryType enum.
+func (e OrganizationWorkflowActionFilterConditionIssueCategoryType) Valid() bool {
+	switch e {
+	case IssueCategory:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionIssueOccurrencesType.
+const (
+	IssueOccurrences OrganizationWorkflowActionFilterConditionIssueOccurrencesType = "issue_occurrences"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionIssueOccurrencesType enum.
+func (e OrganizationWorkflowActionFilterConditionIssueOccurrencesType) Valid() bool {
+	switch e {
+	case IssueOccurrences:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionIssuePriorityDeescalatingType.
+const (
+	IssuePriorityDeescalating OrganizationWorkflowActionFilterConditionIssuePriorityDeescalatingType = "issue_priority_deescalating"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionIssuePriorityDeescalatingType enum.
+func (e OrganizationWorkflowActionFilterConditionIssuePriorityDeescalatingType) Valid() bool {
+	switch e {
+	case IssuePriorityDeescalating:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqualType.
+const (
+	IssuePriorityGreaterOrEqual OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqualType = "issue_priority_greater_or_equal"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqualType enum.
+func (e OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqualType) Valid() bool {
+	switch e {
+	case IssuePriorityGreaterOrEqual:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionLatestAdoptedReleaseType.
+const (
+	LatestAdoptedRelease OrganizationWorkflowActionFilterConditionLatestAdoptedReleaseType = "latest_adopted_release"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionLatestAdoptedReleaseType enum.
+func (e OrganizationWorkflowActionFilterConditionLatestAdoptedReleaseType) Valid() bool {
+	switch e {
+	case LatestAdoptedRelease:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionLatestReleaseType.
+const (
+	LatestRelease OrganizationWorkflowActionFilterConditionLatestReleaseType = "latest_release"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionLatestReleaseType enum.
+func (e OrganizationWorkflowActionFilterConditionLatestReleaseType) Valid() bool {
+	switch e {
+	case LatestRelease:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionLevelType.
+const (
+	Level OrganizationWorkflowActionFilterConditionLevelType = "level"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionLevelType enum.
+func (e OrganizationWorkflowActionFilterConditionLevelType) Valid() bool {
+	switch e {
+	case Level:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionPercentSessionsCountType.
+const (
+	PercentSessionsCount OrganizationWorkflowActionFilterConditionPercentSessionsCountType = "percent_sessions_count"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionPercentSessionsCountType enum.
+func (e OrganizationWorkflowActionFilterConditionPercentSessionsCountType) Valid() bool {
+	switch e {
+	case PercentSessionsCount:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionPercentSessionsPercentType.
+const (
+	PercentSessionsPercent OrganizationWorkflowActionFilterConditionPercentSessionsPercentType = "percent_sessions_percent"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionPercentSessionsPercentType enum.
+func (e OrganizationWorkflowActionFilterConditionPercentSessionsPercentType) Valid() bool {
+	switch e {
+	case PercentSessionsPercent:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionTaggedEventType.
+const (
+	TaggedEvent OrganizationWorkflowActionFilterConditionTaggedEventType = "tagged_event"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionTaggedEventType enum.
+func (e OrganizationWorkflowActionFilterConditionTaggedEventType) Valid() bool {
+	switch e {
+	case TaggedEvent:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for OrganizationWorkflowTriggerLogicType.
 const (
 	OrganizationWorkflowTriggerLogicTypeAnyShort OrganizationWorkflowTriggerLogicType = "any-short"
@@ -556,28 +859,28 @@ func (e ProjectMonitorDataSourceConfigCronIntervalScheduleType) Valid() bool {
 
 // Defines values for ProjectMonitorDataSourceConfigCronIntervalUnit.
 const (
-	Day    ProjectMonitorDataSourceConfigCronIntervalUnit = "day"
-	Hour   ProjectMonitorDataSourceConfigCronIntervalUnit = "hour"
-	Minute ProjectMonitorDataSourceConfigCronIntervalUnit = "minute"
-	Month  ProjectMonitorDataSourceConfigCronIntervalUnit = "month"
-	Week   ProjectMonitorDataSourceConfigCronIntervalUnit = "week"
-	Year   ProjectMonitorDataSourceConfigCronIntervalUnit = "year"
+	ProjectMonitorDataSourceConfigCronIntervalUnitDay    ProjectMonitorDataSourceConfigCronIntervalUnit = "day"
+	ProjectMonitorDataSourceConfigCronIntervalUnitHour   ProjectMonitorDataSourceConfigCronIntervalUnit = "hour"
+	ProjectMonitorDataSourceConfigCronIntervalUnitMinute ProjectMonitorDataSourceConfigCronIntervalUnit = "minute"
+	ProjectMonitorDataSourceConfigCronIntervalUnitMonth  ProjectMonitorDataSourceConfigCronIntervalUnit = "month"
+	ProjectMonitorDataSourceConfigCronIntervalUnitWeek   ProjectMonitorDataSourceConfigCronIntervalUnit = "week"
+	ProjectMonitorDataSourceConfigCronIntervalUnitYear   ProjectMonitorDataSourceConfigCronIntervalUnit = "year"
 )
 
 // Valid indicates whether the value is a known member of the ProjectMonitorDataSourceConfigCronIntervalUnit enum.
 func (e ProjectMonitorDataSourceConfigCronIntervalUnit) Valid() bool {
 	switch e {
-	case Day:
+	case ProjectMonitorDataSourceConfigCronIntervalUnitDay:
 		return true
-	case Hour:
+	case ProjectMonitorDataSourceConfigCronIntervalUnitHour:
 		return true
-	case Minute:
+	case ProjectMonitorDataSourceConfigCronIntervalUnitMinute:
 		return true
-	case Month:
+	case ProjectMonitorDataSourceConfigCronIntervalUnitMonth:
 		return true
-	case Week:
+	case ProjectMonitorDataSourceConfigCronIntervalUnitWeek:
 		return true
-	case Year:
+	case ProjectMonitorDataSourceConfigCronIntervalUnitYear:
 		return true
 	default:
 		return false
@@ -1281,9 +1584,9 @@ type OrganizationWorkflowRequest struct {
 
 // OrganizationWorkflowActionFilter defines model for OrganizationWorkflow_ActionFilter.
 type OrganizationWorkflowActionFilter struct {
-	Actions    []OrganizationWorkflowActionFilterAction  `json:"actions"`
-	Conditions []interface{}                             `json:"conditions"`
-	LogicType  OrganizationWorkflowActionFilterLogicType `json:"logicType"`
+	Actions    []OrganizationWorkflowActionFilterAction    `json:"actions"`
+	Conditions []OrganizationWorkflowActionFilterCondition `json:"conditions"`
+	LogicType  OrganizationWorkflowActionFilterLogicType   `json:"logicType"`
 }
 
 // OrganizationWorkflowActionFilterLogicType defines model for OrganizationWorkflowActionFilter.LogicType.
@@ -1494,6 +1797,243 @@ type OrganizationWorkflowActionFilterActionVstsConfigTargetType string
 
 // OrganizationWorkflowActionFilterActionVstsType defines model for OrganizationWorkflowActionFilterActionVsts.Type.
 type OrganizationWorkflowActionFilterActionVstsType string
+
+// OrganizationWorkflowActionFilterCondition defines model for OrganizationWorkflow_ActionFilter_Condition.
+type OrganizationWorkflowActionFilterCondition struct {
+	union json.RawMessage
+}
+
+// OrganizationWorkflowActionFilterConditionAgeComparison defines model for OrganizationWorkflow_ActionFilter_Condition_AgeComparison.
+type OrganizationWorkflowActionFilterConditionAgeComparison struct {
+	Comparison struct {
+		ComparisonType OrganizationWorkflowActionFilterConditionAgeComparisonComparisonComparisonType `json:"comparisonType"`
+		Time           OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTime           `json:"time"`
+		Value          int64                                                                          `json:"value"`
+	} `json:"comparison"`
+	ConditionResult bool                                                       `json:"conditionResult"`
+	Type            OrganizationWorkflowActionFilterConditionAgeComparisonType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterConditionAgeComparisonComparisonComparisonType defines model for OrganizationWorkflowActionFilterConditionAgeComparison.Comparison.ComparisonType.
+type OrganizationWorkflowActionFilterConditionAgeComparisonComparisonComparisonType string
+
+// OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTime defines model for OrganizationWorkflowActionFilterConditionAgeComparison.Comparison.Time.
+type OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTime string
+
+// OrganizationWorkflowActionFilterConditionAgeComparisonType defines model for OrganizationWorkflowActionFilterConditionAgeComparison.Type.
+type OrganizationWorkflowActionFilterConditionAgeComparisonType string
+
+// OrganizationWorkflowActionFilterConditionAssignedTo defines model for OrganizationWorkflow_ActionFilter_Condition_AssignedTo.
+type OrganizationWorkflowActionFilterConditionAssignedTo struct {
+	Comparison struct {
+		TargetIdentifier OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier `json:"targetIdentifier"`
+		TargetType       OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetType         `json:"targetType"`
+	} `json:"comparison"`
+	ConditionResult bool                                                    `json:"conditionResult"`
+	Type            OrganizationWorkflowActionFilterConditionAssignedToType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0 defines model for .
+type OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0 = string
+
+// OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier1 defines model for .
+type OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier1 = int64
+
+// OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier defines model for OrganizationWorkflowActionFilterConditionAssignedTo.Comparison.TargetIdentifier.
+type OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier struct {
+	union json.RawMessage
+}
+
+// OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetType defines model for OrganizationWorkflowActionFilterConditionAssignedTo.Comparison.TargetType.
+type OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetType string
+
+// OrganizationWorkflowActionFilterConditionAssignedToType defines model for OrganizationWorkflowActionFilterConditionAssignedTo.Type.
+type OrganizationWorkflowActionFilterConditionAssignedToType string
+
+// OrganizationWorkflowActionFilterConditionEventAttribute defines model for OrganizationWorkflow_ActionFilter_Condition_EventAttribute.
+type OrganizationWorkflowActionFilterConditionEventAttribute struct {
+	Comparison struct {
+		Attribute string `json:"attribute"`
+		Match     string `json:"match"`
+		Value     string `json:"value"`
+	} `json:"comparison"`
+	ConditionResult bool                                                        `json:"conditionResult"`
+	Type            OrganizationWorkflowActionFilterConditionEventAttributeType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterConditionEventAttributeType defines model for OrganizationWorkflowActionFilterConditionEventAttribute.Type.
+type OrganizationWorkflowActionFilterConditionEventAttributeType string
+
+// OrganizationWorkflowActionFilterConditionEventFrequencyCount defines model for OrganizationWorkflow_ActionFilter_Condition_EventFrequencyCount.
+type OrganizationWorkflowActionFilterConditionEventFrequencyCount struct {
+	Comparison struct {
+		Interval string `json:"interval"`
+		Value    int64  `json:"value"`
+	} `json:"comparison"`
+	ConditionResult bool                                                             `json:"conditionResult"`
+	Type            OrganizationWorkflowActionFilterConditionEventFrequencyCountType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterConditionEventFrequencyCountType defines model for OrganizationWorkflowActionFilterConditionEventFrequencyCount.Type.
+type OrganizationWorkflowActionFilterConditionEventFrequencyCountType string
+
+// OrganizationWorkflowActionFilterConditionEventFrequencyPercent defines model for OrganizationWorkflow_ActionFilter_Condition_EventFrequencyPercent.
+type OrganizationWorkflowActionFilterConditionEventFrequencyPercent struct {
+	Comparison struct {
+		ComparisonInterval string `json:"comparisonInterval"`
+		Interval           string `json:"interval"`
+		Value              int64  `json:"value"`
+	} `json:"comparison"`
+	ConditionResult bool                                                               `json:"conditionResult"`
+	Type            OrganizationWorkflowActionFilterConditionEventFrequencyPercentType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterConditionEventFrequencyPercentType defines model for OrganizationWorkflowActionFilterConditionEventFrequencyPercent.Type.
+type OrganizationWorkflowActionFilterConditionEventFrequencyPercentType string
+
+// OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount defines model for OrganizationWorkflow_ActionFilter_Condition_EventUniqueUserFrequencyCount.
+type OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount struct {
+	Comparison struct {
+		Filters  []OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCountFilter `json:"filters"`
+		Interval string                                                                         `json:"interval"`
+		Value    int64                                                                          `json:"value"`
+	} `json:"comparison"`
+	ConditionResult bool                                                                       `json:"conditionResult"`
+	Type            OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCountType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCountType defines model for OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount.Type.
+type OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCountType string
+
+// OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCountFilter defines model for OrganizationWorkflow_ActionFilter_Condition_EventUniqueUserFrequencyCount_Filter.
+type OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCountFilter struct {
+	Attribute *string `json:"attribute,omitempty"`
+	Key       *string `json:"key,omitempty"`
+	Match     *string `json:"match,omitempty"`
+	Value     *string `json:"value,omitempty"`
+}
+
+// OrganizationWorkflowActionFilterConditionIssueCategory defines model for OrganizationWorkflow_ActionFilter_Condition_IssueCategory.
+type OrganizationWorkflowActionFilterConditionIssueCategory struct {
+	Comparison struct {
+		Value int64 `json:"value"`
+	} `json:"comparison"`
+	ConditionResult bool                                                       `json:"conditionResult"`
+	Type            OrganizationWorkflowActionFilterConditionIssueCategoryType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterConditionIssueCategoryType defines model for OrganizationWorkflowActionFilterConditionIssueCategory.Type.
+type OrganizationWorkflowActionFilterConditionIssueCategoryType string
+
+// OrganizationWorkflowActionFilterConditionIssueOccurrences defines model for OrganizationWorkflow_ActionFilter_Condition_IssueOccurrences.
+type OrganizationWorkflowActionFilterConditionIssueOccurrences struct {
+	Comparison struct {
+		Value int64 `json:"value"`
+	} `json:"comparison"`
+	ConditionResult bool                                                          `json:"conditionResult"`
+	Type            OrganizationWorkflowActionFilterConditionIssueOccurrencesType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterConditionIssueOccurrencesType defines model for OrganizationWorkflowActionFilterConditionIssueOccurrences.Type.
+type OrganizationWorkflowActionFilterConditionIssueOccurrencesType string
+
+// OrganizationWorkflowActionFilterConditionIssuePriorityDeescalating defines model for OrganizationWorkflow_ActionFilter_Condition_IssuePriorityDeescalating.
+type OrganizationWorkflowActionFilterConditionIssuePriorityDeescalating struct {
+	Comparison      bool                                                                   `json:"comparison"`
+	ConditionResult bool                                                                   `json:"conditionResult"`
+	Type            OrganizationWorkflowActionFilterConditionIssuePriorityDeescalatingType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterConditionIssuePriorityDeescalatingType defines model for OrganizationWorkflowActionFilterConditionIssuePriorityDeescalating.Type.
+type OrganizationWorkflowActionFilterConditionIssuePriorityDeescalatingType string
+
+// OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual defines model for OrganizationWorkflow_ActionFilter_Condition_IssuePriorityGreaterOrEqual.
+type OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual struct {
+	Comparison      int64                                                                    `json:"comparison"`
+	ConditionResult bool                                                                     `json:"conditionResult"`
+	Type            OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqualType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqualType defines model for OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual.Type.
+type OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqualType string
+
+// OrganizationWorkflowActionFilterConditionLatestAdoptedRelease defines model for OrganizationWorkflow_ActionFilter_Condition_LatestAdoptedRelease.
+type OrganizationWorkflowActionFilterConditionLatestAdoptedRelease struct {
+	Comparison struct {
+		AgeComparison  string `json:"ageComparison"`
+		Environment    string `json:"environment"`
+		ReleaseAgeType string `json:"releaseAgeType"`
+	} `json:"comparison"`
+	ConditionResult bool                                                              `json:"conditionResult"`
+	Type            OrganizationWorkflowActionFilterConditionLatestAdoptedReleaseType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterConditionLatestAdoptedReleaseType defines model for OrganizationWorkflowActionFilterConditionLatestAdoptedRelease.Type.
+type OrganizationWorkflowActionFilterConditionLatestAdoptedReleaseType string
+
+// OrganizationWorkflowActionFilterConditionLatestRelease defines model for OrganizationWorkflow_ActionFilter_Condition_LatestRelease.
+type OrganizationWorkflowActionFilterConditionLatestRelease struct {
+	Comparison      bool                                                       `json:"comparison"`
+	ConditionResult bool                                                       `json:"conditionResult"`
+	Type            OrganizationWorkflowActionFilterConditionLatestReleaseType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterConditionLatestReleaseType defines model for OrganizationWorkflowActionFilterConditionLatestRelease.Type.
+type OrganizationWorkflowActionFilterConditionLatestReleaseType string
+
+// OrganizationWorkflowActionFilterConditionLevel defines model for OrganizationWorkflow_ActionFilter_Condition_Level.
+type OrganizationWorkflowActionFilterConditionLevel struct {
+	Comparison struct {
+		Level int64  `json:"level"`
+		Match string `json:"match"`
+	} `json:"comparison"`
+	ConditionResult bool                                               `json:"conditionResult"`
+	Type            OrganizationWorkflowActionFilterConditionLevelType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterConditionLevelType defines model for OrganizationWorkflowActionFilterConditionLevel.Type.
+type OrganizationWorkflowActionFilterConditionLevelType string
+
+// OrganizationWorkflowActionFilterConditionPercentSessionsCount defines model for OrganizationWorkflow_ActionFilter_Condition_PercentSessionsCount.
+type OrganizationWorkflowActionFilterConditionPercentSessionsCount struct {
+	Comparison struct {
+		Interval string `json:"interval"`
+		Value    int64  `json:"value"`
+	} `json:"comparison"`
+	ConditionResult bool                                                              `json:"conditionResult"`
+	Type            OrganizationWorkflowActionFilterConditionPercentSessionsCountType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterConditionPercentSessionsCountType defines model for OrganizationWorkflowActionFilterConditionPercentSessionsCount.Type.
+type OrganizationWorkflowActionFilterConditionPercentSessionsCountType string
+
+// OrganizationWorkflowActionFilterConditionPercentSessionsPercent defines model for OrganizationWorkflow_ActionFilter_Condition_PercentSessionsPercent.
+type OrganizationWorkflowActionFilterConditionPercentSessionsPercent struct {
+	Comparison struct {
+		ComparisonInterval string `json:"comparisonInterval"`
+		Interval           string `json:"interval"`
+		Value              int64  `json:"value"`
+	} `json:"comparison"`
+	ConditionResult bool                                                                `json:"conditionResult"`
+	Type            OrganizationWorkflowActionFilterConditionPercentSessionsPercentType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterConditionPercentSessionsPercentType defines model for OrganizationWorkflowActionFilterConditionPercentSessionsPercent.Type.
+type OrganizationWorkflowActionFilterConditionPercentSessionsPercentType string
+
+// OrganizationWorkflowActionFilterConditionTaggedEvent defines model for OrganizationWorkflow_ActionFilter_Condition_TaggedEvent.
+type OrganizationWorkflowActionFilterConditionTaggedEvent struct {
+	Comparison struct {
+		Key   string  `json:"key"`
+		Match string  `json:"match"`
+		Value *string `json:"value,omitempty"`
+	} `json:"comparison"`
+	ConditionResult bool                                                     `json:"conditionResult"`
+	Type            OrganizationWorkflowActionFilterConditionTaggedEventType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterConditionTaggedEventType defines model for OrganizationWorkflowActionFilterConditionTaggedEvent.Type.
+type OrganizationWorkflowActionFilterConditionTaggedEventType string
 
 // OrganizationWorkflowConfig defines model for OrganizationWorkflow_Config.
 type OrganizationWorkflowConfig struct {
@@ -3133,6 +3673,577 @@ func (t OrganizationWorkflowActionFilterAction) MarshalJSON() ([]byte, error) {
 }
 
 func (t *OrganizationWorkflowActionFilterAction) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionAgeComparison returns the union data inside the OrganizationWorkflowActionFilterCondition as a OrganizationWorkflowActionFilterConditionAgeComparison
+func (t OrganizationWorkflowActionFilterCondition) AsOrganizationWorkflowActionFilterConditionAgeComparison() (OrganizationWorkflowActionFilterConditionAgeComparison, error) {
+	var body OrganizationWorkflowActionFilterConditionAgeComparison
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionAgeComparison overwrites any union data inside the OrganizationWorkflowActionFilterCondition as the provided OrganizationWorkflowActionFilterConditionAgeComparison
+func (t *OrganizationWorkflowActionFilterCondition) FromOrganizationWorkflowActionFilterConditionAgeComparison(v OrganizationWorkflowActionFilterConditionAgeComparison) error {
+	v.Type = "age_comparison"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionAgeComparison performs a merge with any union data inside the OrganizationWorkflowActionFilterCondition, using the provided OrganizationWorkflowActionFilterConditionAgeComparison
+func (t *OrganizationWorkflowActionFilterCondition) MergeOrganizationWorkflowActionFilterConditionAgeComparison(v OrganizationWorkflowActionFilterConditionAgeComparison) error {
+	v.Type = "age_comparison"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionAssignedTo returns the union data inside the OrganizationWorkflowActionFilterCondition as a OrganizationWorkflowActionFilterConditionAssignedTo
+func (t OrganizationWorkflowActionFilterCondition) AsOrganizationWorkflowActionFilterConditionAssignedTo() (OrganizationWorkflowActionFilterConditionAssignedTo, error) {
+	var body OrganizationWorkflowActionFilterConditionAssignedTo
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionAssignedTo overwrites any union data inside the OrganizationWorkflowActionFilterCondition as the provided OrganizationWorkflowActionFilterConditionAssignedTo
+func (t *OrganizationWorkflowActionFilterCondition) FromOrganizationWorkflowActionFilterConditionAssignedTo(v OrganizationWorkflowActionFilterConditionAssignedTo) error {
+	v.Type = "assigned_to"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionAssignedTo performs a merge with any union data inside the OrganizationWorkflowActionFilterCondition, using the provided OrganizationWorkflowActionFilterConditionAssignedTo
+func (t *OrganizationWorkflowActionFilterCondition) MergeOrganizationWorkflowActionFilterConditionAssignedTo(v OrganizationWorkflowActionFilterConditionAssignedTo) error {
+	v.Type = "assigned_to"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionIssueCategory returns the union data inside the OrganizationWorkflowActionFilterCondition as a OrganizationWorkflowActionFilterConditionIssueCategory
+func (t OrganizationWorkflowActionFilterCondition) AsOrganizationWorkflowActionFilterConditionIssueCategory() (OrganizationWorkflowActionFilterConditionIssueCategory, error) {
+	var body OrganizationWorkflowActionFilterConditionIssueCategory
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionIssueCategory overwrites any union data inside the OrganizationWorkflowActionFilterCondition as the provided OrganizationWorkflowActionFilterConditionIssueCategory
+func (t *OrganizationWorkflowActionFilterCondition) FromOrganizationWorkflowActionFilterConditionIssueCategory(v OrganizationWorkflowActionFilterConditionIssueCategory) error {
+	v.Type = "issue_category"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionIssueCategory performs a merge with any union data inside the OrganizationWorkflowActionFilterCondition, using the provided OrganizationWorkflowActionFilterConditionIssueCategory
+func (t *OrganizationWorkflowActionFilterCondition) MergeOrganizationWorkflowActionFilterConditionIssueCategory(v OrganizationWorkflowActionFilterConditionIssueCategory) error {
+	v.Type = "issue_category"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionIssueOccurrences returns the union data inside the OrganizationWorkflowActionFilterCondition as a OrganizationWorkflowActionFilterConditionIssueOccurrences
+func (t OrganizationWorkflowActionFilterCondition) AsOrganizationWorkflowActionFilterConditionIssueOccurrences() (OrganizationWorkflowActionFilterConditionIssueOccurrences, error) {
+	var body OrganizationWorkflowActionFilterConditionIssueOccurrences
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionIssueOccurrences overwrites any union data inside the OrganizationWorkflowActionFilterCondition as the provided OrganizationWorkflowActionFilterConditionIssueOccurrences
+func (t *OrganizationWorkflowActionFilterCondition) FromOrganizationWorkflowActionFilterConditionIssueOccurrences(v OrganizationWorkflowActionFilterConditionIssueOccurrences) error {
+	v.Type = "issue_occurrences"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionIssueOccurrences performs a merge with any union data inside the OrganizationWorkflowActionFilterCondition, using the provided OrganizationWorkflowActionFilterConditionIssueOccurrences
+func (t *OrganizationWorkflowActionFilterCondition) MergeOrganizationWorkflowActionFilterConditionIssueOccurrences(v OrganizationWorkflowActionFilterConditionIssueOccurrences) error {
+	v.Type = "issue_occurrences"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionIssuePriorityDeescalating returns the union data inside the OrganizationWorkflowActionFilterCondition as a OrganizationWorkflowActionFilterConditionIssuePriorityDeescalating
+func (t OrganizationWorkflowActionFilterCondition) AsOrganizationWorkflowActionFilterConditionIssuePriorityDeescalating() (OrganizationWorkflowActionFilterConditionIssuePriorityDeescalating, error) {
+	var body OrganizationWorkflowActionFilterConditionIssuePriorityDeescalating
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionIssuePriorityDeescalating overwrites any union data inside the OrganizationWorkflowActionFilterCondition as the provided OrganizationWorkflowActionFilterConditionIssuePriorityDeescalating
+func (t *OrganizationWorkflowActionFilterCondition) FromOrganizationWorkflowActionFilterConditionIssuePriorityDeescalating(v OrganizationWorkflowActionFilterConditionIssuePriorityDeescalating) error {
+	v.Type = "issue_priority_deescalating"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionIssuePriorityDeescalating performs a merge with any union data inside the OrganizationWorkflowActionFilterCondition, using the provided OrganizationWorkflowActionFilterConditionIssuePriorityDeescalating
+func (t *OrganizationWorkflowActionFilterCondition) MergeOrganizationWorkflowActionFilterConditionIssuePriorityDeescalating(v OrganizationWorkflowActionFilterConditionIssuePriorityDeescalating) error {
+	v.Type = "issue_priority_deescalating"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual returns the union data inside the OrganizationWorkflowActionFilterCondition as a OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual
+func (t OrganizationWorkflowActionFilterCondition) AsOrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual() (OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual, error) {
+	var body OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual overwrites any union data inside the OrganizationWorkflowActionFilterCondition as the provided OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual
+func (t *OrganizationWorkflowActionFilterCondition) FromOrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual(v OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual) error {
+	v.Type = "issue_priority_greater_or_equal"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual performs a merge with any union data inside the OrganizationWorkflowActionFilterCondition, using the provided OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual
+func (t *OrganizationWorkflowActionFilterCondition) MergeOrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual(v OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual) error {
+	v.Type = "issue_priority_greater_or_equal"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount returns the union data inside the OrganizationWorkflowActionFilterCondition as a OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount
+func (t OrganizationWorkflowActionFilterCondition) AsOrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount() (OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount, error) {
+	var body OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount overwrites any union data inside the OrganizationWorkflowActionFilterCondition as the provided OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount
+func (t *OrganizationWorkflowActionFilterCondition) FromOrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount(v OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount) error {
+	v.Type = "event_unique_user_frequency_count"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount performs a merge with any union data inside the OrganizationWorkflowActionFilterCondition, using the provided OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount
+func (t *OrganizationWorkflowActionFilterCondition) MergeOrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount(v OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount) error {
+	v.Type = "event_unique_user_frequency_count"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionEventFrequencyCount returns the union data inside the OrganizationWorkflowActionFilterCondition as a OrganizationWorkflowActionFilterConditionEventFrequencyCount
+func (t OrganizationWorkflowActionFilterCondition) AsOrganizationWorkflowActionFilterConditionEventFrequencyCount() (OrganizationWorkflowActionFilterConditionEventFrequencyCount, error) {
+	var body OrganizationWorkflowActionFilterConditionEventFrequencyCount
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionEventFrequencyCount overwrites any union data inside the OrganizationWorkflowActionFilterCondition as the provided OrganizationWorkflowActionFilterConditionEventFrequencyCount
+func (t *OrganizationWorkflowActionFilterCondition) FromOrganizationWorkflowActionFilterConditionEventFrequencyCount(v OrganizationWorkflowActionFilterConditionEventFrequencyCount) error {
+	v.Type = "event_frequency_count"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionEventFrequencyCount performs a merge with any union data inside the OrganizationWorkflowActionFilterCondition, using the provided OrganizationWorkflowActionFilterConditionEventFrequencyCount
+func (t *OrganizationWorkflowActionFilterCondition) MergeOrganizationWorkflowActionFilterConditionEventFrequencyCount(v OrganizationWorkflowActionFilterConditionEventFrequencyCount) error {
+	v.Type = "event_frequency_count"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionEventFrequencyPercent returns the union data inside the OrganizationWorkflowActionFilterCondition as a OrganizationWorkflowActionFilterConditionEventFrequencyPercent
+func (t OrganizationWorkflowActionFilterCondition) AsOrganizationWorkflowActionFilterConditionEventFrequencyPercent() (OrganizationWorkflowActionFilterConditionEventFrequencyPercent, error) {
+	var body OrganizationWorkflowActionFilterConditionEventFrequencyPercent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionEventFrequencyPercent overwrites any union data inside the OrganizationWorkflowActionFilterCondition as the provided OrganizationWorkflowActionFilterConditionEventFrequencyPercent
+func (t *OrganizationWorkflowActionFilterCondition) FromOrganizationWorkflowActionFilterConditionEventFrequencyPercent(v OrganizationWorkflowActionFilterConditionEventFrequencyPercent) error {
+	v.Type = "event_frequency_percent"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionEventFrequencyPercent performs a merge with any union data inside the OrganizationWorkflowActionFilterCondition, using the provided OrganizationWorkflowActionFilterConditionEventFrequencyPercent
+func (t *OrganizationWorkflowActionFilterCondition) MergeOrganizationWorkflowActionFilterConditionEventFrequencyPercent(v OrganizationWorkflowActionFilterConditionEventFrequencyPercent) error {
+	v.Type = "event_frequency_percent"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionPercentSessionsCount returns the union data inside the OrganizationWorkflowActionFilterCondition as a OrganizationWorkflowActionFilterConditionPercentSessionsCount
+func (t OrganizationWorkflowActionFilterCondition) AsOrganizationWorkflowActionFilterConditionPercentSessionsCount() (OrganizationWorkflowActionFilterConditionPercentSessionsCount, error) {
+	var body OrganizationWorkflowActionFilterConditionPercentSessionsCount
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionPercentSessionsCount overwrites any union data inside the OrganizationWorkflowActionFilterCondition as the provided OrganizationWorkflowActionFilterConditionPercentSessionsCount
+func (t *OrganizationWorkflowActionFilterCondition) FromOrganizationWorkflowActionFilterConditionPercentSessionsCount(v OrganizationWorkflowActionFilterConditionPercentSessionsCount) error {
+	v.Type = "percent_sessions_count"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionPercentSessionsCount performs a merge with any union data inside the OrganizationWorkflowActionFilterCondition, using the provided OrganizationWorkflowActionFilterConditionPercentSessionsCount
+func (t *OrganizationWorkflowActionFilterCondition) MergeOrganizationWorkflowActionFilterConditionPercentSessionsCount(v OrganizationWorkflowActionFilterConditionPercentSessionsCount) error {
+	v.Type = "percent_sessions_count"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionPercentSessionsPercent returns the union data inside the OrganizationWorkflowActionFilterCondition as a OrganizationWorkflowActionFilterConditionPercentSessionsPercent
+func (t OrganizationWorkflowActionFilterCondition) AsOrganizationWorkflowActionFilterConditionPercentSessionsPercent() (OrganizationWorkflowActionFilterConditionPercentSessionsPercent, error) {
+	var body OrganizationWorkflowActionFilterConditionPercentSessionsPercent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionPercentSessionsPercent overwrites any union data inside the OrganizationWorkflowActionFilterCondition as the provided OrganizationWorkflowActionFilterConditionPercentSessionsPercent
+func (t *OrganizationWorkflowActionFilterCondition) FromOrganizationWorkflowActionFilterConditionPercentSessionsPercent(v OrganizationWorkflowActionFilterConditionPercentSessionsPercent) error {
+	v.Type = "percent_sessions_percent"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionPercentSessionsPercent performs a merge with any union data inside the OrganizationWorkflowActionFilterCondition, using the provided OrganizationWorkflowActionFilterConditionPercentSessionsPercent
+func (t *OrganizationWorkflowActionFilterCondition) MergeOrganizationWorkflowActionFilterConditionPercentSessionsPercent(v OrganizationWorkflowActionFilterConditionPercentSessionsPercent) error {
+	v.Type = "percent_sessions_percent"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionEventAttribute returns the union data inside the OrganizationWorkflowActionFilterCondition as a OrganizationWorkflowActionFilterConditionEventAttribute
+func (t OrganizationWorkflowActionFilterCondition) AsOrganizationWorkflowActionFilterConditionEventAttribute() (OrganizationWorkflowActionFilterConditionEventAttribute, error) {
+	var body OrganizationWorkflowActionFilterConditionEventAttribute
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionEventAttribute overwrites any union data inside the OrganizationWorkflowActionFilterCondition as the provided OrganizationWorkflowActionFilterConditionEventAttribute
+func (t *OrganizationWorkflowActionFilterCondition) FromOrganizationWorkflowActionFilterConditionEventAttribute(v OrganizationWorkflowActionFilterConditionEventAttribute) error {
+	v.Type = "event_attribute"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionEventAttribute performs a merge with any union data inside the OrganizationWorkflowActionFilterCondition, using the provided OrganizationWorkflowActionFilterConditionEventAttribute
+func (t *OrganizationWorkflowActionFilterCondition) MergeOrganizationWorkflowActionFilterConditionEventAttribute(v OrganizationWorkflowActionFilterConditionEventAttribute) error {
+	v.Type = "event_attribute"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionTaggedEvent returns the union data inside the OrganizationWorkflowActionFilterCondition as a OrganizationWorkflowActionFilterConditionTaggedEvent
+func (t OrganizationWorkflowActionFilterCondition) AsOrganizationWorkflowActionFilterConditionTaggedEvent() (OrganizationWorkflowActionFilterConditionTaggedEvent, error) {
+	var body OrganizationWorkflowActionFilterConditionTaggedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionTaggedEvent overwrites any union data inside the OrganizationWorkflowActionFilterCondition as the provided OrganizationWorkflowActionFilterConditionTaggedEvent
+func (t *OrganizationWorkflowActionFilterCondition) FromOrganizationWorkflowActionFilterConditionTaggedEvent(v OrganizationWorkflowActionFilterConditionTaggedEvent) error {
+	v.Type = "tagged_event"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionTaggedEvent performs a merge with any union data inside the OrganizationWorkflowActionFilterCondition, using the provided OrganizationWorkflowActionFilterConditionTaggedEvent
+func (t *OrganizationWorkflowActionFilterCondition) MergeOrganizationWorkflowActionFilterConditionTaggedEvent(v OrganizationWorkflowActionFilterConditionTaggedEvent) error {
+	v.Type = "tagged_event"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionLatestRelease returns the union data inside the OrganizationWorkflowActionFilterCondition as a OrganizationWorkflowActionFilterConditionLatestRelease
+func (t OrganizationWorkflowActionFilterCondition) AsOrganizationWorkflowActionFilterConditionLatestRelease() (OrganizationWorkflowActionFilterConditionLatestRelease, error) {
+	var body OrganizationWorkflowActionFilterConditionLatestRelease
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionLatestRelease overwrites any union data inside the OrganizationWorkflowActionFilterCondition as the provided OrganizationWorkflowActionFilterConditionLatestRelease
+func (t *OrganizationWorkflowActionFilterCondition) FromOrganizationWorkflowActionFilterConditionLatestRelease(v OrganizationWorkflowActionFilterConditionLatestRelease) error {
+	v.Type = "latest_release"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionLatestRelease performs a merge with any union data inside the OrganizationWorkflowActionFilterCondition, using the provided OrganizationWorkflowActionFilterConditionLatestRelease
+func (t *OrganizationWorkflowActionFilterCondition) MergeOrganizationWorkflowActionFilterConditionLatestRelease(v OrganizationWorkflowActionFilterConditionLatestRelease) error {
+	v.Type = "latest_release"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionLatestAdoptedRelease returns the union data inside the OrganizationWorkflowActionFilterCondition as a OrganizationWorkflowActionFilterConditionLatestAdoptedRelease
+func (t OrganizationWorkflowActionFilterCondition) AsOrganizationWorkflowActionFilterConditionLatestAdoptedRelease() (OrganizationWorkflowActionFilterConditionLatestAdoptedRelease, error) {
+	var body OrganizationWorkflowActionFilterConditionLatestAdoptedRelease
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionLatestAdoptedRelease overwrites any union data inside the OrganizationWorkflowActionFilterCondition as the provided OrganizationWorkflowActionFilterConditionLatestAdoptedRelease
+func (t *OrganizationWorkflowActionFilterCondition) FromOrganizationWorkflowActionFilterConditionLatestAdoptedRelease(v OrganizationWorkflowActionFilterConditionLatestAdoptedRelease) error {
+	v.Type = "latest_adopted_release"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionLatestAdoptedRelease performs a merge with any union data inside the OrganizationWorkflowActionFilterCondition, using the provided OrganizationWorkflowActionFilterConditionLatestAdoptedRelease
+func (t *OrganizationWorkflowActionFilterCondition) MergeOrganizationWorkflowActionFilterConditionLatestAdoptedRelease(v OrganizationWorkflowActionFilterConditionLatestAdoptedRelease) error {
+	v.Type = "latest_adopted_release"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionLevel returns the union data inside the OrganizationWorkflowActionFilterCondition as a OrganizationWorkflowActionFilterConditionLevel
+func (t OrganizationWorkflowActionFilterCondition) AsOrganizationWorkflowActionFilterConditionLevel() (OrganizationWorkflowActionFilterConditionLevel, error) {
+	var body OrganizationWorkflowActionFilterConditionLevel
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionLevel overwrites any union data inside the OrganizationWorkflowActionFilterCondition as the provided OrganizationWorkflowActionFilterConditionLevel
+func (t *OrganizationWorkflowActionFilterCondition) FromOrganizationWorkflowActionFilterConditionLevel(v OrganizationWorkflowActionFilterConditionLevel) error {
+	v.Type = "level"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionLevel performs a merge with any union data inside the OrganizationWorkflowActionFilterCondition, using the provided OrganizationWorkflowActionFilterConditionLevel
+func (t *OrganizationWorkflowActionFilterCondition) MergeOrganizationWorkflowActionFilterConditionLevel(v OrganizationWorkflowActionFilterConditionLevel) error {
+	v.Type = "level"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t OrganizationWorkflowActionFilterCondition) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t OrganizationWorkflowActionFilterCondition) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "age_comparison":
+		return t.AsOrganizationWorkflowActionFilterConditionAgeComparison()
+	case "assigned_to":
+		return t.AsOrganizationWorkflowActionFilterConditionAssignedTo()
+	case "event_attribute":
+		return t.AsOrganizationWorkflowActionFilterConditionEventAttribute()
+	case "event_frequency_count":
+		return t.AsOrganizationWorkflowActionFilterConditionEventFrequencyCount()
+	case "event_frequency_percent":
+		return t.AsOrganizationWorkflowActionFilterConditionEventFrequencyPercent()
+	case "event_unique_user_frequency_count":
+		return t.AsOrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount()
+	case "issue_category":
+		return t.AsOrganizationWorkflowActionFilterConditionIssueCategory()
+	case "issue_occurrences":
+		return t.AsOrganizationWorkflowActionFilterConditionIssueOccurrences()
+	case "issue_priority_deescalating":
+		return t.AsOrganizationWorkflowActionFilterConditionIssuePriorityDeescalating()
+	case "issue_priority_greater_or_equal":
+		return t.AsOrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual()
+	case "latest_adopted_release":
+		return t.AsOrganizationWorkflowActionFilterConditionLatestAdoptedRelease()
+	case "latest_release":
+		return t.AsOrganizationWorkflowActionFilterConditionLatestRelease()
+	case "level":
+		return t.AsOrganizationWorkflowActionFilterConditionLevel()
+	case "percent_sessions_count":
+		return t.AsOrganizationWorkflowActionFilterConditionPercentSessionsCount()
+	case "percent_sessions_percent":
+		return t.AsOrganizationWorkflowActionFilterConditionPercentSessionsPercent()
+	case "tagged_event":
+		return t.AsOrganizationWorkflowActionFilterConditionTaggedEvent()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t OrganizationWorkflowActionFilterCondition) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *OrganizationWorkflowActionFilterCondition) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0 returns the union data inside the OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier as a OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0
+func (t OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier) AsOrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0() (OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0, error) {
+	var body OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0 overwrites any union data inside the OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier as the provided OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0
+func (t *OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier) FromOrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0(v OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0 performs a merge with any union data inside the OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier, using the provided OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0
+func (t *OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier) MergeOrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0(v OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier1 returns the union data inside the OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier as a OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier1
+func (t OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier) AsOrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier1() (OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier1, error) {
+	var body OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier1 overwrites any union data inside the OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier as the provided OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier1
+func (t *OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier) FromOrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier1(v OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier1 performs a merge with any union data inside the OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier, using the provided OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier1
+func (t *OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier) MergeOrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier1(v OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }

@@ -555,6 +555,27 @@ def parse_data_condition_group_types() -> dict[str, ResultData[Any]]:
     return out
 
 
+def parse_event_frequency() -> dict[str, ResultData[Any]]:
+    data = get_file_data("src/sentry/rules/conditions/event_frequency.py")
+    out: dict[str, ResultData[Any]] = {}
+    for node in ast.walk(data.tree):
+        match node:
+            case ast.AnnAssign(
+                target=ast.Name(id="STANDARD_INTERVALS"),
+                value=ast.Dict(keys=keys),
+            ):
+                result_intervals: list[str] = []
+                for key in keys:
+                    assert isinstance(key, ast.Constant)
+                    result_intervals.append(key.value)
+                out["EventFrequencyStandardIntervals"] = ResultData(
+                    github_url=data.github_url, result=result_intervals
+                )
+            case _:
+                pass
+    return out
+
+
 def main() -> None:
     result: OrderedDict[str, ResultData[Any]] = OrderedDict()
     result.update(parse_constants())
@@ -572,6 +593,7 @@ def main() -> None:
     result.update(parse_snuba_datasets())
     result.update(parse_data_condition_types())
     result.update(parse_data_condition_group_types())
+    result.update(parse_event_frequency())
 
     env = get_jinja2_env()
     template = env.from_string(TEMPLATE)

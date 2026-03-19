@@ -2939,13 +2939,447 @@ components:
             - any-short
             - all
             - none
-        # TODO
         conditions:
           type: array
+          items:
+            $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition"
         actions:
           type: array
           items:
             $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action"
+    OrganizationWorkflow_ActionFilter_Condition:
+      oneOf:
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_AgeComparison"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_AssignedTo"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_IssueCategory"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_IssueOccurrences"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_IssuePriorityDeescalating"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_IssuePriorityGreaterOrEqual"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_EventUniqueUserFrequencyCount"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_EventFrequencyCount"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_EventFrequencyPercent"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_PercentSessionsCount"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_PercentSessionsPercent"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_EventAttribute"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_TaggedEvent"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_LatestRelease"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_LatestAdoptedRelease"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_Level"
+      discriminator:
+        propertyName: type
+        mapping:
+          age_comparison: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_AgeComparison"
+          assigned_to: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_AssignedTo"
+          issue_category: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_IssueCategory"
+          issue_occurrences: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_IssueOccurrences"
+          issue_priority_deescalating: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_IssuePriorityDeescalating"
+          issue_priority_greater_or_equal: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_IssuePriorityGreaterOrEqual"
+          event_unique_user_frequency_count: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_EventUniqueUserFrequencyCount"
+          event_frequency_count: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_EventFrequencyCount"
+          event_frequency_percent: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_EventFrequencyPercent"
+          percent_sessions_count: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_PercentSessionsCount"
+          percent_sessions_percent: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_PercentSessionsPercent"
+          event_attribute: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_EventAttribute"
+          tagged_event: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_TaggedEvent"
+          latest_release: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_LatestRelease"
+          latest_adopted_release: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_LatestAdoptedRelease"
+          level: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_Level"
+    OrganizationWorkflow_ActionFilter_Condition_AgeComparison:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+          enum:
+            - age_comparison
+        comparison:
+          type: object
+          required:
+            - time
+            - value
+            - comparisonType
+          properties:
+            time:
+              type: string
+              enum:
+                - minute
+                - hour
+                - day
+                - week
+            value:
+              type: integer
+              format: int64
+            comparisonType:
+              type: string
+              enum:
+                - older
+                - newer
+        conditionResult:
+          type: boolean
+    OrganizationWorkflow_ActionFilter_Condition_AssignedTo:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+          enum:
+            - assigned_to
+        comparison:
+          type: object
+          required:
+            - targetType
+            - targetIdentifier
+          properties:
+            targetType:
+              type: string
+              enum:
+                - NoOne
+                - Member
+                - Team
+            targetIdentifier:
+              oneOf:
+                - type: string
+                - type: integer
+                  format: int64
+        conditionResult:
+          type: boolean
+    OrganizationWorkflow_ActionFilter_Condition_IssueCategory:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+          enum:
+            - issue_category
+        comparison:
+          type: object
+          required:
+            - value
+          properties:
+            value:
+              type: integer
+              format: int64
+        conditionResult:
+          type: boolean
+    OrganizationWorkflow_ActionFilter_Condition_IssueOccurrences:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+          enum:
+            - issue_occurrences
+        comparison:
+          type: object
+          required:
+            - value
+          properties:
+            value:
+              type: integer
+              format: int64
+        conditionResult:
+          type: boolean
+    OrganizationWorkflow_ActionFilter_Condition_IssuePriorityDeescalating:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+          enum:
+            - issue_priority_deescalating
+        comparison:
+          type: boolean
+        conditionResult:
+          type: boolean
+    OrganizationWorkflow_ActionFilter_Condition_IssuePriorityGreaterOrEqual:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+          enum:
+            - issue_priority_greater_or_equal
+        comparison:
+          type: integer
+          format: int64
+        conditionResult:
+          type: boolean
+    OrganizationWorkflow_ActionFilter_Condition_EventUniqueUserFrequencyCount:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+          enum:
+            - event_unique_user_frequency_count
+        comparison:
+          type: object
+          required:
+            - value
+            - filters
+            - interval
+          properties:
+            value:
+              type: integer
+              format: int64
+            filters:
+              type: array
+              items:
+                $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_EventUniqueUserFrequencyCount_Filter"
+            interval:
+              type: string
+        conditionResult:
+          type: boolean
+    OrganizationWorkflow_ActionFilter_Condition_EventUniqueUserFrequencyCount_Filter:
+      type: object
+      properties:
+        key:
+          type: string
+        attribute:
+          type: string
+        match:
+          type: string
+        value:
+          type: string
+    OrganizationWorkflow_ActionFilter_Condition_EventFrequencyCount:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+          enum:
+            - event_frequency_count
+        comparison:
+          type: object
+          required:
+            - value
+            - interval
+          properties:
+            value:
+              type: integer
+              format: int64
+            interval:
+              type: string
+        conditionResult:
+          type: boolean
+    OrganizationWorkflow_ActionFilter_Condition_EventFrequencyPercent:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+          enum:
+            - event_frequency_percent
+        comparison:
+          type: object
+          required:
+            - value
+            - interval
+            - comparisonInterval
+          properties:
+            value:
+              type: integer
+              format: int64
+            interval:
+              type: string
+            comparisonInterval:
+              type: string
+        conditionResult:
+          type: boolean
+    OrganizationWorkflow_ActionFilter_Condition_PercentSessionsCount:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+          enum:
+            - percent_sessions_count
+        comparison:
+          type: object
+          required:
+            - value
+            - interval
+          properties:
+            value:
+              type: integer
+              format: int64
+            interval:
+              type: string
+        conditionResult:
+          type: boolean
+    OrganizationWorkflow_ActionFilter_Condition_PercentSessionsPercent:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+          enum:
+            - percent_sessions_percent
+        comparison:
+          type: object
+          required:
+            - value
+            - interval
+            - comparisonInterval
+          properties:
+            value:
+              type: integer
+              format: int64
+            interval:
+              type: string
+            comparisonInterval:
+              type: string
+        conditionResult:
+          type: boolean
+    OrganizationWorkflow_ActionFilter_Condition_EventAttribute:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+          enum:
+            - event_attribute
+        comparison:
+          type: object
+          required:
+            - attribute
+            - match
+            - value
+          properties:
+            attribute:
+              type: string
+            match:
+              type: string
+            value:
+              type: string
+        conditionResult:
+          type: boolean
+    OrganizationWorkflow_ActionFilter_Condition_TaggedEvent:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+          enum:
+            - tagged_event
+        comparison:
+          type: object
+          required:
+            - key
+            - match
+          properties:
+            key:
+              type: string
+            match:
+              type: string
+            value:
+              type: string
+        conditionResult:
+          type: boolean
+    OrganizationWorkflow_ActionFilter_Condition_LatestRelease:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+          enum:
+            - latest_release
+        comparison:
+          type: boolean
+        conditionResult:
+          type: boolean
+    OrganizationWorkflow_ActionFilter_Condition_LatestAdoptedRelease:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+          enum:
+            - latest_adopted_release
+        comparison:
+          type: object
+          required:
+            - environment
+            - ageComparison
+            - releaseAgeType
+          properties:
+            environment:
+              type: string
+            ageComparison:
+              type: string
+            releaseAgeType:
+              type: string
+        conditionResult:
+          type: boolean
+    OrganizationWorkflow_ActionFilter_Condition_Level:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+          enum:
+            - level
+        comparison:
+          type: object
+          required:
+            - match
+            - level
+          properties:
+            match:
+              type: string
+            level:
+              type: integer
+              format: int64
+        conditionResult:
+          type: boolean
     OrganizationWorkflow_ActionFilter_Action:
       oneOf:
         - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Email"

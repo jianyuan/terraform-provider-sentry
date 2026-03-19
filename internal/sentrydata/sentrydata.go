@@ -1086,3 +1086,14 @@ var DataConditionGroupTypes = []string{
 	"all",
 	"none",
 }
+
+// https://github.com/getsentry/sentry/blob/master/src/sentry/rules/conditions/event_frequency.py
+var EventFrequencyStandardIntervals = []string{
+	"1m",
+	"5m",
+	"15m",
+	"1h",
+	"1d",
+	"1w",
+	"30d",
+}
