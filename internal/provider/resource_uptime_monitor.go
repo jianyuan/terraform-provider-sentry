@@ -21,6 +21,7 @@ import (
 )
 
 var _ resource.Resource = &UptimeMonitorResource{}
+var _ resource.ResourceWithImportState = &UptimeMonitorResource{}
 
 func NewUptimeMonitorResource() resource.Resource {
 	return &UptimeMonitorResource{}
@@ -36,7 +37,7 @@ func (r *UptimeMonitorResource) Metadata(ctx context.Context, req resource.Metad
 
 func (r *UptimeMonitorResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Create an Uptime Monitor for a Project.",
+		MarkdownDescription: "⚠️ This resource is currently in beta and may be subject to change. It is supported by [New Monitors and Alerts](https://docs.sentry.io/product/new-monitors-and-alerts/) and may not be viewable in the UI today.\n\nCreate an Uptime Monitor for a Project.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				MarkdownDescription: "The internal ID of this monitor.",
@@ -89,6 +90,7 @@ func (r *UptimeMonitorResource) Schema(ctx context.Context, req resource.SchemaR
 						Optional:            true,
 						CustomType:          supertypes.StringType{},
 						Validators: []validator.String{
+							stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("team_id")),
 							stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("team_id")),
 						},
 					},
@@ -103,36 +105,36 @@ func (r *UptimeMonitorResource) Schema(ctx context.Context, req resource.SchemaR
 				},
 			},
 			"url": schema.StringAttribute{
-				MarkdownDescription: "TODO",
+				MarkdownDescription: "The URL to monitor.",
 				Required:            true,
 				CustomType:          supertypes.StringType{},
 			},
 			"method": tfutils.WithEnumStringAttribute(
 				schema.StringAttribute{
-					MarkdownDescription: "TODO",
+					MarkdownDescription: "The HTTP method to use for the request.",
 					Required:            true,
 					CustomType:          supertypes.StringType{},
 				},
 				sentrydata.UptimeSubscriptionSupportedHttpMethods,
 			),
 			"body": schema.StringAttribute{
-				MarkdownDescription: "TODO",
+				MarkdownDescription: "The request body to send. Only applicable for methods that support a body.",
 				Optional:            true,
 				CustomType:          supertypes.StringType{},
 			},
 			"headers": schema.ListNestedAttribute{
-				MarkdownDescription: "TODO",
+				MarkdownDescription: "The headers to send with the request.",
 				Optional:            true,
 				CustomType:          supertypes.NewListNestedObjectTypeOf[UptimeMonitorResourceModelHeadersItem](ctx),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"key": schema.StringAttribute{
-							MarkdownDescription: "TODO",
+							MarkdownDescription: "The header key.",
 							Required:            true,
 							CustomType:          supertypes.StringType{},
 						},
 						"value": schema.StringAttribute{
-							MarkdownDescription: "TODO",
+							MarkdownDescription: "The header value.",
 							Required:            true,
 							CustomType:          supertypes.StringType{},
 						},
@@ -141,14 +143,14 @@ func (r *UptimeMonitorResource) Schema(ctx context.Context, req resource.SchemaR
 			},
 			"interval_seconds": tfutils.WithEnumInt64Attribute(
 				schema.Int64Attribute{
-					MarkdownDescription: "TODO",
+					MarkdownDescription: "The amount of time between each uptime check request.",
 					Required:            true,
 					CustomType:          supertypes.Int64Type{},
 				},
 				sentrydata.UptimeSubscriptionIntervalSeconds,
 			),
 			"timeout_ms": schema.Int64Attribute{
-				MarkdownDescription: "TODO",
+				MarkdownDescription: "The request timeout in milliseconds.",
 				Required:            true,
 				CustomType:          supertypes.Int64Type{},
 			},
@@ -248,7 +250,37 @@ func (r *UptimeMonitorResource) Read(ctx context.Context, req resource.ReadReque
 }
 
 func (r *UptimeMonitorResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	resp.Diagnostics.AddError("Not Supported", "Update is not supported for this resource")
+	var data UptimeMonitorResourceModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	body, diags := r.getUpdateJSONRequestBody(ctx, data)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	httpResp, err := r.apiClient.UpdateProjectMonitorWithResponse(ctx, data.Organization.ValueString(), data.Id.ValueString(), *body)
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update, got error: %s", err))
+		return
+	} else if httpResp.StatusCode() != http.StatusOK {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update, got status code %d: %s", httpResp.StatusCode(), string(httpResp.Body)))
+		return
+	} else if httpResp.JSON200 == nil {
+		resp.Diagnostics.AddError("Client Error", "Unable to update, got empty response body")
+		return
+	}
+
+	resp.Diagnostics.Append(data.Fill(ctx, *httpResp.JSON200)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *UptimeMonitorResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -269,6 +301,24 @@ func (r *UptimeMonitorResource) Delete(ctx context.Context, req resource.DeleteR
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete, got status code %d: %s", httpResp.StatusCode(), string(httpResp.Body)))
 		return
 	}
+}
+
+func (r *UptimeMonitorResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	first, second, third, err := tfutils.SplitThreePartId(req.ID, "organization", "project", "id")
+	if err != nil {
+		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Error parsing ID: %s", err.Error()))
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.SetAttribute(
+		ctx, path.Root("organization"), first,
+	)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(
+		ctx, path.Root("project"), second,
+	)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(
+		ctx, path.Root("id"), third,
+	)...)
 }
 
 type UptimeMonitorResourceModel struct {

@@ -3,10 +3,13 @@
 page_title: "sentry_uptime_monitor Resource - terraform-provider-sentry"
 subcategory: ""
 description: |-
+  ⚠️ This resource is currently in beta and may be subject to change. It is supported by New Monitors and Alerts https://docs.sentry.io/product/new-monitors-and-alerts/ and may not be viewable in the UI today.
   Create an Uptime Monitor for a Project.
 ---
 
 # sentry_uptime_monitor (Resource)
+
+⚠️ This resource is currently in beta and may be subject to change. It is supported by [New Monitors and Alerts](https://docs.sentry.io/product/new-monitors-and-alerts/) and may not be viewable in the UI today.
 
 Create an Uptime Monitor for a Project.
 
@@ -18,22 +21,22 @@ Create an Uptime Monitor for a Project.
 ### Required
 
 - `environment` (String) Name of the environment to create uptime issues in.
-- `interval_seconds` (Number) TODO Valid values are: `60`, `300`, `600`, `1200`, `1800`, and `3600`.
-- `method` (String) TODO Valid values are: `GET`, `POST`, `HEAD`, `PUT`, `DELETE`, `PATCH`, and `OPTIONS`.
+- `interval_seconds` (Number) The amount of time between each uptime check request. Valid values are: `60`, `300`, `600`, `1200`, `1800`, and `3600`.
+- `method` (String) The HTTP method to use for the request. Valid values are: `GET`, `POST`, `HEAD`, `PUT`, `DELETE`, `PATCH`, and `OPTIONS`.
 - `name` (String) The name of this monitor.
 - `organization` (String) The organization slug or internal ID to create the monitor for.
 - `project` (String) The project slug or internal ID to create the monitor for.
-- `timeout_ms` (Number) TODO
-- `url` (String) TODO
+- `timeout_ms` (Number) The request timeout in milliseconds.
+- `url` (String) The URL to monitor.
 
 ### Optional
 
-- `body` (String) TODO
+- `body` (String) The request body to send. Only applicable for methods that support a body.
 - `default_assignee` (Attributes) Sentry will assign new issues to this assignee. (see [below for nested schema](#nestedatt--default_assignee))
 - `description` (String) A description of the monitor. Will be used in the resulting issue.
 - `downtime_threshold` (Number) Number of consecutive failed checks required to mark monitor as down. Defaults to 3.
 - `enabled` (Boolean) Whether the monitor is enabled. Defaults to true.
-- `headers` (Attributes List) TODO (see [below for nested schema](#nestedatt--headers))
+- `headers` (Attributes List) The headers to send with the request. (see [below for nested schema](#nestedatt--headers))
 - `recovery_threshold` (Number) Number of consecutive successful checks required to mark monitor as recovered. Defaults to 1.
 
 ### Read-Only
@@ -54,5 +57,5 @@ Optional:
 
 Required:
 
-- `key` (String) TODO
-- `value` (String) TODO
+- `key` (String) The header key.
+- `value` (String) The header value.

@@ -7,8 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
+	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 	"github.com/oapi-codegen/nullable"
-	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 )
 
 func (r *UptimeMonitorResource) getCreateJSONRequestBody(ctx context.Context, data UptimeMonitorResourceModel) (*apiclient.CreateProjectMonitorJSONRequestBody, diag.Diagnostics) {
@@ -27,7 +27,7 @@ func (r *UptimeMonitorResource) getCreateJSONRequestBody(ctx context.Context, da
 		outDs.Body = nullable.NewNullNullable[string]()
 	}
 	if data.Headers.IsKnown() {
-		inHeaders := data.Headers.DiagsGet(ctx, diags)
+		inHeaders := tfutils.MergeDiagnostics(data.Headers.Get(ctx))(&diags)
 		if diags.HasError() {
 			return nil, diags
 		}
@@ -69,7 +69,11 @@ func (r *UptimeMonitorResource) getCreateJSONRequestBody(ctx context.Context, da
 	}
 
 	if data.DefaultAssignee.IsKnown() {
-		defaultAssignee := data.DefaultAssignee.MustGet(ctx)
+		defaultAssignee := tfutils.MergeDiagnostics(data.DefaultAssignee.Get(ctx))(&diags)
+		if diags.HasError() {
+			return nil, diags
+		}
+
 		switch {
 		case defaultAssignee.TeamId.IsKnown():
 			out.Owner = nullable.NewNullableWithValue(fmt.Sprintf("team:%s", defaultAssignee.TeamId.Get()))
@@ -90,15 +94,19 @@ func (r *UptimeMonitorResource) getCreateJSONRequestBody(ctx context.Context, da
 	return &req, nil
 }
 
+func (r *UptimeMonitorResource) getUpdateJSONRequestBody(ctx context.Context, data UptimeMonitorResourceModel) (*apiclient.UpdateProjectMonitorJSONRequestBody, diag.Diagnostics) {
+	return r.getCreateJSONRequestBody(ctx, data)
+}
+
 func (m *UptimeMonitorResourceModel) Fill(ctx context.Context, data apiclient.ProjectMonitor) (diags diag.Diagnostics) {
-	m.Id = supertypes.NewStringValue(data.Id)
-	m.Name = supertypes.NewStringValue(data.Name)
+	m.Id.Set(data.Id)
+	m.Name.Set(data.Name)
 	if v, err := data.Description.Get(); err == nil {
-		m.Description = supertypes.NewStringValueOrNull(v)
+		m.Description.Set(v)
 	} else {
-		m.Description = supertypes.NewStringNull()
+		m.Description.SetNull()
 	}
-	m.Enabled = supertypes.NewBoolValue(data.Enabled)
+	m.Enabled.Set(data.Enabled)
 
 	if data.Owner.IsSpecified() && !data.Owner.IsNull() {
 		ownerValue, err := data.Owner.MustGet().ValueByDiscriminator()
@@ -111,16 +119,16 @@ func (m *UptimeMonitorResourceModel) Fill(ctx context.Context, data apiclient.Pr
 
 		switch ownerValue := ownerValue.(type) {
 		case apiclient.ProjectMonitorOwnerUser:
-			defaultAssignee.UserId = supertypes.NewStringValue(ownerValue.Id)
-			m.DefaultAssignee = supertypes.NewSingleNestedObjectValueOf(ctx, defaultAssignee)
+			defaultAssignee.UserId.Set(ownerValue.Id)
+			diags.Append(m.DefaultAssignee.Set(ctx, defaultAssignee)...)
 		case apiclient.ProjectMonitorOwnerTeam:
-			defaultAssignee.TeamId = supertypes.NewStringValue(ownerValue.Id)
-			m.DefaultAssignee = supertypes.NewSingleNestedObjectValueOf(ctx, defaultAssignee)
+			defaultAssignee.TeamId.Set(ownerValue.Id)
+			diags.Append(m.DefaultAssignee.Set(ctx, defaultAssignee)...)
 		default:
-			m.DefaultAssignee = supertypes.NewSingleNestedObjectValueOfNull[UptimeMonitorResourceModelDefaultAssignee](ctx)
+			m.DefaultAssignee.SetNull(ctx)
 		}
 	} else {
-		m.DefaultAssignee = supertypes.NewSingleNestedObjectValueOfNull[UptimeMonitorResourceModelDefaultAssignee](ctx)
+		m.DefaultAssignee.SetNull(ctx)
 	}
 
 	if len(data.DataSources) != 1 {
@@ -134,34 +142,34 @@ func (m *UptimeMonitorResourceModel) Fill(ctx context.Context, data apiclient.Pr
 		return
 	}
 
-	m.Url = supertypes.NewStringValue(dataSource.QueryObj.Url)
-	m.Method = supertypes.NewStringValue(dataSource.QueryObj.Method)
+	m.Url.Set(dataSource.QueryObj.Url)
+	m.Method.Set(dataSource.QueryObj.Method)
 	if v, err := dataSource.QueryObj.Body.Get(); err == nil {
-		m.Body = supertypes.NewStringValueOrNull(v)
+		m.Body.Set(v)
 	} else {
-		m.Body = supertypes.NewStringNull()
+		m.Body.SetNull()
 	}
 
-	var headers []UptimeMonitorResourceModelHeadersItem
-	for _, header := range dataSource.QueryObj.Headers {
-		if len(header) != 2 {
-			diags.AddError("Invalid header", fmt.Sprintf("Expected 2 elements in header, got %d", len(header)))
+	headers := make([]*UptimeMonitorResourceModelHeadersItem, 0, len(dataSource.QueryObj.Headers))
+	for _, headerValues := range dataSource.QueryObj.Headers {
+		if len(headerValues) != 2 {
+			diags.AddError("Invalid header", fmt.Sprintf("Expected 2 elements in header, got %d", len(headerValues)))
 			return
 		}
-		headers = append(headers, UptimeMonitorResourceModelHeadersItem{
-			Key:   supertypes.NewStringValue(header[0]),
-			Value: supertypes.NewStringValue(header[1]),
-		})
+		var header UptimeMonitorResourceModelHeadersItem
+		header.Key.Set(headerValues[0])
+		header.Value.Set(headerValues[1])
+		headers = append(headers, &header)
 	}
-	m.Headers = supertypes.NewListNestedObjectValueOfValueSlice(ctx, headers)
+	diags.Append(m.Headers.Set(ctx, headers)...)
 
-	m.IntervalSeconds = supertypes.NewInt64Value(dataSource.QueryObj.IntervalSeconds)
-	m.TimeoutMs = supertypes.NewInt64Value(dataSource.QueryObj.TimeoutMs)
+	m.IntervalSeconds.Set(dataSource.QueryObj.IntervalSeconds)
+	m.TimeoutMs.Set(dataSource.QueryObj.TimeoutMs)
 
 	if config, err := data.Config.AsProjectMonitorConfigUptimeDomainFailure(); err == nil {
-		m.Environment = supertypes.NewStringValue(config.Environment)
-		m.RecoveryThreshold = supertypes.NewInt64Value(config.RecoveryThreshold)
-		m.DowntimeThreshold = supertypes.NewInt64Value(config.DowntimeThreshold)
+		m.Environment.Set(config.Environment)
+		m.RecoveryThreshold.Set(config.RecoveryThreshold)
+		m.DowntimeThreshold.Set(config.DowntimeThreshold)
 	} else {
 		diags.AddError("Invalid config", err.Error())
 		return
