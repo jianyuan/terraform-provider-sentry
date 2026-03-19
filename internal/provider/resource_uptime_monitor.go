@@ -125,6 +125,7 @@ func (r *UptimeMonitorResource) Schema(ctx context.Context, req resource.SchemaR
 			"headers": schema.ListNestedAttribute{
 				MarkdownDescription: "The headers to send with the request.",
 				Optional:            true,
+				Computed:            true,
 				CustomType:          supertypes.NewListNestedObjectTypeOf[UptimeMonitorResourceModelHeadersItem](ctx),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
