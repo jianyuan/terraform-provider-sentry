@@ -45,6 +45,9 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 				MarkdownDescription: "The internal ID of this alert.",
 				Computed:            true,
 				CustomType:          supertypes.StringType{},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"organization": schema.StringAttribute{
 				MarkdownDescription: "The organization slug or internal ID to create the alert for.",
@@ -769,7 +772,7 @@ func (r *AlertResource) Create(ctx context.Context, req resource.CreateRequest, 
 		return
 	}
 
-	httpResp, err := r.apiClient.CreateOrganizationAlertWithResponse(ctx, data.Organization.ValueString(), *body)
+	httpResp, err := r.apiClient.CreateOrganizationWorkflowWithResponse(ctx, data.Organization.ValueString(), *body)
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create, got error: %s", err))
 		return
@@ -797,7 +800,7 @@ func (r *AlertResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		return
 	}
 
-	httpResp, err := r.apiClient.GetOrganizationAlertWithResponse(ctx, data.Organization.ValueString(), data.Id.ValueString())
+	httpResp, err := r.apiClient.GetOrganizationWorkflowWithResponse(ctx, data.Organization.ValueString(), data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read, got error: %s", err))
 		return
@@ -825,7 +828,37 @@ func (r *AlertResource) Read(ctx context.Context, req resource.ReadRequest, resp
 }
 
 func (r *AlertResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	resp.Diagnostics.AddError("Not Supported", "Update is not supported for this resource")
+	var data AlertResourceModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	body, diags := r.getUpdateJSONRequestBody(ctx, data)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	httpResp, err := r.apiClient.UpdateOrganizationWorkflowWithResponse(ctx, data.Organization.ValueString(), data.Id.ValueString(), *body)
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update, got error: %s", err))
+		return
+	} else if httpResp.StatusCode() != http.StatusOK {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update, got status code %d: %s", httpResp.StatusCode(), string(httpResp.Body)))
+		return
+	} else if httpResp.JSON200 == nil {
+		resp.Diagnostics.AddError("Client Error", "Unable to update, got empty response body")
+		return
+	}
+
+	resp.Diagnostics.Append(data.Fill(ctx, *httpResp.JSON200)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *AlertResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -836,7 +869,7 @@ func (r *AlertResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 		return
 	}
 
-	httpResp, err := r.apiClient.DeleteOrganizationAlertWithResponse(ctx, data.Organization.ValueString(), data.Id.ValueString())
+	httpResp, err := r.apiClient.DeleteOrganizationWorkflowWithResponse(ctx, data.Organization.ValueString(), data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete, got error: %s", err))
 		return

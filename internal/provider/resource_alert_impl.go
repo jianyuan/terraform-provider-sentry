@@ -7,30 +7,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/jianyuan/go-utils/ptr"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 	"github.com/samber/lo"
 )
 
-func (r *AlertResource) getCreateJSONRequestBody(ctx context.Context, data AlertResourceModel) (*apiclient.CreateOrganizationAlertJSONRequestBody, diag.Diagnostics) {
+func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResourceModel) ([]apiclient.OrganizationWorkflowActionFilter, diag.Diagnostics) {
 	var diags diag.Diagnostics
-
-	monitorIds := data.MonitorIds.DiagsGet(ctx, diags)
-	if diags.HasError() {
-		return nil, diags
-	}
-
-	inTriggerConditions := data.TriggerConditions.DiagsGet(ctx, diags)
-	if diags.HasError() {
-		return nil, diags
-	}
-	var outTriggerConditions []apiclient.OrganizationWorkflowTriggerCondition
-	for _, triggerCondition := range inTriggerConditions {
-		outTriggerConditions = append(outTriggerConditions, apiclient.OrganizationWorkflowTriggerCondition{
-			Type:            triggerCondition,
-			Comparison:      true,
-			ConditionResult: true,
-		})
-	}
 
 	inActionFilters := data.ActionFilters.DiagsGet(ctx, diags)
 	if diags.HasError() {
@@ -550,7 +533,37 @@ func (r *AlertResource) getCreateJSONRequestBody(ctx context.Context, data Alert
 		})
 	}
 
-	req := apiclient.CreateOrganizationAlertJSONRequestBody{
+	return outActionFilters, diags
+}
+
+func (r *AlertResource) getTriggerConditions(ctx context.Context, data AlertResourceModel) ([]apiclient.OrganizationWorkflowTriggerCondition, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	inTriggerConditions := data.TriggerConditions.DiagsGet(ctx, diags)
+	if diags.HasError() {
+		return nil, diags
+	}
+	var outTriggerConditions []apiclient.OrganizationWorkflowTriggerCondition
+	for _, triggerCondition := range inTriggerConditions {
+		outTriggerConditions = append(outTriggerConditions, apiclient.OrganizationWorkflowTriggerCondition{
+			Type:            triggerCondition,
+			Comparison:      true,
+			ConditionResult: true,
+		})
+	}
+
+	return outTriggerConditions, diags
+}
+
+func (r *AlertResource) getCreateJSONRequestBody(ctx context.Context, data AlertResourceModel) (*apiclient.CreateOrganizationWorkflowJSONRequestBody, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	monitorIds := data.MonitorIds.DiagsGet(ctx, diags)
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	req := apiclient.CreateOrganizationWorkflowJSONRequestBody{
 		Name:        data.Name.Get(),
 		Enabled:     data.Enabled.Get(),
 		Environment: data.Environment.Get(),
@@ -560,9 +573,36 @@ func (r *AlertResource) getCreateJSONRequestBody(ctx context.Context, data Alert
 		DetectorIds: monitorIds,
 		Triggers: apiclient.OrganizationWorkflowTrigger{
 			LogicType:  apiclient.OrganizationWorkflowTriggerLogicTypeAnyShort,
-			Conditions: outTriggerConditions,
+			Conditions: tfutils.MergeDiagnostics(r.getTriggerConditions(ctx, data))(&diags),
 		},
-		ActionFilters: outActionFilters,
+		ActionFilters: tfutils.MergeDiagnostics(r.getActionFilters(ctx, data))(&diags),
+	}
+
+	return &req, nil
+}
+
+func (r *AlertResource) getUpdateJSONRequestBody(ctx context.Context, data AlertResourceModel) (*apiclient.UpdateOrganizationWorkflowJSONRequestBody, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	monitorIds := data.MonitorIds.DiagsGet(ctx, diags)
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	req := apiclient.UpdateOrganizationWorkflowJSONRequestBody{
+		Id:          data.Id.Get(),
+		Name:        data.Name.Get(),
+		Enabled:     data.Enabled.Get(),
+		Environment: data.Environment.Get(),
+		Config: apiclient.OrganizationWorkflowConfig{
+			Frequency: data.FrequencyMinutes.Get(),
+		},
+		DetectorIds: monitorIds,
+		Triggers: apiclient.OrganizationWorkflowTrigger{
+			LogicType:  apiclient.OrganizationWorkflowTriggerLogicTypeAnyShort,
+			Conditions: tfutils.MergeDiagnostics(r.getTriggerConditions(ctx, data))(&diags),
+		},
+		ActionFilters: tfutils.MergeDiagnostics(r.getActionFilters(ctx, data))(&diags),
 	}
 
 	return &req, nil
