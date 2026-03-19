@@ -774,7 +774,7 @@ export const RESOURCES: Array<Resource> = [
         name: "headers",
         type: "list_nested",
         description: "The headers to send with the request.",
-        computedOptionalRequired: "optional",
+        computedOptionalRequired: "computed_optional",
         attributes: [
           {
             name: "key",
