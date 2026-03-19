@@ -439,22 +439,22 @@ func (e OrganizationWorkflowActionFilterConditionAgeComparisonComparisonComparis
 
 // Defines values for OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTime.
 const (
-	OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTimeDay    OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTime = "day"
-	OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTimeHour   OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTime = "hour"
-	OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTimeMinute OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTime = "minute"
-	OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTimeWeek   OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTime = "week"
+	Day    OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTime = "day"
+	Hour   OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTime = "hour"
+	Minute OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTime = "minute"
+	Week   OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTime = "week"
 )
 
 // Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTime enum.
 func (e OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTime) Valid() bool {
 	switch e {
-	case OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTimeDay:
+	case Day:
 		return true
-	case OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTimeHour:
+	case Hour:
 		return true
-	case OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTimeMinute:
+	case Minute:
 		return true
-	case OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTimeWeek:
+	case Week:
 		return true
 	default:
 		return false
@@ -851,36 +851,6 @@ const (
 func (e ProjectMonitorDataSourceConfigCronIntervalScheduleType) Valid() bool {
 	switch e {
 	case Interval:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for ProjectMonitorDataSourceConfigCronIntervalUnit.
-const (
-	ProjectMonitorDataSourceConfigCronIntervalUnitDay    ProjectMonitorDataSourceConfigCronIntervalUnit = "day"
-	ProjectMonitorDataSourceConfigCronIntervalUnitHour   ProjectMonitorDataSourceConfigCronIntervalUnit = "hour"
-	ProjectMonitorDataSourceConfigCronIntervalUnitMinute ProjectMonitorDataSourceConfigCronIntervalUnit = "minute"
-	ProjectMonitorDataSourceConfigCronIntervalUnitMonth  ProjectMonitorDataSourceConfigCronIntervalUnit = "month"
-	ProjectMonitorDataSourceConfigCronIntervalUnitWeek   ProjectMonitorDataSourceConfigCronIntervalUnit = "week"
-	ProjectMonitorDataSourceConfigCronIntervalUnitYear   ProjectMonitorDataSourceConfigCronIntervalUnit = "year"
-)
-
-// Valid indicates whether the value is a known member of the ProjectMonitorDataSourceConfigCronIntervalUnit enum.
-func (e ProjectMonitorDataSourceConfigCronIntervalUnit) Valid() bool {
-	switch e {
-	case ProjectMonitorDataSourceConfigCronIntervalUnitDay:
-		return true
-	case ProjectMonitorDataSourceConfigCronIntervalUnitHour:
-		return true
-	case ProjectMonitorDataSourceConfigCronIntervalUnitMinute:
-		return true
-	case ProjectMonitorDataSourceConfigCronIntervalUnitMonth:
-		return true
-	case ProjectMonitorDataSourceConfigCronIntervalUnitWeek:
-		return true
-	case ProjectMonitorDataSourceConfigCronIntervalUnitYear:
 		return true
 	default:
 		return false
@@ -2280,7 +2250,7 @@ type ProjectMonitorDataSourceConfigCronInterval_Schedule_Item struct {
 type ProjectMonitorDataSourceConfigCronIntervalScheduleType string
 
 // ProjectMonitorDataSourceConfigCronIntervalUnit defines model for ProjectMonitor_DataSource_Config_Cron_Interval_Unit.
-type ProjectMonitorDataSourceConfigCronIntervalUnit string
+type ProjectMonitorDataSourceConfigCronIntervalUnit = string
 
 // ProjectMonitorDataSourceConfigCronIntervalValue defines model for ProjectMonitor_DataSource_Config_Cron_Interval_Value.
 type ProjectMonitorDataSourceConfigCronIntervalValue = int64
@@ -3043,6 +3013,9 @@ type CreateOrganizationTeamProjectJSONBody struct {
 	Platform     *string `json:"platform,omitempty"`
 	Slug         *string `json:"slug,omitempty"`
 }
+
+// UpdateProjectMonitorJSONRequestBody defines body for UpdateProjectMonitor for application/json ContentType.
+type UpdateProjectMonitorJSONRequestBody = ProjectMonitorRequest
 
 // UpdateOrganizationIntegrationJSONRequestBody defines body for UpdateOrganizationIntegration for application/json ContentType.
 type UpdateOrganizationIntegrationJSONRequestBody UpdateOrganizationIntegrationJSONBody
@@ -6150,6 +6123,11 @@ type ClientInterface interface {
 	// GetProjectMonitor request
 	GetProjectMonitor(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// UpdateProjectMonitorWithBody request with any body
+	UpdateProjectMonitorWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateProjectMonitor(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, body UpdateProjectMonitorJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListOrganizationIntegrations request
 	ListOrganizationIntegrations(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationIntegrationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -6324,6 +6302,30 @@ func (c *Client) DeleteProjectMonitor(ctx context.Context, organizationIdOrSlug 
 
 func (c *Client) GetProjectMonitor(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetProjectMonitorRequest(c.Server, organizationIdOrSlug, detectorId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateProjectMonitorWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateProjectMonitorRequestWithBody(c.Server, organizationIdOrSlug, detectorId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateProjectMonitor(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, body UpdateProjectMonitorJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateProjectMonitorRequest(c.Server, organizationIdOrSlug, detectorId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -7073,6 +7075,60 @@ func NewGetProjectMonitorRequest(server string, organizationIdOrSlug Organizatio
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewUpdateProjectMonitorRequest calls the generic UpdateProjectMonitor builder with application/json body
+func NewUpdateProjectMonitorRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, body UpdateProjectMonitorJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateProjectMonitorRequestWithBody(server, organizationIdOrSlug, detectorId, "application/json", bodyReader)
+}
+
+// NewUpdateProjectMonitorRequestWithBody generates requests for UpdateProjectMonitor with any type of body
+func NewUpdateProjectMonitorRequestWithBody(server string, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "detector_id", detectorId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/detectors/%s/", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -8920,6 +8976,11 @@ type ClientWithResponsesInterface interface {
 	// GetProjectMonitorWithResponse request
 	GetProjectMonitorWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, reqEditors ...RequestEditorFn) (*GetProjectMonitorResponse, error)
 
+	// UpdateProjectMonitorWithBodyWithResponse request with any body
+	UpdateProjectMonitorWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProjectMonitorResponse, error)
+
+	UpdateProjectMonitorWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, body UpdateProjectMonitorJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectMonitorResponse, error)
+
 	// ListOrganizationIntegrationsWithResponse request
 	ListOrganizationIntegrationsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationIntegrationsParams, reqEditors ...RequestEditorFn) (*ListOrganizationIntegrationsResponse, error)
 
@@ -9136,6 +9197,28 @@ func (r GetProjectMonitorResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetProjectMonitorResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateProjectMonitorResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ProjectMonitor
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateProjectMonitorResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateProjectMonitorResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -9950,6 +10033,23 @@ func (c *ClientWithResponses) GetProjectMonitorWithResponse(ctx context.Context,
 	return ParseGetProjectMonitorResponse(rsp)
 }
 
+// UpdateProjectMonitorWithBodyWithResponse request with arbitrary body returning *UpdateProjectMonitorResponse
+func (c *ClientWithResponses) UpdateProjectMonitorWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProjectMonitorResponse, error) {
+	rsp, err := c.UpdateProjectMonitorWithBody(ctx, organizationIdOrSlug, detectorId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateProjectMonitorResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateProjectMonitorWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, body UpdateProjectMonitorJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectMonitorResponse, error) {
+	rsp, err := c.UpdateProjectMonitor(ctx, organizationIdOrSlug, detectorId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateProjectMonitorResponse(rsp)
+}
+
 // ListOrganizationIntegrationsWithResponse request returning *ListOrganizationIntegrationsResponse
 func (c *ClientWithResponses) ListOrganizationIntegrationsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationIntegrationsParams, reqEditors ...RequestEditorFn) (*ListOrganizationIntegrationsResponse, error) {
 	rsp, err := c.ListOrganizationIntegrations(ctx, organizationIdOrSlug, params, reqEditors...)
@@ -10452,6 +10552,32 @@ func ParseGetProjectMonitorResponse(rsp *http.Response) (*GetProjectMonitorRespo
 	}
 
 	response := &GetProjectMonitorResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProjectMonitor
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateProjectMonitorResponse parses an HTTP response from a UpdateProjectMonitorWithResponse call
+func ParseUpdateProjectMonitorResponse(rsp *http.Response) (*UpdateProjectMonitorResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateProjectMonitorResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}

@@ -194,6 +194,12 @@ func TestAccCronMonitorResource_basic(t *testing.T) {
 
 	checks := []statecheck.StateCheck{
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("project"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_assignee"), knownvalue.ObjectExact(map[string]knownvalue.Check{
+			"user_id": knownvalue.Null(),
+			"team_id": knownvalue.NotNull(),
+		})),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -201,17 +207,91 @@ func TestAccCronMonitorResource_basic(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCronMonitorResourceConfig(teamName, projectName, monitorName),
+				Config: testAccCronMonitorResourceConfig(teamName, projectName, monitorName, `
+					description = "cron monitor description"
+					checkin_margin = 1
+					failure_issue_threshold = 2
+					max_runtime = 3
+					recovery_threshold = 4
+					schedule = {
+						interval_value = 1
+						interval_unit = "day"
+					}
+				`),
 				ConfigStateChecks: append(
 					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("enabled"), knownvalue.Bool(true)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(monitorName)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("description"), knownvalue.StringExact("cron monitor description")),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("checkin_margin"), knownvalue.Int64Exact(1)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("failure_issue_threshold"), knownvalue.Int64Exact(2)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("max_runtime"), knownvalue.Int64Exact(3)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("recovery_threshold"), knownvalue.Int64Exact(4)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("schedule"), knownvalue.ObjectExact(map[string]knownvalue.Check{
+						"crontab":        knownvalue.Null(),
+						"interval_value": knownvalue.Int64Exact(1),
+						"interval_unit":  knownvalue.StringExact("day"),
+					})),
+				),
+			},
+			{
+				Config: testAccCronMonitorResourceConfig(teamName, projectName, monitorName+"-updated", `
+					enabled = true
+					checkin_margin = 10
+					failure_issue_threshold = 20
+					max_runtime = 30
+					recovery_threshold = 40
+					schedule = {
+						crontab = "0 0 * * *"
+					}
+				`),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("enabled"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(monitorName+"-updated")),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("description"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("checkin_margin"), knownvalue.Int64Exact(10)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("failure_issue_threshold"), knownvalue.Int64Exact(20)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("max_runtime"), knownvalue.Int64Exact(30)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("recovery_threshold"), knownvalue.Int64Exact(40)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("schedule"), knownvalue.ObjectExact(map[string]knownvalue.Check{
+						"crontab":        knownvalue.StringExact("0 0 * * *"),
+						"interval_value": knownvalue.Null(),
+						"interval_unit":  knownvalue.Null(),
+					})),
+				),
+			}, {
+				Config: testAccCronMonitorResourceConfig(teamName, projectName, monitorName+"-updated", `
+					enabled = false
+					checkin_margin = 10
+					failure_issue_threshold = 20
+					max_runtime = 30
+					recovery_threshold = 40
+					schedule = {
+						crontab = "0 0 * * *"
+					}
+				`),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("enabled"), knownvalue.Bool(false)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(monitorName+"-updated")),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("description"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("checkin_margin"), knownvalue.Int64Exact(10)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("failure_issue_threshold"), knownvalue.Int64Exact(20)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("max_runtime"), knownvalue.Int64Exact(30)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("recovery_threshold"), knownvalue.Int64Exact(40)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("schedule"), knownvalue.ObjectExact(map[string]knownvalue.Check{
+						"crontab":        knownvalue.StringExact("0 0 * * *"),
+						"interval_value": knownvalue.Null(),
+						"interval_unit":  knownvalue.Null(),
+					})),
 				),
 			},
 		},
 	})
 }
 
-func testAccCronMonitorResourceConfig(teamName, projectName, name string) string {
+func testAccCronMonitorResourceConfig(teamName, projectName, name, extras string) string {
 	return testAccProjectResourceConfig(testAccProjectResourceConfigData{
 		TeamName:    teamName,
 		ProjectName: projectName,
@@ -222,20 +302,11 @@ func testAccCronMonitorResourceConfig(teamName, projectName, name string) string
 			project      = sentry_project.test.slug
 			name         = "%[1]s"
 
-			checkin_margin = 1
-			failure_issue_threshold = 2
-			max_runtime = 3
-			recovery_threshold = 4
-
-			schedule = {
-				// crontab = "0 0 * * *"
-				interval_value = 1
-				interval_unit = "day"
-			}
+			%[2]s
 
 			default_assignee = {
 				team_id = sentry_team.test.internal_id
 			}
 		}
-	`, name)
+	`, name, extras)
 }
