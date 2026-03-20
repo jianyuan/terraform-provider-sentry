@@ -122,25 +122,11 @@ func (r *UptimeMonitorResource) Schema(ctx context.Context, req resource.SchemaR
 				Optional:            true,
 				CustomType:          supertypes.StringType{},
 			},
-			"headers": schema.ListNestedAttribute{
+			"headers": schema.MapAttribute{
 				MarkdownDescription: "The headers to send with the request.",
 				Optional:            true,
 				Computed:            true,
-				CustomType:          supertypes.NewListNestedObjectTypeOf[UptimeMonitorResourceModelHeadersItem](ctx),
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"key": schema.StringAttribute{
-							MarkdownDescription: "The header key.",
-							Required:            true,
-							CustomType:          supertypes.StringType{},
-						},
-						"value": schema.StringAttribute{
-							MarkdownDescription: "The header value.",
-							Required:            true,
-							CustomType:          supertypes.StringType{},
-						},
-					},
-				},
+				CustomType:          supertypes.NewMapTypeOf[string](ctx),
 			},
 			"interval_seconds": tfutils.WithEnumInt64Attribute(
 				schema.Int64Attribute{
@@ -333,7 +319,7 @@ type UptimeMonitorResourceModel struct {
 	Url               supertypes.StringValue                                                          `tfsdk:"url"`
 	Method            supertypes.StringValue                                                          `tfsdk:"method"`
 	Body              supertypes.StringValue                                                          `tfsdk:"body"`
-	Headers           supertypes.ListNestedObjectValueOf[UptimeMonitorResourceModelHeadersItem]       `tfsdk:"headers"`
+	Headers           supertypes.MapValueOf[string]                                                   `tfsdk:"headers"`
 	IntervalSeconds   supertypes.Int64Value                                                           `tfsdk:"interval_seconds"`
 	TimeoutMs         supertypes.Int64Value                                                           `tfsdk:"timeout_ms"`
 	Environment       supertypes.StringValue                                                          `tfsdk:"environment"`
@@ -344,9 +330,4 @@ type UptimeMonitorResourceModel struct {
 type UptimeMonitorResourceModelDefaultAssignee struct {
 	UserId supertypes.StringValue `tfsdk:"user_id"`
 	TeamId supertypes.StringValue `tfsdk:"team_id"`
-}
-
-type UptimeMonitorResourceModelHeadersItem struct {
-	Key   supertypes.StringValue `tfsdk:"key"`
-	Value supertypes.StringValue `tfsdk:"value"`
 }

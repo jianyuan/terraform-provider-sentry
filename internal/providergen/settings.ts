@@ -785,23 +785,10 @@ export const RESOURCES: Array<Resource> = [
       },
       {
         name: "headers",
-        type: "list_nested",
+        type: "map",
+        elementType: "string",
         description: "The headers to send with the request.",
         computedOptionalRequired: "computed_optional",
-        attributes: [
-          {
-            name: "key",
-            type: "string",
-            description: "The header key.",
-            computedOptionalRequired: "required",
-          },
-          {
-            name: "value",
-            type: "string",
-            description: "The header value.",
-            computedOptionalRequired: "required",
-          },
-        ],
       },
       {
         name: "interval_seconds",
