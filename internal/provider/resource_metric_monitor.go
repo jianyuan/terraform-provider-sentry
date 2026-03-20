@@ -129,6 +129,26 @@ func (r *MetricMonitorResource) Schema(ctx context.Context, req resource.SchemaR
 				Required:            true,
 				CustomType:          supertypes.NewSetTypeOf[string](ctx),
 			},
+			"query": schema.StringAttribute{
+				MarkdownDescription: "An event search query to subscribe to and monitor for alerts. For example, to filter transactions so that only those with status code 400 are included, you could use `\"query\": \"http.status_code:400\"`.",
+				Optional:            true,
+				CustomType:          supertypes.StringType{},
+			},
+			"query_type": tfutils.WithEnumStringAttribute(
+				schema.StringAttribute{
+					MarkdownDescription: "The type of query. If no value is provided, `query_type` is set to the default for the specified `dataset.`",
+					Optional:            true,
+					Computed:            true,
+					CustomType:          supertypes.StringType{},
+				},
+				sentrydata.SnubaQueryTypes,
+			),
+			"time_window_seconds": schema.Int64Attribute{
+				MarkdownDescription: "The time window in seconds to use for the aggregate query.",
+				Optional:            true,
+				Computed:            true,
+				CustomType:          supertypes.Int64Type{},
+			},
 			"extrapolation_mode": tfutils.WithEnumStringAttribute(
 				schema.StringAttribute{
 					MarkdownDescription: "Extrapolation mode to use for the aggregate query.",
@@ -136,7 +156,7 @@ func (r *MetricMonitorResource) Schema(ctx context.Context, req resource.SchemaR
 					Computed:            true,
 					CustomType:          supertypes.StringType{},
 				},
-				sentrydata.ExtrapolationModes,
+				sentrydata.SnubaExtrapolationModes,
 			),
 			"issue_detection": schema.SingleNestedAttribute{
 				MarkdownDescription: "The issue detection type configuration.",
@@ -169,7 +189,7 @@ func (r *MetricMonitorResource) Schema(ctx context.Context, req resource.SchemaR
 				Attributes: map[string]schema.Attribute{
 					"logic_type": tfutils.WithEnumStringAttribute(
 						schema.StringAttribute{
-							MarkdownDescription: "The logic to apply to the conditions.",
+							MarkdownDescription: "The logic to apply to the conditions. `any` will evaluate all conditions, and return true if any of those are met. `any-short` will stop evaluating conditions as soon as one is met. `all` will evaluate all conditions, and return true if all of those are met. `none` will return true if none of the conditions are met, will return false immediately if any are met.",
 							Optional:            true,
 							Computed:            true,
 							Default:             stringdefault.StaticString("any"),
@@ -366,6 +386,9 @@ type MetricMonitorResourceModel struct {
 	Dataset           supertypes.StringValue                                                         `tfsdk:"dataset"`
 	Environment       supertypes.StringValue                                                         `tfsdk:"environment"`
 	EventTypes        supertypes.SetValueOf[string]                                                  `tfsdk:"event_types"`
+	Query             supertypes.StringValue                                                         `tfsdk:"query"`
+	QueryType         supertypes.StringValue                                                         `tfsdk:"query_type"`
+	TimeWindowSeconds supertypes.Int64Value                                                          `tfsdk:"time_window_seconds"`
 	ExtrapolationMode supertypes.StringValue                                                         `tfsdk:"extrapolation_mode"`
 	IssueDetection    supertypes.SingleNestedObjectValueOf[MetricMonitorResourceModelIssueDetection] `tfsdk:"issue_detection"`
 	ConditionGroup    supertypes.SingleNestedObjectValueOf[MetricMonitorResourceModelConditionGroup] `tfsdk:"condition_group"`

@@ -1004,7 +1004,28 @@ var UptimeMonitorModeIdToName = map[int64]string{
 }
 
 // https://github.com/getsentry/sentry/blob/master/src/sentry/snuba/models.py
-var ExtrapolationModes = []string{
+var SnubaQueryTypes = []string{
+	"error",
+	"performance",
+	"crash_rate",
+}
+
+// https://github.com/getsentry/sentry/blob/master/src/sentry/snuba/models.py
+var SnubaQueryTypeNameToId = map[string]int64{
+	"error":       0,
+	"performance": 1,
+	"crash_rate":  2,
+}
+
+// https://github.com/getsentry/sentry/blob/master/src/sentry/snuba/models.py
+var SnubaQueryTypeIdToName = map[int64]string{
+	0: "error",
+	1: "performance",
+	2: "crash_rate",
+}
+
+// https://github.com/getsentry/sentry/blob/master/src/sentry/snuba/models.py
+var SnubaExtrapolationModes = []string{
 	"unknown",
 	"none",
 	"client_and_server_weighted",

@@ -104,7 +104,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 					Attributes: map[string]schema.Attribute{
 						"logic_type": tfutils.WithEnumStringAttribute(
 							schema.StringAttribute{
-								MarkdownDescription: "The logic to apply to the conditions.",
+								MarkdownDescription: "The logic to apply to the conditions. `any` will evaluate all conditions, and return true if any of those are met. `any-short` will stop evaluating conditions as soon as one is met. `all` will evaluate all conditions, and return true if all of those are met. `none` will return true if none of the conditions are met, will return false immediately if any are met.",
 								Required:            true,
 								CustomType:          supertypes.StringType{},
 							},

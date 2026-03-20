@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
 
@@ -21,6 +22,21 @@ func (r *MetricMonitorResource) getCreateJSONRequestBody(ctx context.Context, da
 		outDs.Environment.Set(data.Environment.Get())
 	} else {
 		outDs.Environment.SetNull()
+	}
+	if data.Query.IsKnown() {
+		outDs.Query.Set(data.Query.Get())
+	} else {
+		outDs.Query.SetUnspecified()
+	}
+	if data.QueryType.IsKnown() {
+		outDs.QueryType.Set(sentrydata.SnubaQueryTypeNameToId[data.QueryType.Get()])
+	} else {
+		outDs.QueryType.SetUnspecified()
+	}
+	if data.TimeWindowSeconds.IsKnown() {
+		outDs.TimeWindow.Set(data.TimeWindowSeconds.Get())
+	} else {
+		outDs.TimeWindow.SetUnspecified()
 	}
 	if data.ExtrapolationMode.IsKnown() {
 		outDs.ExtrapolationMode.Set(data.ExtrapolationMode.Get())
@@ -213,6 +229,26 @@ func (m *MetricMonitorResourceModel) Fill(ctx context.Context, data apiclient.Pr
 		return
 	}
 
+	if v, err := dataSource.QueryObj.SnubaQuery.Query.Get(); err == nil {
+		m.Query.Set(v)
+	} else {
+		m.Query.SetNull()
+	}
+	if v, err := dataSource.QueryObj.SnubaQuery.QueryType.Get(); err == nil {
+		m.QueryType.Set(sentrydata.SnubaQueryTypeIdToName[v])
+	} else {
+		// BUG?
+		if m.QueryType.IsKnown() {
+			m.QueryType.Set(sentrydata.SnubaQueryTypeIdToName[0])
+		} else {
+			m.QueryType.SetNull()
+		}
+	}
+	if v, err := dataSource.QueryObj.SnubaQuery.TimeWindow.Get(); err == nil {
+		m.TimeWindowSeconds.Set(v)
+	} else {
+		m.TimeWindowSeconds.SetNull()
+	}
 	if v, err := dataSource.QueryObj.SnubaQuery.ExtrapolationMode.Get(); err == nil {
 		m.ExtrapolationMode.Set(v)
 	} else {

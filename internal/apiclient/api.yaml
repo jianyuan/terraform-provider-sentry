@@ -2706,12 +2706,15 @@ components:
             type: string
         query:
           type: string
+          nullable: true
         queryType:
           type: integer
           format: int64
+          nullable: true
         timeWindow:
           type: integer
           format: int64
+          nullable: true
         extrapolationMode:
           type: string
           nullable: true

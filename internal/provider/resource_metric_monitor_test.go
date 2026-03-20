@@ -76,13 +76,13 @@ func TestAccMetricMonitorResource_validation(t *testing.T) {
 						name         = "cron monitor name"
 					}
 				`,
-				ExpectError: acctest.ExpectLiteralError(`The argument "aggregatex" is required, but no definition was found.`),
+				ExpectError: acctest.ExpectLiteralError(`The argument "aggregate" is required, but no definition was found.`),
 			},
 		},
 	})
 }
 
-func TestAccMetricMonitorResource_basic(t *testing.T) {
+func TestAccMetricMonitorResource_threshold(t *testing.T) {
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	monitorName := acctest.RandomWithPrefix("tf-metric-monitor")
@@ -107,6 +107,9 @@ func TestAccMetricMonitorResource_basic(t *testing.T) {
 					aggregate = "count()"
 					dataset = "events"
 					event_types = ["default", "error"]
+					query = "is:unresolved"
+					query_type = "error"
+					time_window_seconds = 3600
 
 					condition_group = {
 						conditions = [
@@ -137,6 +140,66 @@ func TestAccMetricMonitorResource_basic(t *testing.T) {
 						knownvalue.StringExact("default"),
 						knownvalue.StringExact("error"),
 					})),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query"), knownvalue.StringExact("is:unresolved")),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query_type"), knownvalue.StringExact("error")),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("time_window_seconds"), knownvalue.Int64Exact(3600)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("condition_group"), knownvalue.ObjectExact(map[string]knownvalue.Check{
+						"logic_type": knownvalue.StringExact("any"),
+						"conditions": knownvalue.ListExact([]knownvalue.Check{
+							knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"type":             knownvalue.StringExact("gt"),
+								"comparison":       knownvalue.Int64Exact(100),
+								"condition_result": knownvalue.Int64Exact(75),
+							}),
+							knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"type":             knownvalue.StringExact("lte"),
+								"comparison":       knownvalue.Int64Exact(50),
+								"condition_result": knownvalue.Int64Exact(0),
+							}),
+						}),
+					})),
+				),
+			},
+			{
+				Config: testAccMetricMonitorResourceConfig(teamName, projectName, monitorName, `
+					aggregate = "count()"
+					dataset = "events"
+					event_types = ["default", "error"]
+					query = "is:unresolved"
+					time_window_seconds = 3600
+
+					condition_group = {
+						conditions = [
+							{
+								type = "gt"
+								comparison = 100
+								condition_result = 75
+							},
+							{
+								type = "lte"
+								comparison = 50
+								condition_result = 0
+							},
+						]
+					}
+
+					issue_detection = {
+						type = "static"
+					}
+				`),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("enabled"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(monitorName)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("aggregate"), knownvalue.StringExact("count()")),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("dataset"), knownvalue.StringExact("events")),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("event_types"), knownvalue.SetExact([]knownvalue.Check{
+						knownvalue.StringExact("default"),
+						knownvalue.StringExact("error"),
+					})),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query"), knownvalue.StringExact("is:unresolved")),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query_type"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("time_window_seconds"), knownvalue.Int64Exact(3600)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("condition_group"), knownvalue.ObjectExact(map[string]knownvalue.Check{
 						"logic_type": knownvalue.StringExact("any"),
 						"conditions": knownvalue.ListExact([]knownvalue.Check{
