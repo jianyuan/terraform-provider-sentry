@@ -778,6 +778,10 @@ export const RESOURCES: Array<Resource> = [
       {
         name: "body",
         type: "string",
+        customType: {
+          type: "sentrytypes.TrimmedStringType{}",
+          value: "sentrytypes.TrimmedString",
+        },
         description:
           "The request body to send. Only applicable for methods that support a body.",
         computedOptionalRequired: "optional",
@@ -826,7 +830,7 @@ export const RESOURCES: Array<Resource> = [
         default: `int64default.StaticInt64(3)`,
       },
       {
-        name: "assertion",
+        name: "assertion_json",
         type: "string",
         customType: {
           type: "jsontypes.NormalizedType{}",
