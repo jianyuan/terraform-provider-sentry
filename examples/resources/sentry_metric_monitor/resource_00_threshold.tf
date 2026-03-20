@@ -6,7 +6,7 @@ resource "sentry_metric_monitor" "threshold" {
 
   name = "New threshold metric monitor"
 
-  default_assignee = {
+  owner = {
     team_id = sentry_team.default.internal_id
   }
 

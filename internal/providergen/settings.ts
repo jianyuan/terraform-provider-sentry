@@ -351,7 +351,7 @@ export const RESOURCES: Array<Resource> = [
         nullable: true,
       },
       {
-        name: "default_assignee",
+        name: "owner",
         type: "single_nested",
         description: "Sentry will assign new issues to this assignee.",
         computedOptionalRequired: "optional",
@@ -554,7 +554,7 @@ export const RESOURCES: Array<Resource> = [
         nullable: true,
       },
       {
-        name: "default_assignee",
+        name: "owner",
         type: "single_nested",
         description: "Sentry will assign new issues to this assignee.",
         computedOptionalRequired: "optional",
@@ -733,7 +733,7 @@ export const RESOURCES: Array<Resource> = [
         nullable: true,
       },
       {
-        name: "default_assignee",
+        name: "owner",
         type: "single_nested",
         description: "Sentry will assign new issues to this assignee.",
         computedOptionalRequired: "optional",

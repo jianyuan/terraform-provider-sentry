@@ -82,10 +82,10 @@ func (r *MetricMonitorResource) Schema(ctx context.Context, req resource.SchemaR
 				Optional:            true,
 				CustomType:          supertypes.StringType{},
 			},
-			"default_assignee": schema.SingleNestedAttribute{
+			"owner": schema.SingleNestedAttribute{
 				MarkdownDescription: "Sentry will assign new issues to this assignee.",
 				Optional:            true,
-				CustomType:          supertypes.NewSingleNestedObjectTypeOf[MetricMonitorResourceModelDefaultAssignee](ctx),
+				CustomType:          supertypes.NewSingleNestedObjectTypeOf[MetricMonitorResourceModelOwner](ctx),
 				Attributes: map[string]schema.Attribute{
 					"user_id": schema.StringAttribute{
 						MarkdownDescription: "The user ID to assign new issues to. Conflicts with `team_id`.",
@@ -355,23 +355,23 @@ func (r *MetricMonitorResource) ImportState(ctx context.Context, req resource.Im
 }
 
 type MetricMonitorResourceModel struct {
-	Id                supertypes.StringValue                                                          `tfsdk:"id"`
-	Organization      supertypes.StringValue                                                          `tfsdk:"organization"`
-	Project           supertypes.StringValue                                                          `tfsdk:"project"`
-	Enabled           supertypes.BoolValue                                                            `tfsdk:"enabled"`
-	Name              supertypes.StringValue                                                          `tfsdk:"name"`
-	Description       supertypes.StringValue                                                          `tfsdk:"description"`
-	DefaultAssignee   supertypes.SingleNestedObjectValueOf[MetricMonitorResourceModelDefaultAssignee] `tfsdk:"default_assignee"`
-	Aggregate         supertypes.StringValue                                                          `tfsdk:"aggregate"`
-	Dataset           supertypes.StringValue                                                          `tfsdk:"dataset"`
-	Environment       supertypes.StringValue                                                          `tfsdk:"environment"`
-	EventTypes        supertypes.SetValueOf[string]                                                   `tfsdk:"event_types"`
-	ExtrapolationMode supertypes.StringValue                                                          `tfsdk:"extrapolation_mode"`
-	IssueDetection    supertypes.SingleNestedObjectValueOf[MetricMonitorResourceModelIssueDetection]  `tfsdk:"issue_detection"`
-	ConditionGroup    supertypes.SingleNestedObjectValueOf[MetricMonitorResourceModelConditionGroup]  `tfsdk:"condition_group"`
+	Id                supertypes.StringValue                                                         `tfsdk:"id"`
+	Organization      supertypes.StringValue                                                         `tfsdk:"organization"`
+	Project           supertypes.StringValue                                                         `tfsdk:"project"`
+	Enabled           supertypes.BoolValue                                                           `tfsdk:"enabled"`
+	Name              supertypes.StringValue                                                         `tfsdk:"name"`
+	Description       supertypes.StringValue                                                         `tfsdk:"description"`
+	Owner             supertypes.SingleNestedObjectValueOf[MetricMonitorResourceModelOwner]          `tfsdk:"owner"`
+	Aggregate         supertypes.StringValue                                                         `tfsdk:"aggregate"`
+	Dataset           supertypes.StringValue                                                         `tfsdk:"dataset"`
+	Environment       supertypes.StringValue                                                         `tfsdk:"environment"`
+	EventTypes        supertypes.SetValueOf[string]                                                  `tfsdk:"event_types"`
+	ExtrapolationMode supertypes.StringValue                                                         `tfsdk:"extrapolation_mode"`
+	IssueDetection    supertypes.SingleNestedObjectValueOf[MetricMonitorResourceModelIssueDetection] `tfsdk:"issue_detection"`
+	ConditionGroup    supertypes.SingleNestedObjectValueOf[MetricMonitorResourceModelConditionGroup] `tfsdk:"condition_group"`
 }
 
-type MetricMonitorResourceModelDefaultAssignee struct {
+type MetricMonitorResourceModelOwner struct {
 	UserId supertypes.StringValue `tfsdk:"user_id"`
 	TeamId supertypes.StringValue `tfsdk:"team_id"`
 }

@@ -103,7 +103,7 @@ func TestAccUptimeMonitorResource_basic(t *testing.T) {
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("project"), knownvalue.NotNull()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_assignee"), knownvalue.ObjectExact(map[string]knownvalue.Check{
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("owner"), knownvalue.ObjectExact(map[string]knownvalue.Check{
 			"user_id": knownvalue.Null(),
 			"team_id": knownvalue.NotNull(),
 		})),
@@ -207,7 +207,7 @@ func testAccUptimeMonitorResourceConfig(teamName, projectName, name, extras stri
 
 			%[2]s
 
-			default_assignee = {
+			owner = {
 				team_id = sentry_team.test.internal_id
 			}
 		}

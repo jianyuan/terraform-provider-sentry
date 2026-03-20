@@ -22,7 +22,7 @@ resource "sentry_uptime_monitor" "test" {
   project      = sentry_project.test.slug
   name         = "Uptime check for sentry.io"
 
-  default_assignee = {
+  owner = {
     team_id = sentry_team.test.internal_id
   }
 
@@ -58,7 +58,7 @@ resource "sentry_uptime_monitor" "test" {
   project      = sentry_project.test.slug
   name         = "Uptime check for sentry.io"
 
-  default_assignee = {
+  owner = {
     team_id = sentry_team.test.internal_id
   }
 
@@ -110,19 +110,19 @@ resource "sentry_uptime_monitor" "test" {
 
 - `assertion_json` (String) Define conditions that must be met for the check to be considered successful.
 - `body` (String) The request body to send. Only applicable for methods that support a body.
-- `default_assignee` (Attributes) Sentry will assign new issues to this assignee. (see [below for nested schema](#nestedatt--default_assignee))
 - `description` (String) A description of the monitor. Will be used in the resulting issue.
 - `downtime_threshold` (Number) Number of consecutive failed checks required to mark monitor as down. Defaults to 3.
 - `enabled` (Boolean) Whether the monitor is enabled. Defaults to true.
 - `headers` (Map of String) The headers to send with the request.
+- `owner` (Attributes) Sentry will assign new issues to this assignee. (see [below for nested schema](#nestedatt--owner))
 - `recovery_threshold` (Number) Number of consecutive successful checks required to mark monitor as recovered. Defaults to 1.
 
 ### Read-Only
 
 - `id` (String) The internal ID of this monitor.
 
-<a id="nestedatt--default_assignee"></a>
-### Nested Schema for `default_assignee`
+<a id="nestedatt--owner"></a>
+### Nested Schema for `owner`
 
 Optional:
 

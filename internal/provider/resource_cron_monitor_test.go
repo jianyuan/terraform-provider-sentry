@@ -215,15 +215,15 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 							crontab = "0 0 * * *"
 						}
 
-						default_assignee = {
+						owner = {
 							user_id = "3"
 							team_id = "4"
 						}
 					}
 				`,
 				ExpectError: acctest.ExpectLiteralError(
-					`Attribute "default_assignee.team_id" cannot be specified when`,
-					`"default_assignee.user_id" is specified`,
+					`Attribute "owner.team_id" cannot be specified when`,
+					`"owner.user_id" is specified`,
 				),
 			},
 			{
@@ -243,15 +243,15 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 							crontab = "0 0 * * *"
 						}
 
-						default_assignee = {
+						owner = {
 							user_id = "3"
 							team_id = "4"
 						}
 					}
 				`,
 				ExpectError: acctest.ExpectLiteralError(
-					`Attribute "default_assignee.user_id" cannot be specified when`,
-					`"default_assignee.team_id" is specified`,
+					`Attribute "owner.user_id" cannot be specified when`,
+					`"owner.team_id" is specified`,
 				),
 			},
 			{
@@ -271,12 +271,12 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 							crontab = "0 0 * * *"
 						}
 
-						default_assignee = {}
+						owner = {}
 					}
 				`,
 				ExpectError: acctest.ExpectLiteralError(
 					"No attribute specified when one (and only one) of",
-					"[default_assignee.user_id.<.team_id] is required",
+					"[owner.user_id.<.team_id] is required",
 				),
 			},
 		},
@@ -293,7 +293,7 @@ func TestAccCronMonitorResource_basic(t *testing.T) {
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("project"), knownvalue.NotNull()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_assignee"), knownvalue.ObjectExact(map[string]knownvalue.Check{
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("owner"), knownvalue.ObjectExact(map[string]knownvalue.Check{
 			"user_id": knownvalue.Null(),
 			"team_id": knownvalue.NotNull(),
 		})),
@@ -408,7 +408,7 @@ func testAccCronMonitorResourceConfig(teamName, projectName, name, extras string
 
 			%[2]s
 
-			default_assignee = {
+			owner = {
 				team_id = sentry_team.test.internal_id
 			}
 		}

@@ -71,17 +71,17 @@ func (r *CronMonitorResource) getCreateJSONRequestBody(ctx context.Context, data
 		out.Description.SetNull()
 	}
 
-	if data.DefaultAssignee.IsKnown() {
-		defaultAssignee := tfutils.MergeDiagnostics(data.DefaultAssignee.Get(ctx))(&diags)
+	if data.Owner.IsKnown() {
+		owner := tfutils.MergeDiagnostics(data.Owner.Get(ctx))(&diags)
 		if diags.HasError() {
 			return nil, diags
 		}
 
 		switch {
-		case defaultAssignee.TeamId.IsKnown():
-			out.Owner.Set(fmt.Sprintf("team:%s", defaultAssignee.TeamId.Get()))
-		case defaultAssignee.UserId.IsKnown():
-			out.Owner.Set(fmt.Sprintf("user:%s", defaultAssignee.UserId.Get()))
+		case owner.TeamId.IsKnown():
+			out.Owner.Set(fmt.Sprintf("team:%s", owner.TeamId.Get()))
+		case owner.UserId.IsKnown():
+			out.Owner.Set(fmt.Sprintf("user:%s", owner.UserId.Get()))
 		default:
 			out.Owner.SetNull()
 		}
@@ -112,32 +112,32 @@ func (m *CronMonitorResourceModel) Fill(ctx context.Context, data apiclient.Proj
 	m.Enabled.Set(data.Enabled)
 
 	if data.Owner.IsSpecified() && !data.Owner.IsNull() {
-		owner, err := data.Owner.Get()
+		inOwner, err := data.Owner.Get()
 		if err != nil {
 			diags.AddError("Invalid owner", err.Error())
 			return
 		}
 
-		ownerValue, err := owner.ValueByDiscriminator()
+		inOwnerValue, err := inOwner.ValueByDiscriminator()
 		if err != nil {
 			diags.AddError("Invalid owner", err.Error())
 			return
 		}
 
-		defaultAssignee := &CronMonitorResourceModelDefaultAssignee{}
+		outOwner := &CronMonitorResourceModelOwner{}
 
-		switch ownerValue := ownerValue.(type) {
+		switch inOwnerValue := inOwnerValue.(type) {
 		case apiclient.ProjectMonitorOwnerUser:
-			defaultAssignee.UserId.Set(ownerValue.Id)
-			diags.Append(m.DefaultAssignee.Set(ctx, defaultAssignee)...)
+			outOwner.UserId.Set(inOwnerValue.Id)
+			diags.Append(m.Owner.Set(ctx, outOwner)...)
 		case apiclient.ProjectMonitorOwnerTeam:
-			defaultAssignee.TeamId.Set(ownerValue.Id)
-			diags.Append(m.DefaultAssignee.Set(ctx, defaultAssignee)...)
+			outOwner.TeamId.Set(inOwnerValue.Id)
+			diags.Append(m.Owner.Set(ctx, outOwner)...)
 		default:
-			m.DefaultAssignee.SetNull(ctx)
+			m.Owner.SetNull(ctx)
 		}
 	} else {
-		m.DefaultAssignee.SetNull(ctx)
+		m.Owner.SetNull(ctx)
 	}
 
 	if diags.HasError() {
