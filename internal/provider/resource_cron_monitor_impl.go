@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
-	"github.com/oapi-codegen/nullable"
 )
 
 func (r *CronMonitorResource) getCreateJSONRequestBody(ctx context.Context, data CronMonitorResourceModel) (*apiclient.CreateProjectMonitorJSONRequestBody, diag.Diagnostics) {
@@ -61,15 +60,15 @@ func (r *CronMonitorResource) getCreateJSONRequestBody(ctx context.Context, data
 	}
 
 	if data.Enabled.IsKnown() {
-		out.Enabled = nullable.NewNullableWithValue(data.Enabled.Get())
+		out.Enabled.Set(data.Enabled.Get())
 	} else {
-		out.Enabled = nullable.NewNullNullable[bool]()
+		out.Enabled.SetNull()
 	}
 
 	if data.Description.IsKnown() {
-		out.Description = nullable.NewNullableWithValue(data.Description.Get())
+		out.Description.Set(data.Description.Get())
 	} else {
-		out.Description = nullable.NewNullNullable[string]()
+		out.Description.SetNull()
 	}
 
 	if data.DefaultAssignee.IsKnown() {
@@ -80,14 +79,14 @@ func (r *CronMonitorResource) getCreateJSONRequestBody(ctx context.Context, data
 
 		switch {
 		case defaultAssignee.TeamId.IsKnown():
-			out.Owner = nullable.NewNullableWithValue(fmt.Sprintf("team:%s", defaultAssignee.TeamId.Get()))
+			out.Owner.Set(fmt.Sprintf("team:%s", defaultAssignee.TeamId.Get()))
 		case defaultAssignee.UserId.IsKnown():
-			out.Owner = nullable.NewNullableWithValue(fmt.Sprintf("user:%s", defaultAssignee.UserId.Get()))
+			out.Owner.Set(fmt.Sprintf("user:%s", defaultAssignee.UserId.Get()))
 		default:
-			out.Owner = nullable.NewNullNullable[string]()
+			out.Owner.SetNull()
 		}
 	} else {
-		out.Owner = nullable.NewNullNullable[string]()
+		out.Owner.SetNull()
 	}
 
 	var req apiclient.CreateProjectMonitorJSONRequestBody
