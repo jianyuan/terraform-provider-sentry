@@ -115,8 +115,8 @@ func (r *CronMonitorResource) Schema(ctx context.Context, req resource.SchemaReq
 				Required:            true,
 				CustomType:          supertypes.Int64Type{},
 			},
-			"max_runtime": schema.Int64Attribute{
-				MarkdownDescription: "Maximum runtime. The number of minutes before an in-progress check-in is marked timed out.",
+			"max_runtime_minutes": schema.Int64Attribute{
+				MarkdownDescription: "The number of minutes before an in-progress check-in is marked timed out.",
 				Required:            true,
 				CustomType:          supertypes.Int64Type{},
 			},
@@ -331,7 +331,7 @@ type CronMonitorResourceModel struct {
 	Owner                 supertypes.SingleNestedObjectValueOf[CronMonitorResourceModelOwner]    `tfsdk:"owner"`
 	CheckinMargin         supertypes.Int64Value                                                  `tfsdk:"checkin_margin"`
 	FailureIssueThreshold supertypes.Int64Value                                                  `tfsdk:"failure_issue_threshold"`
-	MaxRuntime            supertypes.Int64Value                                                  `tfsdk:"max_runtime"`
+	MaxRuntimeMinutes     supertypes.Int64Value                                                  `tfsdk:"max_runtime_minutes"`
 	RecoveryThreshold     supertypes.Int64Value                                                  `tfsdk:"recovery_threshold"`
 	Schedule              supertypes.SingleNestedObjectValueOf[CronMonitorResourceModelSchedule] `tfsdk:"schedule"`
 	Timezone              supertypes.StringValue                                                 `tfsdk:"timezone"`

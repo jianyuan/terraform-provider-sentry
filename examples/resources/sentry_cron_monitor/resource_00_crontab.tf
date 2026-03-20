@@ -11,7 +11,7 @@ resource "sentry_cron_monitor" "crontab" {
 
   checkin_margin          = 1
   failure_issue_threshold = 1
-  max_runtime             = 30
+  max_runtime_minutes     = 30
   recovery_threshold      = 30
 
   schedule = {

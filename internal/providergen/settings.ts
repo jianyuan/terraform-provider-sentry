@@ -621,10 +621,10 @@ export const RESOURCES: Array<Resource> = [
         computedOptionalRequired: "required",
       },
       {
-        name: "max_runtime",
+        name: "max_runtime_minutes",
         type: "int",
         description:
-          "Maximum runtime. The number of minutes before an in-progress check-in is marked timed out.",
+          "The number of minutes before an in-progress check-in is marked timed out.",
         computedOptionalRequired: "required",
       },
       {
