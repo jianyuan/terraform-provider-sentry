@@ -2818,6 +2818,19 @@ components:
             - type: string
             - type: integer
               format: int64
+            - type: object
+              required:
+                - seasonality
+                - sensitivity
+                - thresholdType
+              properties:
+                seasonality:
+                  type: string
+                sensitivity:
+                  type: string
+                thresholdType:
+                  type: integer
+                  format: int64
         conditionResult:
           type: integer
           format: int64

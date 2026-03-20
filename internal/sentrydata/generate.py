@@ -317,26 +317,55 @@ def get_timezones() -> dict[str, ResultData[Any]]:
 
 def parse_alert_rule_models() -> dict[str, ResultData[Any]]:
     data = get_file_data("src/sentry/incidents/models/alert_rule.py")
-    out: dict[str, ResultData[Any]] = {}
+    out: dict[str, ResultData[Any]] = {
+        "AlertRuleDetectionTypes": ResultData(github_url=data.github_url, result=[]),
+        "AlertRuleSensitivities": ResultData(github_url=data.github_url, result=[]),
+        "AlertRuleThresholdTypes": ResultData(github_url=data.github_url, result=[]),
+        "AlertRuleThresholdTypeNameToId": ResultData(
+            github_url=data.github_url, result={}
+        ),
+        "AlertRuleThresholdTypeIdToName": ResultData(
+            github_url=data.github_url, result={}
+        ),
+    }
     for node in ast.walk(data.tree):
         match node:
-            case ast.ClassDef(
-                name="AlertRuleDetectionType",
-                body=elts,
-            ):
-                result: list[str] = []
+            case ast.ClassDef(name="AlertRuleDetectionType", body=elts):
                 for elt in elts:
                     match elt:
                         case ast.Assign(
                             targets=[ast.Name(id=id)],
                             value=ast.Tuple(elts=[ast.Constant(value=value), _]),
                         ) if id.isupper():
-                            result.append(value)
+                            out["AlertRuleDetectionTypes"].result.append(value)
                         case _:
                             pass
-                out["AlertRuleDetectionTypes"] = ResultData(
-                    github_url=data.github_url, result=result
-                )
+            case ast.ClassDef(name="AlertRuleSensitivity", body=elts):
+                for elt in elts:
+                    match elt:
+                        case ast.Assign(
+                            targets=[ast.Name(id=id)],
+                            value=ast.Tuple(elts=[ast.Constant(value=value), _]),
+                        ) if id.isupper():
+                            out["AlertRuleSensitivities"].result.append(value)
+                        case _:
+                            pass
+            case ast.ClassDef(name="AlertRuleThresholdType", body=elts):
+                for elt in elts:
+                    match elt:
+                        case ast.Assign(
+                            targets=[ast.Name(id=id)],
+                            value=ast.Constant(value=value),
+                        ) if id.isupper():
+                            out["AlertRuleThresholdTypes"].result.append(id.lower())
+                            out["AlertRuleThresholdTypeNameToId"].result[id.lower()] = (
+                                value
+                            )
+                            out["AlertRuleThresholdTypeIdToName"].result[value] = (
+                                id.lower()
+                            )
+                        case _:
+                            pass
             case _:
                 pass
     return out

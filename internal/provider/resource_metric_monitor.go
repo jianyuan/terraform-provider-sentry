@@ -20,6 +20,7 @@ import (
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 	fint64validator "github.com/orange-cloudavenue/terraform-plugin-framework-validators/int64validator"
+	fstringvalidator "github.com/orange-cloudavenue/terraform-plugin-framework-validators/stringvalidator"
 )
 
 var _ resource.Resource = &MetricMonitorResource{}
@@ -205,19 +206,45 @@ func (r *MetricMonitorResource) Schema(ctx context.Context, req resource.SchemaR
 							Attributes: map[string]schema.Attribute{
 								"type": tfutils.WithEnumStringAttribute(
 									schema.StringAttribute{
-										MarkdownDescription: "TODO",
+										MarkdownDescription: "The type of condition.",
 										Required:            true,
 										CustomType:          supertypes.StringType{},
 									},
 									sentrydata.DataConditionTypes,
 								),
 								"comparison": schema.Int64Attribute{
-									MarkdownDescription: "TODO",
-									Required:            true,
+									MarkdownDescription: "The value to compare against. Only required for types other than `anomaly_detection`.",
+									Optional:            true,
 									CustomType:          supertypes.Int64Type{},
+									Validators: []validator.Int64{
+										fint64validator.NullIfAttributeIsOneOf(path.MatchRelative().AtParent().AtName("type"), []attr.Value{supertypes.NewStringValue("anomaly_detection")}),
+										fint64validator.RequireIfAttributeIsOneOf(path.MatchRelative().AtParent().AtName("type"), []attr.Value{supertypes.NewStringValue("eq"), supertypes.NewStringValue("gte"), supertypes.NewStringValue("gt"), supertypes.NewStringValue("lte"), supertypes.NewStringValue("lt"), supertypes.NewStringValue("ne")}),
+									},
 								},
+								"comparison_sensitivity": tfutils.WithEnumStringAttribute(
+									schema.StringAttribute{
+										MarkdownDescription: "Choose your level of anomaly responsiveness. Higher thresholds means alerts for most anomalies. Lower thresholds means alerts only for larger ones. Only required for `anomaly_detection` type.",
+										Optional:            true,
+										CustomType:          supertypes.StringType{},
+										Validators: []validator.String{
+											fstringvalidator.RequireIfAttributeIsOneOf(path.MatchRelative().AtParent().AtName("type"), []attr.Value{supertypes.NewStringValue("anomaly_detection")}),
+										},
+									},
+									sentrydata.AlertRuleSensitivities,
+								),
+								"comparison_threshold_type": tfutils.WithEnumStringAttribute(
+									schema.StringAttribute{
+										MarkdownDescription: "Decide if you want to be alerted to anomalies that are moving above, below, or in both directions in relation to your threshold. Only required for `anomaly_detection` type.",
+										Optional:            true,
+										CustomType:          supertypes.StringType{},
+										Validators: []validator.String{
+											fstringvalidator.RequireIfAttributeIsOneOf(path.MatchRelative().AtParent().AtName("type"), []attr.Value{supertypes.NewStringValue("anomaly_detection")}),
+										},
+									},
+									sentrydata.AlertRuleThresholdTypes,
+								),
 								"condition_result": schema.Int64Attribute{
-									MarkdownDescription: "TODO",
+									MarkdownDescription: "When the condition is met, the result will be set to this value.",
 									Required:            true,
 									CustomType:          supertypes.Int64Type{},
 								},
@@ -410,7 +437,9 @@ type MetricMonitorResourceModelConditionGroup struct {
 }
 
 type MetricMonitorResourceModelConditionGroupConditionsItem struct {
-	Type            supertypes.StringValue `tfsdk:"type"`
-	Comparison      supertypes.Int64Value  `tfsdk:"comparison"`
-	ConditionResult supertypes.Int64Value  `tfsdk:"condition_result"`
+	Type                    supertypes.StringValue `tfsdk:"type"`
+	Comparison              supertypes.Int64Value  `tfsdk:"comparison"`
+	ComparisonSensitivity   supertypes.StringValue `tfsdk:"comparison_sensitivity"`
+	ComparisonThresholdType supertypes.StringValue `tfsdk:"comparison_threshold_type"`
+	ConditionResult         supertypes.Int64Value  `tfsdk:"condition_result"`
 }
