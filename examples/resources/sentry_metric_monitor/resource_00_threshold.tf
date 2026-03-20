@@ -4,7 +4,7 @@ resource "sentry_metric_monitor" "threshold" {
   organization = data.sentry_organization.default.slug
   project      = sentry_project.default.slug
 
-  name = "My cron monitor"
+  name = "New threshold metric monitor"
 
   default_assignee = {
     team_id = sentry_team.default.internal_id

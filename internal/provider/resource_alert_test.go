@@ -52,7 +52,30 @@ func TestAccAlertResource_basic(t *testing.T) {
 }
 
 func testAccAlertResourceConfig(teamName, projectName, monitorName, name, opsgenieTeamName string) string {
-	return testAccMetricMonitorResourceConfig(teamName, projectName, monitorName) + fmt.Sprintf(`
+	return testAccMetricMonitorResourceConfig(teamName, projectName, monitorName, `
+		aggregate = "count()"
+		dataset = "events"
+		event_types = ["default", "error"]
+
+		condition_group = {
+			conditions = [
+				{
+					type = "gt"
+					comparison = 100
+					condition_result = 75
+				},
+				{
+					type = "lte"
+					comparison = 50
+					condition_result = 0
+				},
+			]
+		}
+
+		issue_detection = {
+			type = "static"
+		}
+	`) + fmt.Sprintf(`
 		resource "sentry_alert" "test" {
 			organization = data.sentry_organization.test.slug
 			name         = "%[1]s"
