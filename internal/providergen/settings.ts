@@ -288,6 +288,8 @@ export const RESOURCES: Array<Resource> = [
       ⚠️ This resource is currently in beta and may be subject to change. It is supported by [New Monitors and Alerts](https://docs.sentry.io/product/new-monitors-and-alerts/) and may not be viewable in the UI today.
 
       Create a Metric Monitor for a Project.
+
+      For more information about configuring metric monitors, see [Create a Monitor for a Project](https://docs.sentry.io/api/monitors/create-a-monitor-for-a-project/).
     `,
     api: {
       model: "ProjectMonitor",
@@ -410,7 +412,7 @@ export const RESOURCES: Array<Resource> = [
         name: "query",
         type: "string",
         description:
-          'An event search query to subscribe to and monitor for alerts. For example, to filter transactions so that only those with status code 400 are included, you could use `"query": "http.status_code:400"`.',
+          "An event search query to subscribe to and monitor for alerts. For example, to filter transactions so that only those with status code 400 are included, you could use `http.status_code:400`.",
         computedOptionalRequired: "optional",
       },
       {

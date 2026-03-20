@@ -5,6 +5,7 @@ subcategory: ""
 description: |-
   ⚠️ This resource is currently in beta and may be subject to change. It is supported by New Monitors and Alerts https://docs.sentry.io/product/new-monitors-and-alerts/ and may not be viewable in the UI today.
   Create a Metric Monitor for a Project.
+  For more information about configuring metric monitors, see Create a Monitor for a Project https://docs.sentry.io/api/monitors/create-a-monitor-for-a-project/.
 ---
 
 # sentry_metric_monitor (Resource)
@@ -12,6 +13,8 @@ description: |-
 ⚠️ This resource is currently in beta and may be subject to change. It is supported by [New Monitors and Alerts](https://docs.sentry.io/product/new-monitors-and-alerts/) and may not be viewable in the UI today.
 
 Create a Metric Monitor for a Project.
+
+For more information about configuring metric monitors, see [Create a Monitor for a Project](https://docs.sentry.io/api/monitors/create-a-monitor-for-a-project/).
 
 ## Example Usage
 
@@ -85,7 +88,7 @@ resource "sentry_metric_monitor" "threshold" {
 - `environment` (String) Environment to run the aggregate query on.
 - `extrapolation_mode` (String) Extrapolation mode to use for the aggregate query. Valid values are: `unknown`, `none`, `client_and_server_weighted`, and `server_weighted`.
 - `owner` (Attributes) Sentry will assign new issues to this assignee. (see [below for nested schema](#nestedatt--owner))
-- `query` (String) An event search query to subscribe to and monitor for alerts. For example, to filter transactions so that only those with status code 400 are included, you could use `"query": "http.status_code:400"`.
+- `query` (String) An event search query to subscribe to and monitor for alerts. For example, to filter transactions so that only those with status code 400 are included, you could use `http.status_code:400`.
 - `query_type` (String) The type of query. If no value is provided, `query_type` is set to the default for the specified `dataset.` Valid values are: `error`, `performance`, and `crash_rate`.
 - `time_window_seconds` (Number) The time window in seconds to use for the aggregate query.
 
