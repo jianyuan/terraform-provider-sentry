@@ -1,15 +1,66 @@
 package provider
 
 import (
+	"context"
 	"fmt"
+	"log"
+	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+	"github.com/jianyuan/go-utils/ptr"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
 )
+
+func init() {
+	resource.AddTestSweepers("sentry_uptime_monitor", &resource.Sweeper{
+		Name: "sentry_uptime_monitor",
+		F: func(r string) error {
+			ctx := context.Background()
+
+			params := &apiclient.ListOrganizationMonitorsParams{
+				Query: ptr.Ptr("!type:issue_stream type:uptime_domain_failure"),
+			}
+
+			for {
+				listHttpResp, err := acctest.SharedApiClient.ListOrganizationMonitorsWithResponse(ctx, acctest.TestOrganization, params)
+				if err != nil {
+					return err
+				} else if listHttpResp.StatusCode() != http.StatusOK || listHttpResp.JSON200 == nil {
+					return fmt.Errorf("[ERROR] Failed to list organization monitors: %s", listHttpResp.Status())
+				}
+
+				for _, monitor := range *listHttpResp.JSON200 {
+					if !strings.HasPrefix(monitor.Name, "tf-uptime-monitor") {
+						continue
+					}
+
+					deleteHttpResp, err := acctest.SharedApiClient.DeleteProjectMonitorWithResponse(ctx, acctest.TestOrganization, monitor.Id)
+					if err != nil {
+						log.Printf("[ERROR] Failed to delete uptime monitor: %s", err)
+					} else if deleteHttpResp.StatusCode() != http.StatusNoContent {
+						log.Printf("[ERROR] Failed to delete uptime monitor: %s", deleteHttpResp.Status())
+					} else {
+						log.Printf("[INFO] Deleted uptime monitor: %s (ID: %s)", monitor.Name, monitor.Id)
+					}
+				}
+
+				params.Cursor = sentryclient.ParseNextPaginationCursor(listHttpResp.HTTPResponse)
+				if params.Cursor == nil {
+					break
+				}
+			}
+
+			return nil
+		},
+	})
+}
 
 func TestAccUptimeMonitorResource_basic(t *testing.T) {
 	teamName := acctest.RandomWithPrefix("tf-team")
@@ -39,9 +90,12 @@ func TestAccUptimeMonitorResource_basic(t *testing.T) {
 					timeout_ms = 5000
 					
 					environment = "production"
+
+					enabled = true
 				`),
 				ConfigStateChecks: append(
 					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("enabled"), knownvalue.Bool(true)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(monitorName)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("url"), knownvalue.StringExact("https://sentry.io")),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("method"), knownvalue.StringExact("GET")),
@@ -50,6 +104,7 @@ func TestAccUptimeMonitorResource_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("interval_seconds"), knownvalue.Int64Exact(60)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("timeout_ms"), knownvalue.Int64Exact(5000)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("environment"), knownvalue.StringExact("production")),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("assertion"), knownvalue.Null()),
 				),
 			},
 			{
@@ -69,42 +124,9 @@ func TestAccUptimeMonitorResource_basic(t *testing.T) {
 						{
 							"root": {
 								"op": "and",
-								"id": "8bc1d2f1-76c3-cb93-b9b8-cb832daaf227",
 								"children": [
-									{
-										"op": "status_code_check",
-										"id": "0cc43e33-abc2-9098-190b-20b120cfd1bd",
-										"operator": {
-											"cmp": "greater_than"
-										},
-										"value": 199
-									},
-									{
-										"op": "status_code_check",
-										"id": "3a81b9bc-27f1-6f6e-1819-e81516b72dc3",
-										"operator": {
-											"cmp": "less_than"
-										},
-										"value": 300
-									},
-									{
-										"id": "6331252e-00ed-2b96-ec3e-a607ae7aee86",
-										"op": "header_check",
-										"key_op": {
-											"cmp": "equals"
-										},
-										"key_operand": {
-											"header_op": "literal",
-											"value": "X-Key"
-										},
-										"value_op": {
-											"cmp": "equals"
-										},
-										"value_operand": {
-											"header_op": "literal",
-											"value": "X-Value"
-										}
-									}
+									{"op": "status_code_check", "operator": {"cmp": "greater_than"}, "value": 199},
+									{"op": "status_code_check", "operator": {"cmp": "less_than"}, "value": 300}
 								]
 							}
 						}
@@ -112,6 +134,7 @@ func TestAccUptimeMonitorResource_basic(t *testing.T) {
 				`),
 				ConfigStateChecks: append(
 					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("enabled"), knownvalue.Bool(true)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(monitorName+"-updated")),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("url"), knownvalue.StringExact("https://us.sentry.io")),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("method"), knownvalue.StringExact("POST")),
@@ -122,6 +145,7 @@ func TestAccUptimeMonitorResource_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("interval_seconds"), knownvalue.Int64Exact(300)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("timeout_ms"), knownvalue.Int64Exact(10000)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("environment"), knownvalue.StringExact("production")),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("assertion"), knownvalue.NotNull()),
 				),
 			},
 			{
