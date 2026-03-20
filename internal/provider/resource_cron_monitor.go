@@ -165,7 +165,7 @@ func (r *CronMonitorResource) Schema(ctx context.Context, req resource.SchemaReq
 			},
 			"timezone": tfutils.WithEnumStringAttribute(
 				schema.StringAttribute{
-					MarkdownDescription: "Timezone.",
+					MarkdownDescription: "The timezone of the cron monitor.",
 					Optional:            true,
 					Computed:            true,
 					Default:             stringdefault.StaticString("UTC"),

@@ -62,6 +62,37 @@ func init() {
 	})
 }
 
+func TestAccUptimeMonitorResource_validation(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PlanOnly: true,
+				Config: `
+					resource "sentry_uptime_monitor" "test" {
+						organization = "1"
+						project      = "2"
+						name         = "uptime monitor name"
+
+						url = "https://sentry.io"
+						method = "GET"
+						body = "with body"
+						interval_seconds = 60
+						timeout_ms = 5000
+						
+						environment = "production"
+					}
+				`,
+				ExpectError: acctest.ExpectLiteralError(
+					`If method attribute is set and the value is one of "GET", "HEAD", "OPTIONS"`,
+					`this attribute is NULL`,
+				),
+			},
+		},
+	})
+}
+
 func TestAccUptimeMonitorResource_basic(t *testing.T) {
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
