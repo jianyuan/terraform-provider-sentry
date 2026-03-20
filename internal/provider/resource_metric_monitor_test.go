@@ -291,6 +291,106 @@ func TestAccMetricMonitorResource_threshold(t *testing.T) {
 	})
 }
 
+func TestAccMetricMonitorResource_change(t *testing.T) {
+	teamName := acctest.RandomWithPrefix("tf-team")
+	projectName := acctest.RandomWithPrefix("tf-project")
+	monitorName := acctest.RandomWithPrefix("tf-metric-monitor")
+	rn := "sentry_metric_monitor.test"
+
+	checks := []statecheck.StateCheck{
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("project"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("owner"), knownvalue.ObjectExact(map[string]knownvalue.Check{
+			"user_id": knownvalue.Null(),
+			"team_id": knownvalue.NotNull(),
+		})),
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccMetricMonitorResourceConfig(teamName, projectName, monitorName, `
+					aggregate = "count()"
+					dataset = "events"
+					event_types = ["default", "error"]
+					query = "is:unresolved"
+					query_type = "error"
+					time_window_seconds = 3600
+
+					condition_group = {
+						conditions = [
+							{
+								type = "lt"
+								comparison = 50
+								condition_result = 75
+							},
+							{
+								type = "lt"
+								comparison = 100
+								condition_result = 50
+							},
+							{
+								type = "gte"
+								comparison = 100
+								condition_result = 0
+							},
+						]
+					}
+
+					issue_detection = {
+						type = "percent"
+						comparison_delta = 3600
+					}
+				`),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("enabled"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(monitorName)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("aggregate"), knownvalue.StringExact("count()")),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("dataset"), knownvalue.StringExact("events")),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("event_types"), knownvalue.SetExact([]knownvalue.Check{
+						knownvalue.StringExact("default"),
+						knownvalue.StringExact("error"),
+					})),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query"), knownvalue.StringExact("is:unresolved")),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query_type"), knownvalue.StringExact("error")),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("time_window_seconds"), knownvalue.Int64Exact(3600)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("condition_group"), knownvalue.ObjectExact(map[string]knownvalue.Check{
+						"logic_type": knownvalue.StringExact("any"),
+						"conditions": knownvalue.ListExact([]knownvalue.Check{
+							knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"type":             knownvalue.StringExact("lt"),
+								"comparison":       knownvalue.Int64Exact(50),
+								"condition_result": knownvalue.Int64Exact(75),
+							}),
+							knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"type":             knownvalue.StringExact("lt"),
+								"comparison":       knownvalue.Int64Exact(100),
+								"condition_result": knownvalue.Int64Exact(50),
+							}),
+							knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"type":             knownvalue.StringExact("gte"),
+								"comparison":       knownvalue.Int64Exact(100),
+								"condition_result": knownvalue.Int64Exact(0),
+							}),
+						}),
+					})),
+				),
+			},
+			{
+				ResourceName:            rn,
+				ImportState:             true,
+				ImportStateIdFunc:       acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"query_type"},
+			},
+		},
+	})
+}
+
 func testAccMetricMonitorResourceConfig(teamName, projectName, name, extras string) string {
 	return testAccProjectResourceConfig(testAccProjectResourceConfigData{
 		TeamName:    teamName,
