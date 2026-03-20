@@ -468,6 +468,13 @@ def parse_snuba_models() -> dict[str, ResultData[Any]]:
         "SnubaQueryTypeNameToId": ResultData(github_url=data.github_url, result={}),
         "SnubaQueryTypeIdToName": ResultData(github_url=data.github_url, result={}),
         "SnubaExtrapolationModes": ResultData(github_url=data.github_url, result=[]),
+        "SnubaQueryEventTypes": ResultData(github_url=data.github_url, result=[]),
+        "SnubaQueryEventTypeNameToId": ResultData(
+            github_url=data.github_url, result={}
+        ),
+        "SnubaQueryEventTypeIdToName": ResultData(
+            github_url=data.github_url, result={}
+        ),
     }
     for node in ast.walk(data.tree):
         match node:
@@ -488,6 +495,27 @@ def parse_snuba_models() -> dict[str, ResultData[Any]]:
                                         out["SnubaQueryTypeIdToName"].result[value] = (
                                             id.lower()
                                         )
+                        case _:
+                            pass
+            case ast.ClassDef(name="SnubaQueryEventType", body=elts):
+                for elt in elts:
+                    match elt:
+                        case ast.ClassDef(name="EventType", body=type_elts):
+                            for elt in type_elts:
+                                match elt:
+                                    case ast.Assign(
+                                        targets=[ast.Name(id=id)],
+                                        value=ast.Constant(value=value),
+                                    ) if id.isupper():
+                                        out["SnubaQueryEventTypes"].result.append(
+                                            id.lower()
+                                        )
+                                        out["SnubaQueryEventTypeNameToId"].result[
+                                            id.lower()
+                                        ] = value
+                                        out["SnubaQueryEventTypeIdToName"].result[
+                                            value
+                                        ] = id.lower()
                         case _:
                             pass
             case ast.ClassDef(name="ExtrapolationMode", body=elts):

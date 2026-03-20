@@ -162,7 +162,7 @@ resource "sentry_metric_monitor" "dynamic" {
 - `aggregate` (String) Aggregate query to run on the metric.
 - `condition_group` (Attributes) Issue detection condition group configuration. (see [below for nested schema](#nestedatt--condition_group))
 - `dataset` (String) Dataset to run the aggregate query on. Valid values are: `events`, `transactions`, `discover`, `outcomes`, `outcomes_raw`, `sessions`, `metrics`, `generic_metrics`, `replays`, `profiles`, `search_issues`, `functions`, `spans`, and `events_analytics_platform`.
-- `event_types` (Set of String) Event types to run the aggregate query on.
+- `event_types` (Set of String) Event types to run the aggregate query on. Valid values are: `error`, `default`, `transaction`, `trace_item_span`, `trace_item_log`, and `trace_item_metric`.
 - `issue_detection` (Attributes) The issue detection type configuration. (see [below for nested schema](#nestedatt--issue_detection))
 - `name` (String) The name of this monitor.
 - `organization` (String) The organization slug or internal ID to create the monitor for.

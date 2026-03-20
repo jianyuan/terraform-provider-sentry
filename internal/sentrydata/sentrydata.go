@@ -1061,6 +1061,36 @@ var SnubaExtrapolationModes = []string{
 	"server_weighted",
 }
 
+// https://github.com/getsentry/sentry/blob/master/src/sentry/snuba/models.py
+var SnubaQueryEventTypes = []string{
+	"error",
+	"default",
+	"transaction",
+	"trace_item_span",
+	"trace_item_log",
+	"trace_item_metric",
+}
+
+// https://github.com/getsentry/sentry/blob/master/src/sentry/snuba/models.py
+var SnubaQueryEventTypeNameToId = map[string]int64{
+	"error":             0,
+	"default":           1,
+	"transaction":       2,
+	"trace_item_span":   3,
+	"trace_item_log":    4,
+	"trace_item_metric": 5,
+}
+
+// https://github.com/getsentry/sentry/blob/master/src/sentry/snuba/models.py
+var SnubaQueryEventTypeIdToName = map[int64]string{
+	0: "error",
+	1: "default",
+	2: "transaction",
+	3: "trace_item_span",
+	4: "trace_item_log",
+	5: "trace_item_metric",
+}
+
 // https://github.com/getsentry/sentry/blob/master/src/sentry/snuba/dataset.py
 var SnubaDatasets = []string{
 	"events",

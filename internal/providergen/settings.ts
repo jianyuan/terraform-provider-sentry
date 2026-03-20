@@ -407,6 +407,7 @@ export const RESOURCES: Array<Resource> = [
         elementType: "string",
         description: "Event types to run the aggregate query on.",
         computedOptionalRequired: "required",
+        enum: "sentrydata.SnubaQueryEventTypes",
       },
       {
         name: "query",
