@@ -104,14 +104,18 @@ func TestAccUptimeMonitorResource_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("interval_seconds"), knownvalue.Int64Exact(60)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("timeout_ms"), knownvalue.Int64Exact(5000)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("environment"), knownvalue.StringExact("production")),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("assertion"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("assertion_json"), knownvalue.Null()),
 				),
 			},
 			{
 				Config: testAccUptimeMonitorResourceConfig(teamName, projectName, monitorName+"-updated", `
 					url = "https://us.sentry.io"
 					method = "POST"
-					body = "{}"
+					body = <<EOT
+						{
+							"key": "value"
+						}
+					EOT
 					headers = {
 						"X-Header-Key" = "X-Header-Value"
 					}
@@ -120,7 +124,7 @@ func TestAccUptimeMonitorResource_basic(t *testing.T) {
 					
 					environment = "production"
 
-					assertion = <<EOT
+					assertion_json = <<EOT
 						{
 							"root": {
 								"op": "and",
@@ -138,14 +142,14 @@ func TestAccUptimeMonitorResource_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(monitorName+"-updated")),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("url"), knownvalue.StringExact("https://us.sentry.io")),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("method"), knownvalue.StringExact("POST")),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("body"), knownvalue.StringExact("{}")),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("body"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("headers"), knownvalue.MapExact(map[string]knownvalue.Check{
 						"X-Header-Key": knownvalue.StringExact("X-Header-Value"),
 					})),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("interval_seconds"), knownvalue.Int64Exact(300)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("timeout_ms"), knownvalue.Int64Exact(10000)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("environment"), knownvalue.StringExact("production")),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("assertion"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("assertion_json"), knownvalue.NotNull()),
 				),
 			},
 			{
@@ -153,7 +157,7 @@ func TestAccUptimeMonitorResource_basic(t *testing.T) {
 				ImportState:             true,
 				ImportStateIdFunc:       acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"assertion"},
+				ImportStateVerifyIgnore: []string{"body", "assertion_json"},
 			},
 		},
 	})

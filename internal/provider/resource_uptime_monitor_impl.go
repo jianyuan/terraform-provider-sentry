@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
 
@@ -22,8 +23,8 @@ func (r *UptimeMonitorResource) getCreateJSONRequestBody(ctx context.Context, da
 		IntervalSeconds: data.IntervalSeconds.Get(),
 		TimeoutMs:       data.TimeoutMs.Get(),
 	}
-	if data.Body.IsKnown() {
-		outDs.Body.Set(data.Body.Get())
+	if !data.Body.IsNull() && !data.Body.IsUnknown() {
+		outDs.Body.Set(data.Body.ValueString())
 	} else {
 		outDs.Body.SetNull()
 	}
@@ -36,8 +37,8 @@ func (r *UptimeMonitorResource) getCreateJSONRequestBody(ctx context.Context, da
 			outDs.Headers = append(outDs.Headers, []string{key, value})
 		}
 	}
-	if !data.Assertion.IsNull() && !data.Assertion.IsUnknown() {
-		outDs.Assertion.Set(json.RawMessage(data.Assertion.ValueString()))
+	if !data.AssertionJson.IsNull() && !data.AssertionJson.IsUnknown() {
+		outDs.Assertion.Set(json.RawMessage(data.AssertionJson.ValueString()))
 	} else {
 		outDs.Assertion.SetNull()
 	}
@@ -151,9 +152,9 @@ func (m *UptimeMonitorResourceModel) Fill(ctx context.Context, data apiclient.Pr
 	m.Url.Set(dataSource.QueryObj.Url)
 	m.Method.Set(dataSource.QueryObj.Method)
 	if v, err := dataSource.QueryObj.Body.Get(); err == nil {
-		m.Body.Set(v)
+		m.Body = sentrytypes.TrimmedStringValue(v)
 	} else {
-		m.Body.SetNull()
+		m.Body = sentrytypes.TrimmedStringNull()
 	}
 
 	headers := make(map[string]string, len(dataSource.QueryObj.Headers))
@@ -184,9 +185,9 @@ func (m *UptimeMonitorResourceModel) Fill(ctx context.Context, data apiclient.Pr
 			diags.AddError("Invalid assertion", err.Error())
 			return
 		}
-		m.Assertion = jsontypes.NewNormalizedValue(string(assertion))
+		m.AssertionJson = jsontypes.NewNormalizedValue(string(assertion))
 	} else {
-		m.Assertion = jsontypes.NewNormalizedNull()
+		m.AssertionJson = jsontypes.NewNormalizedNull()
 	}
 
 	return

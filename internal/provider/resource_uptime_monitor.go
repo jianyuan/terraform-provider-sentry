@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 )
@@ -121,7 +122,7 @@ func (r *UptimeMonitorResource) Schema(ctx context.Context, req resource.SchemaR
 			"body": schema.StringAttribute{
 				MarkdownDescription: "The request body to send. Only applicable for methods that support a body.",
 				Optional:            true,
-				CustomType:          supertypes.StringType{},
+				CustomType:          sentrytypes.TrimmedStringType{},
 			},
 			"headers": schema.MapAttribute{
 				MarkdownDescription: "The headers to send with the request.",
@@ -161,7 +162,7 @@ func (r *UptimeMonitorResource) Schema(ctx context.Context, req resource.SchemaR
 				Default:             int64default.StaticInt64(3),
 				CustomType:          supertypes.Int64Type{},
 			},
-			"assertion": schema.StringAttribute{
+			"assertion_json": schema.StringAttribute{
 				MarkdownDescription: "Define conditions that must be met for the check to be considered successful.",
 				Optional:            true,
 				CustomType:          jsontypes.NormalizedType{},
@@ -324,14 +325,14 @@ type UptimeMonitorResourceModel struct {
 	DefaultAssignee   supertypes.SingleNestedObjectValueOf[UptimeMonitorResourceModelDefaultAssignee] `tfsdk:"default_assignee"`
 	Url               supertypes.StringValue                                                          `tfsdk:"url"`
 	Method            supertypes.StringValue                                                          `tfsdk:"method"`
-	Body              supertypes.StringValue                                                          `tfsdk:"body"`
+	Body              sentrytypes.TrimmedString                                                       `tfsdk:"body"`
 	Headers           supertypes.MapValueOf[string]                                                   `tfsdk:"headers"`
 	IntervalSeconds   supertypes.Int64Value                                                           `tfsdk:"interval_seconds"`
 	TimeoutMs         supertypes.Int64Value                                                           `tfsdk:"timeout_ms"`
 	Environment       supertypes.StringValue                                                          `tfsdk:"environment"`
 	RecoveryThreshold supertypes.Int64Value                                                           `tfsdk:"recovery_threshold"`
 	DowntimeThreshold supertypes.Int64Value                                                           `tfsdk:"downtime_threshold"`
-	Assertion         jsontypes.Normalized                                                            `tfsdk:"assertion"`
+	AssertionJson     jsontypes.Normalized                                                            `tfsdk:"assertion_json"`
 }
 
 type UptimeMonitorResourceModelDefaultAssignee struct {
