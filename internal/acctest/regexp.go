@@ -7,8 +7,8 @@ import (
 	"github.com/samber/lo"
 )
 
-func ExpectLiteralError(lines ...string) *regexp.Regexp {
-	return regexp.MustCompile(strings.Join(lo.Map(lines, func(v string, _ int) string {
+func ExpectLiteralError(text string) *regexp.Regexp {
+	return regexp.MustCompile(strings.Join(lo.Map(strings.Split(text, " "), func(v string, _ int) string {
 		return regexp.QuoteMeta(v)
-	}), `\n`))
+	}), `\s+`))
 }

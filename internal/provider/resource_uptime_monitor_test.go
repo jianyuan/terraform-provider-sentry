@@ -85,8 +85,7 @@ func TestAccUptimeMonitorResource_validation(t *testing.T) {
 					}
 				`,
 				ExpectError: acctest.ExpectLiteralError(
-					`If method attribute is set and the value is one of "GET", "HEAD", "OPTIONS"`,
-					`this attribute is NULL`,
+					`If method attribute is set and the value is one of "GET", "HEAD", "OPTIONS" this attribute is NULL`,
 				),
 			},
 		},
