@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
@@ -1176,6 +1177,145 @@ func (r *IssueAlertResource) UpgradeState(ctx context.Context) map[int64]resourc
 				}
 
 				resp.Diagnostics.Append(resp.State.Set(ctx, &upgradedStateData)...)
+			},
+		},
+	}
+}
+
+// MoveState handles state moves from sentry_rule to setry_issue_alert
+//
+//	moved {
+//	  from = sentry_rule.example
+//	  to + sentry_issue_alert.example
+//	}
+func (r *IssueAlertResource) MoveState(ctx context.Context) []resource.StateMover {
+	return []resource.StateMover{
+		{
+			SourceSchema: &schema.Schema{
+				Attributes: map[string]schema.Attribute{
+					"id": schema.StringAttribute{
+						Computed: true,
+					},
+					"organization": schema.StringAttribute{
+						Required: true,
+					},
+					"project": schema.StringAttribute{
+						Required: true,
+					},
+					"name": schema.StringAttribute{
+						Required: true,
+					},
+					"action_match": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"filter_match": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"actions": schema.ListAttribute{
+						ElementType: types.MapType{
+							ElemType: types.StringType,
+						},
+						Optional: true,
+						Computed: true,
+					},
+					"conditions": schema.ListAttribute{
+						ElementType: types.MapType{
+							ElemType: types.StringType,
+						},
+						Optional: true,
+						Computed: true,
+					},
+					"filters": schema.ListAttribute{
+						ElementType: types.MapType{
+							ElemType: types.StringType,
+						},
+						Optional: true,
+						Computed: true,
+					},
+					"frequency": schema.Int64Attribute{
+						Optional: true,
+						Computed: true,
+					},
+					"environment": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+				},
+			},
+			StateMover: func(ctx context.Context, req resource.MoveStateRequest, resp *resource.MoveStateResponse) {
+				if req.SourceTypeName != "sentry_rule" {
+					return
+				}
+				if !strings.HasSuffix(req.SourceProviderAddress, "jianyuan/sentry") {
+					return
+				}
+
+				var sourceStateData SourceSentryRuleModel
+				resp.Diagnostics.Append(req.SourceState.Get(ctx, &sourceStateData)...)
+				if resp.Diagnostics.HasError() {
+					return
+				}
+
+				organization, project, actionId, err := tfutils.SplitThreePartId(sourceStateData.Id.ValueString(), "organization", "project-slug", "alert-id")
+				if err != nil {
+					resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Error parsing ID: %s", err.Error()))
+					return
+				}
+
+				targetStateData := IssueAlertModel{
+					Id:           types.StringValue(actionId),
+					Organization: types.StringValue(organization),
+					Project:      types.StringValue(project),
+					Name:         sourceStateData.Name,
+					ActionMatch:  sourceStateData.ActionMatch,
+					FilterMatch:  sourceStateData.FilterMatch,
+					Actions:      sentrytypes.NewLossyJsonNull(),
+					Conditions:   sentrytypes.NewLossyJsonNull(),
+					Filters:      sentrytypes.NewLossyJsonNull(),
+					Frequency:    sourceStateData.Frequency,
+					Environment:  sourceStateData.Environment,
+					Owner:        types.StringNull(),
+					ConditionsV2: types.ListNull(issueAlertConditionV2ElemType),
+					FiltersV2:    types.ListNull(issueAlertFilterV2ElemType),
+					ActionsV2:    types.ListNull(issueAlertActionV2ElemType),
+				}
+
+				if !sourceStateData.Conditions.IsNull() {
+					conditions := []map[string]string{}
+					resp.Diagnostics.Append(sourceStateData.Conditions.ElementsAs(ctx, &conditions, false)...)
+					if resp.Diagnostics.HasError() {
+						return
+					}
+					if len(conditions) > 0 {
+						targetStateData.Conditions = sentrytypes.NewLossyJsonValue(string(must.Get(json.Marshal(conditions))))
+					}
+				}
+
+				if !sourceStateData.Filters.IsNull() {
+					filters := []map[string]string{}
+					resp.Diagnostics.Append(sourceStateData.Filters.ElementsAs(ctx, &filters, false)...)
+					if resp.Diagnostics.HasError() {
+						return
+					}
+					if len(filters) > 0 {
+						targetStateData.Filters = sentrytypes.NewLossyJsonValue(string(must.Get(json.Marshal(filters))))
+					}
+				}
+
+				if !sourceStateData.Actions.IsNull() {
+					actions := []map[string]string{}
+					resp.Diagnostics.Append(sourceStateData.Actions.ElementsAs(ctx, &actions, false)...)
+					if resp.Diagnostics.HasError() {
+						return
+					}
+					if len(actions) > 0 {
+						targetStateData.Actions = sentrytypes.NewLossyJsonValue(string(must.Get(json.Marshal(actions))))
+					}
+				}
+
+				resp.Diagnostics.Append(resp.TargetState.Set(ctx, targetStateData)...)
 			},
 		},
 	}
