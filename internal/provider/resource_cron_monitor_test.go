@@ -100,8 +100,7 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 					}
 				`,
 				ExpectError: acctest.ExpectLiteralError(
-					"At least one attribute out of",
-					"[schedule.crontab.<.interval_value,schedule.crontab] must be specified",
+					"At least one attribute out of [schedule.crontab.<.interval_value,schedule.crontab] must be specified",
 				),
 			},
 			{
@@ -121,8 +120,7 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 					}
 				`,
 				ExpectError: acctest.ExpectLiteralError(
-					"At least one attribute out of",
-					"[schedule.crontab.<.interval_unit,schedule.crontab] must be specified",
+					"At least one attribute out of [schedule.crontab.<.interval_unit,schedule.crontab] must be specified",
 				),
 			},
 			{
@@ -146,8 +144,7 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 					}
 				`,
 				ExpectError: acctest.ExpectLiteralError(
-					`Attribute "schedule.interval_value" cannot be specified when`,
-					`"schedule.crontab" is specified`,
+					`Attribute "schedule.interval_value" cannot be specified when "schedule.crontab" is specified`,
 				),
 			},
 			{
@@ -171,8 +168,7 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 					}
 				`,
 				ExpectError: acctest.ExpectLiteralError(
-					`Attribute "schedule.interval_unit" cannot be specified when`,
-					`"schedule.crontab" is specified`,
+					`Attribute "schedule.interval_unit" cannot be specified when "schedule.crontab" is specified`,
 				),
 			},
 			{
@@ -194,8 +190,7 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 					}
 				`,
 				ExpectError: acctest.ExpectLiteralError(
-					`Attribute "schedule.interval_unit" must be specified when`,
-					`"schedule.interval_value" is specified`,
+					`Attribute "schedule.interval_unit" must be specified when "schedule.interval_value" is specified`,
 				),
 			},
 			{
@@ -222,8 +217,7 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 					}
 				`,
 				ExpectError: acctest.ExpectLiteralError(
-					`Attribute "owner.team_id" cannot be specified when`,
-					`"owner.user_id" is specified`,
+					`Attribute "owner.team_id" cannot be specified when "owner.user_id" is specified`,
 				),
 			},
 			{
@@ -250,8 +244,7 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 					}
 				`,
 				ExpectError: acctest.ExpectLiteralError(
-					`Attribute "owner.user_id" cannot be specified when`,
-					`"owner.team_id" is specified`,
+					`Attribute "owner.user_id" cannot be specified when "owner.team_id" is specified`,
 				),
 			},
 			{
@@ -275,8 +268,7 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 					}
 				`,
 				ExpectError: acctest.ExpectLiteralError(
-					"No attribute specified when one (and only one) of",
-					"[owner.user_id.<.team_id] is required",
+					"No attribute specified when one (and only one) of [owner.user_id.<.team_id] is required",
 				),
 			},
 		},
