@@ -825,6 +825,17 @@ export const RESOURCES: Array<Resource> = [
         computedOptionalRequired: "computed_optional",
         default: `int64default.StaticInt64(3)`,
       },
+      {
+        name: "assertion",
+        type: "string",
+        customType: {
+          type: "jsontypes.NormalizedType{}",
+          value: "jsontypes.Normalized",
+        },
+        description:
+          "Define conditions that must be met for the check to be considered successful.",
+        computedOptionalRequired: "optional",
+      },
     ],
   },
   {

@@ -2275,14 +2275,14 @@ type ProjectMonitorDataSourceSnubaQuerySubscription struct {
 
 // ProjectMonitorDataSourceUptimeDomainFailure defines model for ProjectMonitor_DataSource_UptimeDomainFailure.
 type ProjectMonitorDataSourceUptimeDomainFailure struct {
-	Assertion       map[string]interface{}    `json:"assertion"`
-	Body            nullable.Nullable[string] `json:"body"`
-	Headers         [][]string                `json:"headers"`
-	IntervalSeconds int64                     `json:"intervalSeconds"`
-	Method          string                    `json:"method"`
-	TimeoutMs       int64                     `json:"timeoutMs"`
-	TraceSampling   bool                      `json:"traceSampling"`
-	Url             string                    `json:"url"`
+	Assertion       nullable.Nullable[json.RawMessage] `json:"assertion"`
+	Body            nullable.Nullable[string]          `json:"body"`
+	Headers         [][]string                         `json:"headers"`
+	IntervalSeconds int64                              `json:"intervalSeconds"`
+	Method          string                             `json:"method"`
+	TimeoutMs       int64                              `json:"timeoutMs"`
+	TraceSampling   bool                               `json:"traceSampling"`
+	Url             string                             `json:"url"`
 }
 
 // ProjectMonitorDataSourceWrapper defines model for ProjectMonitor_DataSource_Wrapper.

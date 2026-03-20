@@ -2661,7 +2661,9 @@ components:
         traceSampling:
           type: boolean
         assertion:
-          type: object # TODO
+          type: string
+          format: json
+          nullable: true
     ProjectMonitor_DataSource_SnubaQuerySubscription:
       type: object
       required:

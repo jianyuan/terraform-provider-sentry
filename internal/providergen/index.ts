@@ -39,6 +39,14 @@ function generateTerraformAttribute({
     commonParts.push(`Default: ${attribute.default},`);
   }
 
+  function resolveCustomType(original: string) {
+    if (attribute.customType) {
+      return attribute.customType.type;
+    } else {
+      return original;
+    }
+  }
+
   return match(attribute)
     .with({ type: "string" }, () => {
       const parts: string[] = [];
@@ -47,7 +55,9 @@ function generateTerraformAttribute({
       }
       parts.push("schema.StringAttribute{");
       parts.push(...commonParts);
-      parts.push("CustomType: supertypes.StringType{},");
+      parts.push(
+        `CustomType: ${resolveCustomType("supertypes.StringType{}")},`,
+      );
       if (attribute.validators) {
         parts.push("Validators: []validator.String{");
         parts.push(...attribute.validators.map((validator) => `${validator},`));
@@ -76,7 +86,7 @@ function generateTerraformAttribute({
       }
       parts.push("schema.Int64Attribute{");
       parts.push(...commonParts);
-      parts.push("CustomType: supertypes.Int64Type{},");
+      parts.push(`CustomType: ${resolveCustomType("supertypes.Int64Type{}")},`);
       if (attribute.validators) {
         parts.push("Validators: []validator.Int64{");
         parts.push(...attribute.validators.map((validator) => `${validator},`));
@@ -102,7 +112,7 @@ function generateTerraformAttribute({
       const parts: string[] = [];
       parts.push("schema.BoolAttribute{");
       parts.push(...commonParts);
-      parts.push("CustomType: supertypes.BoolType{},");
+      parts.push(`CustomType: ${resolveCustomType("supertypes.BoolType{}")},`);
       if (attribute.validators) {
         parts.push("Validators: []validator.Bool{");
         parts.push(...attribute.validators.map((validator) => `${validator},`));
@@ -122,7 +132,9 @@ function generateTerraformAttribute({
       const parts: string[] = [];
       parts.push("schema.ListAttribute{");
       parts.push(...commonParts);
-      parts.push("CustomType: supertypes.NewListTypeOf[string](ctx),");
+      parts.push(
+        `CustomType: ${resolveCustomType("supertypes.NewListTypeOf[string](ctx)")},`,
+      );
       if (attribute.validators) {
         parts.push("Validators: []validator.List{");
         parts.push(...attribute.validators.map((validator) => `${validator},`));
@@ -143,9 +155,11 @@ function generateTerraformAttribute({
       parts.push("schema.ListNestedAttribute{");
       parts.push(...commonParts);
       parts.push(
-        `CustomType: supertypes.NewListNestedObjectTypeOf[${parent}${camelize(
-          attribute.name,
-        )}Item](ctx),`,
+        `CustomType: ${resolveCustomType(
+          `supertypes.NewListNestedObjectTypeOf[${parent}${camelize(
+            attribute.name,
+          )}Item](ctx)`,
+        )},`,
       );
       if (attribute.validators) {
         parts.push("Validators: []validator.List{");
@@ -174,7 +188,11 @@ function generateTerraformAttribute({
       }
       parts.push("schema.SetAttribute{");
       parts.push(...commonParts);
-      parts.push("CustomType: supertypes.NewSetTypeOf[string](ctx),");
+      parts.push(
+        `CustomType: ${resolveCustomType(
+          "supertypes.NewSetTypeOf[string](ctx)",
+        )},`,
+      );
       if (attribute.validators) {
         parts.push("Validators: []validator.Set{");
         parts.push(...attribute.validators.map((validator) => `${validator},`));
@@ -201,9 +219,11 @@ function generateTerraformAttribute({
       parts.push("schema.SetNestedAttribute{");
       parts.push(...commonParts);
       parts.push(
-        `CustomType: supertypes.NewSetNestedObjectTypeOf[${parent}${camelize(
-          attribute.name,
-        )}Item](ctx),`,
+        `CustomType: ${resolveCustomType(
+          `supertypes.NewSetNestedObjectTypeOf[${parent}${camelize(
+            attribute.name,
+          )}Item](ctx)`,
+        )},`,
       );
       if (attribute.validators) {
         parts.push("Validators: []validator.Set{");
@@ -230,7 +250,11 @@ function generateTerraformAttribute({
       parts.push("schema.SingleNestedAttribute{");
       parts.push(...commonParts);
       parts.push(
-        `CustomType: supertypes.NewSingleNestedObjectTypeOf[${parent}${camelize(attribute.name)}](ctx),`,
+        `CustomType: ${resolveCustomType(
+          `supertypes.NewSingleNestedObjectTypeOf[${parent}${camelize(
+            attribute.name,
+          )}](ctx)`,
+        )},`,
       );
       parts.push("Attributes: map[string]schema.Attribute{");
       for (const nestedAttribute of attribute.attributes) {
@@ -249,7 +273,11 @@ function generateTerraformAttribute({
       const parts: string[] = [];
       parts.push("schema.MapAttribute{");
       parts.push(...commonParts);
-      parts.push("CustomType: supertypes.NewMapTypeOf[string](ctx),");
+      parts.push(
+        `CustomType: ${resolveCustomType(
+          "supertypes.NewMapTypeOf[string](ctx)",
+        )},`,
+      );
       if (attribute.validators) {
         parts.push("Validators: []validator.Map{");
         parts.push(...attribute.validators.map((validator) => `${validator},`));
@@ -276,6 +304,10 @@ function generateTerraformValueType({
   attribute: Attribute;
 }) {
   return match(attribute)
+    .with(
+      { customType: { value: P.any } },
+      (attribute) => attribute.customType.value,
+    )
     .with({ type: "string" }, () => "supertypes.StringValue")
     .with({ type: "int" }, () => "supertypes.Int64Value")
     .with({ type: "bool" }, () => "supertypes.BoolValue")

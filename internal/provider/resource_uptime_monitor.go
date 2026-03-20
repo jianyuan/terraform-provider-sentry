@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -159,6 +160,11 @@ func (r *UptimeMonitorResource) Schema(ctx context.Context, req resource.SchemaR
 				Computed:            true,
 				Default:             int64default.StaticInt64(3),
 				CustomType:          supertypes.Int64Type{},
+			},
+			"assertion": schema.StringAttribute{
+				MarkdownDescription: "Define conditions that must be met for the check to be considered successful.",
+				Optional:            true,
+				CustomType:          jsontypes.NormalizedType{},
 			},
 		},
 	}
@@ -325,6 +331,7 @@ type UptimeMonitorResourceModel struct {
 	Environment       supertypes.StringValue                                                          `tfsdk:"environment"`
 	RecoveryThreshold supertypes.Int64Value                                                           `tfsdk:"recovery_threshold"`
 	DowntimeThreshold supertypes.Int64Value                                                           `tfsdk:"downtime_threshold"`
+	Assertion         jsontypes.Normalized                                                            `tfsdk:"assertion"`
 }
 
 type UptimeMonitorResourceModelDefaultAssignee struct {
