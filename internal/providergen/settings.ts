@@ -332,7 +332,7 @@ export const RESOURCES: Array<Resource> = [
       {
         name: "enabled",
         type: "bool",
-        description: "Whether the monitor is enabled. Defaults to true.",
+        description: "Whether the monitor is enabled. Defaults to `true`.",
         computedOptionalRequired: "computed_optional",
         default: `booldefault.StaticBool(true)`,
       },
@@ -558,7 +558,7 @@ export const RESOURCES: Array<Resource> = [
       {
         name: "enabled",
         type: "bool",
-        description: "Whether the monitor is enabled. Defaults to true.",
+        description: "Whether the monitor is enabled. Defaults to `true`.",
         computedOptionalRequired: "computed_optional",
         default: `booldefault.StaticBool(true)`,
       },
@@ -737,7 +737,7 @@ export const RESOURCES: Array<Resource> = [
       {
         name: "enabled",
         type: "bool",
-        description: "Whether the monitor is enabled. Defaults to true.",
+        description: "Whether the monitor is enabled. Defaults to `true`.",
         computedOptionalRequired: "computed_optional",
         default: `booldefault.StaticBool(true)`,
       },
@@ -844,7 +844,7 @@ export const RESOURCES: Array<Resource> = [
         name: "recovery_threshold",
         type: "int",
         description:
-          "Number of consecutive successful checks required to mark monitor as recovered. Defaults to 1.",
+          "Number of consecutive successful checks required to mark monitor as recovered. Defaults to `1`.",
         computedOptionalRequired: "computed_optional",
         default: `int64default.StaticInt64(1)`,
       },
@@ -852,7 +852,7 @@ export const RESOURCES: Array<Resource> = [
         name: "downtime_threshold",
         type: "int",
         description:
-          "Number of consecutive failed checks required to mark monitor as down. Defaults to 3.",
+          "Number of consecutive failed checks required to mark monitor as down. Defaults to `3`.",
         computedOptionalRequired: "computed_optional",
         default: `int64default.StaticInt64(3)`,
       },
@@ -911,7 +911,7 @@ export const RESOURCES: Array<Resource> = [
       {
         name: "enabled",
         type: "bool",
-        description: "Whether the alert is enabled. Defaults to true.",
+        description: "Whether the alert is enabled. Defaults to `true`.",
         computedOptionalRequired: "computed_optional",
         default: `booldefault.StaticBool(true)`,
       },

@@ -68,7 +68,7 @@ func (r *UptimeMonitorResource) Schema(ctx context.Context, req resource.SchemaR
 				},
 			},
 			"enabled": schema.BoolAttribute{
-				MarkdownDescription: "Whether the monitor is enabled. Defaults to true.",
+				MarkdownDescription: "Whether the monitor is enabled. Defaults to `true`.",
 				Optional:            true,
 				Computed:            true,
 				Default:             booldefault.StaticBool(true),
@@ -154,14 +154,14 @@ func (r *UptimeMonitorResource) Schema(ctx context.Context, req resource.SchemaR
 				CustomType:          supertypes.StringType{},
 			},
 			"recovery_threshold": schema.Int64Attribute{
-				MarkdownDescription: "Number of consecutive successful checks required to mark monitor as recovered. Defaults to 1.",
+				MarkdownDescription: "Number of consecutive successful checks required to mark monitor as recovered. Defaults to `1`.",
 				Optional:            true,
 				Computed:            true,
 				Default:             int64default.StaticInt64(1),
 				CustomType:          supertypes.Int64Type{},
 			},
 			"downtime_threshold": schema.Int64Attribute{
-				MarkdownDescription: "Number of consecutive failed checks required to mark monitor as down. Defaults to 3.",
+				MarkdownDescription: "Number of consecutive failed checks required to mark monitor as down. Defaults to `3`.",
 				Optional:            true,
 				Computed:            true,
 				Default:             int64default.StaticInt64(3),
