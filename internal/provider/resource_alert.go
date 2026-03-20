@@ -59,7 +59,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 				},
 			},
 			"enabled": schema.BoolAttribute{
-				MarkdownDescription: "Whether the alert is enabled. Defaults to true.",
+				MarkdownDescription: "Whether the alert is enabled. Defaults to `true`.",
 				Optional:            true,
 				Computed:            true,
 				Default:             booldefault.StaticBool(true),

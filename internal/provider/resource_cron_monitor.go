@@ -65,7 +65,7 @@ func (r *CronMonitorResource) Schema(ctx context.Context, req resource.SchemaReq
 				},
 			},
 			"enabled": schema.BoolAttribute{
-				MarkdownDescription: "Whether the monitor is enabled. Defaults to true.",
+				MarkdownDescription: "Whether the monitor is enabled. Defaults to `true`.",
 				Optional:            true,
 				Computed:            true,
 				Default:             booldefault.StaticBool(true),

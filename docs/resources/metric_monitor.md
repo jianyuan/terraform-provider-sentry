@@ -81,7 +81,7 @@ resource "sentry_metric_monitor" "threshold" {
 ### Optional
 
 - `description` (String) A description of the monitor. Will be used in the resulting issue.
-- `enabled` (Boolean) Whether the monitor is enabled. Defaults to true.
+- `enabled` (Boolean) Whether the monitor is enabled. Defaults to `true`.
 - `environment` (String) Environment to run the aggregate query on.
 - `extrapolation_mode` (String) Extrapolation mode to use for the aggregate query. Valid values are: `unknown`, `none`, `client_and_server_weighted`, and `server_weighted`.
 - `owner` (Attributes) Sentry will assign new issues to this assignee. (see [below for nested schema](#nestedatt--owner))

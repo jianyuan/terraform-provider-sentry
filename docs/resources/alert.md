@@ -34,7 +34,7 @@ Create an Alert for an Organization.
 
 ### Optional
 
-- `enabled` (Boolean) Whether the alert is enabled. Defaults to true.
+- `enabled` (Boolean) Whether the alert is enabled. Defaults to `true`.
 
 ### Read-Only
 
