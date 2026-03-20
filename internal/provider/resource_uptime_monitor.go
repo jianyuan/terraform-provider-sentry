@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -20,6 +21,7 @@ import (
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
+	fstringvalidator "github.com/orange-cloudavenue/terraform-plugin-framework-validators/stringvalidator"
 )
 
 var _ resource.Resource = &UptimeMonitorResource{}
@@ -123,6 +125,9 @@ func (r *UptimeMonitorResource) Schema(ctx context.Context, req resource.SchemaR
 				MarkdownDescription: "The request body to send. Only applicable for methods that support a body.",
 				Optional:            true,
 				CustomType:          sentrytypes.TrimmedStringType{},
+				Validators: []validator.String{
+					fstringvalidator.NullIfAttributeIsOneOf(path.MatchRoot("method"), []attr.Value{supertypes.NewStringValue("GET"), supertypes.NewStringValue("HEAD"), supertypes.NewStringValue("OPTIONS")}),
+				},
 			},
 			"headers": schema.MapAttribute{
 				MarkdownDescription: "The headers to send with the request.",

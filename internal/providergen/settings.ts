@@ -657,7 +657,7 @@ export const RESOURCES: Array<Resource> = [
       {
         name: "timezone",
         type: "string",
-        description: "Timezone.",
+        description: "The timezone of the cron monitor.",
         computedOptionalRequired: "computed_optional",
         default: `stringdefault.StaticString("UTC")`,
         enum: "sentrydata.Timezones",
@@ -786,6 +786,10 @@ export const RESOURCES: Array<Resource> = [
           "The request body to send. Only applicable for methods that support a body.",
         computedOptionalRequired: "optional",
         nullable: true,
+        validators: [
+          // https://github.com/getsentry/sentry/blob/master/static/app/views/detectors/components/forms/uptime/detect/index.tsx#L23
+          `fstringvalidator.NullIfAttributeIsOneOf(path.MatchRoot("method"), []attr.Value{supertypes.NewStringValue("GET"), supertypes.NewStringValue("HEAD"), supertypes.NewStringValue("OPTIONS")})`,
+        ],
       },
       {
         name: "headers",
