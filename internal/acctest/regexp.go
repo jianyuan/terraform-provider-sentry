@@ -4,11 +4,11 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/jianyuan/go-utils/sliceutils"
+	"github.com/samber/lo"
 )
 
 func ExpectLiteralError(lines ...string) *regexp.Regexp {
-	return regexp.MustCompile(strings.Join(sliceutils.Map(func(v string) string {
+	return regexp.MustCompile(strings.Join(lo.Map(lines, func(v string, _ int) string {
 		return regexp.QuoteMeta(v)
-	}, lines), `\n`))
+	}), `\n`))
 }

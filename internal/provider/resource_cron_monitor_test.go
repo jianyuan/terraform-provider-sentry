@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"regexp"
 	"strings"
 	"testing"
 
@@ -82,7 +81,7 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 						recovery_threshold = 4
 					}
 				`,
-				ExpectError: regexp.MustCompile(regexp.QuoteMeta(`The argument "schedule" is required, but no definition was found.`)),
+				ExpectError: acctest.ExpectLiteralError(`The argument "schedule" is required, but no definition was found.`),
 			},
 			{
 				PlanOnly: true,
@@ -100,10 +99,9 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 						schedule = {}
 					}
 				`,
-				ExpectError: regexp.MustCompile(
-					regexp.QuoteMeta(
-						"At least one attribute out of\n[schedule.crontab.<.interval_value,schedule.crontab] must be specified",
-					),
+				ExpectError: acctest.ExpectLiteralError(
+					"At least one attribute out of",
+					"[schedule.crontab.<.interval_value,schedule.crontab] must be specified",
 				),
 			},
 			{
@@ -122,10 +120,9 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 						schedule = {}
 					}
 				`,
-				ExpectError: regexp.MustCompile(
-					regexp.QuoteMeta(
-						"At least one attribute out of\n[schedule.crontab.<.interval_unit,schedule.crontab] must be specified",
-					),
+				ExpectError: acctest.ExpectLiteralError(
+					"At least one attribute out of",
+					"[schedule.crontab.<.interval_unit,schedule.crontab] must be specified",
 				),
 			},
 			{
@@ -148,10 +145,9 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 						}
 					}
 				`,
-				ExpectError: regexp.MustCompile(
-					regexp.QuoteMeta(
-						"Attribute \"schedule.interval_value\" cannot be specified when\n\"schedule.crontab\" is specified",
-					),
+				ExpectError: acctest.ExpectLiteralError(
+					`Attribute "schedule.interval_value" cannot be specified when`,
+					`"schedule.crontab" is specified`,
 				),
 			},
 			{
@@ -174,10 +170,9 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 						}
 					}
 				`,
-				ExpectError: regexp.MustCompile(
-					regexp.QuoteMeta(
-						"Attribute \"schedule.interval_unit\" cannot be specified when\n\"schedule.crontab\" is specified",
-					),
+				ExpectError: acctest.ExpectLiteralError(
+					`Attribute "schedule.interval_unit" cannot be specified when`,
+					`"schedule.crontab" is specified`,
 				),
 			},
 			{
@@ -198,10 +193,9 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 						}
 					}
 				`,
-				ExpectError: regexp.MustCompile(
-					regexp.QuoteMeta(
-						"Attribute \"schedule.interval_unit\" must be specified when\n\"schedule.interval_value\" is specified",
-					),
+				ExpectError: acctest.ExpectLiteralError(
+					`Attribute "schedule.interval_unit" must be specified when`,
+					`"schedule.interval_value" is specified`,
 				),
 			},
 			{
@@ -227,10 +221,9 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 						}
 					}
 				`,
-				ExpectError: regexp.MustCompile(
-					regexp.QuoteMeta(
-						"Attribute \"default_assignee.team_id\" cannot be specified when\n\"default_assignee.user_id\" is specified",
-					),
+				ExpectError: acctest.ExpectLiteralError(
+					`Attribute "default_assignee.team_id" cannot be specified when`,
+					`"default_assignee.user_id" is specified`,
 				),
 			},
 			{
@@ -256,10 +249,9 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 						}
 					}
 				`,
-				ExpectError: regexp.MustCompile(
-					regexp.QuoteMeta(
-						"Attribute \"default_assignee.user_id\" cannot be specified when\n\"default_assignee.team_id\" is specified",
-					),
+				ExpectError: acctest.ExpectLiteralError(
+					`Attribute "default_assignee.user_id" cannot be specified when`,
+					`"default_assignee.team_id" is specified`,
 				),
 			},
 			{
@@ -282,10 +274,9 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 						default_assignee = {}
 					}
 				`,
-				ExpectError: regexp.MustCompile(
-					regexp.QuoteMeta(
-						"No attribute specified when one (and only one) of\n[default_assignee.user_id.<.team_id] is required",
-					),
+				ExpectError: acctest.ExpectLiteralError(
+					"No attribute specified when one (and only one) of",
+					"[default_assignee.user_id.<.team_id] is required",
 				),
 			},
 		},

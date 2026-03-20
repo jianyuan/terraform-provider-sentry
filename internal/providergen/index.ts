@@ -418,11 +418,11 @@ function generatePrimitiveToTerraform({
     .with(
       { type: "list_nested" },
       (attribute) =>
-        `${destVarName} = supertypes.NewListNestedObjectValueOfValueSlice(ctx, sliceutils.Map(func(item apiclient.${attribute.model}) ${name}${camelize(attribute.name)}Item {
+        `${destVarName} = supertypes.NewListNestedObjectValueOfValueSlice(ctx, lo.Map(${srcVarName}, func(item apiclient.${attribute.model}, _ int) ${name}${camelize(attribute.name)}Item {
           var model ${name}${camelize(attribute.name)}Item
           diags.Append(model.Fill(ctx, item)...)
           return model
-        }, ${srcVarName}))`,
+        }))`,
     )
     .with(
       { type: "set", elementType: "string" },
@@ -432,11 +432,11 @@ function generatePrimitiveToTerraform({
     .with(
       { type: "set_nested" },
       (attribute) =>
-        `${destVarName} = supertypes.NewSetNestedObjectValueOfValueSlice(ctx, sliceutils.Map(func(item apiclient.${attribute.model}) ${name}${camelize(attribute.name)}Item {
+        `${destVarName} = supertypes.NewSetNestedObjectValueOfValueSlice(ctx, lo.Map(${srcVarName}, func(item apiclient.${attribute.model}, _ int) ${name}${camelize(attribute.name)}Item {
           var model ${name}${camelize(attribute.name)}Item
           diags.Append(model.Fill(ctx, item)...)
           return model
-        }, ${srcVarName}))`,
+        }))`,
     )
     .with({ type: "single_nested" }, (attribute) => "TODO")
     .with({ type: "map" }, (attribute) => "TODO")

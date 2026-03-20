@@ -189,9 +189,9 @@ export const DATASOURCES: Array<DataSource> = [
         elementType: "string",
         deprecationMessage: "Use `projects[*].slug` instead.",
         customFill: dedent.withOptions({ trimWhitespace: true })`
-          m.ProjectSlugs = supertypes.NewSetValueOfSlice(ctx, sliceutils.Map(func(item apiclient.Project) string {
+          m.ProjectSlugs = supertypes.NewSetValueOfSlice(ctx, lo.Map(data, func(item apiclient.Project, _ int) string {
             return item.Slug
-          }, data))
+          }))
         `,
       },
       {
