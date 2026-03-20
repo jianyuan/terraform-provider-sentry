@@ -962,6 +962,34 @@ var AlertRuleDetectionTypes = []string{
 	"dynamic",
 }
 
+// https://github.com/getsentry/sentry/blob/master/src/sentry/incidents/models/alert_rule.py
+var AlertRuleSensitivities = []string{
+	"low",
+	"medium",
+	"high",
+}
+
+// https://github.com/getsentry/sentry/blob/master/src/sentry/incidents/models/alert_rule.py
+var AlertRuleThresholdTypes = []string{
+	"above",
+	"below",
+	"above_and_below",
+}
+
+// https://github.com/getsentry/sentry/blob/master/src/sentry/incidents/models/alert_rule.py
+var AlertRuleThresholdTypeNameToId = map[string]int64{
+	"above":           0,
+	"below":           1,
+	"above_and_below": 2,
+}
+
+// https://github.com/getsentry/sentry/blob/master/src/sentry/incidents/models/alert_rule.py
+var AlertRuleThresholdTypeIdToName = map[int64]string{
+	0: "above",
+	1: "below",
+	2: "above_and_below",
+}
+
 // https://github.com/getsentry/sentry/blob/master/src/sentry/uptime/models.py
 var UptimeSubscriptionSupportedHttpMethods = []string{
 	"GET",

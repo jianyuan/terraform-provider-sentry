@@ -488,20 +488,48 @@ export const RESOURCES: Array<Resource> = [
               {
                 name: "type",
                 type: "string",
-                description: "TODO",
+                description: "The type of condition.",
                 computedOptionalRequired: "required",
                 enum: "sentrydata.DataConditionTypes",
               },
               {
                 name: "comparison",
                 type: "int",
-                description: "TODO",
-                computedOptionalRequired: "required",
+                description:
+                  "The value to compare against. Only required for types other than `anomaly_detection`.",
+                computedOptionalRequired: "optional",
+                validators: [
+                  `fint64validator.NullIfAttributeIsOneOf(path.MatchRelative().AtParent().AtName("type"), []attr.Value{supertypes.NewStringValue("anomaly_detection")})`,
+                  `fint64validator.RequireIfAttributeIsOneOf(path.MatchRelative().AtParent().AtName("type"), []attr.Value{supertypes.NewStringValue("eq"), supertypes.NewStringValue("gte"), supertypes.NewStringValue("gt"), supertypes.NewStringValue("lte"), supertypes.NewStringValue("lt"), supertypes.NewStringValue("ne")})`,
+                ],
+              },
+              {
+                name: "comparison_sensitivity",
+                type: "string",
+                description:
+                  "Choose your level of anomaly responsiveness. Higher thresholds means alerts for most anomalies. Lower thresholds means alerts only for larger ones. Only required for `anomaly_detection` type.",
+                computedOptionalRequired: "optional",
+                enum: "sentrydata.AlertRuleSensitivities",
+                validators: [
+                  `fstringvalidator.RequireIfAttributeIsOneOf(path.MatchRelative().AtParent().AtName("type"), []attr.Value{supertypes.NewStringValue("anomaly_detection")})`,
+                ],
+              },
+              {
+                name: "comparison_threshold_type",
+                type: "string",
+                description:
+                  "Decide if you want to be alerted to anomalies that are moving above, below, or in both directions in relation to your threshold. Only required for `anomaly_detection` type.",
+                computedOptionalRequired: "optional",
+                enum: "sentrydata.AlertRuleThresholdTypes",
+                validators: [
+                  `fstringvalidator.RequireIfAttributeIsOneOf(path.MatchRelative().AtParent().AtName("type"), []attr.Value{supertypes.NewStringValue("anomaly_detection")})`,
+                ],
               },
               {
                 name: "condition_result",
                 type: "int",
-                description: "TODO",
+                description:
+                  "When the condition is met, the result will be set to this value.",
                 computedOptionalRequired: "required",
               },
             ],

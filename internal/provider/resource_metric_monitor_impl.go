@@ -60,10 +60,22 @@ func (r *MetricMonitorResource) getCreateJSONRequestBody(ctx context.Context, da
 	outConditions := make([]apiclient.ProjectMonitorConditionGroupCondition, 0, len(inConditions))
 	for _, inCondition := range inConditions {
 		var outComparison apiclient.ProjectMonitorConditionGroupCondition_Comparison
-		if err := outComparison.FromProjectMonitorConditionGroupConditionComparison1(inCondition.Comparison.Get()); err != nil {
-			diags.AddError("Error marshalling JSON", err.Error())
-			return nil, diags
+		if inCondition.Type.Get() == "anomaly_detection" {
+			if err := outComparison.FromProjectMonitorConditionGroupConditionComparison2(apiclient.ProjectMonitorConditionGroupConditionComparison2{
+				Seasonality:   "auto",
+				Sensitivity:   inCondition.ComparisonSensitivity.Get(),
+				ThresholdType: sentrydata.AlertRuleThresholdTypeNameToId[inCondition.ComparisonThresholdType.Get()],
+			}); err != nil {
+				diags.AddError("Error marshalling JSON", err.Error())
+				return nil, diags
+			}
+		} else {
+			if err := outComparison.FromProjectMonitorConditionGroupConditionComparison1(inCondition.Comparison.Get()); err != nil {
+				diags.AddError("Error marshalling JSON", err.Error())
+				return nil, diags
+			}
 		}
+
 		outConditions = append(outConditions, apiclient.ProjectMonitorConditionGroupCondition{
 			Type:            inCondition.Type.Get(),
 			Comparison:      outComparison,
@@ -181,15 +193,19 @@ func (m *MetricMonitorResourceModel) Fill(ctx context.Context, data apiclient.Pr
 
 	outConditions := make([]*MetricMonitorResourceModelConditionGroupConditionsItem, 0, len(data.ConditionGroup.Conditions))
 	for _, inCondition := range data.ConditionGroup.Conditions {
-		inComparison, err := inCondition.Comparison.AsProjectMonitorConditionGroupConditionComparison1()
-		if err != nil {
-			diags.AddError("Invalid comparison", err.Error())
+		var outCondition MetricMonitorResourceModelConditionGroupConditionsItem
+		outCondition.Type.Set(inCondition.Type)
+
+		if inComparison, err := inCondition.Comparison.AsProjectMonitorConditionGroupConditionComparison1(); err == nil {
+			outCondition.Comparison.Set(inComparison)
+		} else if inComparison, err := inCondition.Comparison.AsProjectMonitorConditionGroupConditionComparison2(); err == nil {
+			outCondition.ComparisonSensitivity.Set(inComparison.Sensitivity)
+			outCondition.ComparisonThresholdType.Set(sentrydata.AlertRuleThresholdTypeIdToName[inComparison.ThresholdType])
+		} else {
+			diags.AddError("Invalid comparison", "Unable to unmarshal comparison")
 			return
 		}
 
-		var outCondition MetricMonitorResourceModelConditionGroupConditionsItem
-		outCondition.Type.Set(inCondition.Type)
-		outCondition.Comparison.Set(inComparison)
 		outCondition.ConditionResult.Set(inCondition.ConditionResult)
 		outConditions = append(outConditions, &outCondition)
 	}

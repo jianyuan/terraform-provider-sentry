@@ -2175,6 +2175,13 @@ type ProjectMonitorConditionGroupConditionComparison0 = string
 // ProjectMonitorConditionGroupConditionComparison1 defines model for .
 type ProjectMonitorConditionGroupConditionComparison1 = int64
 
+// ProjectMonitorConditionGroupConditionComparison2 defines model for .
+type ProjectMonitorConditionGroupConditionComparison2 struct {
+	Seasonality   string `json:"seasonality"`
+	Sensitivity   string `json:"sensitivity"`
+	ThresholdType int64  `json:"thresholdType"`
+}
+
 // ProjectMonitorConditionGroupCondition_Comparison defines model for ProjectMonitorConditionGroupCondition.Comparison.
 type ProjectMonitorConditionGroupCondition_Comparison struct {
 	union json.RawMessage
@@ -4400,6 +4407,32 @@ func (t *ProjectMonitorConditionGroupCondition_Comparison) FromProjectMonitorCon
 
 // MergeProjectMonitorConditionGroupConditionComparison1 performs a merge with any union data inside the ProjectMonitorConditionGroupCondition_Comparison, using the provided ProjectMonitorConditionGroupConditionComparison1
 func (t *ProjectMonitorConditionGroupCondition_Comparison) MergeProjectMonitorConditionGroupConditionComparison1(v ProjectMonitorConditionGroupConditionComparison1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectMonitorConditionGroupConditionComparison2 returns the union data inside the ProjectMonitorConditionGroupCondition_Comparison as a ProjectMonitorConditionGroupConditionComparison2
+func (t ProjectMonitorConditionGroupCondition_Comparison) AsProjectMonitorConditionGroupConditionComparison2() (ProjectMonitorConditionGroupConditionComparison2, error) {
+	var body ProjectMonitorConditionGroupConditionComparison2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectMonitorConditionGroupConditionComparison2 overwrites any union data inside the ProjectMonitorConditionGroupCondition_Comparison as the provided ProjectMonitorConditionGroupConditionComparison2
+func (t *ProjectMonitorConditionGroupCondition_Comparison) FromProjectMonitorConditionGroupConditionComparison2(v ProjectMonitorConditionGroupConditionComparison2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectMonitorConditionGroupConditionComparison2 performs a merge with any union data inside the ProjectMonitorConditionGroupCondition_Comparison, using the provided ProjectMonitorConditionGroupConditionComparison2
+func (t *ProjectMonitorConditionGroupCondition_Comparison) MergeProjectMonitorConditionGroupConditionComparison2(v ProjectMonitorConditionGroupConditionComparison2) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
