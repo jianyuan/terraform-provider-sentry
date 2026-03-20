@@ -18,6 +18,10 @@ export type Attribute =
 
 export interface BaseAttribute {
   name: string;
+  customType?: {
+    type: string;
+    value: string;
+  };
   description: string;
   deprecationMessage?: string;
   computedOptionalRequired: ComputedOptionalRequired;

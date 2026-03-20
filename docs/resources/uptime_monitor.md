@@ -35,6 +35,7 @@ Create an Uptime Monitor for a Project.
 
 ### Optional
 
+- `assertion` (String) Define conditions that must be met for the check to be considered successful.
 - `body` (String) The request body to send. Only applicable for methods that support a body.
 - `default_assignee` (Attributes) Sentry will assign new issues to this assignee. (see [below for nested schema](#nestedatt--default_assignee))
 - `description` (String) A description of the monitor. Will be used in the resulting issue.

@@ -2,13 +2,14 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
-	"github.com/oapi-codegen/nullable"
 )
 
 func (r *UptimeMonitorResource) getCreateJSONRequestBody(ctx context.Context, data UptimeMonitorResourceModel) (*apiclient.CreateProjectMonitorJSONRequestBody, diag.Diagnostics) {
@@ -22,9 +23,9 @@ func (r *UptimeMonitorResource) getCreateJSONRequestBody(ctx context.Context, da
 		TimeoutMs:       data.TimeoutMs.Get(),
 	}
 	if data.Body.IsKnown() {
-		outDs.Body = nullable.NewNullableWithValue(data.Body.Get())
+		outDs.Body.Set(data.Body.Get())
 	} else {
-		outDs.Body = nullable.NewNullNullable[string]()
+		outDs.Body.SetNull()
 	}
 	if data.Headers.IsKnown() {
 		inHeaders := tfutils.MergeDiagnostics(data.Headers.Get(ctx))(&diags)
@@ -34,6 +35,11 @@ func (r *UptimeMonitorResource) getCreateJSONRequestBody(ctx context.Context, da
 		for key, value := range inHeaders {
 			outDs.Headers = append(outDs.Headers, []string{key, value})
 		}
+	}
+	if !data.Assertion.IsNull() && !data.Assertion.IsUnknown() {
+		outDs.Assertion.Set(json.RawMessage(data.Assertion.ValueString()))
+	} else {
+		outDs.Assertion.SetNull()
 	}
 
 	var outConfig apiclient.ProjectMonitorConfig
@@ -57,15 +63,15 @@ func (r *UptimeMonitorResource) getCreateJSONRequestBody(ctx context.Context, da
 	}
 
 	if data.Enabled.IsKnown() {
-		out.Enabled = nullable.NewNullableWithValue(data.Enabled.Get())
+		out.Enabled.Set(data.Enabled.Get())
 	} else {
-		out.Enabled = nullable.NewNullNullable[bool]()
+		out.Enabled.SetNull()
 	}
 
 	if data.Description.IsKnown() {
-		out.Description = nullable.NewNullableWithValue(data.Description.Get())
+		out.Description.Set(data.Description.Get())
 	} else {
-		out.Description = nullable.NewNullNullable[string]()
+		out.Description.SetNull()
 	}
 
 	if data.DefaultAssignee.IsKnown() {
@@ -76,14 +82,14 @@ func (r *UptimeMonitorResource) getCreateJSONRequestBody(ctx context.Context, da
 
 		switch {
 		case defaultAssignee.TeamId.IsKnown():
-			out.Owner = nullable.NewNullableWithValue(fmt.Sprintf("team:%s", defaultAssignee.TeamId.Get()))
+			out.Owner.Set(fmt.Sprintf("team:%s", defaultAssignee.TeamId.Get()))
 		case defaultAssignee.UserId.IsKnown():
-			out.Owner = nullable.NewNullableWithValue(fmt.Sprintf("user:%s", defaultAssignee.UserId.Get()))
+			out.Owner.Set(fmt.Sprintf("user:%s", defaultAssignee.UserId.Get()))
 		default:
-			out.Owner = nullable.NewNullNullable[string]()
+			out.Owner.SetNull()
 		}
 	} else {
-		out.Owner = nullable.NewNullNullable[string]()
+		out.Owner.SetNull()
 	}
 
 	var req apiclient.CreateProjectMonitorJSONRequestBody
@@ -170,6 +176,17 @@ func (m *UptimeMonitorResourceModel) Fill(ctx context.Context, data apiclient.Pr
 	} else {
 		diags.AddError("Invalid config", err.Error())
 		return
+	}
+
+	if dataSource.QueryObj.Assertion.IsSpecified() && !dataSource.QueryObj.Assertion.IsNull() {
+		assertion, err := dataSource.QueryObj.Assertion.Get()
+		if err != nil {
+			diags.AddError("Invalid assertion", err.Error())
+			return
+		}
+		m.Assertion = jsontypes.NewNormalizedValue(string(assertion))
+	} else {
+		m.Assertion = jsontypes.NewNormalizedNull()
 	}
 
 	return

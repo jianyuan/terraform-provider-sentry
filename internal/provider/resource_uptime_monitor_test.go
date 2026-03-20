@@ -64,6 +64,51 @@ func TestAccUptimeMonitorResource_basic(t *testing.T) {
 					timeout_ms = 10000
 					
 					environment = "production"
+
+					assertion = <<EOT
+						{
+							"root": {
+								"op": "and",
+								"id": "8bc1d2f1-76c3-cb93-b9b8-cb832daaf227",
+								"children": [
+									{
+										"op": "status_code_check",
+										"id": "0cc43e33-abc2-9098-190b-20b120cfd1bd",
+										"operator": {
+											"cmp": "greater_than"
+										},
+										"value": 199
+									},
+									{
+										"op": "status_code_check",
+										"id": "3a81b9bc-27f1-6f6e-1819-e81516b72dc3",
+										"operator": {
+											"cmp": "less_than"
+										},
+										"value": 300
+									},
+									{
+										"id": "6331252e-00ed-2b96-ec3e-a607ae7aee86",
+										"op": "header_check",
+										"key_op": {
+											"cmp": "equals"
+										},
+										"key_operand": {
+											"header_op": "literal",
+											"value": "X-Key"
+										},
+										"value_op": {
+											"cmp": "equals"
+										},
+										"value_operand": {
+											"header_op": "literal",
+											"value": "X-Value"
+										}
+									}
+								]
+							}
+						}
+					EOT
 				`),
 				ConfigStateChecks: append(
 					checks,
@@ -80,10 +125,11 @@ func TestAccUptimeMonitorResource_basic(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      rn,
-				ImportState:       true,
-				ImportStateIdFunc: acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
-				ImportStateVerify: true,
+				ResourceName:            rn,
+				ImportState:             true,
+				ImportStateIdFunc:       acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"assertion"},
 			},
 		},
 	})
