@@ -105,7 +105,7 @@ func (r *CronMonitorResource) Schema(ctx context.Context, req resource.SchemaReq
 					},
 				},
 			},
-			"checkin_margin": schema.Int64Attribute{
+			"checkin_margin_minutes": schema.Int64Attribute{
 				MarkdownDescription: "Grace period. The number of minutes before a check-in is considered missed.",
 				Required:            true,
 				CustomType:          supertypes.Int64Type{},
@@ -116,7 +116,7 @@ func (r *CronMonitorResource) Schema(ctx context.Context, req resource.SchemaReq
 				CustomType:          supertypes.Int64Type{},
 			},
 			"max_runtime_minutes": schema.Int64Attribute{
-				MarkdownDescription: "The number of minutes before an in-progress check-in is marked timed out.",
+				MarkdownDescription: "Maximum runtime. The number of minutes before an in-progress check-in is marked timed out.",
 				Required:            true,
 				CustomType:          supertypes.Int64Type{},
 			},
@@ -329,7 +329,7 @@ type CronMonitorResourceModel struct {
 	Name                  supertypes.StringValue                                                 `tfsdk:"name"`
 	Description           supertypes.StringValue                                                 `tfsdk:"description"`
 	Owner                 supertypes.SingleNestedObjectValueOf[CronMonitorResourceModelOwner]    `tfsdk:"owner"`
-	CheckinMargin         supertypes.Int64Value                                                  `tfsdk:"checkin_margin"`
+	CheckinMarginMinutes  supertypes.Int64Value                                                  `tfsdk:"checkin_margin_minutes"`
 	FailureIssueThreshold supertypes.Int64Value                                                  `tfsdk:"failure_issue_threshold"`
 	MaxRuntimeMinutes     supertypes.Int64Value                                                  `tfsdk:"max_runtime_minutes"`
 	RecoveryThreshold     supertypes.Int64Value                                                  `tfsdk:"recovery_threshold"`

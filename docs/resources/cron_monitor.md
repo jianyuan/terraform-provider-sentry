@@ -27,7 +27,7 @@ resource "sentry_cron_monitor" "crontab" {
     team_id = sentry_team.default.internal_id
   }
 
-  checkin_margin          = 1
+  checkin_margin_minutes  = 1
   failure_issue_threshold = 1
   max_runtime_minutes     = 30
   recovery_threshold      = 30
@@ -50,7 +50,7 @@ resource "sentry_cron_monitor" "interval" {
     team_id = sentry_team.default.internal_id
   }
 
-  checkin_margin          = 1
+  checkin_margin_minutes  = 1
   failure_issue_threshold = 1
   max_runtime_minutes     = 30
   recovery_threshold      = 30
@@ -69,9 +69,9 @@ resource "sentry_cron_monitor" "interval" {
 
 ### Required
 
-- `checkin_margin` (Number) Grace period. The number of minutes before a check-in is considered missed.
+- `checkin_margin_minutes` (Number) Grace period. The number of minutes before a check-in is considered missed.
 - `failure_issue_threshold` (Number) Failure tolerance. Create a new issue when this many consecutive missed or error check-ins are processed.
-- `max_runtime_minutes` (Number) The number of minutes before an in-progress check-in is marked timed out.
+- `max_runtime_minutes` (Number) Maximum runtime. The number of minutes before an in-progress check-in is marked timed out.
 - `name` (String) The name of this monitor.
 - `organization` (String) The organization slug or internal ID to create the monitor for.
 - `project` (String) The project slug or internal ID to create the monitor for.

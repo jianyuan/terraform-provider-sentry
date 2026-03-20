@@ -75,7 +75,7 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 						project      = "2"
 						name         = "cron monitor name"
 
-						checkin_margin = 1
+						checkin_margin_minutes = 1
 						failure_issue_threshold = 2
 						max_runtime_minutes = 3
 						recovery_threshold = 4
@@ -91,7 +91,7 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 						project      = "2"
 						name         = "cron monitor name"
 
-						checkin_margin = 1
+						checkin_margin_minutes = 1
 						failure_issue_threshold = 2
 						max_runtime_minutes = 3
 						recovery_threshold = 4
@@ -111,7 +111,7 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 						project      = "2"
 						name         = "cron monitor name"
 
-						checkin_margin = 1
+						checkin_margin_minutes = 1
 						failure_issue_threshold = 2
 						max_runtime_minutes = 3
 						recovery_threshold = 4
@@ -131,7 +131,7 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 						project      = "2"
 						name         = "cron monitor name"
 
-						checkin_margin = 1
+						checkin_margin_minutes = 1
 						failure_issue_threshold = 2
 						max_runtime_minutes = 3
 						recovery_threshold = 4
@@ -155,7 +155,7 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 						project      = "2"
 						name         = "cron monitor name"
 
-						checkin_margin = 1
+						checkin_margin_minutes = 1
 						failure_issue_threshold = 2
 						max_runtime_minutes = 3
 						recovery_threshold = 4
@@ -179,7 +179,7 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 						project      = "2"
 						name         = "cron monitor name"
 
-						checkin_margin = 1
+						checkin_margin_minutes = 1
 						failure_issue_threshold = 2
 						max_runtime_minutes = 3
 						recovery_threshold = 4
@@ -201,7 +201,7 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 						project      = "2"
 						name         = "cron monitor name"
 
-						checkin_margin = 1
+						checkin_margin_minutes = 1
 						failure_issue_threshold = 2
 						max_runtime_minutes = 3
 						recovery_threshold = 4
@@ -228,7 +228,7 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 						project      = "2"
 						name         = "cron monitor name"
 
-						checkin_margin = 1
+						checkin_margin_minutes = 1
 						failure_issue_threshold = 2
 						max_runtime_minutes = 3
 						recovery_threshold = 4
@@ -255,7 +255,7 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 						project      = "2"
 						name         = "cron monitor name"
 
-						checkin_margin = 1
+						checkin_margin_minutes = 1
 						failure_issue_threshold = 2
 						max_runtime_minutes = 3
 						recovery_threshold = 4
@@ -298,7 +298,7 @@ func TestAccCronMonitorResource_basic(t *testing.T) {
 			{
 				Config: testAccCronMonitorResourceConfig(teamName, projectName, monitorName, `
 					description = "cron monitor description"
-					checkin_margin = 1
+					checkin_margin_minutes = 1
 					failure_issue_threshold = 2
 					max_runtime_minutes = 3
 					recovery_threshold = 4
@@ -312,7 +312,7 @@ func TestAccCronMonitorResource_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("enabled"), knownvalue.Bool(true)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(monitorName)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("description"), knownvalue.StringExact("cron monitor description")),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("checkin_margin"), knownvalue.Int64Exact(1)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("checkin_margin_minutes"), knownvalue.Int64Exact(1)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("failure_issue_threshold"), knownvalue.Int64Exact(2)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("max_runtime_minutes"), knownvalue.Int64Exact(3)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("recovery_threshold"), knownvalue.Int64Exact(4)),
@@ -326,7 +326,7 @@ func TestAccCronMonitorResource_basic(t *testing.T) {
 			{
 				Config: testAccCronMonitorResourceConfig(teamName, projectName, monitorName+"-updated", `
 					enabled = true
-					checkin_margin = 10
+					checkin_margin_minutes = 10
 					failure_issue_threshold = 20
 					max_runtime_minutes = 30
 					recovery_threshold = 40
@@ -339,7 +339,7 @@ func TestAccCronMonitorResource_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("enabled"), knownvalue.Bool(true)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(monitorName+"-updated")),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("description"), knownvalue.Null()),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("checkin_margin"), knownvalue.Int64Exact(10)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("checkin_margin_minutes"), knownvalue.Int64Exact(10)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("failure_issue_threshold"), knownvalue.Int64Exact(20)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("max_runtime_minutes"), knownvalue.Int64Exact(30)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("recovery_threshold"), knownvalue.Int64Exact(40)),
@@ -353,7 +353,7 @@ func TestAccCronMonitorResource_basic(t *testing.T) {
 			{
 				Config: testAccCronMonitorResourceConfig(teamName, projectName, monitorName+"-updated", `
 					enabled = false
-					checkin_margin = 10
+					checkin_margin_minutes = 10
 					failure_issue_threshold = 20
 					max_runtime_minutes = 30
 					recovery_threshold = 40
@@ -366,7 +366,7 @@ func TestAccCronMonitorResource_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("enabled"), knownvalue.Bool(false)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(monitorName+"-updated")),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("description"), knownvalue.Null()),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("checkin_margin"), knownvalue.Int64Exact(10)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("checkin_margin_minutes"), knownvalue.Int64Exact(10)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("failure_issue_threshold"), knownvalue.Int64Exact(20)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("max_runtime_minutes"), knownvalue.Int64Exact(30)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("recovery_threshold"), knownvalue.Int64Exact(40)),

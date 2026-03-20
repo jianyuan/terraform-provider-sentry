@@ -609,7 +609,7 @@ export const RESOURCES: Array<Resource> = [
         ],
       },
       {
-        name: "checkin_margin",
+        name: "checkin_margin_minutes",
         type: "int",
         description:
           "Grace period. The number of minutes before a check-in is considered missed.",
@@ -626,7 +626,7 @@ export const RESOURCES: Array<Resource> = [
         name: "max_runtime_minutes",
         type: "int",
         description:
-          "The number of minutes before an in-progress check-in is marked timed out.",
+          "Maximum runtime. The number of minutes before an in-progress check-in is marked timed out.",
         computedOptionalRequired: "required",
       },
       {

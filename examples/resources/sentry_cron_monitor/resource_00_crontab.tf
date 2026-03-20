@@ -9,7 +9,7 @@ resource "sentry_cron_monitor" "crontab" {
     team_id = sentry_team.default.internal_id
   }
 
-  checkin_margin          = 1
+  checkin_margin_minutes  = 1
   failure_issue_threshold = 1
   max_runtime_minutes     = 30
   recovery_threshold      = 30
