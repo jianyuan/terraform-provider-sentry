@@ -46,7 +46,7 @@ func TestAccUptimeMonitorResource_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("url"), knownvalue.StringExact("https://sentry.io")),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("method"), knownvalue.StringExact("GET")),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("body"), knownvalue.Null()),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("headers"), knownvalue.ListSizeExact(0)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("headers"), knownvalue.MapSizeExact(0)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("interval_seconds"), knownvalue.Int64Exact(60)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("timeout_ms"), knownvalue.Int64Exact(5000)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("environment"), knownvalue.StringExact("production")),
@@ -57,12 +57,9 @@ func TestAccUptimeMonitorResource_basic(t *testing.T) {
 					url = "https://us.sentry.io"
 					method = "POST"
 					body = "{}"
-					headers = [
-						{
-							key = "X-Header-Key"
-							value = "X-Header-Value"
-						}
-					]
+					headers = {
+						"X-Header-Key" = "X-Header-Value"
+					}
 					interval_seconds = 300
 					timeout_ms = 10000
 					
@@ -74,11 +71,8 @@ func TestAccUptimeMonitorResource_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("url"), knownvalue.StringExact("https://us.sentry.io")),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("method"), knownvalue.StringExact("POST")),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("body"), knownvalue.StringExact("{}")),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("headers"), knownvalue.ListExact([]knownvalue.Check{
-						knownvalue.ObjectExact(map[string]knownvalue.Check{
-							"key":   knownvalue.StringExact("X-Header-Key"),
-							"value": knownvalue.StringExact("X-Header-Value"),
-						}),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("headers"), knownvalue.MapExact(map[string]knownvalue.Check{
+						"X-Header-Key": knownvalue.StringExact("X-Header-Value"),
 					})),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("interval_seconds"), knownvalue.Int64Exact(300)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("timeout_ms"), knownvalue.Int64Exact(10000)),

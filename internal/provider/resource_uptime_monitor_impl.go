@@ -31,8 +31,8 @@ func (r *UptimeMonitorResource) getCreateJSONRequestBody(ctx context.Context, da
 		if diags.HasError() {
 			return nil, diags
 		}
-		for _, inHeader := range inHeaders {
-			outDs.Headers = append(outDs.Headers, []string{inHeader.Key.Get(), inHeader.Value.Get()})
+		for key, value := range inHeaders {
+			outDs.Headers = append(outDs.Headers, []string{key, value})
 		}
 	}
 
@@ -150,16 +150,13 @@ func (m *UptimeMonitorResourceModel) Fill(ctx context.Context, data apiclient.Pr
 		m.Body.SetNull()
 	}
 
-	headers := make([]*UptimeMonitorResourceModelHeadersItem, 0, len(dataSource.QueryObj.Headers))
+	headers := make(map[string]string, len(dataSource.QueryObj.Headers))
 	for _, headerValues := range dataSource.QueryObj.Headers {
 		if len(headerValues) != 2 {
 			diags.AddError("Invalid header", fmt.Sprintf("Expected 2 elements in header, got %d", len(headerValues)))
 			return
 		}
-		var header UptimeMonitorResourceModelHeadersItem
-		header.Key.Set(headerValues[0])
-		header.Value.Set(headerValues[1])
-		headers = append(headers, &header)
+		headers[headerValues[0]] = headerValues[1]
 	}
 	diags.Append(m.Headers.Set(ctx, headers)...)
 

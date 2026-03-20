@@ -40,7 +40,7 @@ Create an Uptime Monitor for a Project.
 - `description` (String) A description of the monitor. Will be used in the resulting issue.
 - `downtime_threshold` (Number) Number of consecutive failed checks required to mark monitor as down. Defaults to 3.
 - `enabled` (Boolean) Whether the monitor is enabled. Defaults to true.
-- `headers` (Attributes List) The headers to send with the request. (see [below for nested schema](#nestedatt--headers))
+- `headers` (Map of String) The headers to send with the request.
 - `recovery_threshold` (Number) Number of consecutive successful checks required to mark monitor as recovered. Defaults to 1.
 
 ### Read-Only
@@ -54,15 +54,6 @@ Optional:
 
 - `team_id` (String) The team internal ID to assign new issues to. Conflicts with `user_id`.
 - `user_id` (String) The user ID to assign new issues to. Conflicts with `team_id`.
-
-
-<a id="nestedatt--headers"></a>
-### Nested Schema for `headers`
-
-Required:
-
-- `key` (String) The header key.
-- `value` (String) The header value.
 
 ## Import
 
