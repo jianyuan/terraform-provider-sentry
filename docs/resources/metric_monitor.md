@@ -28,17 +28,28 @@ resource "sentry_metric_monitor" "threshold" {
     team_id = sentry_team.default.internal_id
   }
 
-  aggregate   = "count()"
-  dataset     = "events"
-  event_types = ["default", "error"]
+  aggregate           = "count()"
+  dataset             = "events"
+  event_types         = ["default", "error"]
+  query               = "is:unresolved"
+  query_type          = "error"
+  time_window_seconds = 3600
 
   condition_group = {
     conditions = [
+      # A high priority issue will be created when query value is greater than 100.
       {
         type             = "gt"
         comparison       = 100
         condition_result = 75
       },
+      # A medium priority issue will be created when query value is greater than 50.
+      {
+        type             = "gt"
+        comparison       = 50
+        condition_result = 50
+      },
+      # Issue will be resolved when the query value is below or equal to 50.
       {
         type             = "lte"
         comparison       = 50
@@ -74,6 +85,9 @@ resource "sentry_metric_monitor" "threshold" {
 - `environment` (String) Environment to run the aggregate query on.
 - `extrapolation_mode` (String) Extrapolation mode to use for the aggregate query. Valid values are: `unknown`, `none`, `client_and_server_weighted`, and `server_weighted`.
 - `owner` (Attributes) Sentry will assign new issues to this assignee. (see [below for nested schema](#nestedatt--owner))
+- `query` (String) An event search query to subscribe to and monitor for alerts. For example, to filter transactions so that only those with status code 400 are included, you could use `"query": "http.status_code:400"`.
+- `query_type` (String) The type of query. If no value is provided, `query_type` is set to the default for the specified `dataset.` Valid values are: `error`, `performance`, and `crash_rate`.
+- `time_window_seconds` (Number) The time window in seconds to use for the aggregate query.
 
 ### Read-Only
 
@@ -88,7 +102,7 @@ Required:
 
 Optional:
 
-- `logic_type` (String) The logic to apply to the conditions. Valid values are: `any`, `any-short`, `all`, and `none`.
+- `logic_type` (String) The logic to apply to the conditions. `any` will evaluate all conditions, and return true if any of those are met. `any-short` will stop evaluating conditions as soon as one is met. `all` will evaluate all conditions, and return true if all of those are met. `none` will return true if none of the conditions are met, will return false immediately if any are met. Valid values are: `any`, `any-short`, `all`, and `none`.
 
 <a id="nestedatt--condition_group--conditions"></a>
 ### Nested Schema for `condition_group.conditions`

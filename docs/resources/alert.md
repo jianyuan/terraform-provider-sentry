@@ -46,7 +46,7 @@ Create an Alert for an Organization.
 Required:
 
 - `actions` (Attributes List) TODO (see [below for nested schema](#nestedatt--action_filters--actions))
-- `logic_type` (String) The logic to apply to the conditions. Valid values are: `any`, `any-short`, `all`, and `none`.
+- `logic_type` (String) The logic to apply to the conditions. `any` will evaluate all conditions, and return true if any of those are met. `any-short` will stop evaluating conditions as soon as one is met. `all` will evaluate all conditions, and return true if all of those are met. `none` will return true if none of the conditions are met, will return false immediately if any are met. Valid values are: `any`, `any-short`, `all`, and `none`.
 
 Optional:
 

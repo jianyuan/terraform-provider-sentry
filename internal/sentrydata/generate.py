@@ -147,7 +147,7 @@ def parse_issues_grouptype() -> dict[str, ResultData[Any]]:
                         case ast.Assign(
                             targets=[ast.Name(id=id)],
                             value=ast.Constant(value=value),
-                        ) if id.upper() == id:
+                        ) if id.isupper():
                             name = id.replace("_", " ").title().replace(" ", "_")
                             out["IssueGroupCategories"].result.append(name)
                             out["IssueGroupCategoryNameToId"].result[name] = str(value)
@@ -203,7 +203,7 @@ def parse_rules_match() -> dict[str, ResultData[Any]]:
                         case ast.Assign(
                             targets=[ast.Name(id=id)],
                             value=ast.Constant(value=value),
-                        ) if id.upper() == id:
+                        ) if id.isupper():
                             out["MatchTypes"].result.append(id)
                             out["MatchTypeNameToId"].result[id] = value
                             out["MatchTypeIdToName"].result[value] = id
@@ -238,7 +238,7 @@ def parse_models_dashboard_widget() -> dict[str, ResultData[Any]]:
                         match elt:
                             case ast.Tuple(
                                 elts=[ast.Name(id=id), ast.Constant(value=value)]
-                            ) if id.upper() == id:
+                            ) if id.isupper():
                                 out.append(value)
                             case _:
                                 pass
@@ -330,7 +330,7 @@ def parse_alert_rule_models() -> dict[str, ResultData[Any]]:
                         case ast.Assign(
                             targets=[ast.Name(id=id)],
                             value=ast.Tuple(elts=[ast.Constant(value=value), _]),
-                        ) if id.upper() == id:
+                        ) if id.isupper():
                             result.append(value)
                         case _:
                             pass
@@ -421,7 +421,7 @@ def parse_uptime_types() -> dict[str, ResultData[Any]]:
                         case ast.Assign(
                             targets=[ast.Name(id=id)],
                             value=ast.Constant(value=value),
-                        ) if id.upper() == id:
+                        ) if id.isupper():
                             out["UptimeMonitorModes"].result.append(id)
                             out["UptimeMonitorModeNameToId"].result[id] = value
                             out["UptimeMonitorModeIdToName"].result[value] = id
@@ -434,23 +434,40 @@ def parse_uptime_types() -> dict[str, ResultData[Any]]:
 
 def parse_snuba_models() -> dict[str, ResultData[Any]]:
     data = get_file_data("src/sentry/snuba/models.py")
-    out: dict[str, ResultData[Any]] = {}
+    out: dict[str, ResultData[Any]] = {
+        "SnubaQueryTypes": ResultData(github_url=data.github_url, result=[]),
+        "SnubaQueryTypeNameToId": ResultData(github_url=data.github_url, result={}),
+        "SnubaQueryTypeIdToName": ResultData(github_url=data.github_url, result={}),
+        "SnubaExtrapolationModes": ResultData(github_url=data.github_url, result=[]),
+    }
     for node in ast.walk(data.tree):
         match node:
-            case ast.ClassDef(
-                name="ExtrapolationMode",
-                body=elts,
-            ):
-                result: list[str] = []
+            case ast.ClassDef(name="SnubaQuery", body=elts):
                 for elt in elts:
                     match elt:
-                        case ast.Assign(targets=[ast.Name(id=id)]) if id.upper() == id:
-                            result.append(id.lower())
+                        case ast.ClassDef(name="Type", body=type_elts):
+                            for elt in type_elts:
+                                match elt:
+                                    case ast.Assign(
+                                        targets=[ast.Name(id=id)],
+                                        value=ast.Constant(value=value),
+                                    ) if id.isupper():
+                                        out["SnubaQueryTypes"].result.append(id.lower())
+                                        out["SnubaQueryTypeNameToId"].result[
+                                            id.lower()
+                                        ] = value
+                                        out["SnubaQueryTypeIdToName"].result[value] = (
+                                            id.lower()
+                                        )
                         case _:
                             pass
-                out["ExtrapolationModes"] = ResultData(
-                    github_url=data.github_url, result=result
-                )
+            case ast.ClassDef(name="ExtrapolationMode", body=elts):
+                for elt in elts:
+                    match elt:
+                        case ast.Assign(targets=[ast.Name(id=id)]) if id.isupper():
+                            out["SnubaExtrapolationModes"].result.append(id.lower())
+                        case _:
+                            pass
             case _:
                 pass
     return out

@@ -407,11 +407,33 @@ export const RESOURCES: Array<Resource> = [
         computedOptionalRequired: "required",
       },
       {
+        name: "query",
+        type: "string",
+        description:
+          'An event search query to subscribe to and monitor for alerts. For example, to filter transactions so that only those with status code 400 are included, you could use `"query": "http.status_code:400"`.',
+        computedOptionalRequired: "optional",
+      },
+      {
+        name: "query_type",
+        type: "string",
+        description:
+          "The type of query. If no value is provided, `query_type` is set to the default for the specified `dataset.`",
+        computedOptionalRequired: "computed_optional",
+        enum: "sentrydata.SnubaQueryTypes",
+      },
+      {
+        name: "time_window_seconds",
+        type: "int",
+        description:
+          "The time window in seconds to use for the aggregate query.",
+        computedOptionalRequired: "computed_optional",
+      },
+      {
         name: "extrapolation_mode",
         type: "string",
         description: "Extrapolation mode to use for the aggregate query.",
         computedOptionalRequired: "computed_optional",
-        enum: "sentrydata.ExtrapolationModes",
+        enum: "sentrydata.SnubaExtrapolationModes",
       },
       {
         name: "issue_detection",
@@ -449,7 +471,8 @@ export const RESOURCES: Array<Resource> = [
           {
             name: "logic_type",
             type: "string",
-            description: "The logic to apply to the conditions.",
+            description:
+              "The logic to apply to the conditions. `any` will evaluate all conditions, and return true if any of those are met. `any-short` will stop evaluating conditions as soon as one is met. `all` will evaluate all conditions, and return true if all of those are met. `none` will return true if none of the conditions are met, will return false immediately if any are met.",
             computedOptionalRequired: "computed_optional",
             default: `stringdefault.StaticString("any")`,
             enum: "sentrydata.DataConditionGroupTypes",
@@ -936,7 +959,8 @@ export const RESOURCES: Array<Resource> = [
           {
             name: "logic_type",
             type: "string",
-            description: "The logic to apply to the conditions.",
+            description:
+              "The logic to apply to the conditions. `any` will evaluate all conditions, and return true if any of those are met. `any-short` will stop evaluating conditions as soon as one is met. `all` will evaluate all conditions, and return true if all of those are met. `none` will return true if none of the conditions are met, will return false immediately if any are met.",
             computedOptionalRequired: "required",
             enum: "sentrydata.DataConditionGroupTypes",
           },

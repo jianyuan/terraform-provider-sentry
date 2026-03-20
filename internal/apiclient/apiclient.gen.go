@@ -2268,9 +2268,9 @@ type ProjectMonitorDataSourceSnubaQuerySubscription struct {
 	Environment       nullable.Nullable[string] `json:"environment"`
 	EventTypes        []string                  `json:"eventTypes"`
 	ExtrapolationMode nullable.Nullable[string] `json:"extrapolationMode"`
-	Query             string                    `json:"query"`
-	QueryType         int64                     `json:"queryType"`
-	TimeWindow        int64                     `json:"timeWindow"`
+	Query             nullable.Nullable[string] `json:"query"`
+	QueryType         nullable.Nullable[int64]  `json:"queryType"`
+	TimeWindow        nullable.Nullable[int64]  `json:"timeWindow"`
 }
 
 // ProjectMonitorDataSourceUptimeDomainFailure defines model for ProjectMonitor_DataSource_UptimeDomainFailure.
