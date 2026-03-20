@@ -77,7 +77,7 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 
 						checkin_margin = 1
 						failure_issue_threshold = 2
-						max_runtime = 3
+						max_runtime_minutes = 3
 						recovery_threshold = 4
 					}
 				`,
@@ -93,7 +93,7 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 
 						checkin_margin = 1
 						failure_issue_threshold = 2
-						max_runtime = 3
+						max_runtime_minutes = 3
 						recovery_threshold = 4
 
 						schedule = {}
@@ -114,7 +114,7 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 
 						checkin_margin = 1
 						failure_issue_threshold = 2
-						max_runtime = 3
+						max_runtime_minutes = 3
 						recovery_threshold = 4
 
 						schedule = {}
@@ -135,7 +135,7 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 
 						checkin_margin = 1
 						failure_issue_threshold = 2
-						max_runtime = 3
+						max_runtime_minutes = 3
 						recovery_threshold = 4
 
 						schedule = {
@@ -160,7 +160,7 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 
 						checkin_margin = 1
 						failure_issue_threshold = 2
-						max_runtime = 3
+						max_runtime_minutes = 3
 						recovery_threshold = 4
 
 						schedule = {
@@ -185,7 +185,7 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 
 						checkin_margin = 1
 						failure_issue_threshold = 2
-						max_runtime = 3
+						max_runtime_minutes = 3
 						recovery_threshold = 4
 
 						schedule = {
@@ -208,7 +208,7 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 
 						checkin_margin = 1
 						failure_issue_threshold = 2
-						max_runtime = 3
+						max_runtime_minutes = 3
 						recovery_threshold = 4
 
 						schedule = {
@@ -236,7 +236,7 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 
 						checkin_margin = 1
 						failure_issue_threshold = 2
-						max_runtime = 3
+						max_runtime_minutes = 3
 						recovery_threshold = 4
 
 						schedule = {
@@ -264,7 +264,7 @@ func TestAccCronMonitorResource_validation(t *testing.T) {
 
 						checkin_margin = 1
 						failure_issue_threshold = 2
-						max_runtime = 3
+						max_runtime_minutes = 3
 						recovery_threshold = 4
 
 						schedule = {
@@ -308,7 +308,7 @@ func TestAccCronMonitorResource_basic(t *testing.T) {
 					description = "cron monitor description"
 					checkin_margin = 1
 					failure_issue_threshold = 2
-					max_runtime = 3
+					max_runtime_minutes = 3
 					recovery_threshold = 4
 					schedule = {
 						interval_value = 1
@@ -322,7 +322,7 @@ func TestAccCronMonitorResource_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("description"), knownvalue.StringExact("cron monitor description")),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("checkin_margin"), knownvalue.Int64Exact(1)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("failure_issue_threshold"), knownvalue.Int64Exact(2)),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("max_runtime"), knownvalue.Int64Exact(3)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("max_runtime_minutes"), knownvalue.Int64Exact(3)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("recovery_threshold"), knownvalue.Int64Exact(4)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("schedule"), knownvalue.ObjectExact(map[string]knownvalue.Check{
 						"crontab":        knownvalue.Null(),
@@ -336,7 +336,7 @@ func TestAccCronMonitorResource_basic(t *testing.T) {
 					enabled = true
 					checkin_margin = 10
 					failure_issue_threshold = 20
-					max_runtime = 30
+					max_runtime_minutes = 30
 					recovery_threshold = 40
 					schedule = {
 						crontab = "0 0 * * *"
@@ -349,7 +349,7 @@ func TestAccCronMonitorResource_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("description"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("checkin_margin"), knownvalue.Int64Exact(10)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("failure_issue_threshold"), knownvalue.Int64Exact(20)),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("max_runtime"), knownvalue.Int64Exact(30)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("max_runtime_minutes"), knownvalue.Int64Exact(30)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("recovery_threshold"), knownvalue.Int64Exact(40)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("schedule"), knownvalue.ObjectExact(map[string]knownvalue.Check{
 						"crontab":        knownvalue.StringExact("0 0 * * *"),
@@ -363,7 +363,7 @@ func TestAccCronMonitorResource_basic(t *testing.T) {
 					enabled = false
 					checkin_margin = 10
 					failure_issue_threshold = 20
-					max_runtime = 30
+					max_runtime_minutes = 30
 					recovery_threshold = 40
 					schedule = {
 						crontab = "0 0 * * *"
@@ -376,7 +376,7 @@ func TestAccCronMonitorResource_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("description"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("checkin_margin"), knownvalue.Int64Exact(10)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("failure_issue_threshold"), knownvalue.Int64Exact(20)),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("max_runtime"), knownvalue.Int64Exact(30)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("max_runtime_minutes"), knownvalue.Int64Exact(30)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("recovery_threshold"), knownvalue.Int64Exact(40)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("schedule"), knownvalue.ObjectExact(map[string]knownvalue.Check{
 						"crontab":        knownvalue.StringExact("0 0 * * *"),

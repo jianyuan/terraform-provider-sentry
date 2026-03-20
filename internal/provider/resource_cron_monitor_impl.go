@@ -24,7 +24,7 @@ func (r *CronMonitorResource) getCreateJSONRequestBody(ctx context.Context, data
 		outDs.FromProjectMonitorDataSourceConfigCronCrontab(apiclient.ProjectMonitorDataSourceConfigCronCrontab{
 			CheckinMargin:         data.CheckinMargin.Get(),
 			FailureIssueThreshold: data.FailureIssueThreshold.Get(),
-			MaxRuntime:            data.MaxRuntime.Get(),
+			MaxRuntime:            data.MaxRuntimeMinutes.Get(),
 			RecoveryThreshold:     data.RecoveryThreshold.Get(),
 			Timezone:              data.Timezone.Get(),
 			Schedule:              inSchedule.Crontab.Get(),
@@ -38,7 +38,7 @@ func (r *CronMonitorResource) getCreateJSONRequestBody(ctx context.Context, data
 		outDs.FromProjectMonitorDataSourceConfigCronInterval(apiclient.ProjectMonitorDataSourceConfigCronInterval{
 			CheckinMargin:         data.CheckinMargin.Get(),
 			FailureIssueThreshold: data.FailureIssueThreshold.Get(),
-			MaxRuntime:            data.MaxRuntime.Get(),
+			MaxRuntime:            data.MaxRuntimeMinutes.Get(),
 			RecoveryThreshold:     data.RecoveryThreshold.Get(),
 			Timezone:              data.Timezone.Get(),
 			Schedule: []apiclient.ProjectMonitorDataSourceConfigCronInterval_Schedule_Item{
@@ -167,7 +167,7 @@ func (m *CronMonitorResourceModel) Fill(ctx context.Context, data apiclient.Proj
 	case apiclient.ProjectMonitorDataSourceConfigCronCrontab:
 		m.CheckinMargin.Set(configValue.CheckinMargin)
 		m.FailureIssueThreshold.Set(configValue.FailureIssueThreshold)
-		m.MaxRuntime.Set(configValue.MaxRuntime)
+		m.MaxRuntimeMinutes.Set(configValue.MaxRuntime)
 		m.RecoveryThreshold.Set(configValue.RecoveryThreshold)
 		m.Timezone.Set(configValue.Timezone)
 		schedule.Crontab.Set(configValue.Schedule)
@@ -175,7 +175,7 @@ func (m *CronMonitorResourceModel) Fill(ctx context.Context, data apiclient.Proj
 	case apiclient.ProjectMonitorDataSourceConfigCronInterval:
 		m.CheckinMargin.Set(configValue.CheckinMargin)
 		m.FailureIssueThreshold.Set(configValue.FailureIssueThreshold)
-		m.MaxRuntime.Set(configValue.MaxRuntime)
+		m.MaxRuntimeMinutes.Set(configValue.MaxRuntime)
 		m.RecoveryThreshold.Set(configValue.RecoveryThreshold)
 		m.Timezone.Set(configValue.Timezone)
 
