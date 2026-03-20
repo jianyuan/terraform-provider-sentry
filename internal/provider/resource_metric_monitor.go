@@ -125,11 +125,14 @@ func (r *MetricMonitorResource) Schema(ctx context.Context, req resource.SchemaR
 				Optional:            true,
 				CustomType:          supertypes.StringType{},
 			},
-			"event_types": schema.SetAttribute{
-				MarkdownDescription: "Event types to run the aggregate query on.",
-				Required:            true,
-				CustomType:          supertypes.NewSetTypeOf[string](ctx),
-			},
+			"event_types": tfutils.WithEnumSetAttributeStringElements(
+				schema.SetAttribute{
+					MarkdownDescription: "Event types to run the aggregate query on.",
+					Required:            true,
+					CustomType:          supertypes.NewSetTypeOf[string](ctx),
+				},
+				sentrydata.SnubaQueryEventTypes,
+			),
 			"query": schema.StringAttribute{
 				MarkdownDescription: "An event search query to subscribe to and monitor for alerts. For example, to filter transactions so that only those with status code 400 are included, you could use `http.status_code:400`.",
 				Optional:            true,
