@@ -40,8 +40,3 @@ sweep:
 	# set SWEEPARGS=-sweep-allow-failures to continue after first failure
 	@echo "WARNING: This will destroy infrastructure. Use only in development accounts."
 	go test ./... -v -sweep=$(SWEEP) $(SWEEPARGS) -timeout $(SWEEP_TIMEOUT)
-
-.PHONY: sweeper
-sweeper:
-	@echo "WARNING: This will destroy infrastructure. Use only in development accounts."
-	go test ./... -v -tags=sweep -sweep=$(SWEEP) -sweep-allow-failures -timeout $(SWEEP_TIMEOUT)

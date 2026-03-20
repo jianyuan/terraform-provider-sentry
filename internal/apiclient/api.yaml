@@ -406,6 +406,33 @@ paths:
           description: Forbidden
         "404":
           description: Not Found
+  /0/organizations/{organization_id_or_slug}/detectors/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+      - $ref: "#/components/parameters/cursor"
+      - name: query
+        in: query
+        required: false
+        schema:
+          type: string
+    get:
+      summary: List Monitors for an Organization
+      operationId: listOrganizationMonitors
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProjectMonitor"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
   /0/organizations/{organization_id_or_slug}/projects/{project_id_or_slug}/detectors/:
     parameters:
       - $ref: "#/components/parameters/organization_id_or_slug"
