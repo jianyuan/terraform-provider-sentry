@@ -4,7 +4,7 @@ resource "sentry_uptime_monitor" "test" {
   project      = sentry_project.test.slug
   name         = "Uptime check for sentry.io"
 
-  default_assignee = {
+  owner = {
     team_id = sentry_team.test.internal_id
   }
 

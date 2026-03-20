@@ -81,10 +81,10 @@ func (r *CronMonitorResource) Schema(ctx context.Context, req resource.SchemaReq
 				Optional:            true,
 				CustomType:          supertypes.StringType{},
 			},
-			"default_assignee": schema.SingleNestedAttribute{
+			"owner": schema.SingleNestedAttribute{
 				MarkdownDescription: "Sentry will assign new issues to this assignee.",
 				Optional:            true,
-				CustomType:          supertypes.NewSingleNestedObjectTypeOf[CronMonitorResourceModelDefaultAssignee](ctx),
+				CustomType:          supertypes.NewSingleNestedObjectTypeOf[CronMonitorResourceModelOwner](ctx),
 				Attributes: map[string]schema.Attribute{
 					"user_id": schema.StringAttribute{
 						MarkdownDescription: "The user ID to assign new issues to. Conflicts with `team_id`.",
@@ -322,22 +322,22 @@ func (r *CronMonitorResource) ImportState(ctx context.Context, req resource.Impo
 }
 
 type CronMonitorResourceModel struct {
-	Id                    supertypes.StringValue                                                        `tfsdk:"id"`
-	Organization          supertypes.StringValue                                                        `tfsdk:"organization"`
-	Project               supertypes.StringValue                                                        `tfsdk:"project"`
-	Enabled               supertypes.BoolValue                                                          `tfsdk:"enabled"`
-	Name                  supertypes.StringValue                                                        `tfsdk:"name"`
-	Description           supertypes.StringValue                                                        `tfsdk:"description"`
-	DefaultAssignee       supertypes.SingleNestedObjectValueOf[CronMonitorResourceModelDefaultAssignee] `tfsdk:"default_assignee"`
-	CheckinMargin         supertypes.Int64Value                                                         `tfsdk:"checkin_margin"`
-	FailureIssueThreshold supertypes.Int64Value                                                         `tfsdk:"failure_issue_threshold"`
-	MaxRuntime            supertypes.Int64Value                                                         `tfsdk:"max_runtime"`
-	RecoveryThreshold     supertypes.Int64Value                                                         `tfsdk:"recovery_threshold"`
-	Schedule              supertypes.SingleNestedObjectValueOf[CronMonitorResourceModelSchedule]        `tfsdk:"schedule"`
-	Timezone              supertypes.StringValue                                                        `tfsdk:"timezone"`
+	Id                    supertypes.StringValue                                                 `tfsdk:"id"`
+	Organization          supertypes.StringValue                                                 `tfsdk:"organization"`
+	Project               supertypes.StringValue                                                 `tfsdk:"project"`
+	Enabled               supertypes.BoolValue                                                   `tfsdk:"enabled"`
+	Name                  supertypes.StringValue                                                 `tfsdk:"name"`
+	Description           supertypes.StringValue                                                 `tfsdk:"description"`
+	Owner                 supertypes.SingleNestedObjectValueOf[CronMonitorResourceModelOwner]    `tfsdk:"owner"`
+	CheckinMargin         supertypes.Int64Value                                                  `tfsdk:"checkin_margin"`
+	FailureIssueThreshold supertypes.Int64Value                                                  `tfsdk:"failure_issue_threshold"`
+	MaxRuntime            supertypes.Int64Value                                                  `tfsdk:"max_runtime"`
+	RecoveryThreshold     supertypes.Int64Value                                                  `tfsdk:"recovery_threshold"`
+	Schedule              supertypes.SingleNestedObjectValueOf[CronMonitorResourceModelSchedule] `tfsdk:"schedule"`
+	Timezone              supertypes.StringValue                                                 `tfsdk:"timezone"`
 }
 
-type CronMonitorResourceModelDefaultAssignee struct {
+type CronMonitorResourceModelOwner struct {
 	UserId supertypes.StringValue `tfsdk:"user_id"`
 	TeamId supertypes.StringValue `tfsdk:"team_id"`
 }

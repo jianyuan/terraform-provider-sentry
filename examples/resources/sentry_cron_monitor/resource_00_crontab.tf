@@ -5,7 +5,7 @@ resource "sentry_cron_monitor" "crontab" {
 
   name = "My cron monitor"
 
-  default_assignee = {
+  owner = {
     team_id = sentry_team.default.internal_id
   }
 

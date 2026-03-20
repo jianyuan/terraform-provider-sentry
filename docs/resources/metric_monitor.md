@@ -22,9 +22,9 @@ resource "sentry_metric_monitor" "threshold" {
   organization = data.sentry_organization.default.slug
   project      = sentry_project.default.slug
 
-  name = "My cron monitor"
+  name = "New threshold metric monitor"
 
-  default_assignee = {
+  owner = {
     team_id = sentry_team.default.internal_id
   }
 
@@ -69,11 +69,11 @@ resource "sentry_metric_monitor" "threshold" {
 
 ### Optional
 
-- `default_assignee` (Attributes) Sentry will assign new issues to this assignee. (see [below for nested schema](#nestedatt--default_assignee))
 - `description` (String) A description of the monitor. Will be used in the resulting issue.
 - `enabled` (Boolean) Whether the monitor is enabled. Defaults to true.
 - `environment` (String) Environment to run the aggregate query on.
 - `extrapolation_mode` (String) Extrapolation mode to use for the aggregate query. Valid values are: `unknown`, `none`, `client_and_server_weighted`, and `server_weighted`.
+- `owner` (Attributes) Sentry will assign new issues to this assignee. (see [below for nested schema](#nestedatt--owner))
 
 ### Read-Only
 
@@ -113,8 +113,8 @@ Optional:
 - `comparison_delta` (Number) The comparison delta in seconds to use for the aggregate query. Only required for `percent` type.
 
 
-<a id="nestedatt--default_assignee"></a>
-### Nested Schema for `default_assignee`
+<a id="nestedatt--owner"></a>
+### Nested Schema for `owner`
 
 Optional:
 

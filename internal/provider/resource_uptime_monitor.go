@@ -84,10 +84,10 @@ func (r *UptimeMonitorResource) Schema(ctx context.Context, req resource.SchemaR
 				Optional:            true,
 				CustomType:          supertypes.StringType{},
 			},
-			"default_assignee": schema.SingleNestedAttribute{
+			"owner": schema.SingleNestedAttribute{
 				MarkdownDescription: "Sentry will assign new issues to this assignee.",
 				Optional:            true,
-				CustomType:          supertypes.NewSingleNestedObjectTypeOf[UptimeMonitorResourceModelDefaultAssignee](ctx),
+				CustomType:          supertypes.NewSingleNestedObjectTypeOf[UptimeMonitorResourceModelOwner](ctx),
 				Attributes: map[string]schema.Attribute{
 					"user_id": schema.StringAttribute{
 						MarkdownDescription: "The user ID to assign new issues to. Conflicts with `team_id`.",
@@ -321,26 +321,26 @@ func (r *UptimeMonitorResource) ImportState(ctx context.Context, req resource.Im
 }
 
 type UptimeMonitorResourceModel struct {
-	Id                supertypes.StringValue                                                          `tfsdk:"id"`
-	Organization      supertypes.StringValue                                                          `tfsdk:"organization"`
-	Project           supertypes.StringValue                                                          `tfsdk:"project"`
-	Enabled           supertypes.BoolValue                                                            `tfsdk:"enabled"`
-	Name              supertypes.StringValue                                                          `tfsdk:"name"`
-	Description       supertypes.StringValue                                                          `tfsdk:"description"`
-	DefaultAssignee   supertypes.SingleNestedObjectValueOf[UptimeMonitorResourceModelDefaultAssignee] `tfsdk:"default_assignee"`
-	Url               supertypes.StringValue                                                          `tfsdk:"url"`
-	Method            supertypes.StringValue                                                          `tfsdk:"method"`
-	Body              sentrytypes.TrimmedString                                                       `tfsdk:"body"`
-	Headers           supertypes.MapValueOf[string]                                                   `tfsdk:"headers"`
-	IntervalSeconds   supertypes.Int64Value                                                           `tfsdk:"interval_seconds"`
-	TimeoutMs         supertypes.Int64Value                                                           `tfsdk:"timeout_ms"`
-	Environment       supertypes.StringValue                                                          `tfsdk:"environment"`
-	RecoveryThreshold supertypes.Int64Value                                                           `tfsdk:"recovery_threshold"`
-	DowntimeThreshold supertypes.Int64Value                                                           `tfsdk:"downtime_threshold"`
-	AssertionJson     jsontypes.Normalized                                                            `tfsdk:"assertion_json"`
+	Id                supertypes.StringValue                                                `tfsdk:"id"`
+	Organization      supertypes.StringValue                                                `tfsdk:"organization"`
+	Project           supertypes.StringValue                                                `tfsdk:"project"`
+	Enabled           supertypes.BoolValue                                                  `tfsdk:"enabled"`
+	Name              supertypes.StringValue                                                `tfsdk:"name"`
+	Description       supertypes.StringValue                                                `tfsdk:"description"`
+	Owner             supertypes.SingleNestedObjectValueOf[UptimeMonitorResourceModelOwner] `tfsdk:"owner"`
+	Url               supertypes.StringValue                                                `tfsdk:"url"`
+	Method            supertypes.StringValue                                                `tfsdk:"method"`
+	Body              sentrytypes.TrimmedString                                             `tfsdk:"body"`
+	Headers           supertypes.MapValueOf[string]                                         `tfsdk:"headers"`
+	IntervalSeconds   supertypes.Int64Value                                                 `tfsdk:"interval_seconds"`
+	TimeoutMs         supertypes.Int64Value                                                 `tfsdk:"timeout_ms"`
+	Environment       supertypes.StringValue                                                `tfsdk:"environment"`
+	RecoveryThreshold supertypes.Int64Value                                                 `tfsdk:"recovery_threshold"`
+	DowntimeThreshold supertypes.Int64Value                                                 `tfsdk:"downtime_threshold"`
+	AssertionJson     jsontypes.Normalized                                                  `tfsdk:"assertion_json"`
 }
 
-type UptimeMonitorResourceModelDefaultAssignee struct {
+type UptimeMonitorResourceModelOwner struct {
 	UserId supertypes.StringValue `tfsdk:"user_id"`
 	TeamId supertypes.StringValue `tfsdk:"team_id"`
 }
