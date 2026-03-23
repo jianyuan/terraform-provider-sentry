@@ -883,18 +883,14 @@ func (r *AlertResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 }
 
 func (r *AlertResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	first, second, err := tfutils.SplitTwoPartId(req.ID, "organization", "id")
+	organization, id, err := tfutils.SplitTwoPartId(req.ID, "organization", "id")
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Error parsing ID: %s", err.Error()))
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("organization"), first,
-	)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("id"), second,
-	)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization"), organization)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
 type AlertResourceModel struct {

@@ -387,21 +387,15 @@ func (r *MetricMonitorResource) Delete(ctx context.Context, req resource.DeleteR
 }
 
 func (r *MetricMonitorResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	first, second, third, err := tfutils.SplitThreePartId(req.ID, "organization", "project", "id")
+	organization, project, id, err := tfutils.SplitThreePartId(req.ID, "organization", "project", "id")
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Error parsing ID: %s", err.Error()))
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("organization"), first,
-	)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("project"), second,
-	)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("id"), third,
-	)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization"), organization)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("project"), project)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
 type MetricMonitorResourceModel struct {
