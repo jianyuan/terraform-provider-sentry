@@ -1108,39 +1108,29 @@ ${match(resource.importStateAttributes)
   .with([P.any, P.any], (attributes) => {
     return `
         func (r *${resourceName}) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-          first, second, err := tfutils.SplitTwoPartId(req.ID, "${attributes[0]}", "${attributes[1]}")
+          ${camelize(attributes[0], true)}, ${camelize(attributes[1], true)}, err := tfutils.SplitTwoPartId(req.ID, "${attributes[0]}", "${attributes[1]}")
           if err != nil {
             resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Error parsing ID: %s", err.Error()))
             return
           }
 
-          resp.Diagnostics.Append(resp.State.SetAttribute(
-            ctx, path.Root("${attributes[0]}"), first,
-          )...)
-          resp.Diagnostics.Append(resp.State.SetAttribute(
-            ctx, path.Root("${attributes[1]}"), second,
-          )...)
+          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${attributes[0]}"), ${camelize(attributes[0], true)})...)
+          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${attributes[1]}"), ${camelize(attributes[1], true)})...)
         }
       `;
   })
   .with([P.any, P.any, P.any], (attributes) => {
     return `
         func (r *${resourceName}) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-          first, second, third, err := tfutils.SplitThreePartId(req.ID, "${attributes[0]}", "${attributes[1]}", "${attributes[2]}")
+          ${camelize(attributes[0], true)}, ${camelize(attributes[1], true)}, ${camelize(attributes[2], true)}, err := tfutils.SplitThreePartId(req.ID, "${attributes[0]}", "${attributes[1]}", "${attributes[2]}")
           if err != nil {
             resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Error parsing ID: %s", err.Error()))
             return
           }
 
-          resp.Diagnostics.Append(resp.State.SetAttribute(
-            ctx, path.Root("${attributes[0]}"), first,
-          )...)
-          resp.Diagnostics.Append(resp.State.SetAttribute(
-            ctx, path.Root("${attributes[1]}"), second,
-          )...)
-          resp.Diagnostics.Append(resp.State.SetAttribute(
-            ctx, path.Root("${attributes[2]}"), third,
-          )...)
+          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${attributes[0]}"), ${camelize(attributes[0], true)})...)
+          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${attributes[1]}"), ${camelize(attributes[1], true)})...)
+          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${attributes[2]}"), ${camelize(attributes[2], true)})...)
         }
       `;
   })
