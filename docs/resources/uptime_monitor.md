@@ -5,6 +5,7 @@ subcategory: ""
 description: |-
   ⚠️ This resource is currently in beta and may be subject to change. It is supported by New Monitors and Alerts https://docs.sentry.io/product/new-monitors-and-alerts/ and may not be viewable in the UI today.
   Create an Uptime Monitor for a Project.
+  The assertion_json argument is a JSON string that represents the assertion to use for the monitor. It is a JSON object with a single key root whose value is the root operation of the assertion. The assertion is a tree of operations that are evaluated in order. Operations may be constructed using the op_ functions.
 ---
 
 # sentry_uptime_monitor (Resource)
@@ -12,6 +13,8 @@ description: |-
 ⚠️ This resource is currently in beta and may be subject to change. It is supported by [New Monitors and Alerts](https://docs.sentry.io/product/new-monitors-and-alerts/) and may not be viewable in the UI today.
 
 Create an Uptime Monitor for a Project.
+
+The `assertion_json` argument is a JSON string that represents the assertion to use for the monitor. It is a JSON object with a single key `root` whose value is the root operation of the assertion. The assertion is a tree of operations that are evaluated in order. Operations may be constructed using the `op_` functions.
 
 ## Example Usage
 
@@ -37,17 +40,24 @@ resource "sentry_uptime_monitor" "test" {
   }
 
   # Assertion that checks for a 2xx status code response.
-  assertion_json = <<EOT
-    {
-      "root": {
-        "op": "and",
-        "children": [
-          {"op": "status_code_check", "operator": {"cmp": "greater_than"}, "value": 199},
-          {"op": "status_code_check", "operator": {"cmp": "less_than"}, "value": 300}
-        ]
-      }
-    }
-  EOT
+  assertion_json = provider::sentry::assertion(
+    provider::sentry::op_and(
+      provider::sentry::op_status_code_check("greater_than", 199),
+      provider::sentry::op_status_code_check("less_than", 300),
+    )
+  )
+  # The following is equivalent to the above.
+  # assertion_json = <<EOT
+  #   {
+  #     "root": {
+  #       "op": "and",
+  #       "children": [
+  #         {"op": "status_code_check", "operator": {"cmp": "greater_than"}, "value": 199},
+  #         {"op": "status_code_check", "operator": {"cmp": "less_than"}, "value": 300}
+  #       ]
+  #     }
+  #   }
+  # EOT
 }
 ```
 
@@ -78,17 +88,24 @@ resource "sentry_uptime_monitor" "test" {
   }
 
   # Assertion that checks for a 2xx status code response.
-  assertion_json = <<EOT
-    {
-      "root": {
-        "op": "and",
-        "children": [
-          {"op": "status_code_check", "operator": {"cmp": "greater_than"}, "value": 199},
-          {"op": "status_code_check", "operator": {"cmp": "less_than"}, "value": 300}
-        ]
-      }
-    }
-  EOT
+  assertion_json = provider::sentry::assertion(
+    provider::sentry::op_and(
+      provider::sentry::op_status_code_check("greater_than", 199),
+      provider::sentry::op_status_code_check("less_than", 300),
+    )
+  )
+  # The following is equivalent to the above.
+  # assertion_json = <<EOT
+  #   {
+  #     "root": {
+  #       "op": "and",
+  #       "children": [
+  #         {"op": "status_code_check", "operator": {"cmp": "greater_than"}, "value": 199},
+  #         {"op": "status_code_check", "operator": {"cmp": "less_than"}, "value": 300}
+  #       ]
+  #     }
+  #   }
+  # EOT
 }
 ```
 

@@ -154,6 +154,7 @@ func (p *SentryProvider) DataSources(ctx context.Context) []func() datasource.Da
 
 func (p *SentryProvider) Functions(ctx context.Context) []func() function.Function {
 	return []func() function.Function{
+		NewAssertionFunction,
 		NewOpAndFunction,
 		NewOpHeaderCheckFunction,
 		NewOpHeaderOperandGlobFunction,

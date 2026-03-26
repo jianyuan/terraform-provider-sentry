@@ -44,6 +44,16 @@ var uptimeAssertionSchema = &jsonschema.Schema{
 				},
 			},
 		},
+		"Assertion": {
+			Type:                 "object",
+			AdditionalProperties: &jsonschema.Schema{Not: &jsonschema.Schema{}},
+			Required:             []string{"root"},
+			Properties: map[string]*jsonschema.Schema{
+				"root": {
+					Ref: "#/$defs/Op",
+				},
+			},
+		},
 		"Op": {
 			OneOf: []*jsonschema.Schema{
 				{

@@ -41,7 +41,7 @@ func (r *UptimeMonitorResource) Metadata(ctx context.Context, req resource.Metad
 
 func (r *UptimeMonitorResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "⚠️ This resource is currently in beta and may be subject to change. It is supported by [New Monitors and Alerts](https://docs.sentry.io/product/new-monitors-and-alerts/) and may not be viewable in the UI today.\n\nCreate an Uptime Monitor for a Project.",
+		MarkdownDescription: "⚠️ This resource is currently in beta and may be subject to change. It is supported by [New Monitors and Alerts](https://docs.sentry.io/product/new-monitors-and-alerts/) and may not be viewable in the UI today.\n\nCreate an Uptime Monitor for a Project.\n\nThe `assertion_json` argument is a JSON string that represents the assertion to use for the monitor. It is a JSON object with a single key `root` whose value is the root operation of the assertion. The assertion is a tree of operations that are evaluated in order. Operations may be constructed using the `op_` functions.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				MarkdownDescription: "The internal ID of this monitor.",
