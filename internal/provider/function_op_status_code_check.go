@@ -28,7 +28,7 @@ func (f OpStatusCodeCheckFunction) Definition(_ context.Context, _ function.Defi
 		Parameters: []function.Parameter{
 			function.StringParameter{
 				Name:                "operator",
-				MarkdownDescription: "The comparison operator.",
+				MarkdownDescription: "The comparison operator. Can be one of `equals`, `not_equal`, `less_than`, `greater_than`, `always`, or `never`.",
 			},
 			function.Int64Parameter{
 				Name:                "value",
