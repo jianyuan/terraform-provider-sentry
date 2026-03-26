@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 )
 
 func TestOpHeaderCheckFunction_known(t *testing.T) {
@@ -27,6 +28,7 @@ func TestOpHeaderCheckFunction_known(t *testing.T) {
 				`,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownOutputValue("test", knownvalue.StringExact(`{"op":"header_check","key_op":{"cmp":"equals"},"key_operand":{"header_op":"literal","value":"X-Header-Key"},"value_op":{"cmp":"equals"},"value_operand":{"header_op":"literal","value":"header-value"}}`)),
+					statecheck.ExpectKnownOutputValue("test", acctest.StringConformingJsonSchema(sentrydata.MustResolvedUptimeAssertionSchemaForDefinition("OpHeaderCheck"))),
 				},
 			},
 			{
@@ -40,7 +42,7 @@ func TestOpHeaderCheckFunction_known(t *testing.T) {
 						)
 					}
 				`,
-				ExpectError: acctest.ExpectLiteralError(`Invalid value for "key_operator" parameter: enum: Value bogus should be one of the allowed values: equals, not_equal, less_than, greater_than, always, never.`),
+				ExpectError: acctest.ExpectLiteralError(`Invalid value for "key_operator" parameter: validating root: validating /$defs/ComparisonType: enum: bogus does not equal any of: [equals not_equal less_than greater_than always never].`),
 			},
 			{
 				Config: `
@@ -53,7 +55,7 @@ func TestOpHeaderCheckFunction_known(t *testing.T) {
 						)
 					}
 				`,
-				ExpectError: acctest.ExpectLiteralError(`Invalid value for "value_operator" parameter: enum: Value bogus should be one of the allowed values: equals, not_equal, less_than, greater_than, always, never.`),
+				ExpectError: acctest.ExpectLiteralError(`Invalid value for "value_operator" parameter: validating root: validating /$defs/ComparisonType: enum: bogus does not equal any of: [equals not_equal less_than greater_than always never].`),
 			},
 			{
 				Config: `
@@ -92,7 +94,7 @@ func TestOpHeaderCheckFunction_known(t *testing.T) {
 						)
 					}
 				`,
-				ExpectError: acctest.ExpectLiteralError(`Invalid value for "key_operand" parameter: oneOf: Value does not match the oneOf schema.`),
+				ExpectError: acctest.ExpectLiteralError(`Invalid value for "key_operand" parameter: validating root: validating /$defs/OpHeaderOperand: oneOf: did not validate against any of [anchor OpHeaderOperandLiteral anchor OpHeaderOperandGlob].`),
 			},
 			{
 				Config: `
@@ -105,7 +107,7 @@ func TestOpHeaderCheckFunction_known(t *testing.T) {
 						)
 					}
 				`,
-				ExpectError: acctest.ExpectLiteralError(`Invalid value for "value_operand" parameter: oneOf: Value does not match the oneOf schema.`),
+				ExpectError: acctest.ExpectLiteralError(`Invalid value for "value_operand" parameter: validating root: validating /$defs/OpHeaderOperand: oneOf: did not validate against any of [anchor OpHeaderOperandLiteral anchor OpHeaderOperandGlob].`),
 			},
 		},
 	})
@@ -206,6 +208,7 @@ func TestOpHeaderCheckFunction_unknown(t *testing.T) {
 				`,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownOutputValue("test", knownvalue.StringExact(`{"op":"header_check","key_op":{"cmp":"equals"},"key_operand":{"header_op":"literal","value":"X-Header-Key"},"value_op":{"cmp":"equals"},"value_operand":{"header_op":"literal","value":"header-value"}}`)),
+					statecheck.ExpectKnownOutputValue("test", acctest.StringConformingJsonSchema(sentrydata.MustResolvedUptimeAssertionSchemaForDefinition("OpHeaderCheck"))),
 				},
 			},
 		},

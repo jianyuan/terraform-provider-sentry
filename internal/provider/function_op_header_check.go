@@ -57,23 +57,23 @@ func (f OpHeaderCheckFunction) Run(ctx context.Context, req function.RunRequest,
 		return
 	}
 
-	if result := sentrydata.UptimeComparisonType.Validate(keyOperator); !result.IsValid() {
-		resp.Error = function.NewArgumentFuncError(0, sentrydata.CollectEvaluationResultErrors(result).Error())
+	if err := sentrydata.ValidateUptimeAssertionForDefinition("ComparisonType", keyOperator); err != nil {
+		resp.Error = function.NewArgumentFuncError(0, err.Error())
 		return
 	}
 
-	if result := sentrydata.UptimeOpHeaderOperand.ValidateJSON([]byte(keyOperand)); !result.IsValid() {
-		resp.Error = function.NewArgumentFuncError(1, sentrydata.CollectEvaluationResultErrors(result).Error())
+	if err := sentrydata.ValidateJSONUptimeAssertionForDefinition("OpHeaderOperand", []byte(keyOperand)); err != nil {
+		resp.Error = function.NewArgumentFuncError(1, err.Error())
 		return
 	}
 
-	if result := sentrydata.UptimeComparisonType.Validate(valueOperator); !result.IsValid() {
-		resp.Error = function.NewArgumentFuncError(2, sentrydata.CollectEvaluationResultErrors(result).Error())
+	if err := sentrydata.ValidateUptimeAssertionForDefinition("ComparisonType", valueOperator); err != nil {
+		resp.Error = function.NewArgumentFuncError(2, err.Error())
 		return
 	}
 
-	if result := sentrydata.UptimeOpHeaderOperand.ValidateJSON([]byte(valueOperand)); !result.IsValid() {
-		resp.Error = function.NewArgumentFuncError(3, sentrydata.CollectEvaluationResultErrors(result).Error())
+	if err := sentrydata.ValidateJSONUptimeAssertionForDefinition("OpHeaderOperand", []byte(valueOperand)); err != nil {
+		resp.Error = function.NewArgumentFuncError(3, err.Error())
 		return
 	}
 

@@ -10,20 +10,20 @@ import (
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 )
 
-var _ function.Function = &OpAndFunction{}
+var _ function.Function = &OpOrFunction{}
 
-func NewOpAndFunction() function.Function {
-	return &OpAndFunction{}
+func NewOpOrFunction() function.Function {
+	return &OpOrFunction{}
 }
 
-type OpAndFunction struct {
+type OpOrFunction struct {
 }
 
-func (f OpAndFunction) Metadata(_ context.Context, req function.MetadataRequest, resp *function.MetadataResponse) {
-	resp.Name = "op_and"
+func (f OpOrFunction) Metadata(_ context.Context, req function.MetadataRequest, resp *function.MetadataResponse) {
+	resp.Name = "op_or"
 }
 
-func (f OpAndFunction) Definition(_ context.Context, _ function.DefinitionRequest, resp *function.DefinitionResponse) {
+func (f OpOrFunction) Definition(_ context.Context, _ function.DefinitionRequest, resp *function.DefinitionResponse) {
 	resp.Definition = function.Definition{
 		VariadicParameter: &function.StringParameter{
 			Name:       "children",
@@ -33,7 +33,7 @@ func (f OpAndFunction) Definition(_ context.Context, _ function.DefinitionReques
 	}
 }
 
-func (f OpAndFunction) Run(ctx context.Context, req function.RunRequest, resp *function.RunResponse) {
+func (f OpOrFunction) Run(ctx context.Context, req function.RunRequest, resp *function.RunResponse) {
 	var children []string
 
 	resp.Error = function.ConcatFuncErrors(req.Arguments.Get(ctx, &children))
@@ -45,7 +45,7 @@ func (f OpAndFunction) Run(ctx context.Context, req function.RunRequest, resp *f
 		Op       string            `json:"op"`
 		Children []json.RawMessage `json:"children"`
 	}
-	out.Op = "and"
+	out.Op = "or"
 
 	var argErrors []*function.FuncError
 

@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 )
 
 func TestOpJsonpathFunction_known(t *testing.T) {
@@ -26,6 +27,7 @@ func TestOpJsonpathFunction_known(t *testing.T) {
 				`,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownOutputValue("test", knownvalue.StringExact(`{"op":"json_path","operand":{"jsonpath_op":"literal","value":"value"},"operator":{"cmp":"equals"},"value":"$.status"}`)),
+					statecheck.ExpectKnownOutputValue("test", acctest.StringConformingJsonSchema(sentrydata.MustResolvedUptimeAssertionSchemaForDefinition("OpJsonPath"))),
 				},
 			},
 			{
@@ -40,6 +42,7 @@ func TestOpJsonpathFunction_known(t *testing.T) {
 				`,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownOutputValue("test", knownvalue.StringExact(`{"op":"json_path","operand":{"jsonpath_op":"glob","pattern":{"value":"value*"}},"operator":{"cmp":"equals"},"value":"$.status"}`)),
+					statecheck.ExpectKnownOutputValue("test", acctest.StringConformingJsonSchema(sentrydata.MustResolvedUptimeAssertionSchemaForDefinition("OpJsonPath"))),
 				},
 			},
 			{
@@ -64,7 +67,7 @@ func TestOpJsonpathFunction_known(t *testing.T) {
 						)
 					}
 				`,
-				ExpectError: acctest.ExpectLiteralError(`Invalid value for "operand" parameter: oneOf: Value does not match the oneOf schema.`),
+				ExpectError: acctest.ExpectLiteralError(`Invalid value for "operand" parameter: validating root: validating /$defs/OpJsonPathOperand: oneOf: did not validate against any of [anchor OpJsonPathOperandLiteral anchor OpJsonPathOperandGlob].`),
 			},
 			{
 				Config: `
@@ -76,7 +79,7 @@ func TestOpJsonpathFunction_known(t *testing.T) {
 						)
 					}
 				`,
-				ExpectError: acctest.ExpectLiteralError(`Invalid value for "operator" parameter: enum: Value bogus should be one of the allowed values: equals, not_equal, less_than, greater_than, always, never.`),
+				ExpectError: acctest.ExpectLiteralError(`Invalid value for "operator" parameter: validating root: validating /$defs/ComparisonType: enum: bogus does not equal any of: [equals not_equal less_than greater_than always never].`),
 			},
 		},
 	})
@@ -128,6 +131,7 @@ func TestOpJsonpathFunction_unknown(t *testing.T) {
 				`,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownOutputValue("test", knownvalue.StringExact(`{"op":"json_path","operand":{"jsonpath_op":"literal","value":"value"},"operator":{"cmp":"equals"},"value":"$.status"}`)),
+					statecheck.ExpectKnownOutputValue("test", acctest.StringConformingJsonSchema(sentrydata.MustResolvedUptimeAssertionSchemaForDefinition("OpJsonPath"))),
 				},
 			},
 		},

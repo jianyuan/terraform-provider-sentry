@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 )
 
 func TestOpStatusCodeCheckFunction_known(t *testing.T) {
@@ -22,6 +23,7 @@ func TestOpStatusCodeCheckFunction_known(t *testing.T) {
 				`,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownOutputValue("test", knownvalue.StringExact(`{"op":"status_code_check","operator":{"cmp":"greater_than"},"value":199}`)),
+					statecheck.ExpectKnownOutputValue("test", acctest.StringConformingJsonSchema(sentrydata.MustResolvedUptimeAssertionSchemaForDefinition("OpStatusCode"))),
 				},
 			},
 			{
@@ -32,6 +34,7 @@ func TestOpStatusCodeCheckFunction_known(t *testing.T) {
 				`,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownOutputValue("test", knownvalue.StringExact(`{"op":"status_code_check","operator":{"cmp":"less_than"},"value":300}`)),
+					statecheck.ExpectKnownOutputValue("test", acctest.StringConformingJsonSchema(sentrydata.MustResolvedUptimeAssertionSchemaForDefinition("OpStatusCode"))),
 				},
 			},
 			{
@@ -40,7 +43,7 @@ func TestOpStatusCodeCheckFunction_known(t *testing.T) {
 						value = provider::sentry::op_status_code_check("bogus", 199)
 					}
 				`,
-				ExpectError: acctest.ExpectLiteralError(`Invalid value for "operator" parameter: enum: Value bogus should be one of the allowed values: equals, not_equal, less_than, greater_than, always, never.`),
+				ExpectError: acctest.ExpectLiteralError(`Invalid value for "operator" parameter: validating root: validating /$defs/ComparisonType: enum: bogus does not equal any of: [equals not_equal less_than greater_than always never].`),
 			},
 		},
 	})
@@ -84,6 +87,7 @@ func TestOpStatusCodeCheckFunction_unknown(t *testing.T) {
 				`,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownOutputValue("test", knownvalue.StringExact(`{"op":"status_code_check","operator":{"cmp":"greater_than"},"value":199}`)),
+					statecheck.ExpectKnownOutputValue("test", acctest.StringConformingJsonSchema(sentrydata.MustResolvedUptimeAssertionSchemaForDefinition("OpStatusCode"))),
 				},
 			},
 		},

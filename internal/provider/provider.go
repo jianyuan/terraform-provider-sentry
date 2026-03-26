@@ -161,6 +161,8 @@ func (p *SentryProvider) Functions(ctx context.Context) []func() function.Functi
 		NewOpJsonpathFunction,
 		NewOpJsonpathOperandGlobFunction,
 		NewOpJsonpathOperandLiteralFunction,
+		NewOpNotFunction,
+		NewOpOrFunction,
 		NewOpStatusCodeCheckFunction,
 	}
 }

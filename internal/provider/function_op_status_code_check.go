@@ -46,8 +46,8 @@ func (f OpStatusCodeCheckFunction) Run(ctx context.Context, req function.RunRequ
 		return
 	}
 
-	if result := sentrydata.UptimeComparisonType.Validate(operator); !result.IsValid() {
-		resp.Error = function.NewArgumentFuncError(0, sentrydata.CollectEvaluationResultErrors(result).Error())
+	if err := sentrydata.ValidateUptimeAssertionForDefinition("ComparisonType", operator); err != nil {
+		resp.Error = function.NewArgumentFuncError(0, err.Error())
 		return
 	}
 

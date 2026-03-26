@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 )
 
 func TestOpJsonpathOperandLiteralFunction_known(t *testing.T) {
@@ -22,6 +23,7 @@ func TestOpJsonpathOperandLiteralFunction_known(t *testing.T) {
 				`,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownOutputValue("test", knownvalue.StringExact(`{"jsonpath_op":"literal","value":"value"}`)),
+					statecheck.ExpectKnownOutputValue("test", acctest.StringConformingJsonSchema(sentrydata.MustResolvedUptimeAssertionSchemaForDefinition("OpJsonPathOperandLiteral"))),
 				},
 			},
 		},
@@ -62,6 +64,7 @@ func TestOpJsonpathOperandLiteralFunction_unknown(t *testing.T) {
 				`,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownOutputValue("test", knownvalue.StringExact(`{"jsonpath_op":"literal","value":"value"}`)),
+					statecheck.ExpectKnownOutputValue("test", acctest.StringConformingJsonSchema(sentrydata.MustResolvedUptimeAssertionSchemaForDefinition("OpJsonPathOperandLiteral"))),
 				},
 			},
 		},

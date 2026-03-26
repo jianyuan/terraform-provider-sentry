@@ -10,7 +10,7 @@ import (
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 )
 
-func TestOpAndFunction_known(t *testing.T) {
+func TestOpOrFunction_known(t *testing.T) {
 	resource.UnitTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -18,7 +18,7 @@ func TestOpAndFunction_known(t *testing.T) {
 			{
 				Config: `
 					output "test" {
-						value = provider::sentry::op_and(
+						value = provider::sentry::op_or(
 							provider::sentry::op_status_code_check("greater_than", 199),
 							provider::sentry::op_status_code_check("less_than", 300),
 							provider::sentry::op_and(
@@ -32,14 +32,14 @@ func TestOpAndFunction_known(t *testing.T) {
 					}
 				`,
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownOutputValue("test", knownvalue.StringExact(`{"op":"and","children":[{"op":"status_code_check","operator":{"cmp":"greater_than"},"value":199},{"op":"status_code_check","operator":{"cmp":"less_than"},"value":300},{"op":"and","children":[{"op":"json_path","operand":{"jsonpath_op":"literal","value":"value"},"operator":{"cmp":"equals"},"value":"$.status"}]}]}`)),
-					statecheck.ExpectKnownOutputValue("test", acctest.StringConformingJsonSchema(sentrydata.MustResolvedUptimeAssertionSchemaForDefinition("OpAnd"))),
+					statecheck.ExpectKnownOutputValue("test", knownvalue.StringExact(`{"op":"or","children":[{"op":"status_code_check","operator":{"cmp":"greater_than"},"value":199},{"op":"status_code_check","operator":{"cmp":"less_than"},"value":300},{"op":"and","children":[{"op":"json_path","operand":{"jsonpath_op":"literal","value":"value"},"operator":{"cmp":"equals"},"value":"$.status"}]}]}`)),
+					statecheck.ExpectKnownOutputValue("test", acctest.StringConformingJsonSchema(sentrydata.MustResolvedUptimeAssertionSchemaForDefinition("OpOr"))),
 				},
 			},
 			{
 				Config: `
 					output "test" {
-						value = provider::sentry::op_and(
+						value = provider::sentry::op_or(
 							"bogus",
 						)
 					}
@@ -49,7 +49,7 @@ func TestOpAndFunction_known(t *testing.T) {
 			{
 				Config: `
 					output "test" {
-						value = provider::sentry::op_and(
+						value = provider::sentry::op_or(
 							"{}",
 						)
 					}
@@ -60,7 +60,7 @@ func TestOpAndFunction_known(t *testing.T) {
 	})
 }
 
-func TestOpAnd_null(t *testing.T) {
+func TestOpOr_null(t *testing.T) {
 	resource.UnitTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -68,7 +68,7 @@ func TestOpAnd_null(t *testing.T) {
 			{
 				Config: `
 					output "test" {
-						value = provider::sentry::op_and(
+						value = provider::sentry::op_or(
 							null,
 						)
 					}
@@ -79,7 +79,7 @@ func TestOpAnd_null(t *testing.T) {
 	})
 }
 
-func TestOpAnd_unknown(t *testing.T) {
+func TestOpOr_unknown(t *testing.T) {
 	resource.UnitTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -95,15 +95,15 @@ func TestOpAnd_unknown(t *testing.T) {
 					}
 
 					output "test" {
-						value = provider::sentry::op_and(
+						value = provider::sentry::op_or(
 							terraform_data.child_1.output,
 							terraform_data.child_2.output,
 						)
 					}
 				`,
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownOutputValue("test", knownvalue.StringExact(`{"op":"and","children":[{"op":"header_check","key_op":{"cmp":"equals"},"key_operand":{"header_op":"literal","value":"X-Header-Key"},"value_op":{"cmp":"equals"},"value_operand":{"header_op":"literal","value":"header-value"}}]}`)),
-					statecheck.ExpectKnownOutputValue("test", acctest.StringConformingJsonSchema(sentrydata.MustResolvedUptimeAssertionSchemaForDefinition("OpAnd"))),
+					statecheck.ExpectKnownOutputValue("test", knownvalue.StringExact(`{"op":"or","children":[{"op":"header_check","key_op":{"cmp":"equals"},"key_operand":{"header_op":"literal","value":"X-Header-Key"},"value_op":{"cmp":"equals"},"value_operand":{"header_op":"literal","value":"header-value"}}]}`)),
+					statecheck.ExpectKnownOutputValue("test", acctest.StringConformingJsonSchema(sentrydata.MustResolvedUptimeAssertionSchemaForDefinition("OpOr"))),
 				},
 			},
 		},

@@ -52,13 +52,13 @@ func (f OpJsonpathFunction) Run(ctx context.Context, req function.RunRequest, re
 		return
 	}
 
-	if result := sentrydata.UptimeOpJsonPathOperand.ValidateJSON([]byte(operand)); !result.IsValid() {
-		resp.Error = function.NewArgumentFuncError(0, sentrydata.CollectEvaluationResultErrors(result).Error())
+	if err := sentrydata.ValidateJSONUptimeAssertionForDefinition("OpJsonPathOperand", []byte(operand)); err != nil {
+		resp.Error = function.NewArgumentFuncError(0, err.Error())
 		return
 	}
 
-	if result := sentrydata.UptimeComparisonType.Validate(operator); !result.IsValid() {
-		resp.Error = function.NewArgumentFuncError(1, sentrydata.CollectEvaluationResultErrors(result).Error())
+	if err := sentrydata.ValidateUptimeAssertionForDefinition("ComparisonType", operator); err != nil {
+		resp.Error = function.NewArgumentFuncError(1, err.Error())
 		return
 	}
 
