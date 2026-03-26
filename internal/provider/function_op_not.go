@@ -25,9 +25,11 @@ func (f OpNotFunction) Metadata(_ context.Context, req function.MetadataRequest,
 
 func (f OpNotFunction) Definition(_ context.Context, _ function.DefinitionRequest, resp *function.DefinitionResponse) {
 	resp.Definition = function.Definition{
+		MarkdownDescription: "The logical NOT operation. Represents a logical NOT of a single operation. Can be used to negate other operations such as `op_and`, `op_or`, `op_not`, `op_status_code_check`, `op_header_check`, or `op_jsonpath`.",
 		Parameters: []function.Parameter{
 			&function.StringParameter{
-				Name:       "operand",
+				Name:                "operand",
+				MarkdownDescription: "The operation to negate.",
 				CustomType: jsontypes.NormalizedType{},
 			},
 		},

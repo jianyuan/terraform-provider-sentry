@@ -25,17 +25,20 @@ func (f OpJsonpathFunction) Metadata(_ context.Context, req function.MetadataReq
 
 func (f OpJsonpathFunction) Definition(_ context.Context, _ function.DefinitionRequest, resp *function.DefinitionResponse) {
 	resp.Definition = function.Definition{
-		MarkdownDescription: "The JSONPath query operation.",
+		MarkdownDescription: "The JSONPath comparison operation. The `operator` parameter can be one of `equals`, `not_equal`, `less_than`, `greater_than`, `always`, or `never`. The `operand` must be constructed using either `op_jsonpath_operand_literal` or `op_jsonpath_operand_glob`.",
 		Parameters: []function.Parameter{
 			function.StringParameter{
-				Name:       "operand",
-				CustomType: jsontypes.NormalizedType{},
+				Name:                "operand",
+				MarkdownDescription: "The JSONPath operand. Must be constructed using either `op_jsonpath_operand_literal` or `op_jsonpath_operand_glob`.",
+				CustomType:          jsontypes.NormalizedType{},
 			},
 			function.StringParameter{
-				Name: "operator",
+				Name:                "operator",
+				MarkdownDescription: "The comparison operator. Can be one of `equals`, `not_equal`, `less_than`, `greater_than`, `always`, or `never`.",
 			},
 			function.StringParameter{
-				Name: "value",
+				Name:                "value",
+				MarkdownDescription: "The value to compare the JSONPath result against.",
 			},
 		},
 		Return: function.StringReturn{},

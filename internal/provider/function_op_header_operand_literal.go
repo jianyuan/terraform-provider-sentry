@@ -23,10 +23,11 @@ func (f OpHeaderOperandLiteralFunction) Metadata(_ context.Context, req function
 
 func (f OpHeaderOperandLiteralFunction) Definition(_ context.Context, _ function.DefinitionRequest, resp *function.DefinitionResponse) {
 	resp.Definition = function.Definition{
-		MarkdownDescription: "A literal value for comparison.",
+		MarkdownDescription: "An HTTP header operand that matches a literal value. Intended to be used with the `op_header_check` operation.",
 		Parameters: []function.Parameter{
 			function.StringParameter{
-				Name: "value",
+				Name:                "value",
+				MarkdownDescription: "The literal value to match.",
 			},
 		},
 		Return: function.StringReturn{},

@@ -23,10 +23,11 @@ func (f OpHeaderOperandGlobFunction) Metadata(_ context.Context, req function.Me
 
 func (f OpHeaderOperandGlobFunction) Definition(_ context.Context, _ function.DefinitionRequest, resp *function.DefinitionResponse) {
 	resp.Definition = function.Definition{
-		MarkdownDescription: "A glob pattern for matching.",
+		MarkdownDescription: "An HTTP header operand that matches a glob pattern. Intended to be used with the `op_header_check` operation.",
 		Parameters: []function.Parameter{
 			function.StringParameter{
-				Name: "pattern",
+				Name:                "pattern",
+				MarkdownDescription: "The glob pattern to match.",
 			},
 		},
 		Return: function.StringReturn{},

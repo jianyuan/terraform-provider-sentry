@@ -25,8 +25,10 @@ func (f OpAndFunction) Metadata(_ context.Context, req function.MetadataRequest,
 
 func (f OpAndFunction) Definition(_ context.Context, _ function.DefinitionRequest, resp *function.DefinitionResponse) {
 	resp.Definition = function.Definition{
+		MarkdownDescription: "The logical AND operation. Represents a logical AND of multiple operations. Can be used to combine other operations such as `op_and`, `op_or`, `op_not`, `op_status_code_check`, `op_header_check`, or `op_jsonpath`.",
 		VariadicParameter: &function.StringParameter{
-			Name:       "children",
+			Name:                "children",
+			MarkdownDescription: "The operations to combine.",
 			CustomType: jsontypes.NormalizedType{},
 		},
 		Return: function.StringReturn{},

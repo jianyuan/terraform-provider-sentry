@@ -23,10 +23,11 @@ func (f OpJsonpathOperandLiteralFunction) Metadata(_ context.Context, req functi
 
 func (f OpJsonpathOperandLiteralFunction) Definition(_ context.Context, _ function.DefinitionRequest, resp *function.DefinitionResponse) {
 	resp.Definition = function.Definition{
-		MarkdownDescription: "A literal value for comparison.",
+		MarkdownDescription: "A JSONPath operand that matches a literal value. Intended to be used with the `op_jsonpath` operation.",
 		Parameters: []function.Parameter{
 			function.StringParameter{
-				Name: "value",
+				Name:                "value",
+				MarkdownDescription: "The literal value to match.",
 			},
 		},
 		Return: function.StringReturn{},

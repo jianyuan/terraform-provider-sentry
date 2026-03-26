@@ -24,13 +24,15 @@ func (f OpStatusCodeCheckFunction) Metadata(_ context.Context, req function.Meta
 
 func (f OpStatusCodeCheckFunction) Definition(_ context.Context, _ function.DefinitionRequest, resp *function.DefinitionResponse) {
 	resp.Definition = function.Definition{
-		MarkdownDescription: "The HTTP status code comparison operation.",
+		MarkdownDescription: "The HTTP status code comparison operation. The `operator` parameter can be one of `equals`, `not_equal`, `less_than`, `greater_than`, `always`, or `never`.",
 		Parameters: []function.Parameter{
 			function.StringParameter{
-				Name: "operator",
+				Name:                "operator",
+				MarkdownDescription: "The comparison operator.",
 			},
 			function.Int64Parameter{
-				Name: "value",
+				Name:                "value",
+				MarkdownDescription: "The HTTP status code to compare against.",
 			},
 		},
 		Return: function.StringReturn{},

@@ -25,21 +25,25 @@ func (f OpHeaderCheckFunction) Metadata(_ context.Context, req function.Metadata
 
 func (f OpHeaderCheckFunction) Definition(_ context.Context, _ function.DefinitionRequest, resp *function.DefinitionResponse) {
 	resp.Definition = function.Definition{
-		MarkdownDescription: "The HTTP header (key and value) comparison operation.",
+		MarkdownDescription: "The HTTP header comparison operation. The operators can be one of `equals`, `not_equal`, `less_than`, `greater_than`, `always`, or `never`. The operands must be constructed using either `op_header_operand_literal` or `op_header_operand_glob`.",
 		Parameters: []function.Parameter{
 			function.StringParameter{
-				Name: "key_operator",
+				Name:                "key_operator",
+				MarkdownDescription: "The operator to use when matching the header key. Can be one of `equals`, `not_equal`, `less_than`, `greater_than`, `always`, or `never`.",
 			},
 			function.StringParameter{
-				Name:       "key_operand",
-				CustomType: jsontypes.NormalizedType{},
+				Name:                "key_operand",
+				MarkdownDescription: "The header key operand.",
+				CustomType:          jsontypes.NormalizedType{},
 			},
 			function.StringParameter{
-				Name: "value_operator",
+				Name:                "value_operator",
+				MarkdownDescription: "The operator to use when matching the header value. Can be one of `equals`, `not_equal`, `less_than`, `greater_than`, `always`, or `never`.",
 			},
 			function.StringParameter{
-				Name:       "value_operand",
-				CustomType: jsontypes.NormalizedType{},
+				Name:                "value_operand",
+				MarkdownDescription: "The header value operand.",
+				CustomType:          jsontypes.NormalizedType{},
 			},
 		},
 		Return: function.StringReturn{},
