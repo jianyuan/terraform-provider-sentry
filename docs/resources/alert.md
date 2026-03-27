@@ -15,8 +15,651 @@ Create an Alert for an Organization.
 
 ## Example Usage
 
+### Action Filters
+
+#### Discord
+
 ```terraform
-# TODO
+resource "sentry_alert" "default" {
+  # ...
+
+  action_filters = [
+    {
+      logic_type = "all"
+      actions = [
+        {
+          discord = {
+            channel_id     = "714123428994482189"
+            integration_id = data.sentry_organization_integration.discord.id
+            tags           = "environment, level"
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### Email
+
+```terraform
+resource "sentry_alert" "default" {
+  # ...
+
+  action_filters = [
+    {
+      logic_type = "all"
+      actions = [
+        {
+          email = {
+            target_type      = "issue_owners"
+            fallthrough_type = "AllMembers"
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### GitHub
+
+```terraform
+resource "sentry_alert" "default" {
+  # ...
+
+  action_filters = [
+    {
+      logic_type = "all"
+      actions = [
+        {
+          github = {
+            integration_id = data.sentry_organization_integration.github.id
+            repo           = "terraform-provider-sentry"
+            assignee       = "jianyuan"
+            labels         = ["bug"]
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### Jira
+
+```terraform
+resource "sentry_alert" "default" {
+  # ...
+
+  action_filters = [
+    {
+      logic_type = "all"
+      actions = [
+        {
+          jira = {
+            integration_id = data.sentry_organization_integration.jira.id
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### Jira Server
+
+```terraform
+resource "sentry_alert" "default" {
+  # ...
+
+  action_filters = [
+    {
+      logic_type = "all"
+      actions = [
+        {
+          jira_server = {
+            integration_id = data.sentry_organization_integration.jira_server.id
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### Microsoft Teams
+
+```terraform
+resource "sentry_alert" "default" {
+  # ...
+
+  action_filters = [
+    {
+      logic_type = "all"
+      actions = [
+        {
+          msteams = {
+            integration_id = data.sentry_organization_integration.msteams.id
+            team_id        = "my-team-id"
+            channel_name   = "General"
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### Opsgenie
+
+```terraform
+resource "sentry_alert" "default" {
+  # ...
+
+  action_filters = [
+    {
+      logic_type = "all"
+      actions = [
+        {
+          opsgenie = {
+            integration_id = sentry_integration_opsgenie.opsgenie.integration_id
+            priority       = "P1"
+            team_id        = sentry_integration_opsgenie.opsgenie.id
+            team_name      = sentry_integration_opsgenie.opsgenie.team
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### PagerDuty
+
+```terraform
+resource "sentry_alert" "default" {
+  # ...
+
+  action_filters = [
+    {
+      logic_type = "all"
+      actions = [
+        {
+          pagerduty = {
+            integration_id = sentry_integration_pagerduty.pagerduty.integration_id
+            service_id     = sentry_integration_pagerduty.pagerduty.id
+            service_name   = sentry_integration_pagerduty.pagerduty.service
+            severity       = "default"
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### Plugin
+
+```terraform
+resource "sentry_alert" "default" {
+  # ...
+
+  action_filters = [
+    {
+      logic_type = "all"
+      actions = [
+        {
+          plugin = {}
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### Slack
+
+```terraform
+resource "sentry_alert" "default" {
+  # ...
+
+  action_filters = [
+    {
+      logic_type = "all"
+      actions = [
+        {
+          slack = {
+            integration_id = data.sentry_organization_integration.slack.id
+            channel_name   = "#general"
+            tags           = "environment,level"
+            notes          = "Please <http://example.com|click here> for triage information."
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### VSTS
+
+```terraform
+resource "sentry_alert" "default" {
+  # ...
+
+  action_filters = [
+    {
+      logic_type = "all"
+      actions = [
+        {
+          vsts = {
+            integration_id = data.sentry_organization_integration.vsts.id
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Conditions
+
+#### Age Comparison
+
+```terraform
+resource "sentry_alert" "default" {
+  # ...
+
+  action_filters = [
+    {
+      logic_type = "all"
+      conditions = [
+        {
+          age_comparison = {
+            comparison_type = "older"
+            time            = "minute"
+            value           = 1
+          }
+        }
+      ]
+      actions = [
+        # ...
+      ]
+    }
+  ]
+}
+```
+
+#### Assigned To
+
+```terraform
+resource "sentry_alert" "default" {
+  # ...
+
+  action_filters = [
+    {
+      logic_type = "all"
+      conditions = [
+        {
+          assigned_to = {
+            target_type = "Team"
+            target_id   = sentry_team.default.internal_id
+          }
+        }
+      ]
+      actions = [
+        # ...
+      ]
+    }
+  ]
+}
+```
+
+#### Event Attribute
+
+```terraform
+resource "sentry_alert" "default" {
+  # ...
+
+  action_filters = [
+    {
+      logic_type = "all"
+      conditions = [
+        {
+          event_attribute = {
+            attribute = "message"
+            match     = "co"
+            value     = "bar"
+          }
+        }
+      ]
+      actions = [
+        # ...
+      ]
+    }
+  ]
+}
+```
+
+#### Event Frequency Count
+
+```terraform
+resource "sentry_alert" "default" {
+  # ...
+
+  action_filters = [
+    {
+      logic_type = "all"
+      conditions = [
+        {
+          event_frequency_count = {
+            interval = "1m"
+            value    = 100
+          }
+        }
+      ]
+      actions = [
+        # ...
+      ]
+    }
+  ]
+}
+```
+
+#### Event Frequency Percent
+
+```terraform
+resource "sentry_alert" "default" {
+  # ...
+
+  action_filters = [
+    {
+      logic_type = "all"
+      conditions = [
+        {
+          event_frequency_percent = {
+            comparison_interval = "1w"
+            interval            = "1h"
+            value               = 100
+          }
+        }
+      ]
+      actions = [
+        # ...
+      ]
+    }
+  ]
+}
+```
+
+#### Event Unique User Frequency Count
+
+```terraform
+resource "sentry_alert" "default" {
+  # ...
+
+  action_filters = [
+    {
+      logic_type = "all"
+      conditions = [
+        {
+          event_unique_user_frequency_count = {
+            interval = "5m"
+            value    = 1
+          }
+        }
+      ]
+      actions = [
+        # ...
+      ]
+    }
+  ]
+}
+```
+
+#### Issue Category
+
+```terraform
+resource "sentry_alert" "default" {
+  # ...
+
+  action_filters = [
+    {
+      logic_type = "all"
+      conditions = [
+        {
+          issue_category = {
+            value = 1
+          }
+        }
+      ]
+      actions = [
+        # ...
+      ]
+    }
+  ]
+}
+```
+
+#### Issue Occurrences
+
+```terraform
+resource "sentry_alert" "default" {
+  # ...
+
+  action_filters = [
+    {
+      logic_type = "all"
+      conditions = [
+        {
+          issue_occurrences = {
+            value = 1
+          }
+        }
+      ]
+      actions = [
+        # ...
+      ]
+    }
+  ]
+}
+```
+
+#### Issue Priority Deescalating
+
+```terraform
+resource "sentry_alert" "default" {
+  # ...
+
+  action_filters = [
+    {
+      logic_type = "all"
+      conditions = [
+        {
+          issue_priority_deescalating = {}
+        }
+      ]
+      actions = [
+        # ...
+      ]
+    }
+  ]
+}
+```
+
+#### Issue Priority Greater or Equal
+
+```terraform
+resource "sentry_alert" "default" {
+  # ...
+
+  action_filters = [
+    {
+      logic_type = "all"
+      conditions = [
+        {
+          issue_priority_greater_or_equal = {
+            comparison = 75
+          }
+        }
+      ]
+      actions = [
+        # ...
+      ]
+    }
+  ]
+}
+```
+
+#### Latest Adopted Release
+
+```terraform
+resource "sentry_alert" "default" {
+  # ...
+
+  action_filters = [
+    {
+      logic_type = "all"
+      conditions = [
+        {
+          latest_adopted_release = {
+            age_comparison   = "older"
+            environment      = "test"
+            release_age_type = "oldest"
+          }
+        }
+      ]
+      actions = [
+        # ...
+      ]
+    }
+  ]
+}
+```
+
+#### Latest Release
+
+```terraform
+resource "sentry_alert" "default" {
+  # ...
+
+  action_filters = [
+    {
+      logic_type = "all"
+      conditions = [
+        {
+          latest_release = {}
+        }
+      ]
+      actions = [
+        # ...
+      ]
+    }
+  ]
+}
+```
+
+#### Level
+
+```terraform
+resource "sentry_alert" "default" {
+  # ...
+
+  action_filters = [
+    {
+      logic_type = "all"
+      conditions = [
+        {
+          level = {
+            level = 50
+            match = "eq"
+          }
+        }
+      ]
+      actions = [
+        # ...
+      ]
+    }
+  ]
+}
+```
+
+#### Percent Sessions Count
+
+```terraform
+resource "sentry_alert" "default" {
+  # ...
+
+  action_filters = [
+    {
+      logic_type = "all"
+      conditions = [
+        {
+          percent_sessions_count = {
+            interval = "1h"
+            value    = 10
+          }
+        }
+      ]
+      actions = [
+        # ...
+      ]
+    }
+  ]
+}
+```
+
+#### Percent Sessions Percent
+
+```terraform
+resource "sentry_alert" "default" {
+  # ...
+
+  action_filters = [
+    {
+      logic_type = "all"
+      conditions = [
+        {
+          percent_sessions_percent = {
+            comparison_interval = "1w"
+            interval            = "1h"
+            value               = 10
+          }
+        }
+      ]
+      actions = [
+        # ...
+      ]
+    }
+  ]
+}
+```
+
+#### Tagged Event
+
+```terraform
+resource "sentry_alert" "default" {
+  # ...
+
+  action_filters = [
+    {
+      logic_type = "all"
+      conditions = [
+        {
+          tagged_event = {
+            key   = "level"
+            match = "eq"
+            value = "error"
+          }
+        }
+      ]
+      actions = [
+        # ...
+      ]
+    }
+  ]
+}
 ```
 
 <!-- schema generated by tfplugindocs -->
@@ -372,15 +1015,3 @@ Required:
 Optional:
 
 - `value` (String) A string. Not required when match is `is` or `ns`.
-
-## Import
-
-Import is supported using the following syntax:
-
-The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
-
-```shell
-# import using the organization and monitor id from the URL:
-# https://[org-slug].sentry.io/monitors/alerts/[alert-id]/
-terraform import sentry_alert.default org-slug/alert-id
-```
