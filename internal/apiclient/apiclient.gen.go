@@ -2021,9 +2021,20 @@ type OrganizationWorkflowTriggerLogicType string
 
 // OrganizationWorkflowTriggerCondition defines model for OrganizationWorkflow_Trigger_Condition.
 type OrganizationWorkflowTriggerCondition struct {
-	Comparison      bool   `json:"comparison"`
-	ConditionResult bool   `json:"conditionResult"`
-	Type            string `json:"type"`
+	Comparison      OrganizationWorkflowTriggerCondition_Comparison `json:"comparison"`
+	ConditionResult bool                                            `json:"conditionResult"`
+	Type            string                                          `json:"type"`
+}
+
+// OrganizationWorkflowTriggerConditionComparison0 defines model for .
+type OrganizationWorkflowTriggerConditionComparison0 = bool
+
+// OrganizationWorkflowTriggerConditionComparison1 defines model for .
+type OrganizationWorkflowTriggerConditionComparison1 = map[string]interface{}
+
+// OrganizationWorkflowTriggerCondition_Comparison defines model for OrganizationWorkflowTriggerCondition.Comparison.
+type OrganizationWorkflowTriggerCondition_Comparison struct {
+	union json.RawMessage
 }
 
 // Project defines model for Project.
@@ -2922,6 +2933,11 @@ type DisableSpikeProtectionJSONBody struct {
 // EnableSpikeProtectionJSONBody defines parameters for EnableSpikeProtection.
 type EnableSpikeProtectionJSONBody struct {
 	Projects []string `json:"projects"`
+}
+
+// ListOrganizationWorkflowsParams defines parameters for ListOrganizationWorkflows.
+type ListOrganizationWorkflowsParams struct {
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
 }
 
 // UpdateOrganizationProjectJSONBody defines parameters for UpdateOrganizationProject.
@@ -4242,6 +4258,68 @@ func (t OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIde
 }
 
 func (t *OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsOrganizationWorkflowTriggerConditionComparison0 returns the union data inside the OrganizationWorkflowTriggerCondition_Comparison as a OrganizationWorkflowTriggerConditionComparison0
+func (t OrganizationWorkflowTriggerCondition_Comparison) AsOrganizationWorkflowTriggerConditionComparison0() (OrganizationWorkflowTriggerConditionComparison0, error) {
+	var body OrganizationWorkflowTriggerConditionComparison0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowTriggerConditionComparison0 overwrites any union data inside the OrganizationWorkflowTriggerCondition_Comparison as the provided OrganizationWorkflowTriggerConditionComparison0
+func (t *OrganizationWorkflowTriggerCondition_Comparison) FromOrganizationWorkflowTriggerConditionComparison0(v OrganizationWorkflowTriggerConditionComparison0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowTriggerConditionComparison0 performs a merge with any union data inside the OrganizationWorkflowTriggerCondition_Comparison, using the provided OrganizationWorkflowTriggerConditionComparison0
+func (t *OrganizationWorkflowTriggerCondition_Comparison) MergeOrganizationWorkflowTriggerConditionComparison0(v OrganizationWorkflowTriggerConditionComparison0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowTriggerConditionComparison1 returns the union data inside the OrganizationWorkflowTriggerCondition_Comparison as a OrganizationWorkflowTriggerConditionComparison1
+func (t OrganizationWorkflowTriggerCondition_Comparison) AsOrganizationWorkflowTriggerConditionComparison1() (OrganizationWorkflowTriggerConditionComparison1, error) {
+	var body OrganizationWorkflowTriggerConditionComparison1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowTriggerConditionComparison1 overwrites any union data inside the OrganizationWorkflowTriggerCondition_Comparison as the provided OrganizationWorkflowTriggerConditionComparison1
+func (t *OrganizationWorkflowTriggerCondition_Comparison) FromOrganizationWorkflowTriggerConditionComparison1(v OrganizationWorkflowTriggerConditionComparison1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowTriggerConditionComparison1 performs a merge with any union data inside the OrganizationWorkflowTriggerCondition_Comparison, using the provided OrganizationWorkflowTriggerConditionComparison1
+func (t *OrganizationWorkflowTriggerCondition_Comparison) MergeOrganizationWorkflowTriggerConditionComparison1(v OrganizationWorkflowTriggerConditionComparison1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t OrganizationWorkflowTriggerCondition_Comparison) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *OrganizationWorkflowTriggerCondition_Comparison) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -6221,6 +6299,9 @@ type ClientInterface interface {
 
 	EnableSpikeProtection(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body EnableSpikeProtectionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListOrganizationWorkflows request
+	ListOrganizationWorkflows(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationWorkflowsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateOrganizationWorkflowWithBody request with any body
 	CreateOrganizationWorkflowWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -6608,6 +6689,18 @@ func (c *Client) EnableSpikeProtectionWithBody(ctx context.Context, organization
 
 func (c *Client) EnableSpikeProtection(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body EnableSpikeProtectionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewEnableSpikeProtectionRequest(c.Server, organizationIdOrSlug, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListOrganizationWorkflows(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationWorkflowsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListOrganizationWorkflowsRequest(c.Server, organizationIdOrSlug, params)
 	if err != nil {
 		return nil, err
 	}
@@ -7941,6 +8034,62 @@ func NewEnableSpikeProtectionRequestWithBody(server string, organizationIdOrSlug
 	return req, nil
 }
 
+// NewListOrganizationWorkflowsRequest generates requests for ListOrganizationWorkflows
+func NewListOrganizationWorkflowsRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationWorkflowsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/workflows/", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewCreateOrganizationWorkflowRequest calls the generic CreateOrganizationWorkflow builder with application/json body
 func NewCreateOrganizationWorkflowRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationWorkflowJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -9161,6 +9310,9 @@ type ClientWithResponsesInterface interface {
 
 	EnableSpikeProtectionWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body EnableSpikeProtectionJSONRequestBody, reqEditors ...RequestEditorFn) (*EnableSpikeProtectionResponse, error)
 
+	// ListOrganizationWorkflowsWithResponse request
+	ListOrganizationWorkflowsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationWorkflowsParams, reqEditors ...RequestEditorFn) (*ListOrganizationWorkflowsResponse, error)
+
 	// CreateOrganizationWorkflowWithBodyWithResponse request with any body
 	CreateOrganizationWorkflowWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOrganizationWorkflowResponse, error)
 
@@ -9652,6 +9804,28 @@ func (r EnableSpikeProtectionResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r EnableSpikeProtectionResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListOrganizationWorkflowsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]OrganizationWorkflow
+}
+
+// Status returns HTTPResponse.Status
+func (r ListOrganizationWorkflowsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListOrganizationWorkflowsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -10375,6 +10549,15 @@ func (c *ClientWithResponses) EnableSpikeProtectionWithResponse(ctx context.Cont
 	return ParseEnableSpikeProtectionResponse(rsp)
 }
 
+// ListOrganizationWorkflowsWithResponse request returning *ListOrganizationWorkflowsResponse
+func (c *ClientWithResponses) ListOrganizationWorkflowsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationWorkflowsParams, reqEditors ...RequestEditorFn) (*ListOrganizationWorkflowsResponse, error) {
+	rsp, err := c.ListOrganizationWorkflows(ctx, organizationIdOrSlug, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListOrganizationWorkflowsResponse(rsp)
+}
+
 // CreateOrganizationWorkflowWithBodyWithResponse request with arbitrary body returning *CreateOrganizationWorkflowResponse
 func (c *ClientWithResponses) CreateOrganizationWorkflowWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOrganizationWorkflowResponse, error) {
 	rsp, err := c.CreateOrganizationWorkflowWithBody(ctx, organizationIdOrSlug, contentType, body, reqEditors...)
@@ -11074,6 +11257,32 @@ func ParseEnableSpikeProtectionResponse(rsp *http.Response) (*EnableSpikeProtect
 	response := &EnableSpikeProtectionResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseListOrganizationWorkflowsResponse parses an HTTP response from a ListOrganizationWorkflowsWithResponse call
+func ParseListOrganizationWorkflowsResponse(rsp *http.Response) (*ListOrganizationWorkflowsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListOrganizationWorkflowsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []OrganizationWorkflow
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	}
 
 	return response, nil

@@ -324,6 +324,26 @@ paths:
   /0/organizations/{organization_id_or_slug}/workflows/:
     parameters:
       - $ref: "#/components/parameters/organization_id_or_slug"
+    get:
+      summary: List Organization Alerts
+      operationId: listOrganizationWorkflows
+      parameters:
+        - $ref: "#/components/parameters/cursor"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OrganizationWorkflow"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
     post:
       summary: Create an Alert for an Organization
       operationId: createOrganizationWorkflow
@@ -2991,7 +3011,9 @@ components:
         type:
           type: string
         comparison:
-          type: boolean
+          oneOf:
+            - type: boolean
+            - type: object # TODO: Legacy?
         conditionResult:
           type: boolean
     OrganizationWorkflow_ActionFilter:

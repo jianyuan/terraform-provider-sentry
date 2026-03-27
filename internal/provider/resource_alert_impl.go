@@ -548,9 +548,15 @@ func (r *AlertResource) getTriggerConditions(ctx context.Context, data AlertReso
 	}
 	var outTriggerConditions []apiclient.OrganizationWorkflowTriggerCondition
 	for _, triggerCondition := range inTriggerConditions {
+		var outTriggerConditionComparison apiclient.OrganizationWorkflowTriggerCondition_Comparison
+		if err := outTriggerConditionComparison.FromOrganizationWorkflowTriggerConditionComparison0(true); err != nil {
+			diags.AddError("Failed to create trigger condition", err.Error())
+			return nil, diags
+		}
+
 		outTriggerConditions = append(outTriggerConditions, apiclient.OrganizationWorkflowTriggerCondition{
 			Type:            triggerCondition,
-			Comparison:      true,
+			Comparison:      outTriggerConditionComparison,
 			ConditionResult: true,
 		})
 	}
