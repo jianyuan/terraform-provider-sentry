@@ -1,5 +1,22 @@
 import dedent from "dedent";
-import type { DataSource, Resource } from "./schema";
+import type { Attribute, DataSource, Resource } from "./schema";
+
+function withExactlyOneAttribute(attributes: Attribute[]): Attribute[] {
+  const attributeNames = attributes.map((attribute) => attribute.name);
+
+  return attributes.map((attribute) => {
+    return {
+      ...attribute,
+      validators: [
+        ...(attribute.validators ?? []),
+        `objectvalidator.ConflictsWith(${attributeNames
+          .filter((name) => name !== attribute.name)
+          .map((name) => `path.MatchRelative().AtParent().AtName("${name}")`)
+          .join(", ")})`,
+      ],
+    };
+  });
+}
 
 export const DATASOURCES: Array<DataSource> = [
   {
@@ -907,7 +924,7 @@ export const RESOURCES: Array<Resource> = [
     description: dedent.withOptions({ trimWhitespace: true })`
       ⚠️ This resource is currently in beta and may be subject to change. It is supported by [New Monitors and Alerts](https://docs.sentry.io/product/new-monitors-and-alerts/) and may not be viewable in the UI today.
 
-      Create an Alert for an Organization.
+      Create an Alert for a Monitor in an Organization. Monitors must be created separately using the [\`sentry_cron_monitor\`](cron_monitor.md), [\`sentry_metric_monitor\`](metric_monitor.md), or [\`sentry_uptime_monitor\`](uptime_monitor.md) resources.
     `,
     api: {
       model: "OrganizationWorkflow",
@@ -1000,9 +1017,9 @@ export const RESOURCES: Array<Resource> = [
           {
             name: "conditions",
             type: "list_nested",
-            description: "TODO",
+            description: "The conditions to evaluate.",
             computedOptionalRequired: "computed_optional",
-            attributes: [
+            attributes: withExactlyOneAttribute([
               {
                 name: "age_comparison",
                 type: "single_nested",
@@ -1398,15 +1415,15 @@ export const RESOURCES: Array<Resource> = [
                   },
                 ],
               },
-            ],
+            ]),
           },
           {
             name: "actions",
             type: "list_nested",
-            description: "TODO",
+            description: "The actions to perform.",
             computedOptionalRequired: "required",
             validators: ["listvalidator.SizeAtLeast(1)"],
-            attributes: [
+            attributes: withExactlyOneAttribute([
               {
                 name: "email",
                 type: "single_nested",
@@ -1716,7 +1733,7 @@ export const RESOURCES: Array<Resource> = [
                   },
                 ],
               },
-            ],
+            ]),
           },
         ],
       },

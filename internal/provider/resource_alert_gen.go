@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -40,7 +41,7 @@ func (r *AlertResource) Metadata(ctx context.Context, req resource.MetadataReque
 
 func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "⚠️ This resource is currently in beta and may be subject to change. It is supported by [New Monitors and Alerts](https://docs.sentry.io/product/new-monitors-and-alerts/) and may not be viewable in the UI today.\n\nCreate an Alert for an Organization.",
+		MarkdownDescription: "⚠️ This resource is currently in beta and may be subject to change. It is supported by [New Monitors and Alerts](https://docs.sentry.io/product/new-monitors-and-alerts/) and may not be viewable in the UI today.\n\nCreate an Alert for a Monitor in an Organization. Monitors must be created separately using the [`sentry_cron_monitor`](cron_monitor.md), [`sentry_metric_monitor`](metric_monitor.md), or [`sentry_uptime_monitor`](uptime_monitor.md) resources.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				MarkdownDescription: "The internal ID of this alert.",
@@ -111,7 +112,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 							sentrydata.DataConditionGroupTypes,
 						),
 						"conditions": schema.ListNestedAttribute{
-							MarkdownDescription: "TODO",
+							MarkdownDescription: "The conditions to evaluate.",
 							Optional:            true,
 							Computed:            true,
 							CustomType:          supertypes.NewListNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItem](ctx),
@@ -121,6 +122,9 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										MarkdownDescription: "Issue age.",
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemAgeComparison](ctx),
+										Validators: []validator.Object{
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level")),
+										},
 										Attributes: map[string]schema.Attribute{
 											"time": tfutils.WithEnumStringAttribute(
 												schema.StringAttribute{
@@ -152,6 +156,9 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										MarkdownDescription: "Issue assignment.",
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemAssignedTo](ctx),
+										Validators: []validator.Object{
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level")),
+										},
 										Attributes: map[string]schema.Attribute{
 											"target_type": tfutils.WithEnumStringAttribute(
 												schema.StringAttribute{
@@ -176,6 +183,9 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										MarkdownDescription: "Issue category.",
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemIssueCategory](ctx),
+										Validators: []validator.Object{
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level")),
+										},
 										Attributes: map[string]schema.Attribute{
 											"value": schema.Int64Attribute{
 												MarkdownDescription: "The issue category to filter to.",
@@ -188,6 +198,9 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										MarkdownDescription: "Issue frequency.",
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemIssueOccurrences](ctx),
+										Validators: []validator.Object{
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level")),
+										},
 										Attributes: map[string]schema.Attribute{
 											"value": schema.Int64Attribute{
 												MarkdownDescription: "A positive integer representing how many times the issue has to happen before the alert will fire.",
@@ -203,12 +216,18 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										MarkdownDescription: "De-escalation.",
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemIssuePriorityDeescalating](ctx),
-										Attributes:          map[string]schema.Attribute{},
+										Validators: []validator.Object{
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level")),
+										},
+										Attributes: map[string]schema.Attribute{},
 									},
 									"issue_priority_greater_or_equal": schema.SingleNestedAttribute{
 										MarkdownDescription: "Issue priority.",
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemIssuePriorityGreaterOrEqual](ctx),
+										Validators: []validator.Object{
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level")),
+										},
 										Attributes: map[string]schema.Attribute{
 											"comparison": schema.Int64Attribute{
 												MarkdownDescription: "he priority the issue must be for the alert to fire.",
@@ -221,6 +240,9 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										MarkdownDescription: "Number of users affected.",
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemEventUniqueUserFrequencyCount](ctx),
+										Validators: []validator.Object{
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level")),
+										},
 										Attributes: map[string]schema.Attribute{
 											"value": schema.Int64Attribute{
 												MarkdownDescription: "A positive integer representing the number of users that must be affected before the alert will fire.",
@@ -280,6 +302,9 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										MarkdownDescription: "Number of events.",
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemEventFrequencyCount](ctx),
+										Validators: []validator.Object{
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level")),
+										},
 										Attributes: map[string]schema.Attribute{
 											"value": schema.Int64Attribute{
 												MarkdownDescription: "A positive integer representing the number of events in an issue that must come in before the alert will fire.",
@@ -303,6 +328,9 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										MarkdownDescription: "Percent of events.",
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemEventFrequencyPercent](ctx),
+										Validators: []validator.Object{
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level")),
+										},
 										Attributes: map[string]schema.Attribute{
 											"value": schema.Int64Attribute{
 												MarkdownDescription: "A positive integer representing the number of events in an issue that must come in before the alert will fire.",
@@ -334,6 +362,9 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										MarkdownDescription: "Percentage of sessions affected count.",
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemPercentSessionsCount](ctx),
+										Validators: []validator.Object{
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level")),
+										},
 										Attributes: map[string]schema.Attribute{
 											"value": schema.Int64Attribute{
 												MarkdownDescription: "A positive integer representing the number of events in an issue that must come in before the alert will fire.",
@@ -357,6 +388,9 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										MarkdownDescription: "Percentage of sessions affected percent.",
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemPercentSessionsPercent](ctx),
+										Validators: []validator.Object{
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level")),
+										},
 										Attributes: map[string]schema.Attribute{
 											"value": schema.Int64Attribute{
 												MarkdownDescription: "A positive integer representing the number of events in an issue that must come in before the alert will fire.",
@@ -388,6 +422,9 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										MarkdownDescription: "The event's `attribute` value `match` `value`.",
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemEventAttribute](ctx),
+										Validators: []validator.Object{
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level")),
+										},
 										Attributes: map[string]schema.Attribute{
 											"attribute": schema.StringAttribute{
 												MarkdownDescription: "The attribute to evaluate.",
@@ -410,6 +447,9 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										MarkdownDescription: "The event's tags `key` match `value`.",
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemTaggedEvent](ctx),
+										Validators: []validator.Object{
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level")),
+										},
 										Attributes: map[string]schema.Attribute{
 											"key": schema.StringAttribute{
 												MarkdownDescription: "The tag value.",
@@ -435,12 +475,18 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										MarkdownDescription: "The event is from the latest release.",
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemLatestRelease](ctx),
-										Attributes:          map[string]schema.Attribute{},
+										Validators: []validator.Object{
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level")),
+										},
+										Attributes: map[string]schema.Attribute{},
 									},
 									"latest_adopted_release": schema.SingleNestedAttribute{
 										MarkdownDescription: "The `release_age_type` adopted release associated with the event's issue is `age_comparison` than the latest adopted release in `environment`.",
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemLatestAdoptedRelease](ctx),
+										Validators: []validator.Object{
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("level")),
+										},
 										Attributes: map[string]schema.Attribute{
 											"environment": schema.StringAttribute{
 												MarkdownDescription: "The environment to compare against.",
@@ -469,6 +515,9 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										MarkdownDescription: "The event's level match `level`.",
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemLevel](ctx),
+										Validators: []validator.Object{
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release")),
+										},
 										Attributes: map[string]schema.Attribute{
 											"match": schema.StringAttribute{
 												MarkdownDescription: "The comparison operator.",
@@ -486,7 +535,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 							},
 						},
 						"actions": schema.ListNestedAttribute{
-							MarkdownDescription: "TODO",
+							MarkdownDescription: "The actions to perform.",
 							Required:            true,
 							CustomType:          supertypes.NewListNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItem](ctx),
 							Validators: []validator.List{
@@ -498,6 +547,9 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										MarkdownDescription: "Notify on Preferred Channel.",
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemEmail](ctx),
+										Validators: []validator.Object{
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("plugin"), path.MatchRelative().AtParent().AtName("slack"), path.MatchRelative().AtParent().AtName("pagerduty"), path.MatchRelative().AtParent().AtName("discord"), path.MatchRelative().AtParent().AtName("msteams"), path.MatchRelative().AtParent().AtName("opsgenie"), path.MatchRelative().AtParent().AtName("vsts"), path.MatchRelative().AtParent().AtName("jira"), path.MatchRelative().AtParent().AtName("jira_server"), path.MatchRelative().AtParent().AtName("github")),
+										},
 										Attributes: map[string]schema.Attribute{
 											"target_type": tfutils.WithEnumStringAttribute(
 												schema.StringAttribute{
@@ -534,12 +586,18 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										MarkdownDescription: "Send a notification to all legacy integrations (plugins).",
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemPlugin](ctx),
-										Attributes:          map[string]schema.Attribute{},
+										Validators: []validator.Object{
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("email"), path.MatchRelative().AtParent().AtName("slack"), path.MatchRelative().AtParent().AtName("pagerduty"), path.MatchRelative().AtParent().AtName("discord"), path.MatchRelative().AtParent().AtName("msteams"), path.MatchRelative().AtParent().AtName("opsgenie"), path.MatchRelative().AtParent().AtName("vsts"), path.MatchRelative().AtParent().AtName("jira"), path.MatchRelative().AtParent().AtName("jira_server"), path.MatchRelative().AtParent().AtName("github")),
+										},
+										Attributes: map[string]schema.Attribute{},
 									},
 									"slack": schema.SingleNestedAttribute{
 										MarkdownDescription: "Notify on Slack.",
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemSlack](ctx),
+										Validators: []validator.Object{
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("email"), path.MatchRelative().AtParent().AtName("plugin"), path.MatchRelative().AtParent().AtName("pagerduty"), path.MatchRelative().AtParent().AtName("discord"), path.MatchRelative().AtParent().AtName("msteams"), path.MatchRelative().AtParent().AtName("opsgenie"), path.MatchRelative().AtParent().AtName("vsts"), path.MatchRelative().AtParent().AtName("jira"), path.MatchRelative().AtParent().AtName("jira_server"), path.MatchRelative().AtParent().AtName("github")),
+										},
 										Attributes: map[string]schema.Attribute{
 											"integration_id": schema.StringAttribute{
 												MarkdownDescription: "The ID of the Slack integration.",
@@ -574,6 +632,9 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										MarkdownDescription: "Notify on PagerDuty.",
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemPagerduty](ctx),
+										Validators: []validator.Object{
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("email"), path.MatchRelative().AtParent().AtName("plugin"), path.MatchRelative().AtParent().AtName("slack"), path.MatchRelative().AtParent().AtName("discord"), path.MatchRelative().AtParent().AtName("msteams"), path.MatchRelative().AtParent().AtName("opsgenie"), path.MatchRelative().AtParent().AtName("vsts"), path.MatchRelative().AtParent().AtName("jira"), path.MatchRelative().AtParent().AtName("jira_server"), path.MatchRelative().AtParent().AtName("github")),
+										},
 										Attributes: map[string]schema.Attribute{
 											"integration_id": schema.StringAttribute{
 												MarkdownDescription: "The ID of the PagerDuty integration.",
@@ -601,6 +662,9 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										MarkdownDescription: "Notify on Discord.",
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemDiscord](ctx),
+										Validators: []validator.Object{
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("email"), path.MatchRelative().AtParent().AtName("plugin"), path.MatchRelative().AtParent().AtName("slack"), path.MatchRelative().AtParent().AtName("pagerduty"), path.MatchRelative().AtParent().AtName("msteams"), path.MatchRelative().AtParent().AtName("opsgenie"), path.MatchRelative().AtParent().AtName("vsts"), path.MatchRelative().AtParent().AtName("jira"), path.MatchRelative().AtParent().AtName("jira_server"), path.MatchRelative().AtParent().AtName("github")),
+										},
 										Attributes: map[string]schema.Attribute{
 											"integration_id": schema.StringAttribute{
 												MarkdownDescription: "The ID of the Discord integration.",
@@ -623,6 +687,9 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										MarkdownDescription: "Notify on Microsoft Teams.",
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemMsteams](ctx),
+										Validators: []validator.Object{
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("email"), path.MatchRelative().AtParent().AtName("plugin"), path.MatchRelative().AtParent().AtName("slack"), path.MatchRelative().AtParent().AtName("pagerduty"), path.MatchRelative().AtParent().AtName("discord"), path.MatchRelative().AtParent().AtName("opsgenie"), path.MatchRelative().AtParent().AtName("vsts"), path.MatchRelative().AtParent().AtName("jira"), path.MatchRelative().AtParent().AtName("jira_server"), path.MatchRelative().AtParent().AtName("github")),
+										},
 										Attributes: map[string]schema.Attribute{
 											"integration_id": schema.StringAttribute{
 												MarkdownDescription: "The ID of the Microsoft Teams integration.",
@@ -645,6 +712,9 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										MarkdownDescription: "Notify on OpsGenie.",
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemOpsgenie](ctx),
+										Validators: []validator.Object{
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("email"), path.MatchRelative().AtParent().AtName("plugin"), path.MatchRelative().AtParent().AtName("slack"), path.MatchRelative().AtParent().AtName("pagerduty"), path.MatchRelative().AtParent().AtName("discord"), path.MatchRelative().AtParent().AtName("msteams"), path.MatchRelative().AtParent().AtName("vsts"), path.MatchRelative().AtParent().AtName("jira"), path.MatchRelative().AtParent().AtName("jira_server"), path.MatchRelative().AtParent().AtName("github")),
+										},
 										Attributes: map[string]schema.Attribute{
 											"integration_id": schema.StringAttribute{
 												MarkdownDescription: "The ID of the OpsGenie integration.",
@@ -672,6 +742,9 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										MarkdownDescription: "Notify on Azure DevOps.",
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemVsts](ctx),
+										Validators: []validator.Object{
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("email"), path.MatchRelative().AtParent().AtName("plugin"), path.MatchRelative().AtParent().AtName("slack"), path.MatchRelative().AtParent().AtName("pagerduty"), path.MatchRelative().AtParent().AtName("discord"), path.MatchRelative().AtParent().AtName("msteams"), path.MatchRelative().AtParent().AtName("opsgenie"), path.MatchRelative().AtParent().AtName("jira"), path.MatchRelative().AtParent().AtName("jira_server"), path.MatchRelative().AtParent().AtName("github")),
+										},
 										Attributes: map[string]schema.Attribute{
 											"integration_id": schema.StringAttribute{
 												MarkdownDescription: "The ID of the OpsGenie integration.",
@@ -689,6 +762,9 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										MarkdownDescription: "Create a Jira ticket.",
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemJira](ctx),
+										Validators: []validator.Object{
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("email"), path.MatchRelative().AtParent().AtName("plugin"), path.MatchRelative().AtParent().AtName("slack"), path.MatchRelative().AtParent().AtName("pagerduty"), path.MatchRelative().AtParent().AtName("discord"), path.MatchRelative().AtParent().AtName("msteams"), path.MatchRelative().AtParent().AtName("opsgenie"), path.MatchRelative().AtParent().AtName("vsts"), path.MatchRelative().AtParent().AtName("jira_server"), path.MatchRelative().AtParent().AtName("github")),
+										},
 										Attributes: map[string]schema.Attribute{
 											"integration_id": schema.StringAttribute{
 												MarkdownDescription: "The ID of the Jira integration.",
@@ -706,6 +782,9 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										MarkdownDescription: "Create a Jira Server ticket.",
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemJiraServer](ctx),
+										Validators: []validator.Object{
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("email"), path.MatchRelative().AtParent().AtName("plugin"), path.MatchRelative().AtParent().AtName("slack"), path.MatchRelative().AtParent().AtName("pagerduty"), path.MatchRelative().AtParent().AtName("discord"), path.MatchRelative().AtParent().AtName("msteams"), path.MatchRelative().AtParent().AtName("opsgenie"), path.MatchRelative().AtParent().AtName("vsts"), path.MatchRelative().AtParent().AtName("jira"), path.MatchRelative().AtParent().AtName("github")),
+										},
 										Attributes: map[string]schema.Attribute{
 											"integration_id": schema.StringAttribute{
 												MarkdownDescription: "The ID of the Jira Server integration.",
@@ -723,6 +802,9 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										MarkdownDescription: "Create a GitHub issue.",
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemGithub](ctx),
+										Validators: []validator.Object{
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("email"), path.MatchRelative().AtParent().AtName("plugin"), path.MatchRelative().AtParent().AtName("slack"), path.MatchRelative().AtParent().AtName("pagerduty"), path.MatchRelative().AtParent().AtName("discord"), path.MatchRelative().AtParent().AtName("msteams"), path.MatchRelative().AtParent().AtName("opsgenie"), path.MatchRelative().AtParent().AtName("vsts"), path.MatchRelative().AtParent().AtName("jira"), path.MatchRelative().AtParent().AtName("jira_server")),
+										},
 										Attributes: map[string]schema.Attribute{
 											"integration_id": schema.StringAttribute{
 												MarkdownDescription: "The ID of the GitHub integration.",

@@ -59,6 +59,159 @@ func init() {
 	})
 }
 
+func TestAccAlertResource_validation(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PlanOnly: true,
+				Config: `
+					resource "sentry_alert" "test" {
+						organization = "1"
+						name         = "alert name"
+
+						frequency_minutes = 1440
+						environment       = "production"
+						monitor_ids       = ["1"]
+
+						trigger_conditions = []
+
+						action_filters = []
+					}
+				`,
+				ExpectError: acctest.ExpectLiteralError(`Attribute action_filters list must contain at least 1 elements, got: 0`),
+			},
+			{
+				PlanOnly: true,
+				Config: `
+					resource "sentry_alert" "test" {
+						organization = "1"
+						name         = "alert name"
+
+						frequency_minutes = 1440
+						environment       = "production"
+						monitor_ids       = ["1"]
+
+						trigger_conditions = []
+
+						action_filters = [
+							{}
+						]
+					}
+				`,
+				ExpectError: acctest.ExpectLiteralError(`Inappropriate value for attribute "action_filters": element 0: attributes "actions" and "logic_type" are required.`),
+			},
+			{
+				PlanOnly: true,
+				Config: `
+					resource "sentry_alert" "test" {
+						organization = "1"
+						name         = "alert name"
+
+						frequency_minutes = 1440
+						environment       = "production"
+						monitor_ids       = ["1"]
+
+						trigger_conditions = []
+
+						action_filters = [
+							{
+								logic_type = "all"
+								actions = []
+							}
+						]
+					}
+				`,
+				ExpectError: acctest.ExpectLiteralError(`Attribute action_filters[0].actions list must contain at least 1 elements, got: 0`),
+			},
+			{
+				PlanOnly: true,
+				Config: `
+					resource "sentry_alert" "test" {
+						organization = "1"
+						name         = "alert name"
+
+						frequency_minutes = 1440
+						environment       = "production"
+						monitor_ids       = ["1"]
+
+						trigger_conditions = []
+
+						action_filters = [
+							{
+								logic_type = "all"
+								conditions = [
+									{
+										age_comparison = {
+											value = 1
+											time = "minute"
+											comparison_type = "older"
+										}
+										assigned_to = {
+											target_type = "Team"
+											target_id = "1"
+										}
+									}
+								]
+								actions = [
+									{
+										email = {
+											target_type = "issue_owners"
+											fallthrough_type = "AllMembers"
+										}
+									},
+								]
+							}
+						]
+					}
+				`,
+				ExpectError: acctest.ExpectLiteralError(`Attribute "action_filters[0].conditions[0].assigned_to" cannot be specified when "action_filters[0].conditions[0].age_comparison" is specified`),
+			},
+			{
+				PlanOnly: true,
+				Config: `
+					resource "sentry_alert" "test" {
+						organization = "1"
+						name         = "alert name"
+
+						frequency_minutes = 1440
+						environment       = "production"
+						monitor_ids       = ["1"]
+
+						trigger_conditions = []
+
+						action_filters = [
+							{
+								logic_type = "all"
+								conditions = [
+									{
+										age_comparison = {
+											value = 1
+											time = "minute"
+											comparison_type = "older"
+										}
+									}
+								]
+								actions = [
+									{
+										email = {
+											target_type = "issue_owners"
+											fallthrough_type = "AllMembers"
+										}
+										plugin = {}
+									},
+								]
+							}
+						]
+					}
+				`,
+				ExpectError: acctest.ExpectLiteralError(`Attribute "action_filters[0].actions[0].plugin" cannot be specified when "action_filters[0].actions[0].email" is specified`),
+			},
+		},
+	})
+}
+
 func TestAccAlertResource_basic(t *testing.T) {
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
