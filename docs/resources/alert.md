@@ -4,22 +4,90 @@ page_title: "sentry_alert Resource - terraform-provider-sentry"
 subcategory: ""
 description: |-
   ⚠️ This resource is currently in beta and may be subject to change. It is supported by New Monitors and Alerts https://docs.sentry.io/product/new-monitors-and-alerts/ and may not be viewable in the UI today.
-  Create an Alert for an Organization.
+  Create an Alert for a Monitor in an Organization. Monitors must be created separately using the sentry_cron_monitor cron_monitor.md, sentry_metric_monitor metric_monitor.md, or sentry_uptime_monitor uptime_monitor.md resources.
 ---
 
 # sentry_alert (Resource)
 
 ⚠️ This resource is currently in beta and may be subject to change. It is supported by [New Monitors and Alerts](https://docs.sentry.io/product/new-monitors-and-alerts/) and may not be viewable in the UI today.
 
-Create an Alert for an Organization.
+Create an Alert for a Monitor in an Organization. Monitors must be created separately using the [`sentry_cron_monitor`](cron_monitor.md), [`sentry_metric_monitor`](metric_monitor.md), or [`sentry_uptime_monitor`](uptime_monitor.md) resources.
 
 ## Example Usage
+
+```terraform
+resource "sentry_cron_monitor" "default" {
+  # ...
+}
+
+resource "sentry_metric_monitor" "default" {
+  # ...
+}
+
+resource "sentry_uptime_monitor" "default" {
+  # ...
+}
+
+
+resource "sentry_alert" "default" {
+  organization = "my-organization"
+  name         = "My Alert"
+  environment  = "production"
+
+  # Trigger when any of the monitors are triggered
+  monitor_ids = [
+    sentry_cron_monitor.default.id,
+    sentry_metric_monitor.default.id,
+    sentry_uptime_monitor.default.id,
+  ]
+
+  frequency_minutes = 1440
+
+  trigger_conditions = [
+    "first_seen_event",
+    "issue_resolved_trigger",
+    "reappeared_event",
+    "regression_event",
+  ]
+
+  action_filters = [
+    {
+      logic_type = "all"
+      conditions = [
+        {
+          event_frequency_percent = {
+            comparison_interval = "1w"
+            interval            = "1h"
+            value               = 100
+          }
+        }
+      ]
+      actions = [
+        {
+          email = {
+            target_type      = "issue_owners"
+            fallthrough_type = "AllMembers"
+          }
+        }
+      ]
+    }
+  ]
+}
+```
 
 ### Action Filters
 
 #### Discord
 
 ```terraform
+# Retrieve a Discord integration
+data "sentry_organization_integration" "discord" {
+  organization = sentry_project.test.organization
+
+  provider_key = "discord"
+  name         = "Discord Server" # Name of your Discord server
+}
+
 resource "sentry_alert" "default" {
   # ...
 
@@ -29,7 +97,7 @@ resource "sentry_alert" "default" {
       actions = [
         {
           discord = {
-            channel_id     = "714123428994482189"
+            channel_id     = "123456789012345678"
             integration_id = data.sentry_organization_integration.discord.id
             tags           = "environment, level"
           }
@@ -65,6 +133,14 @@ resource "sentry_alert" "default" {
 #### GitHub
 
 ```terraform
+# Retrieve a GitHub integration
+data "sentry_organization_integration" "github" {
+  organization = sentry_project.test.organization
+
+  provider_key = "github"
+  name         = "GitHub"
+}
+
 resource "sentry_alert" "default" {
   # ...
 
@@ -89,6 +165,14 @@ resource "sentry_alert" "default" {
 #### Jira
 
 ```terraform
+# Retrieve a Jira integration
+data "sentry_organization_integration" "jira" {
+  organization = sentry_project.test.organization
+
+  provider_key = "jira"
+  name         = "JIRA" # Name of your Jira server
+}
+
 resource "sentry_alert" "default" {
   # ...
 
@@ -110,6 +194,14 @@ resource "sentry_alert" "default" {
 #### Jira Server
 
 ```terraform
+# Retrieve a Jira Server integration
+data "sentry_organization_integration" "jira_server" {
+  organization = sentry_project.test.organization
+
+  provider_key = "jira_server"
+  name         = "JIRA" # Name of your Jira server
+}
+
 resource "sentry_alert" "default" {
   # ...
 
@@ -131,6 +223,14 @@ resource "sentry_alert" "default" {
 #### Microsoft Teams
 
 ```terraform
+# Retrieve a MS Teams integration
+data "sentry_organization_integration" "msteams" {
+  organization = sentry_project.test.organization
+
+  provider_key = "msteams"
+  name         = "My Team" # Name of your Microsoft Teams team
+}
+
 resource "sentry_alert" "default" {
   # ...
 
@@ -154,6 +254,21 @@ resource "sentry_alert" "default" {
 #### Opsgenie
 
 ```terraform
+# Retrieve an Opsgenie integration
+data "sentry_organization_integration" "opsgenie" {
+  organization = sentry_project.test.organization
+  provider_key = "opsgenie"
+  name         = "Opsgenie"
+}
+
+# Configure an Opsgenie integration team and integration key
+resource "sentry_integration_opsgenie" "opsgenie" {
+  organization    = data.sentry_organization_integration.opsgenie.organization
+  integration_id  = data.sentry_organization_integration.opsgenie.id
+  team            = "issue-alert-team"
+  integration_key = "my-integration-key"
+}
+
 resource "sentry_alert" "default" {
   # ...
 
@@ -178,6 +293,21 @@ resource "sentry_alert" "default" {
 #### PagerDuty
 
 ```terraform
+# Retrieve a PagerDuty integration
+data "sentry_organization_integration" "pagerduty" {
+  organization = sentry_project.test.organization
+  provider_key = "pagerduty"
+  name         = "PagerDuty"
+}
+
+# Configure a PagerDuty integration service and integration key
+resource "sentry_integration_pagerduty" "pagerduty" {
+  organization    = data.sentry_organization_integration.pagerduty.organization
+  integration_id  = data.sentry_organization_integration.pagerduty.id
+  service         = "issue-alert-service"
+  integration_key = "issue-alert-integration-key"
+}
+
 resource "sentry_alert" "default" {
   # ...
 
@@ -202,6 +332,7 @@ resource "sentry_alert" "default" {
 #### Plugin
 
 ```terraform
+# Send a notification to all legacy integrations (plugins).
 resource "sentry_alert" "default" {
   # ...
 
@@ -221,6 +352,14 @@ resource "sentry_alert" "default" {
 #### Slack
 
 ```terraform
+# Retrieve a Slack integration
+data "sentry_organization_integration" "slack" {
+  organization = sentry_project.test.organization
+
+  provider_key = "slack"
+  name         = "Slack Workspace" # Name of your Slack workspace
+}
+
 resource "sentry_alert" "default" {
   # ...
 
@@ -245,6 +384,14 @@ resource "sentry_alert" "default" {
 #### VSTS
 
 ```terraform
+# Retrieve a VSTS integration
+data "sentry_organization_integration" "vsts" {
+  organization = sentry_project.test.organization
+
+  provider_key = "vsts"
+  name         = "Azure DevOps"
+}
+
 resource "sentry_alert" "default" {
   # ...
 
@@ -688,12 +835,12 @@ resource "sentry_alert" "default" {
 
 Required:
 
-- `actions` (Attributes List) TODO (see [below for nested schema](#nestedatt--action_filters--actions))
+- `actions` (Attributes List) The actions to perform. (see [below for nested schema](#nestedatt--action_filters--actions))
 - `logic_type` (String) The logic to apply to the conditions. `any` will evaluate all conditions, and return true if any of those are met. `any-short` will stop evaluating conditions as soon as one is met. `all` will evaluate all conditions, and return true if all of those are met. `none` will return true if none of the conditions are met, will return false immediately if any are met. Valid values are: `any`, `any-short`, `all`, and `none`.
 
 Optional:
 
-- `conditions` (Attributes List) TODO (see [below for nested schema](#nestedatt--action_filters--conditions))
+- `conditions` (Attributes List) The conditions to evaluate. (see [below for nested schema](#nestedatt--action_filters--conditions))
 
 <a id="nestedatt--action_filters--actions"></a>
 ### Nested Schema for `action_filters.actions`

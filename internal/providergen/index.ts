@@ -256,6 +256,11 @@ function generateTerraformAttribute({
           )}](ctx)`,
         )},`,
       );
+      if (attribute.validators) {
+        parts.push("Validators: []validator.Object{");
+        parts.push(...attribute.validators.map((validator) => `${validator},`));
+        parts.push("},");
+      }
       parts.push("Attributes: map[string]schema.Attribute{");
       for (const nestedAttribute of attribute.attributes) {
         parts.push(
