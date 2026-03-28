@@ -3,6 +3,7 @@ from __future__ import annotations
 import ast
 import pathlib
 import subprocess
+import zoneinfo
 from typing import Any, Generic, NamedTuple, OrderedDict, TypeGuard, TypeVar
 
 import httpx
@@ -13,17 +14,19 @@ BRANCH = "master"
 TEMPLATE = """package sentrydata
 
 {% for key, value in result.items() %}
+{% if value.github_url %}
 // {{ value.github_url }}
+{% endif %}
 var {{ key }}{{ ' = ' }}{% if value.result|is_list %}
-[]string{
+[]{{ value.result|first|togotype }}{
 {% for v in value.result %}
-    "{{ v }}",
+    {{ v|tojson }},
 {% endfor %}
 }
 {% else %}
-map[string]string{
+map[{{ value.result.keys()|first|togotype }}]{{ value.result.values()|first|togotype }}{
 {% for k, v in value.result.items() %}
-    "{{ k }}": "{{ v }}",
+    {{ k|tojson }}: {{ v|tojson }},
 {% endfor %}
 }
 {% endif %}
@@ -41,7 +44,19 @@ def get_jinja2_env() -> jinja2.Environment:
     def is_list(value: Any) -> TypeGuard[list[Any]]:
         return isinstance(value, list)
 
+    def togotype(value: Any) -> str:
+        match value:
+            case str():
+                return "string"
+            case int():
+                return "int64"
+            case bool():
+                return "bool"
+            case _:
+                raise ValueError(f"Value type {type(value)} is not supported")
+
     env.filters["is_list"] = is_list
+    env.filters["togotype"] = togotype
 
     return env
 
@@ -132,9 +147,7 @@ def parse_issues_grouptype() -> dict[str, ResultData[Any]]:
                         case ast.Assign(
                             targets=[ast.Name(id=id)],
                             value=ast.Constant(value=value),
-                        ) if (
-                            id.upper() == id
-                        ):
+                        ) if id.isupper():
                             name = id.replace("_", " ").title().replace(" ", "_")
                             out["IssueGroupCategories"].result.append(name)
                             out["IssueGroupCategoryNameToId"].result[name] = str(value)
@@ -190,9 +203,7 @@ def parse_rules_match() -> dict[str, ResultData[Any]]:
                         case ast.Assign(
                             targets=[ast.Name(id=id)],
                             value=ast.Constant(value=value),
-                        ) if (
-                            id.upper() == id
-                        ):
+                        ) if id.isupper():
                             out["MatchTypes"].result.append(id)
                             out["MatchTypeNameToId"].result[id] = value
                             out["MatchTypeIdToName"].result[value] = id
@@ -227,7 +238,7 @@ def parse_models_dashboard_widget() -> dict[str, ResultData[Any]]:
                         match elt:
                             case ast.Tuple(
                                 elts=[ast.Name(id=id), ast.Constant(value=value)]
-                            ) if (id.upper() == id):
+                            ) if id.isupper():
                                 out.append(value)
                             case _:
                                 pass
@@ -272,6 +283,373 @@ def parse_models_project() -> dict[str, ResultData[Any]]:
     return out
 
 
+def parse_intervals() -> dict[str, ResultData[Any]]:
+    data = get_file_data("src/sentry/monitors/validators.py")
+    out: dict[str, ResultData[Any]] = {}
+    for node in ast.walk(data.tree):
+        match node:
+            case ast.Assign(
+                targets=[ast.Name(id="INTERVAL_NAMES")],
+                value=ast.Tuple(elts=elts),
+            ):
+                result: list[str] = []
+                for elt in elts:
+                    match elt:
+                        case ast.Constant(value=value):
+                            result.append(value)
+                        case _:
+                            pass
+                out["Intervals"] = ResultData(github_url=data.github_url, result=result)
+            case _:
+                pass
+    return out
+
+
+def get_timezones() -> dict[str, ResultData[Any]]:
+    timezones = frozenset(zoneinfo.available_timezones() - {"Factory"})
+    return {
+        "Timezones": ResultData(
+            github_url=None,
+            result=sorted(list(timezones)),
+        )
+    }
+
+
+def parse_alert_rule_models() -> dict[str, ResultData[Any]]:
+    data = get_file_data("src/sentry/incidents/models/alert_rule.py")
+    out: dict[str, ResultData[Any]] = {
+        "AlertRuleDetectionTypes": ResultData(github_url=data.github_url, result=[]),
+        "AlertRuleSensitivities": ResultData(github_url=data.github_url, result=[]),
+        "AlertRuleThresholdTypes": ResultData(github_url=data.github_url, result=[]),
+        "AlertRuleThresholdTypeNameToId": ResultData(
+            github_url=data.github_url, result={}
+        ),
+        "AlertRuleThresholdTypeIdToName": ResultData(
+            github_url=data.github_url, result={}
+        ),
+    }
+    for node in ast.walk(data.tree):
+        match node:
+            case ast.ClassDef(name="AlertRuleDetectionType", body=elts):
+                for elt in elts:
+                    match elt:
+                        case ast.Assign(
+                            targets=[ast.Name(id=id)],
+                            value=ast.Tuple(elts=[ast.Constant(value=value), _]),
+                        ) if id.isupper():
+                            out["AlertRuleDetectionTypes"].result.append(value)
+                        case _:
+                            pass
+            case ast.ClassDef(name="AlertRuleSensitivity", body=elts):
+                for elt in elts:
+                    match elt:
+                        case ast.Assign(
+                            targets=[ast.Name(id=id)],
+                            value=ast.Tuple(elts=[ast.Constant(value=value), _]),
+                        ) if id.isupper():
+                            out["AlertRuleSensitivities"].result.append(value)
+                        case _:
+                            pass
+            case ast.ClassDef(name="AlertRuleThresholdType", body=elts):
+                for elt in elts:
+                    match elt:
+                        case ast.Assign(
+                            targets=[ast.Name(id=id)],
+                            value=ast.Constant(value=value),
+                        ) if id.isupper():
+                            out["AlertRuleThresholdTypes"].result.append(id.lower())
+                            out["AlertRuleThresholdTypeNameToId"].result[id.lower()] = (
+                                value
+                            )
+                            out["AlertRuleThresholdTypeIdToName"].result[value] = (
+                                id.lower()
+                            )
+                        case _:
+                            pass
+            case _:
+                pass
+    return out
+
+
+def parse_uptime_models() -> dict[str, ResultData[Any]]:
+    data = get_file_data("src/sentry/uptime/models.py")
+    out: dict[str, ResultData[Any]] = {
+        "UptimeSubscriptionSupportedHttpMethods": ResultData(
+            github_url=data.github_url,
+            result=[],
+        ),
+        "UptimeSubscriptionIntervalSeconds": ResultData(
+            github_url=data.github_url,
+            result=[],
+        ),
+    }
+    for node in ast.walk(data.tree):
+        match node:
+            case ast.ClassDef(
+                name="UptimeSubscription",
+                body=body,
+            ):
+                for body_node in body:
+                    match body_node:
+                        case ast.ClassDef(name="SupportedHTTPMethods", body=elts):
+                            for elt in elts:
+                                match elt:
+                                    case ast.Assign(
+                                        value=ast.Tuple(
+                                            elts=[ast.Constant(value=value), _]
+                                        )
+                                    ):
+                                        out[
+                                            "UptimeSubscriptionSupportedHttpMethods"
+                                        ].result.append(value)
+                                    case _:
+                                        pass
+                        case ast.ClassDef(name="IntervalSeconds", body=elts):
+                            for elt in elts:
+                                match elt:
+                                    case ast.Assign(
+                                        value=ast.Tuple(
+                                            elts=[ast.Constant(value=value), _]
+                                        )
+                                    ):
+                                        out[
+                                            "UptimeSubscriptionIntervalSeconds"
+                                        ].result.append(value)
+                                    case _:
+                                        pass
+                        case _:
+                            pass
+            case _:
+                pass
+    return out
+
+
+def parse_uptime_types() -> dict[str, ResultData[Any]]:
+    data = get_file_data("src/sentry/uptime/types.py")
+    out: dict[str, ResultData[Any]] = {}
+    for node in ast.walk(data.tree):
+        match node:
+            case ast.ClassDef(
+                name="UptimeMonitorMode",
+                body=elts,
+            ):
+                out["UptimeMonitorModes"] = ResultData(
+                    github_url=data.github_url,
+                    result=[],
+                )
+                out["UptimeMonitorModeNameToId"] = ResultData(
+                    github_url=data.github_url,
+                    result=OrderedDict(),
+                )
+                out["UptimeMonitorModeIdToName"] = ResultData(
+                    github_url=data.github_url,
+                    result=OrderedDict(),
+                )
+                for elt in elts:
+                    match elt:
+                        case ast.Assign(
+                            targets=[ast.Name(id=id)],
+                            value=ast.Constant(value=value),
+                        ) if id.isupper():
+                            out["UptimeMonitorModes"].result.append(id)
+                            out["UptimeMonitorModeNameToId"].result[id] = value
+                            out["UptimeMonitorModeIdToName"].result[value] = id
+                        case _:
+                            pass
+            case _:
+                pass
+    return out
+
+
+def parse_snuba_models() -> dict[str, ResultData[Any]]:
+    data = get_file_data("src/sentry/snuba/models.py")
+    out: dict[str, ResultData[Any]] = {
+        "SnubaQueryTypes": ResultData(github_url=data.github_url, result=[]),
+        "SnubaQueryTypeNameToId": ResultData(github_url=data.github_url, result={}),
+        "SnubaQueryTypeIdToName": ResultData(github_url=data.github_url, result={}),
+        "SnubaExtrapolationModes": ResultData(github_url=data.github_url, result=[]),
+        "SnubaQueryEventTypes": ResultData(github_url=data.github_url, result=[]),
+        "SnubaQueryEventTypeNameToId": ResultData(
+            github_url=data.github_url, result={}
+        ),
+        "SnubaQueryEventTypeIdToName": ResultData(
+            github_url=data.github_url, result={}
+        ),
+    }
+    for node in ast.walk(data.tree):
+        match node:
+            case ast.ClassDef(name="SnubaQuery", body=elts):
+                for elt in elts:
+                    match elt:
+                        case ast.ClassDef(name="Type", body=type_elts):
+                            for elt in type_elts:
+                                match elt:
+                                    case ast.Assign(
+                                        targets=[ast.Name(id=id)],
+                                        value=ast.Constant(value=value),
+                                    ) if id.isupper():
+                                        out["SnubaQueryTypes"].result.append(id.lower())
+                                        out["SnubaQueryTypeNameToId"].result[
+                                            id.lower()
+                                        ] = value
+                                        out["SnubaQueryTypeIdToName"].result[value] = (
+                                            id.lower()
+                                        )
+                        case _:
+                            pass
+            case ast.ClassDef(name="SnubaQueryEventType", body=elts):
+                for elt in elts:
+                    match elt:
+                        case ast.ClassDef(name="EventType", body=type_elts):
+                            for elt in type_elts:
+                                match elt:
+                                    case ast.Assign(
+                                        targets=[ast.Name(id=id)],
+                                        value=ast.Constant(value=value),
+                                    ) if id.isupper():
+                                        out["SnubaQueryEventTypes"].result.append(
+                                            id.lower()
+                                        )
+                                        out["SnubaQueryEventTypeNameToId"].result[
+                                            id.lower()
+                                        ] = value
+                                        out["SnubaQueryEventTypeIdToName"].result[
+                                            value
+                                        ] = id.lower()
+                        case _:
+                            pass
+            case ast.ClassDef(name="ExtrapolationMode", body=elts):
+                for elt in elts:
+                    match elt:
+                        case ast.Assign(targets=[ast.Name(id=id)]) if id.isupper():
+                            out["SnubaExtrapolationModes"].result.append(id.lower())
+                        case _:
+                            pass
+            case _:
+                pass
+    return out
+
+
+def parse_snuba_datasets() -> dict[str, ResultData[Any]]:
+    data = get_file_data("src/sentry/snuba/dataset.py")
+    out: dict[str, ResultData[Any]] = {}
+    for node in ast.walk(data.tree):
+        match node:
+            case ast.ClassDef(
+                name="Dataset",
+                body=elts,
+            ):
+                result: list[str] = []
+                for elt in elts:
+                    match elt:
+                        case ast.Assign(value=ast.Constant(value=value)):
+                            result.append(value)
+                        case _:
+                            pass
+                out["SnubaDatasets"] = ResultData(
+                    github_url=data.github_url, result=result
+                )
+            case _:
+                pass
+    return out
+
+
+def parse_data_condition_types() -> dict[str, ResultData[Any]]:
+    data = get_file_data("src/sentry/workflow_engine/models/data_condition.py")
+    out: dict[str, ResultData[Any]] = {
+        "DataConditionTypes": ResultData(github_url=data.github_url, result=[]),
+        "TriggerConditionTypes": ResultData(github_url=data.github_url, result=[]),
+    }
+    condition_types: dict[str, str] = {}
+
+    for node in ast.walk(data.tree):
+        match node:
+            case ast.ClassDef(
+                name="Condition",
+                body=elts,
+            ):
+                for elt in elts:
+                    match elt:
+                        case ast.Assign(
+                            targets=[ast.Name(id=key)],
+                            value=ast.Constant(value=value),
+                        ):
+                            out["DataConditionTypes"].result.append(value)
+                            condition_types[key] = value
+                        case _:
+                            pass
+            case _:
+                pass
+
+    for node in ast.walk(data.tree):
+        match node:
+            case ast.Assign(
+                targets=[ast.Name(id="TRIGGER_CONDITIONS")],
+                value=ast.List(elts=elts),
+            ):
+                for elt in elts:
+                    match elt:
+                        case ast.Attribute(value=ast.Name(id="Condition"), attr=attr):
+                            out["TriggerConditionTypes"].result.append(
+                                condition_types[attr]
+                            )
+                        case _:
+                            pass
+            case _:
+                pass
+    return out
+
+
+def parse_data_condition_group_types() -> dict[str, ResultData[Any]]:
+    data = get_file_data("src/sentry/workflow_engine/models/data_condition_group.py")
+    out: dict[str, ResultData[Any]] = {}
+    for node in ast.walk(data.tree):
+        match node:
+            case ast.ClassDef(
+                name="DataConditionGroup",
+                body=body,
+            ):
+                result: list[str] = []
+                for body_node in body:
+                    match body_node:
+                        case ast.ClassDef(name="Type", body=elts):
+                            for elt in elts:
+                                match elt:
+                                    case ast.Assign(value=ast.Constant(value=value)):
+                                        result.append(value)
+                                    case _:
+                                        pass
+                        case _:
+                            pass
+                out["DataConditionGroupTypes"] = ResultData(
+                    github_url=data.github_url, result=result
+                )
+            case _:
+                pass
+    return out
+
+
+def parse_event_frequency() -> dict[str, ResultData[Any]]:
+    data = get_file_data("src/sentry/rules/conditions/event_frequency.py")
+    out: dict[str, ResultData[Any]] = {}
+    for node in ast.walk(data.tree):
+        match node:
+            case ast.AnnAssign(
+                target=ast.Name(id="STANDARD_INTERVALS"),
+                value=ast.Dict(keys=keys),
+            ):
+                result_intervals: list[str] = []
+                for key in keys:
+                    assert isinstance(key, ast.Constant)
+                    result_intervals.append(key.value)
+                out["EventFrequencyStandardIntervals"] = ResultData(
+                    github_url=data.github_url, result=result_intervals
+                )
+            case _:
+                pass
+    return out
+
+
 def main() -> None:
     result: OrderedDict[str, ResultData[Any]] = OrderedDict()
     result.update(parse_constants())
@@ -280,6 +658,16 @@ def main() -> None:
     result.update(parse_rules_match())
     result.update(parse_models_dashboard_widget())
     result.update(parse_models_project())
+    result.update(parse_intervals())
+    result.update(get_timezones())
+    result.update(parse_alert_rule_models())
+    result.update(parse_uptime_models())
+    result.update(parse_uptime_types())
+    result.update(parse_snuba_models())
+    result.update(parse_snuba_datasets())
+    result.update(parse_data_condition_types())
+    result.update(parse_data_condition_group_types())
+    result.update(parse_event_frequency())
 
     env = get_jinja2_env()
     template = env.from_string(TEMPLATE)

@@ -321,6 +321,218 @@ paths:
           description: Forbidden
         "404":
           description: Not Found
+  /0/organizations/{organization_id_or_slug}/workflows/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+    get:
+      summary: List Organization Alerts
+      operationId: listOrganizationWorkflows
+      parameters:
+        - $ref: "#/components/parameters/cursor"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OrganizationWorkflow"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+    post:
+      summary: Create an Alert for an Organization
+      operationId: createOrganizationWorkflow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrganizationWorkflowRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrganizationWorkflow"
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+  /0/organizations/{organization_id_or_slug}/workflows/{workflow_id}/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+      - name: workflow_id
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Retrieve an Alert for an Organization
+      operationId: getOrganizationWorkflow
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrganizationWorkflow"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+    put:
+      summary: Update an Alert for an Organization
+      operationId: updateOrganizationWorkflow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateOrganizationWorkflowRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrganizationWorkflow"
+        "400":
+          description: Bad Request
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+    delete:
+      summary: Delete an Alert for an Organization
+      operationId: deleteOrganizationWorkflow
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+  /0/organizations/{organization_id_or_slug}/detectors/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+      - $ref: "#/components/parameters/cursor"
+      - name: query
+        in: query
+        required: false
+        schema:
+          type: string
+    get:
+      summary: List Monitors for an Organization
+      operationId: listOrganizationMonitors
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProjectMonitor"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+  /0/organizations/{organization_id_or_slug}/projects/{project_id_or_slug}/detectors/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+      - $ref: "#/components/parameters/project_id_or_slug"
+    post:
+      summary: Create a Monitor for a Project
+      operationId: createProjectMonitor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectMonitorRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectMonitor"
+        "400":
+          description: Bad Request
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+  /0/organizations/{organization_id_or_slug}/detectors/{detector_id}/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+      - $ref: "#/components/parameters/detector_id"
+    get:
+      summary: Retrieve a Monitor
+      operationId: getProjectMonitor
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectMonitor"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+    put:
+      summary: Update a Monitor
+      operationId: updateProjectMonitor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectMonitorRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectMonitor"
+        "400":
+          description: Bad Request
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+    delete:
+      summary: Delete a Monitor
+      operationId: deleteProjectMonitor
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
   /0/teams/{organization_id_or_slug}/{team_id_or_slug}/:
     parameters:
       - $ref: "#/components/parameters/organization_id_or_slug"
@@ -959,6 +1171,12 @@ components:
       required: true
       schema:
         type: string
+    detector_id:
+      name: detector_id
+      in: path
+      required: true
+      schema:
+        type: string
     cursor:
       name: cursor
       in: query
@@ -1002,7 +1220,7 @@ components:
         - pending
         - expired
         - orgRole
-        - user 
+        - user
       properties:
         id:
           type: string
@@ -2176,6 +2394,466 @@ components:
           type: string
         codeownersAutoSync:
           type: boolean
+    ProjectMonitorRequest_Base:
+      type: object
+      required:
+        - projectId
+        - name
+        - description
+        - owner
+      properties:
+        projectId:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        enabled:
+          type: boolean
+          nullable: true
+        owner:
+          type: string
+          nullable: true
+        config:
+          $ref: "#/components/schemas/ProjectMonitor_Config"
+    ProjectMonitorRequest_MetricIssue:
+      allOf:
+        - $ref: "#/components/schemas/ProjectMonitorRequest_Base"
+        - type: object
+          required:
+            - type
+            - dataSources
+            - conditionGroup
+          properties:
+            type:
+              type: string
+              enum:
+                - metric_issue
+            dataSources:
+              type: array
+              items:
+                $ref: "#/components/schemas/ProjectMonitor_DataSource_SnubaQuerySubscription"
+            conditionGroup:
+              $ref: "#/components/schemas/ProjectMonitor_ConditionGroup"
+    ProjectMonitorRequest_MonitorCheckInFailure:
+      allOf:
+        - $ref: "#/components/schemas/ProjectMonitorRequest_Base"
+        - type: object
+          required:
+            - type
+            - dataSources
+          properties:
+            type:
+              type: string
+              enum:
+                - monitor_check_in_failure
+            dataSources:
+              type: array
+              items:
+                $ref: "#/components/schemas/ProjectMonitor_DataSource_Cron"
+    ProjectMonitorRequest_UptimeDomainFailure:
+      allOf:
+        - $ref: "#/components/schemas/ProjectMonitorRequest_Base"
+        - type: object
+          required:
+            - type
+            - dataSources
+          properties:
+            type:
+              type: string
+              enum:
+                - uptime_domain_failure
+            dataSources:
+              type: array
+              items:
+                $ref: "#/components/schemas/ProjectMonitor_DataSource_UptimeDomainFailure"
+    ProjectMonitorRequest:
+      oneOf:
+        - $ref: "#/components/schemas/ProjectMonitorRequest_MetricIssue"
+        - $ref: "#/components/schemas/ProjectMonitorRequest_MonitorCheckInFailure"
+        - $ref: "#/components/schemas/ProjectMonitorRequest_UptimeDomainFailure"
+      discriminator:
+        propertyName: type
+        mapping:
+          metric_issue: "#/components/schemas/ProjectMonitorRequest_MetricIssue"
+          monitor_check_in_failure: "#/components/schemas/ProjectMonitorRequest_MonitorCheckInFailure"
+          uptime_domain_failure: "#/components/schemas/ProjectMonitorRequest_UptimeDomainFailure"
+    ProjectMonitor:
+      type: object
+      required:
+        - id
+        - projectId
+        - enabled
+        - name
+        - type
+        - description
+        - owner
+        - dataSources
+        - conditionGroup
+        - config
+        - dateCreated
+        - dateUpdated
+      properties:
+        id:
+          type: string
+        projectId:
+          type: string
+        enabled:
+          type: boolean
+        name:
+          type: string
+        type:
+          type: string
+        description:
+          type: string
+          nullable: true
+        owner:
+          $ref: "#/components/schemas/ProjectMonitor_Owner"
+        dataSources:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectMonitor_DataSource_Wrapper"
+        conditionGroup:
+          $ref: "#/components/schemas/ProjectMonitor_ConditionGroup"
+        config:
+          $ref: "#/components/schemas/ProjectMonitor_Config"
+        dateCreated:
+          type: string
+          format: date-time
+        dateUpdated:
+          type: string
+          format: date-time
+    ProjectMonitor_Config:
+      oneOf:
+        - $ref: "#/components/schemas/ProjectMonitor_Config_MetricIssue"
+        - $ref: "#/components/schemas/ProjectMonitor_Config_UptimeDomainFailure"
+    ProjectMonitor_Config_MetricIssue:
+      type: object
+      properties:
+        detectionType:
+          type: string
+        comparisonDelta:
+          type: integer
+          format: int64
+    ProjectMonitor_Config_UptimeDomainFailure:
+      type: object
+      required:
+        - mode
+        - environment
+        - recoveryThreshold
+        - downtimeThreshold
+      properties:
+        mode:
+          type: integer
+          format: int64
+          enum:
+            - 1
+            - 2
+            - 3
+        environment:
+          type: string
+        recoveryThreshold:
+          type: integer
+          format: int64
+        downtimeThreshold:
+          type: integer
+          format: int64
+    ProjectMonitor_DataSource_Wrapper:
+      oneOf:
+        - $ref: "#/components/schemas/ProjectMonitor_DataSource_Wrapper_CronMonitor"
+        - $ref: "#/components/schemas/ProjectMonitor_DataSource_Wrapper_SnubaQuerySubscription"
+        - $ref: "#/components/schemas/ProjectMonitor_DataSource_Wrapper_UptimeSubscription"
+      discriminator:
+        propertyName: type
+        mapping:
+          cron_monitor: "#/components/schemas/ProjectMonitor_DataSource_Wrapper_CronMonitor"
+          snuba_query_subscription: "#/components/schemas/ProjectMonitor_DataSource_Wrapper_SnubaQuerySubscription"
+          uptime_subscription: "#/components/schemas/ProjectMonitor_DataSource_Wrapper_UptimeSubscription"
+    ProjectMonitor_DataSource_Wrapper_CronMonitor:
+      type: object
+      required:
+        - type
+        - queryObj
+      properties:
+        type:
+          type: string
+          enum:
+            - cron_monitor
+        queryObj:
+          $ref: "#/components/schemas/ProjectMonitor_DataSource_Cron"
+    ProjectMonitor_DataSource_Wrapper_SnubaQuerySubscription:
+      type: object
+      required:
+        - type
+        - queryObj
+      properties:
+        type:
+          type: string
+          enum:
+            - snuba_query_subscription
+        queryObj:
+          type: object
+          required:
+            - snubaQuery
+          properties:
+            snubaQuery:
+              $ref: "#/components/schemas/ProjectMonitor_DataSource_SnubaQuerySubscription"
+    ProjectMonitor_DataSource_Wrapper_UptimeSubscription:
+      type: object
+      required:
+        - type
+        - queryObj
+      properties:
+        type:
+          type: string
+          enum:
+            - uptime_subscription
+        queryObj:
+          $ref: "#/components/schemas/ProjectMonitor_DataSource_UptimeDomainFailure"
+    ProjectMonitor_Owner:
+      oneOf:
+        - $ref: "#/components/schemas/ProjectMonitor_Owner_User"
+        - $ref: "#/components/schemas/ProjectMonitor_Owner_Team"
+      discriminator:
+        propertyName: type
+        mapping:
+          user: "#/components/schemas/ProjectMonitor_Owner_User"
+          team: "#/components/schemas/ProjectMonitor_Owner_Team"
+      nullable: true
+    ProjectMonitor_Owner_User:
+      type: object
+      required:
+        - type
+        - id
+        - name
+        - email
+      properties:
+        type:
+          type: string
+          enum:
+            - user
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+    ProjectMonitor_Owner_Team:
+      type: object
+      required:
+        - type
+        - id
+        - name
+      properties:
+        type:
+          type: string
+          enum:
+            - team
+        id:
+          type: string
+        name:
+          type: string
+    ProjectMonitor_DataSource_Cron:
+      type: object
+      required:
+        - name
+        - config
+      properties:
+        name:
+          type: string
+        config:
+          $ref: "#/components/schemas/ProjectMonitor_DataSource_Config_Cron"
+    ProjectMonitor_DataSource_UptimeDomainFailure:
+      type: object
+      required:
+        - url
+        - method
+        - body
+        - headers
+        - intervalSeconds
+        - timeoutMs
+        - traceSampling
+        - assertion
+      properties:
+        url:
+          type: string
+        method:
+          type: string
+        body:
+          type: string
+          nullable: true
+        headers:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+        intervalSeconds:
+          type: integer
+          format: int64
+        timeoutMs:
+          type: integer
+          format: int64
+        traceSampling:
+          type: boolean
+        assertion:
+          type: string
+          format: json
+          nullable: true
+    ProjectMonitor_DataSource_SnubaQuerySubscription:
+      type: object
+      required:
+        - aggregate
+        - dataset
+        - environment
+        - eventTypes
+        - query
+        - queryType
+        - timeWindow
+        - extrapolationMode
+      properties:
+        aggregate:
+          type: string
+        dataset:
+          type: string
+        environment:
+          type: string
+          nullable: true
+        eventTypes:
+          type: array
+          items:
+            type: string
+        query:
+          type: string
+          nullable: true
+        queryType:
+          type: integer
+          format: int64
+          nullable: true
+        timeWindow:
+          type: integer
+          format: int64
+          nullable: true
+        extrapolationMode:
+          type: string
+          nullable: true
+    ProjectMonitor_DataSource_Config_Cron:
+      oneOf:
+        - $ref: "#/components/schemas/ProjectMonitor_DataSource_Config_Cron_Crontab"
+        - $ref: "#/components/schemas/ProjectMonitor_DataSource_Config_Cron_Interval"
+      discriminator:
+        propertyName: schedule_type
+        mapping:
+          crontab: "#/components/schemas/ProjectMonitor_DataSource_Config_Cron_Crontab"
+          interval: "#/components/schemas/ProjectMonitor_DataSource_Config_Cron_Interval"
+    ProjectMonitor_DataSource_Config_Cron_Base:
+      type: object
+      required:
+        - checkin_margin
+        - failure_issue_threshold
+        - max_runtime
+        - recovery_threshold
+        - timezone
+      properties:
+        checkin_margin:
+          type: integer
+          format: int64
+        failure_issue_threshold:
+          type: integer
+          format: int64
+        max_runtime:
+          type: integer
+          format: int64
+        recovery_threshold:
+          type: integer
+          format: int64
+        timezone:
+          type: string
+    ProjectMonitor_DataSource_Config_Cron_Crontab:
+      allOf:
+        - $ref: "#/components/schemas/ProjectMonitor_DataSource_Config_Cron_Base"
+        - type: object
+          required:
+            - schedule_type
+            - schedule
+          properties:
+            schedule_type:
+              type: string
+              enum:
+                - crontab
+            schedule:
+              type: string
+    ProjectMonitor_DataSource_Config_Cron_Interval:
+      allOf:
+        - $ref: "#/components/schemas/ProjectMonitor_DataSource_Config_Cron_Base"
+        - type: object
+          required:
+            - schedule_type
+            - schedule
+          properties:
+            schedule_type:
+              type: string
+              enum:
+                - interval
+            schedule:
+              type: array
+              items:
+                anyOf:
+                  - $ref: "#/components/schemas/ProjectMonitor_DataSource_Config_Cron_Interval_Value"
+                  - $ref: "#/components/schemas/ProjectMonitor_DataSource_Config_Cron_Interval_Unit"
+    ProjectMonitor_DataSource_Config_Cron_Interval_Value:
+      type: integer
+      format: int64
+    ProjectMonitor_DataSource_Config_Cron_Interval_Unit:
+      type: string
+    ProjectMonitor_ConditionGroup:
+      type: object
+      required:
+        - conditions
+        - logicType
+      properties:
+        conditions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectMonitor_ConditionGroup_Condition"
+        logicType:
+          type: string
+          enum:
+            - any
+            - any-short
+            - all
+            - none
+    ProjectMonitor_ConditionGroup_Condition:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+        comparison:
+          oneOf:
+            - type: string
+            - type: integer
+              format: int64
+            - type: object
+              required:
+                - seasonality
+                - sensitivity
+                - thresholdType
+              properties:
+                seasonality:
+                  type: string
+                sensitivity:
+                  type: string
+                thresholdType:
+                  type: integer
+                  format: int64
+        conditionResult:
+          type: integer
+          format: int64
     SentryAppInstallation:
       type: object
       required:
@@ -2220,4 +2898,938 @@ components:
         slug:
           type: string
         name:
+          type: string
+    OrganizationWorkflowRequest:
+      type: object
+      required:
+        - name
+        - enabled
+        - environment
+        - config
+        - detectorIds
+        - triggers
+        - actionFilters
+      properties:
+        name:
+          type: string
+        enabled:
+          type: boolean
+        environment:
+          type: string
+        config:
+          $ref: "#/components/schemas/OrganizationWorkflow_Config"
+        detectorIds:
+          type: array
+          items:
+            type: string
+        triggers:
+          $ref: "#/components/schemas/OrganizationWorkflow_Trigger"
+        actionFilters:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter"
+    UpdateOrganizationWorkflowRequest:
+      allOf:
+        - $ref: "#/components/schemas/OrganizationWorkflowRequest"
+        - type: object
+          required:
+            - id
+          properties:
+            id:
+              type: string
+    OrganizationWorkflow:
+      type: object
+      required:
+        - id
+        - name
+        - enabled
+        - environment
+        - config
+        - detectorIds
+        - triggers
+        - actionFilters
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        enabled:
+          type: boolean
+        environment:
+          type: string
+        config:
+          $ref: "#/components/schemas/OrganizationWorkflow_Config"
+        detectorIds:
+          type: array
+          items:
+            type: string
+        triggers:
+          $ref: "#/components/schemas/OrganizationWorkflow_Trigger"
+        actionFilters:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter"
+    OrganizationWorkflow_Config:
+      type: object
+      required:
+        - frequency
+      properties:
+        frequency:
+          type: integer
+          format: int64
+    OrganizationWorkflow_Trigger:
+      type: object
+      required:
+        - logicType
+        - conditions
+      properties:
+        logicType:
+          type: string
+          enum:
+            - any-short
+        conditions:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrganizationWorkflow_Trigger_Condition"
+    OrganizationWorkflow_Trigger_Condition:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+        comparison:
+          oneOf:
+            - type: boolean
+            - type: object # TODO: Legacy?
+        conditionResult:
+          type: boolean
+    OrganizationWorkflow_ActionFilter:
+      type: object
+      required:
+        - logicType
+        - conditions
+        - actions
+      properties:
+        logicType:
+          type: string
+          enum:
+            - any
+            - any-short
+            - all
+            - none
+        conditions:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition"
+        actions:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action"
+    OrganizationWorkflow_ActionFilter_Condition:
+      oneOf:
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_AgeComparison"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_AssignedTo"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_IssueCategory"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_IssueOccurrences"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_IssuePriorityDeescalating"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_IssuePriorityGreaterOrEqual"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_EventUniqueUserFrequencyCount"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_EventFrequencyCount"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_EventFrequencyPercent"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_PercentSessionsCount"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_PercentSessionsPercent"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_EventAttribute"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_TaggedEvent"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_LatestRelease"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_LatestAdoptedRelease"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_Level"
+      discriminator:
+        propertyName: type
+        mapping:
+          age_comparison: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_AgeComparison"
+          assigned_to: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_AssignedTo"
+          issue_category: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_IssueCategory"
+          issue_occurrences: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_IssueOccurrences"
+          issue_priority_deescalating: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_IssuePriorityDeescalating"
+          issue_priority_greater_or_equal: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_IssuePriorityGreaterOrEqual"
+          event_unique_user_frequency_count: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_EventUniqueUserFrequencyCount"
+          event_frequency_count: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_EventFrequencyCount"
+          event_frequency_percent: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_EventFrequencyPercent"
+          percent_sessions_count: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_PercentSessionsCount"
+          percent_sessions_percent: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_PercentSessionsPercent"
+          event_attribute: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_EventAttribute"
+          tagged_event: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_TaggedEvent"
+          latest_release: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_LatestRelease"
+          latest_adopted_release: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_LatestAdoptedRelease"
+          level: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_Level"
+    OrganizationWorkflow_ActionFilter_Condition_AgeComparison:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+          enum:
+            - age_comparison
+        comparison:
+          type: object
+          required:
+            - time
+            - value
+            - comparisonType
+          properties:
+            time:
+              type: string
+              enum:
+                - minute
+                - hour
+                - day
+                - week
+            value:
+              type: integer
+              format: int64
+            comparisonType:
+              type: string
+              enum:
+                - older
+                - newer
+        conditionResult:
+          type: boolean
+    OrganizationWorkflow_ActionFilter_Condition_AssignedTo:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+          enum:
+            - assigned_to
+        comparison:
+          type: object
+          required:
+            - targetType
+            - targetIdentifier
+          properties:
+            targetType:
+              type: string
+              enum:
+                - NoOne
+                - Member
+                - Team
+            targetIdentifier:
+              oneOf:
+                - type: string
+                - type: integer
+                  format: int64
+        conditionResult:
+          type: boolean
+    OrganizationWorkflow_ActionFilter_Condition_IssueCategory:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+          enum:
+            - issue_category
+        comparison:
+          type: object
+          required:
+            - value
+          properties:
+            value:
+              type: integer
+              format: int64
+        conditionResult:
+          type: boolean
+    OrganizationWorkflow_ActionFilter_Condition_IssueOccurrences:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+          enum:
+            - issue_occurrences
+        comparison:
+          type: object
+          required:
+            - value
+          properties:
+            value:
+              type: integer
+              format: int64
+        conditionResult:
+          type: boolean
+    OrganizationWorkflow_ActionFilter_Condition_IssuePriorityDeescalating:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+          enum:
+            - issue_priority_deescalating
+        comparison:
+          type: boolean
+        conditionResult:
+          type: boolean
+    OrganizationWorkflow_ActionFilter_Condition_IssuePriorityGreaterOrEqual:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+          enum:
+            - issue_priority_greater_or_equal
+        comparison:
+          type: integer
+          format: int64
+        conditionResult:
+          type: boolean
+    OrganizationWorkflow_ActionFilter_Condition_EventUniqueUserFrequencyCount:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+          enum:
+            - event_unique_user_frequency_count
+        comparison:
+          type: object
+          required:
+            - value
+            - filters
+            - interval
+          properties:
+            value:
+              type: integer
+              format: int64
+            filters:
+              type: array
+              items:
+                $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_EventUniqueUserFrequencyCount_Filter"
+            interval:
+              type: string
+        conditionResult:
+          type: boolean
+    OrganizationWorkflow_ActionFilter_Condition_EventUniqueUserFrequencyCount_Filter:
+      type: object
+      properties:
+        key:
+          type: string
+        attribute:
+          type: string
+        match:
+          type: string
+        value:
+          type: string
+    OrganizationWorkflow_ActionFilter_Condition_EventFrequencyCount:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+          enum:
+            - event_frequency_count
+        comparison:
+          type: object
+          required:
+            - value
+            - interval
+          properties:
+            value:
+              type: integer
+              format: int64
+            interval:
+              type: string
+        conditionResult:
+          type: boolean
+    OrganizationWorkflow_ActionFilter_Condition_EventFrequencyPercent:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+          enum:
+            - event_frequency_percent
+        comparison:
+          type: object
+          required:
+            - value
+            - interval
+            - comparisonInterval
+          properties:
+            value:
+              type: integer
+              format: int64
+            interval:
+              type: string
+            comparisonInterval:
+              type: string
+        conditionResult:
+          type: boolean
+    OrganizationWorkflow_ActionFilter_Condition_PercentSessionsCount:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+          enum:
+            - percent_sessions_count
+        comparison:
+          type: object
+          required:
+            - value
+            - interval
+          properties:
+            value:
+              type: integer
+              format: int64
+            interval:
+              type: string
+        conditionResult:
+          type: boolean
+    OrganizationWorkflow_ActionFilter_Condition_PercentSessionsPercent:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+          enum:
+            - percent_sessions_percent
+        comparison:
+          type: object
+          required:
+            - value
+            - interval
+            - comparisonInterval
+          properties:
+            value:
+              type: integer
+              format: int64
+            interval:
+              type: string
+            comparisonInterval:
+              type: string
+        conditionResult:
+          type: boolean
+    OrganizationWorkflow_ActionFilter_Condition_EventAttribute:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+          enum:
+            - event_attribute
+        comparison:
+          type: object
+          required:
+            - attribute
+            - match
+            - value
+          properties:
+            attribute:
+              type: string
+            match:
+              type: string
+            value:
+              type: string
+        conditionResult:
+          type: boolean
+    OrganizationWorkflow_ActionFilter_Condition_TaggedEvent:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+          enum:
+            - tagged_event
+        comparison:
+          type: object
+          required:
+            - key
+            - match
+          properties:
+            key:
+              type: string
+            match:
+              type: string
+            value:
+              type: string
+        conditionResult:
+          type: boolean
+    OrganizationWorkflow_ActionFilter_Condition_LatestRelease:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+          enum:
+            - latest_release
+        comparison:
+          type: boolean
+        conditionResult:
+          type: boolean
+    OrganizationWorkflow_ActionFilter_Condition_LatestAdoptedRelease:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+          enum:
+            - latest_adopted_release
+        comparison:
+          type: object
+          required:
+            - environment
+            - ageComparison
+            - releaseAgeType
+          properties:
+            environment:
+              type: string
+            ageComparison:
+              type: string
+            releaseAgeType:
+              type: string
+        conditionResult:
+          type: boolean
+    OrganizationWorkflow_ActionFilter_Condition_Level:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+          enum:
+            - level
+        comparison:
+          type: object
+          required:
+            - match
+            - level
+          properties:
+            match:
+              type: string
+            level:
+              type: integer
+              format: int64
+        conditionResult:
+          type: boolean
+    OrganizationWorkflow_ActionFilter_Action:
+      oneOf:
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Email"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Plugin"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Slack"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_PagerDuty"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Discord"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_MsTeams"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Opsgenie"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Vsts"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Jira"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_JiraServer"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_GitHub"
+      discriminator:
+        propertyName: type
+        mapping:
+          email: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Email"
+          plugin: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Plugin"
+          slack: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Slack"
+          pagerduty: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_PagerDuty"
+          discord: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Discord"
+          msteams: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_MsTeams"
+          opsgenie: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Opsgenie"
+          vsts: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Vsts"
+          jira: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Jira"
+          jira_server: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_JiraServer"
+          github: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_GitHub"
+    OrganizationWorkflow_ActionFilter_Action_Email:
+      type: object
+      required:
+        - type
+        - data
+        - config
+      properties:
+        type:
+          type: string
+          enum:
+            - email
+        data:
+          type: object
+          properties:
+            fallthroughType:
+              type: string
+              enum:
+                - AllMembers
+                - ActiveMembers
+                - NoOne
+        config:
+          type: object
+          required:
+            - targetType
+          properties:
+            targetType:
+              type: string
+              enum:
+                - issue_owners
+                - team
+                - user
+            targetIdentifier:
+              type: string
+    OrganizationWorkflow_ActionFilter_Action_Plugin:
+      type: object
+      required:
+        - type
+        - data
+        - config
+      properties:
+        type:
+          type: string
+          enum:
+            - plugin
+        data:
+          type: object
+        config:
+          type: object
+    OrganizationWorkflow_ActionFilter_Action_Slack:
+      type: object
+      required:
+        - type
+        - data
+        - config
+        - integrationId
+      properties:
+        type:
+          type: string
+          enum:
+            - slack
+        data:
+          type: object
+          properties:
+            tags:
+              type: string
+            notes:
+              type: string
+        config:
+          type: object
+          required:
+            - targetType
+            - targetIdentifier
+            - targetDisplay
+          properties:
+            targetType:
+              type: string
+              enum:
+                - specific
+            targetIdentifier:
+              type: string
+            targetDisplay:
+              type: string
+        integrationId:
+          type: string
+    OrganizationWorkflow_ActionFilter_Action_PagerDuty:
+      type: object
+      required:
+        - type
+        - data
+        - config
+        - integrationId
+      properties:
+        type:
+          type: string
+          enum:
+            - pagerduty
+        data:
+          type: object
+          properties:
+            priority:
+              type: string
+        config:
+          type: object
+          required:
+            - targetType
+            - targetIdentifier
+            - targetDisplay
+          properties:
+            targetType:
+              type: string
+              enum:
+                - specific
+            targetIdentifier:
+              type: string
+            targetDisplay:
+              type: string
+        integrationId:
+          type: string
+    OrganizationWorkflow_ActionFilter_Action_Discord:
+      type: object
+      required:
+        - type
+        - data
+        - config
+        - integrationId
+      properties:
+        type:
+          type: string
+          enum:
+            - discord
+        data:
+          type: object
+          properties:
+            tags:
+              type: string
+        config:
+          type: object
+          required:
+            - targetType
+            - targetIdentifier
+            - targetDisplay
+          properties:
+            targetType:
+              type: string
+              enum:
+                - specific
+            targetIdentifier:
+              type: string
+            targetDisplay:
+              type: string
+              nullable: true
+        integrationId:
+          type: string
+    OrganizationWorkflow_ActionFilter_Action_MsTeams:
+      type: object
+      required:
+        - type
+        - data
+        - config
+        - integrationId
+      properties:
+        type:
+          type: string
+          enum:
+            - msteams
+        data:
+          type: object
+        config:
+          type: object
+          required:
+            - targetType
+            - targetIdentifier
+            - targetDisplay
+          properties:
+            targetType:
+              type: string
+              enum:
+                - specific
+            targetIdentifier:
+              type: string
+            targetDisplay:
+              type: string
+        integrationId:
+          type: string
+    OrganizationWorkflow_ActionFilter_Action_Opsgenie:
+      type: object
+      required:
+        - type
+        - data
+        - config
+        - integrationId
+      properties:
+        type:
+          type: string
+          enum:
+            - opsgenie
+        data:
+          type: object
+          properties:
+            priority:
+              type: string
+        config:
+          type: object
+          required:
+            - targetType
+            - targetIdentifier
+            - targetDisplay
+          properties:
+            targetType:
+              type: string
+              enum:
+                - specific
+            targetIdentifier:
+              type: string
+            targetDisplay:
+              type: string
+        integrationId:
+          type: string
+    OrganizationWorkflow_ActionFilter_Action_Vsts:
+      type: object
+      required:
+        - type
+        - data
+        - config
+        - integrationId
+      properties:
+        type:
+          type: string
+          enum:
+            - vsts
+        data:
+          type: object
+          additionalProperties:
+            type: string
+        config:
+          type: object
+          required:
+            - targetType
+          properties:
+            targetType:
+              type: string
+              enum:
+                - specific
+        integrationId:
+          type: string
+    OrganizationWorkflow_ActionFilter_Action_Jira:
+      type: object
+      required:
+        - type
+        - data
+        - config
+        - integrationId
+      properties:
+        type:
+          type: string
+          enum:
+            - jira
+        data:
+          type: object
+          additionalProperties:
+            type: string
+        config:
+          type: object
+          required:
+            - targetType
+          properties:
+            targetType:
+              type: string
+              enum:
+                - specific
+        integrationId:
+          type: string
+    OrganizationWorkflow_ActionFilter_Action_JiraServer:
+      type: object
+      required:
+        - type
+        - data
+        - config
+        - integrationId
+      properties:
+        type:
+          type: string
+          enum:
+            - jira_server
+        data:
+          type: object
+          additionalProperties:
+            type: string
+        config:
+          type: object
+          required:
+            - targetType
+          properties:
+            targetType:
+              type: string
+              enum:
+                - specific
+        integrationId:
+          type: string
+    OrganizationWorkflow_ActionFilter_Action_GitHub:
+      type: object
+      required:
+        - type
+        - data
+        - config
+        - integrationId
+      properties:
+        type:
+          type: string
+          enum:
+            - github
+        data:
+          type: object
+          required:
+            - additionalFields
+          properties:
+            additionalFields:
+              type: object
+              required:
+                - repo
+                - labels
+                - assignee
+                - integration
+              properties:
+                repo:
+                  type: string
+                labels:
+                  type: array
+                  items:
+                    type: string
+                assignee:
+                  type: string
+                integration:
+                  type: string
+        config:
+          type: object
+          required:
+            - targetType
+          properties:
+            targetType:
+              type: string
+              enum:
+                - specific
+        integrationId:
           type: string

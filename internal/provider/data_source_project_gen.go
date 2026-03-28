@@ -9,9 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/jianyuan/go-utils/sliceutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
+	"github.com/samber/lo"
 )
 
 var _ datasource.DataSource = &ProjectDataSource{}
@@ -174,11 +174,11 @@ func (m *ProjectDataSourceModel) Fill(ctx context.Context, data apiclient.Projec
 	m.IsPublic = supertypes.NewBoolValue(data.IsPublic)
 	m.DateCreated = supertypes.NewStringValue(data.DateCreated.String())
 	m.Features = supertypes.NewSetValueOfSlice(ctx, data.Features)
-	m.Teams = supertypes.NewSetNestedObjectValueOfValueSlice(ctx, sliceutils.Map(func(item apiclient.Team) ProjectDataSourceModelTeamsItem {
+	m.Teams = supertypes.NewSetNestedObjectValueOfValueSlice(ctx, lo.Map(data.Teams, func(item apiclient.Team, _ int) ProjectDataSourceModelTeamsItem {
 		var model ProjectDataSourceModelTeamsItem
 		diags.Append(model.Fill(ctx, item)...)
 		return model
-	}, data.Teams))
+	}))
 	m.Id = supertypes.NewStringValue(data.Slug) // Deprecated
 	return
 }

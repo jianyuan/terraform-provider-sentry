@@ -25,13 +25,13 @@ const (
 
 // Defines values for OrganizationIntegrationOpsgenieProviderKey.
 const (
-	Opsgenie OrganizationIntegrationOpsgenieProviderKey = "opsgenie"
+	OrganizationIntegrationOpsgenieProviderKeyOpsgenie OrganizationIntegrationOpsgenieProviderKey = "opsgenie"
 )
 
 // Valid indicates whether the value is a known member of the OrganizationIntegrationOpsgenieProviderKey enum.
 func (e OrganizationIntegrationOpsgenieProviderKey) Valid() bool {
 	switch e {
-	case Opsgenie:
+	case OrganizationIntegrationOpsgenieProviderKeyOpsgenie:
 		return true
 	default:
 		return false
@@ -40,13 +40,892 @@ func (e OrganizationIntegrationOpsgenieProviderKey) Valid() bool {
 
 // Defines values for OrganizationIntegrationPagerDutyProviderKey.
 const (
-	Pagerduty OrganizationIntegrationPagerDutyProviderKey = "pagerduty"
+	OrganizationIntegrationPagerDutyProviderKeyPagerduty OrganizationIntegrationPagerDutyProviderKey = "pagerduty"
 )
 
 // Valid indicates whether the value is a known member of the OrganizationIntegrationPagerDutyProviderKey enum.
 func (e OrganizationIntegrationPagerDutyProviderKey) Valid() bool {
 	switch e {
-	case Pagerduty:
+	case OrganizationIntegrationPagerDutyProviderKeyPagerduty:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterLogicType.
+const (
+	OrganizationWorkflowActionFilterLogicTypeAll      OrganizationWorkflowActionFilterLogicType = "all"
+	OrganizationWorkflowActionFilterLogicTypeAny      OrganizationWorkflowActionFilterLogicType = "any"
+	OrganizationWorkflowActionFilterLogicTypeAnyShort OrganizationWorkflowActionFilterLogicType = "any-short"
+	OrganizationWorkflowActionFilterLogicTypeNone     OrganizationWorkflowActionFilterLogicType = "none"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterLogicType enum.
+func (e OrganizationWorkflowActionFilterLogicType) Valid() bool {
+	switch e {
+	case OrganizationWorkflowActionFilterLogicTypeAll:
+		return true
+	case OrganizationWorkflowActionFilterLogicTypeAny:
+		return true
+	case OrganizationWorkflowActionFilterLogicTypeAnyShort:
+		return true
+	case OrganizationWorkflowActionFilterLogicTypeNone:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionDiscordConfigTargetType.
+const (
+	OrganizationWorkflowActionFilterActionDiscordConfigTargetTypeSpecific OrganizationWorkflowActionFilterActionDiscordConfigTargetType = "specific"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionDiscordConfigTargetType enum.
+func (e OrganizationWorkflowActionFilterActionDiscordConfigTargetType) Valid() bool {
+	switch e {
+	case OrganizationWorkflowActionFilterActionDiscordConfigTargetTypeSpecific:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionDiscordType.
+const (
+	Discord OrganizationWorkflowActionFilterActionDiscordType = "discord"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionDiscordType enum.
+func (e OrganizationWorkflowActionFilterActionDiscordType) Valid() bool {
+	switch e {
+	case Discord:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionEmailConfigTargetType.
+const (
+	OrganizationWorkflowActionFilterActionEmailConfigTargetTypeIssueOwners OrganizationWorkflowActionFilterActionEmailConfigTargetType = "issue_owners"
+	OrganizationWorkflowActionFilterActionEmailConfigTargetTypeTeam        OrganizationWorkflowActionFilterActionEmailConfigTargetType = "team"
+	OrganizationWorkflowActionFilterActionEmailConfigTargetTypeUser        OrganizationWorkflowActionFilterActionEmailConfigTargetType = "user"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionEmailConfigTargetType enum.
+func (e OrganizationWorkflowActionFilterActionEmailConfigTargetType) Valid() bool {
+	switch e {
+	case OrganizationWorkflowActionFilterActionEmailConfigTargetTypeIssueOwners:
+		return true
+	case OrganizationWorkflowActionFilterActionEmailConfigTargetTypeTeam:
+		return true
+	case OrganizationWorkflowActionFilterActionEmailConfigTargetTypeUser:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionEmailDataFallthroughType.
+const (
+	ActiveMembers OrganizationWorkflowActionFilterActionEmailDataFallthroughType = "ActiveMembers"
+	AllMembers    OrganizationWorkflowActionFilterActionEmailDataFallthroughType = "AllMembers"
+	NoOne         OrganizationWorkflowActionFilterActionEmailDataFallthroughType = "NoOne"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionEmailDataFallthroughType enum.
+func (e OrganizationWorkflowActionFilterActionEmailDataFallthroughType) Valid() bool {
+	switch e {
+	case ActiveMembers:
+		return true
+	case AllMembers:
+		return true
+	case NoOne:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionEmailType.
+const (
+	Email OrganizationWorkflowActionFilterActionEmailType = "email"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionEmailType enum.
+func (e OrganizationWorkflowActionFilterActionEmailType) Valid() bool {
+	switch e {
+	case Email:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionGitHubConfigTargetType.
+const (
+	OrganizationWorkflowActionFilterActionGitHubConfigTargetTypeSpecific OrganizationWorkflowActionFilterActionGitHubConfigTargetType = "specific"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionGitHubConfigTargetType enum.
+func (e OrganizationWorkflowActionFilterActionGitHubConfigTargetType) Valid() bool {
+	switch e {
+	case OrganizationWorkflowActionFilterActionGitHubConfigTargetTypeSpecific:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionGitHubType.
+const (
+	Github OrganizationWorkflowActionFilterActionGitHubType = "github"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionGitHubType enum.
+func (e OrganizationWorkflowActionFilterActionGitHubType) Valid() bool {
+	switch e {
+	case Github:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionJiraConfigTargetType.
+const (
+	OrganizationWorkflowActionFilterActionJiraConfigTargetTypeSpecific OrganizationWorkflowActionFilterActionJiraConfigTargetType = "specific"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionJiraConfigTargetType enum.
+func (e OrganizationWorkflowActionFilterActionJiraConfigTargetType) Valid() bool {
+	switch e {
+	case OrganizationWorkflowActionFilterActionJiraConfigTargetTypeSpecific:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionJiraType.
+const (
+	Jira OrganizationWorkflowActionFilterActionJiraType = "jira"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionJiraType enum.
+func (e OrganizationWorkflowActionFilterActionJiraType) Valid() bool {
+	switch e {
+	case Jira:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionJiraServerConfigTargetType.
+const (
+	OrganizationWorkflowActionFilterActionJiraServerConfigTargetTypeSpecific OrganizationWorkflowActionFilterActionJiraServerConfigTargetType = "specific"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionJiraServerConfigTargetType enum.
+func (e OrganizationWorkflowActionFilterActionJiraServerConfigTargetType) Valid() bool {
+	switch e {
+	case OrganizationWorkflowActionFilterActionJiraServerConfigTargetTypeSpecific:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionJiraServerType.
+const (
+	JiraServer OrganizationWorkflowActionFilterActionJiraServerType = "jira_server"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionJiraServerType enum.
+func (e OrganizationWorkflowActionFilterActionJiraServerType) Valid() bool {
+	switch e {
+	case JiraServer:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionMsTeamsConfigTargetType.
+const (
+	OrganizationWorkflowActionFilterActionMsTeamsConfigTargetTypeSpecific OrganizationWorkflowActionFilterActionMsTeamsConfigTargetType = "specific"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionMsTeamsConfigTargetType enum.
+func (e OrganizationWorkflowActionFilterActionMsTeamsConfigTargetType) Valid() bool {
+	switch e {
+	case OrganizationWorkflowActionFilterActionMsTeamsConfigTargetTypeSpecific:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionMsTeamsType.
+const (
+	Msteams OrganizationWorkflowActionFilterActionMsTeamsType = "msteams"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionMsTeamsType enum.
+func (e OrganizationWorkflowActionFilterActionMsTeamsType) Valid() bool {
+	switch e {
+	case Msteams:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionOpsgenieConfigTargetType.
+const (
+	OrganizationWorkflowActionFilterActionOpsgenieConfigTargetTypeSpecific OrganizationWorkflowActionFilterActionOpsgenieConfigTargetType = "specific"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionOpsgenieConfigTargetType enum.
+func (e OrganizationWorkflowActionFilterActionOpsgenieConfigTargetType) Valid() bool {
+	switch e {
+	case OrganizationWorkflowActionFilterActionOpsgenieConfigTargetTypeSpecific:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionOpsgenieType.
+const (
+	OrganizationWorkflowActionFilterActionOpsgenieTypeOpsgenie OrganizationWorkflowActionFilterActionOpsgenieType = "opsgenie"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionOpsgenieType enum.
+func (e OrganizationWorkflowActionFilterActionOpsgenieType) Valid() bool {
+	switch e {
+	case OrganizationWorkflowActionFilterActionOpsgenieTypeOpsgenie:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionPagerDutyConfigTargetType.
+const (
+	OrganizationWorkflowActionFilterActionPagerDutyConfigTargetTypeSpecific OrganizationWorkflowActionFilterActionPagerDutyConfigTargetType = "specific"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionPagerDutyConfigTargetType enum.
+func (e OrganizationWorkflowActionFilterActionPagerDutyConfigTargetType) Valid() bool {
+	switch e {
+	case OrganizationWorkflowActionFilterActionPagerDutyConfigTargetTypeSpecific:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionPagerDutyType.
+const (
+	OrganizationWorkflowActionFilterActionPagerDutyTypePagerduty OrganizationWorkflowActionFilterActionPagerDutyType = "pagerduty"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionPagerDutyType enum.
+func (e OrganizationWorkflowActionFilterActionPagerDutyType) Valid() bool {
+	switch e {
+	case OrganizationWorkflowActionFilterActionPagerDutyTypePagerduty:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionPluginType.
+const (
+	Plugin OrganizationWorkflowActionFilterActionPluginType = "plugin"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionPluginType enum.
+func (e OrganizationWorkflowActionFilterActionPluginType) Valid() bool {
+	switch e {
+	case Plugin:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionSlackConfigTargetType.
+const (
+	OrganizationWorkflowActionFilterActionSlackConfigTargetTypeSpecific OrganizationWorkflowActionFilterActionSlackConfigTargetType = "specific"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionSlackConfigTargetType enum.
+func (e OrganizationWorkflowActionFilterActionSlackConfigTargetType) Valid() bool {
+	switch e {
+	case OrganizationWorkflowActionFilterActionSlackConfigTargetTypeSpecific:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionSlackType.
+const (
+	Slack OrganizationWorkflowActionFilterActionSlackType = "slack"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionSlackType enum.
+func (e OrganizationWorkflowActionFilterActionSlackType) Valid() bool {
+	switch e {
+	case Slack:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionVstsConfigTargetType.
+const (
+	Specific OrganizationWorkflowActionFilterActionVstsConfigTargetType = "specific"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionVstsConfigTargetType enum.
+func (e OrganizationWorkflowActionFilterActionVstsConfigTargetType) Valid() bool {
+	switch e {
+	case Specific:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionVstsType.
+const (
+	Vsts OrganizationWorkflowActionFilterActionVstsType = "vsts"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionVstsType enum.
+func (e OrganizationWorkflowActionFilterActionVstsType) Valid() bool {
+	switch e {
+	case Vsts:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionAgeComparisonComparisonComparisonType.
+const (
+	Newer OrganizationWorkflowActionFilterConditionAgeComparisonComparisonComparisonType = "newer"
+	Older OrganizationWorkflowActionFilterConditionAgeComparisonComparisonComparisonType = "older"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionAgeComparisonComparisonComparisonType enum.
+func (e OrganizationWorkflowActionFilterConditionAgeComparisonComparisonComparisonType) Valid() bool {
+	switch e {
+	case Newer:
+		return true
+	case Older:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTime.
+const (
+	Day    OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTime = "day"
+	Hour   OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTime = "hour"
+	Minute OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTime = "minute"
+	Week   OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTime = "week"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTime enum.
+func (e OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTime) Valid() bool {
+	switch e {
+	case Day:
+		return true
+	case Hour:
+		return true
+	case Minute:
+		return true
+	case Week:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionAgeComparisonType.
+const (
+	AgeComparison OrganizationWorkflowActionFilterConditionAgeComparisonType = "age_comparison"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionAgeComparisonType enum.
+func (e OrganizationWorkflowActionFilterConditionAgeComparisonType) Valid() bool {
+	switch e {
+	case AgeComparison:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetType.
+const (
+	OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetTypeMember OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetType = "Member"
+	OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetTypeNoOne  OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetType = "NoOne"
+	OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetTypeTeam   OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetType = "Team"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetType enum.
+func (e OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetType) Valid() bool {
+	switch e {
+	case OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetTypeMember:
+		return true
+	case OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetTypeNoOne:
+		return true
+	case OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetTypeTeam:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionAssignedToType.
+const (
+	AssignedTo OrganizationWorkflowActionFilterConditionAssignedToType = "assigned_to"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionAssignedToType enum.
+func (e OrganizationWorkflowActionFilterConditionAssignedToType) Valid() bool {
+	switch e {
+	case AssignedTo:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionEventAttributeType.
+const (
+	EventAttribute OrganizationWorkflowActionFilterConditionEventAttributeType = "event_attribute"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionEventAttributeType enum.
+func (e OrganizationWorkflowActionFilterConditionEventAttributeType) Valid() bool {
+	switch e {
+	case EventAttribute:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionEventFrequencyCountType.
+const (
+	EventFrequencyCount OrganizationWorkflowActionFilterConditionEventFrequencyCountType = "event_frequency_count"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionEventFrequencyCountType enum.
+func (e OrganizationWorkflowActionFilterConditionEventFrequencyCountType) Valid() bool {
+	switch e {
+	case EventFrequencyCount:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionEventFrequencyPercentType.
+const (
+	EventFrequencyPercent OrganizationWorkflowActionFilterConditionEventFrequencyPercentType = "event_frequency_percent"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionEventFrequencyPercentType enum.
+func (e OrganizationWorkflowActionFilterConditionEventFrequencyPercentType) Valid() bool {
+	switch e {
+	case EventFrequencyPercent:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCountType.
+const (
+	EventUniqueUserFrequencyCount OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCountType = "event_unique_user_frequency_count"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCountType enum.
+func (e OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCountType) Valid() bool {
+	switch e {
+	case EventUniqueUserFrequencyCount:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionIssueCategoryType.
+const (
+	IssueCategory OrganizationWorkflowActionFilterConditionIssueCategoryType = "issue_category"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionIssueCategoryType enum.
+func (e OrganizationWorkflowActionFilterConditionIssueCategoryType) Valid() bool {
+	switch e {
+	case IssueCategory:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionIssueOccurrencesType.
+const (
+	IssueOccurrences OrganizationWorkflowActionFilterConditionIssueOccurrencesType = "issue_occurrences"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionIssueOccurrencesType enum.
+func (e OrganizationWorkflowActionFilterConditionIssueOccurrencesType) Valid() bool {
+	switch e {
+	case IssueOccurrences:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionIssuePriorityDeescalatingType.
+const (
+	IssuePriorityDeescalating OrganizationWorkflowActionFilterConditionIssuePriorityDeescalatingType = "issue_priority_deescalating"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionIssuePriorityDeescalatingType enum.
+func (e OrganizationWorkflowActionFilterConditionIssuePriorityDeescalatingType) Valid() bool {
+	switch e {
+	case IssuePriorityDeescalating:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqualType.
+const (
+	IssuePriorityGreaterOrEqual OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqualType = "issue_priority_greater_or_equal"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqualType enum.
+func (e OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqualType) Valid() bool {
+	switch e {
+	case IssuePriorityGreaterOrEqual:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionLatestAdoptedReleaseType.
+const (
+	LatestAdoptedRelease OrganizationWorkflowActionFilterConditionLatestAdoptedReleaseType = "latest_adopted_release"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionLatestAdoptedReleaseType enum.
+func (e OrganizationWorkflowActionFilterConditionLatestAdoptedReleaseType) Valid() bool {
+	switch e {
+	case LatestAdoptedRelease:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionLatestReleaseType.
+const (
+	LatestRelease OrganizationWorkflowActionFilterConditionLatestReleaseType = "latest_release"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionLatestReleaseType enum.
+func (e OrganizationWorkflowActionFilterConditionLatestReleaseType) Valid() bool {
+	switch e {
+	case LatestRelease:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionLevelType.
+const (
+	Level OrganizationWorkflowActionFilterConditionLevelType = "level"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionLevelType enum.
+func (e OrganizationWorkflowActionFilterConditionLevelType) Valid() bool {
+	switch e {
+	case Level:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionPercentSessionsCountType.
+const (
+	PercentSessionsCount OrganizationWorkflowActionFilterConditionPercentSessionsCountType = "percent_sessions_count"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionPercentSessionsCountType enum.
+func (e OrganizationWorkflowActionFilterConditionPercentSessionsCountType) Valid() bool {
+	switch e {
+	case PercentSessionsCount:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionPercentSessionsPercentType.
+const (
+	PercentSessionsPercent OrganizationWorkflowActionFilterConditionPercentSessionsPercentType = "percent_sessions_percent"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionPercentSessionsPercentType enum.
+func (e OrganizationWorkflowActionFilterConditionPercentSessionsPercentType) Valid() bool {
+	switch e {
+	case PercentSessionsPercent:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterConditionTaggedEventType.
+const (
+	TaggedEvent OrganizationWorkflowActionFilterConditionTaggedEventType = "tagged_event"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionTaggedEventType enum.
+func (e OrganizationWorkflowActionFilterConditionTaggedEventType) Valid() bool {
+	switch e {
+	case TaggedEvent:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowTriggerLogicType.
+const (
+	OrganizationWorkflowTriggerLogicTypeAnyShort OrganizationWorkflowTriggerLogicType = "any-short"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowTriggerLogicType enum.
+func (e OrganizationWorkflowTriggerLogicType) Valid() bool {
+	switch e {
+	case OrganizationWorkflowTriggerLogicTypeAnyShort:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ProjectMonitorRequestMetricIssueType.
+const (
+	MetricIssue ProjectMonitorRequestMetricIssueType = "metric_issue"
+)
+
+// Valid indicates whether the value is a known member of the ProjectMonitorRequestMetricIssueType enum.
+func (e ProjectMonitorRequestMetricIssueType) Valid() bool {
+	switch e {
+	case MetricIssue:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ProjectMonitorRequestMonitorCheckInFailureType.
+const (
+	MonitorCheckInFailure ProjectMonitorRequestMonitorCheckInFailureType = "monitor_check_in_failure"
+)
+
+// Valid indicates whether the value is a known member of the ProjectMonitorRequestMonitorCheckInFailureType enum.
+func (e ProjectMonitorRequestMonitorCheckInFailureType) Valid() bool {
+	switch e {
+	case MonitorCheckInFailure:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ProjectMonitorRequestUptimeDomainFailureType.
+const (
+	UptimeDomainFailure ProjectMonitorRequestUptimeDomainFailureType = "uptime_domain_failure"
+)
+
+// Valid indicates whether the value is a known member of the ProjectMonitorRequestUptimeDomainFailureType enum.
+func (e ProjectMonitorRequestUptimeDomainFailureType) Valid() bool {
+	switch e {
+	case UptimeDomainFailure:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ProjectMonitorConditionGroupLogicType.
+const (
+	All      ProjectMonitorConditionGroupLogicType = "all"
+	Any      ProjectMonitorConditionGroupLogicType = "any"
+	AnyShort ProjectMonitorConditionGroupLogicType = "any-short"
+	None     ProjectMonitorConditionGroupLogicType = "none"
+)
+
+// Valid indicates whether the value is a known member of the ProjectMonitorConditionGroupLogicType enum.
+func (e ProjectMonitorConditionGroupLogicType) Valid() bool {
+	switch e {
+	case All:
+		return true
+	case Any:
+		return true
+	case AnyShort:
+		return true
+	case None:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ProjectMonitorConfigUptimeDomainFailureMode.
+const (
+	N1 ProjectMonitorConfigUptimeDomainFailureMode = 1
+	N2 ProjectMonitorConfigUptimeDomainFailureMode = 2
+	N3 ProjectMonitorConfigUptimeDomainFailureMode = 3
+)
+
+// Valid indicates whether the value is a known member of the ProjectMonitorConfigUptimeDomainFailureMode enum.
+func (e ProjectMonitorConfigUptimeDomainFailureMode) Valid() bool {
+	switch e {
+	case N1:
+		return true
+	case N2:
+		return true
+	case N3:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ProjectMonitorDataSourceConfigCronCrontabScheduleType.
+const (
+	Crontab ProjectMonitorDataSourceConfigCronCrontabScheduleType = "crontab"
+)
+
+// Valid indicates whether the value is a known member of the ProjectMonitorDataSourceConfigCronCrontabScheduleType enum.
+func (e ProjectMonitorDataSourceConfigCronCrontabScheduleType) Valid() bool {
+	switch e {
+	case Crontab:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ProjectMonitorDataSourceConfigCronIntervalScheduleType.
+const (
+	Interval ProjectMonitorDataSourceConfigCronIntervalScheduleType = "interval"
+)
+
+// Valid indicates whether the value is a known member of the ProjectMonitorDataSourceConfigCronIntervalScheduleType enum.
+func (e ProjectMonitorDataSourceConfigCronIntervalScheduleType) Valid() bool {
+	switch e {
+	case Interval:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ProjectMonitorDataSourceWrapperCronMonitorType.
+const (
+	CronMonitor ProjectMonitorDataSourceWrapperCronMonitorType = "cron_monitor"
+)
+
+// Valid indicates whether the value is a known member of the ProjectMonitorDataSourceWrapperCronMonitorType enum.
+func (e ProjectMonitorDataSourceWrapperCronMonitorType) Valid() bool {
+	switch e {
+	case CronMonitor:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ProjectMonitorDataSourceWrapperSnubaQuerySubscriptionType.
+const (
+	SnubaQuerySubscription ProjectMonitorDataSourceWrapperSnubaQuerySubscriptionType = "snuba_query_subscription"
+)
+
+// Valid indicates whether the value is a known member of the ProjectMonitorDataSourceWrapperSnubaQuerySubscriptionType enum.
+func (e ProjectMonitorDataSourceWrapperSnubaQuerySubscriptionType) Valid() bool {
+	switch e {
+	case SnubaQuerySubscription:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ProjectMonitorDataSourceWrapperUptimeSubscriptionType.
+const (
+	UptimeSubscription ProjectMonitorDataSourceWrapperUptimeSubscriptionType = "uptime_subscription"
+)
+
+// Valid indicates whether the value is a known member of the ProjectMonitorDataSourceWrapperUptimeSubscriptionType enum.
+func (e ProjectMonitorDataSourceWrapperUptimeSubscriptionType) Valid() bool {
+	switch e {
+	case UptimeSubscription:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ProjectMonitorOwnerTeamType.
+const (
+	ProjectMonitorOwnerTeamTypeTeam ProjectMonitorOwnerTeamType = "team"
+)
+
+// Valid indicates whether the value is a known member of the ProjectMonitorOwnerTeamType enum.
+func (e ProjectMonitorOwnerTeamType) Valid() bool {
+	switch e {
+	case ProjectMonitorOwnerTeamTypeTeam:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ProjectMonitorOwnerUserType.
+const (
+	User ProjectMonitorOwnerUserType = "user"
+)
+
+// Valid indicates whether the value is a known member of the ProjectMonitorOwnerUserType enum.
+func (e ProjectMonitorOwnerUserType) Valid() bool {
+	switch e {
+	case User:
 		return true
 	default:
 		return false
@@ -650,6 +1529,514 @@ type OrganizationRoleListItem struct {
 	Scopes          []string `json:"scopes"`
 }
 
+// OrganizationWorkflow defines model for OrganizationWorkflow.
+type OrganizationWorkflow struct {
+	ActionFilters []OrganizationWorkflowActionFilter `json:"actionFilters"`
+	Config        OrganizationWorkflowConfig         `json:"config"`
+	DetectorIds   []string                           `json:"detectorIds"`
+	Enabled       bool                               `json:"enabled"`
+	Environment   string                             `json:"environment"`
+	Id            string                             `json:"id"`
+	Name          string                             `json:"name"`
+	Triggers      OrganizationWorkflowTrigger        `json:"triggers"`
+}
+
+// OrganizationWorkflowRequest defines model for OrganizationWorkflowRequest.
+type OrganizationWorkflowRequest struct {
+	ActionFilters []OrganizationWorkflowActionFilter `json:"actionFilters"`
+	Config        OrganizationWorkflowConfig         `json:"config"`
+	DetectorIds   []string                           `json:"detectorIds"`
+	Enabled       bool                               `json:"enabled"`
+	Environment   string                             `json:"environment"`
+	Name          string                             `json:"name"`
+	Triggers      OrganizationWorkflowTrigger        `json:"triggers"`
+}
+
+// OrganizationWorkflowActionFilter defines model for OrganizationWorkflow_ActionFilter.
+type OrganizationWorkflowActionFilter struct {
+	Actions    []OrganizationWorkflowActionFilterAction    `json:"actions"`
+	Conditions []OrganizationWorkflowActionFilterCondition `json:"conditions"`
+	LogicType  OrganizationWorkflowActionFilterLogicType   `json:"logicType"`
+}
+
+// OrganizationWorkflowActionFilterLogicType defines model for OrganizationWorkflowActionFilter.LogicType.
+type OrganizationWorkflowActionFilterLogicType string
+
+// OrganizationWorkflowActionFilterAction defines model for OrganizationWorkflow_ActionFilter_Action.
+type OrganizationWorkflowActionFilterAction struct {
+	union json.RawMessage
+}
+
+// OrganizationWorkflowActionFilterActionDiscord defines model for OrganizationWorkflow_ActionFilter_Action_Discord.
+type OrganizationWorkflowActionFilterActionDiscord struct {
+	Config struct {
+		TargetDisplay    nullable.Nullable[string]                                     `json:"targetDisplay"`
+		TargetIdentifier string                                                        `json:"targetIdentifier"`
+		TargetType       OrganizationWorkflowActionFilterActionDiscordConfigTargetType `json:"targetType"`
+	} `json:"config"`
+	Data struct {
+		Tags *string `json:"tags,omitempty"`
+	} `json:"data"`
+	IntegrationId string                                            `json:"integrationId"`
+	Type          OrganizationWorkflowActionFilterActionDiscordType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterActionDiscordConfigTargetType defines model for OrganizationWorkflowActionFilterActionDiscord.Config.TargetType.
+type OrganizationWorkflowActionFilterActionDiscordConfigTargetType string
+
+// OrganizationWorkflowActionFilterActionDiscordType defines model for OrganizationWorkflowActionFilterActionDiscord.Type.
+type OrganizationWorkflowActionFilterActionDiscordType string
+
+// OrganizationWorkflowActionFilterActionEmail defines model for OrganizationWorkflow_ActionFilter_Action_Email.
+type OrganizationWorkflowActionFilterActionEmail struct {
+	Config struct {
+		TargetIdentifier *string                                                     `json:"targetIdentifier,omitempty"`
+		TargetType       OrganizationWorkflowActionFilterActionEmailConfigTargetType `json:"targetType"`
+	} `json:"config"`
+	Data struct {
+		FallthroughType *OrganizationWorkflowActionFilterActionEmailDataFallthroughType `json:"fallthroughType,omitempty"`
+	} `json:"data"`
+	Type OrganizationWorkflowActionFilterActionEmailType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterActionEmailConfigTargetType defines model for OrganizationWorkflowActionFilterActionEmail.Config.TargetType.
+type OrganizationWorkflowActionFilterActionEmailConfigTargetType string
+
+// OrganizationWorkflowActionFilterActionEmailDataFallthroughType defines model for OrganizationWorkflowActionFilterActionEmail.Data.FallthroughType.
+type OrganizationWorkflowActionFilterActionEmailDataFallthroughType string
+
+// OrganizationWorkflowActionFilterActionEmailType defines model for OrganizationWorkflowActionFilterActionEmail.Type.
+type OrganizationWorkflowActionFilterActionEmailType string
+
+// OrganizationWorkflowActionFilterActionGitHub defines model for OrganizationWorkflow_ActionFilter_Action_GitHub.
+type OrganizationWorkflowActionFilterActionGitHub struct {
+	Config struct {
+		TargetType OrganizationWorkflowActionFilterActionGitHubConfigTargetType `json:"targetType"`
+	} `json:"config"`
+	Data struct {
+		AdditionalFields struct {
+			Assignee    string   `json:"assignee"`
+			Integration string   `json:"integration"`
+			Labels      []string `json:"labels"`
+			Repo        string   `json:"repo"`
+		} `json:"additionalFields"`
+	} `json:"data"`
+	IntegrationId string                                           `json:"integrationId"`
+	Type          OrganizationWorkflowActionFilterActionGitHubType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterActionGitHubConfigTargetType defines model for OrganizationWorkflowActionFilterActionGitHub.Config.TargetType.
+type OrganizationWorkflowActionFilterActionGitHubConfigTargetType string
+
+// OrganizationWorkflowActionFilterActionGitHubType defines model for OrganizationWorkflowActionFilterActionGitHub.Type.
+type OrganizationWorkflowActionFilterActionGitHubType string
+
+// OrganizationWorkflowActionFilterActionJira defines model for OrganizationWorkflow_ActionFilter_Action_Jira.
+type OrganizationWorkflowActionFilterActionJira struct {
+	Config struct {
+		TargetType OrganizationWorkflowActionFilterActionJiraConfigTargetType `json:"targetType"`
+	} `json:"config"`
+	Data          map[string]string                              `json:"data"`
+	IntegrationId string                                         `json:"integrationId"`
+	Type          OrganizationWorkflowActionFilterActionJiraType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterActionJiraConfigTargetType defines model for OrganizationWorkflowActionFilterActionJira.Config.TargetType.
+type OrganizationWorkflowActionFilterActionJiraConfigTargetType string
+
+// OrganizationWorkflowActionFilterActionJiraType defines model for OrganizationWorkflowActionFilterActionJira.Type.
+type OrganizationWorkflowActionFilterActionJiraType string
+
+// OrganizationWorkflowActionFilterActionJiraServer defines model for OrganizationWorkflow_ActionFilter_Action_JiraServer.
+type OrganizationWorkflowActionFilterActionJiraServer struct {
+	Config struct {
+		TargetType OrganizationWorkflowActionFilterActionJiraServerConfigTargetType `json:"targetType"`
+	} `json:"config"`
+	Data          map[string]string                                    `json:"data"`
+	IntegrationId string                                               `json:"integrationId"`
+	Type          OrganizationWorkflowActionFilterActionJiraServerType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterActionJiraServerConfigTargetType defines model for OrganizationWorkflowActionFilterActionJiraServer.Config.TargetType.
+type OrganizationWorkflowActionFilterActionJiraServerConfigTargetType string
+
+// OrganizationWorkflowActionFilterActionJiraServerType defines model for OrganizationWorkflowActionFilterActionJiraServer.Type.
+type OrganizationWorkflowActionFilterActionJiraServerType string
+
+// OrganizationWorkflowActionFilterActionMsTeams defines model for OrganizationWorkflow_ActionFilter_Action_MsTeams.
+type OrganizationWorkflowActionFilterActionMsTeams struct {
+	Config struct {
+		TargetDisplay    string                                                        `json:"targetDisplay"`
+		TargetIdentifier string                                                        `json:"targetIdentifier"`
+		TargetType       OrganizationWorkflowActionFilterActionMsTeamsConfigTargetType `json:"targetType"`
+	} `json:"config"`
+	Data          map[string]interface{}                            `json:"data"`
+	IntegrationId string                                            `json:"integrationId"`
+	Type          OrganizationWorkflowActionFilterActionMsTeamsType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterActionMsTeamsConfigTargetType defines model for OrganizationWorkflowActionFilterActionMsTeams.Config.TargetType.
+type OrganizationWorkflowActionFilterActionMsTeamsConfigTargetType string
+
+// OrganizationWorkflowActionFilterActionMsTeamsType defines model for OrganizationWorkflowActionFilterActionMsTeams.Type.
+type OrganizationWorkflowActionFilterActionMsTeamsType string
+
+// OrganizationWorkflowActionFilterActionOpsgenie defines model for OrganizationWorkflow_ActionFilter_Action_Opsgenie.
+type OrganizationWorkflowActionFilterActionOpsgenie struct {
+	Config struct {
+		TargetDisplay    string                                                         `json:"targetDisplay"`
+		TargetIdentifier string                                                         `json:"targetIdentifier"`
+		TargetType       OrganizationWorkflowActionFilterActionOpsgenieConfigTargetType `json:"targetType"`
+	} `json:"config"`
+	Data struct {
+		Priority *string `json:"priority,omitempty"`
+	} `json:"data"`
+	IntegrationId string                                             `json:"integrationId"`
+	Type          OrganizationWorkflowActionFilterActionOpsgenieType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterActionOpsgenieConfigTargetType defines model for OrganizationWorkflowActionFilterActionOpsgenie.Config.TargetType.
+type OrganizationWorkflowActionFilterActionOpsgenieConfigTargetType string
+
+// OrganizationWorkflowActionFilterActionOpsgenieType defines model for OrganizationWorkflowActionFilterActionOpsgenie.Type.
+type OrganizationWorkflowActionFilterActionOpsgenieType string
+
+// OrganizationWorkflowActionFilterActionPagerDuty defines model for OrganizationWorkflow_ActionFilter_Action_PagerDuty.
+type OrganizationWorkflowActionFilterActionPagerDuty struct {
+	Config struct {
+		TargetDisplay    string                                                          `json:"targetDisplay"`
+		TargetIdentifier string                                                          `json:"targetIdentifier"`
+		TargetType       OrganizationWorkflowActionFilterActionPagerDutyConfigTargetType `json:"targetType"`
+	} `json:"config"`
+	Data struct {
+		Priority *string `json:"priority,omitempty"`
+	} `json:"data"`
+	IntegrationId string                                              `json:"integrationId"`
+	Type          OrganizationWorkflowActionFilterActionPagerDutyType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterActionPagerDutyConfigTargetType defines model for OrganizationWorkflowActionFilterActionPagerDuty.Config.TargetType.
+type OrganizationWorkflowActionFilterActionPagerDutyConfigTargetType string
+
+// OrganizationWorkflowActionFilterActionPagerDutyType defines model for OrganizationWorkflowActionFilterActionPagerDuty.Type.
+type OrganizationWorkflowActionFilterActionPagerDutyType string
+
+// OrganizationWorkflowActionFilterActionPlugin defines model for OrganizationWorkflow_ActionFilter_Action_Plugin.
+type OrganizationWorkflowActionFilterActionPlugin struct {
+	Config map[string]interface{}                           `json:"config"`
+	Data   map[string]interface{}                           `json:"data"`
+	Type   OrganizationWorkflowActionFilterActionPluginType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterActionPluginType defines model for OrganizationWorkflowActionFilterActionPlugin.Type.
+type OrganizationWorkflowActionFilterActionPluginType string
+
+// OrganizationWorkflowActionFilterActionSlack defines model for OrganizationWorkflow_ActionFilter_Action_Slack.
+type OrganizationWorkflowActionFilterActionSlack struct {
+	Config struct {
+		TargetDisplay    string                                                      `json:"targetDisplay"`
+		TargetIdentifier string                                                      `json:"targetIdentifier"`
+		TargetType       OrganizationWorkflowActionFilterActionSlackConfigTargetType `json:"targetType"`
+	} `json:"config"`
+	Data struct {
+		Notes *string `json:"notes,omitempty"`
+		Tags  *string `json:"tags,omitempty"`
+	} `json:"data"`
+	IntegrationId string                                          `json:"integrationId"`
+	Type          OrganizationWorkflowActionFilterActionSlackType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterActionSlackConfigTargetType defines model for OrganizationWorkflowActionFilterActionSlack.Config.TargetType.
+type OrganizationWorkflowActionFilterActionSlackConfigTargetType string
+
+// OrganizationWorkflowActionFilterActionSlackType defines model for OrganizationWorkflowActionFilterActionSlack.Type.
+type OrganizationWorkflowActionFilterActionSlackType string
+
+// OrganizationWorkflowActionFilterActionVsts defines model for OrganizationWorkflow_ActionFilter_Action_Vsts.
+type OrganizationWorkflowActionFilterActionVsts struct {
+	Config struct {
+		TargetType OrganizationWorkflowActionFilterActionVstsConfigTargetType `json:"targetType"`
+	} `json:"config"`
+	Data          map[string]string                              `json:"data"`
+	IntegrationId string                                         `json:"integrationId"`
+	Type          OrganizationWorkflowActionFilterActionVstsType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterActionVstsConfigTargetType defines model for OrganizationWorkflowActionFilterActionVsts.Config.TargetType.
+type OrganizationWorkflowActionFilterActionVstsConfigTargetType string
+
+// OrganizationWorkflowActionFilterActionVstsType defines model for OrganizationWorkflowActionFilterActionVsts.Type.
+type OrganizationWorkflowActionFilterActionVstsType string
+
+// OrganizationWorkflowActionFilterCondition defines model for OrganizationWorkflow_ActionFilter_Condition.
+type OrganizationWorkflowActionFilterCondition struct {
+	union json.RawMessage
+}
+
+// OrganizationWorkflowActionFilterConditionAgeComparison defines model for OrganizationWorkflow_ActionFilter_Condition_AgeComparison.
+type OrganizationWorkflowActionFilterConditionAgeComparison struct {
+	Comparison struct {
+		ComparisonType OrganizationWorkflowActionFilterConditionAgeComparisonComparisonComparisonType `json:"comparisonType"`
+		Time           OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTime           `json:"time"`
+		Value          int64                                                                          `json:"value"`
+	} `json:"comparison"`
+	ConditionResult bool                                                       `json:"conditionResult"`
+	Type            OrganizationWorkflowActionFilterConditionAgeComparisonType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterConditionAgeComparisonComparisonComparisonType defines model for OrganizationWorkflowActionFilterConditionAgeComparison.Comparison.ComparisonType.
+type OrganizationWorkflowActionFilterConditionAgeComparisonComparisonComparisonType string
+
+// OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTime defines model for OrganizationWorkflowActionFilterConditionAgeComparison.Comparison.Time.
+type OrganizationWorkflowActionFilterConditionAgeComparisonComparisonTime string
+
+// OrganizationWorkflowActionFilterConditionAgeComparisonType defines model for OrganizationWorkflowActionFilterConditionAgeComparison.Type.
+type OrganizationWorkflowActionFilterConditionAgeComparisonType string
+
+// OrganizationWorkflowActionFilterConditionAssignedTo defines model for OrganizationWorkflow_ActionFilter_Condition_AssignedTo.
+type OrganizationWorkflowActionFilterConditionAssignedTo struct {
+	Comparison struct {
+		TargetIdentifier OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier `json:"targetIdentifier"`
+		TargetType       OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetType         `json:"targetType"`
+	} `json:"comparison"`
+	ConditionResult bool                                                    `json:"conditionResult"`
+	Type            OrganizationWorkflowActionFilterConditionAssignedToType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0 defines model for .
+type OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0 = string
+
+// OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier1 defines model for .
+type OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier1 = int64
+
+// OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier defines model for OrganizationWorkflowActionFilterConditionAssignedTo.Comparison.TargetIdentifier.
+type OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier struct {
+	union json.RawMessage
+}
+
+// OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetType defines model for OrganizationWorkflowActionFilterConditionAssignedTo.Comparison.TargetType.
+type OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetType string
+
+// OrganizationWorkflowActionFilterConditionAssignedToType defines model for OrganizationWorkflowActionFilterConditionAssignedTo.Type.
+type OrganizationWorkflowActionFilterConditionAssignedToType string
+
+// OrganizationWorkflowActionFilterConditionEventAttribute defines model for OrganizationWorkflow_ActionFilter_Condition_EventAttribute.
+type OrganizationWorkflowActionFilterConditionEventAttribute struct {
+	Comparison struct {
+		Attribute string `json:"attribute"`
+		Match     string `json:"match"`
+		Value     string `json:"value"`
+	} `json:"comparison"`
+	ConditionResult bool                                                        `json:"conditionResult"`
+	Type            OrganizationWorkflowActionFilterConditionEventAttributeType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterConditionEventAttributeType defines model for OrganizationWorkflowActionFilterConditionEventAttribute.Type.
+type OrganizationWorkflowActionFilterConditionEventAttributeType string
+
+// OrganizationWorkflowActionFilterConditionEventFrequencyCount defines model for OrganizationWorkflow_ActionFilter_Condition_EventFrequencyCount.
+type OrganizationWorkflowActionFilterConditionEventFrequencyCount struct {
+	Comparison struct {
+		Interval string `json:"interval"`
+		Value    int64  `json:"value"`
+	} `json:"comparison"`
+	ConditionResult bool                                                             `json:"conditionResult"`
+	Type            OrganizationWorkflowActionFilterConditionEventFrequencyCountType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterConditionEventFrequencyCountType defines model for OrganizationWorkflowActionFilterConditionEventFrequencyCount.Type.
+type OrganizationWorkflowActionFilterConditionEventFrequencyCountType string
+
+// OrganizationWorkflowActionFilterConditionEventFrequencyPercent defines model for OrganizationWorkflow_ActionFilter_Condition_EventFrequencyPercent.
+type OrganizationWorkflowActionFilterConditionEventFrequencyPercent struct {
+	Comparison struct {
+		ComparisonInterval string `json:"comparisonInterval"`
+		Interval           string `json:"interval"`
+		Value              int64  `json:"value"`
+	} `json:"comparison"`
+	ConditionResult bool                                                               `json:"conditionResult"`
+	Type            OrganizationWorkflowActionFilterConditionEventFrequencyPercentType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterConditionEventFrequencyPercentType defines model for OrganizationWorkflowActionFilterConditionEventFrequencyPercent.Type.
+type OrganizationWorkflowActionFilterConditionEventFrequencyPercentType string
+
+// OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount defines model for OrganizationWorkflow_ActionFilter_Condition_EventUniqueUserFrequencyCount.
+type OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount struct {
+	Comparison struct {
+		Filters  []OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCountFilter `json:"filters"`
+		Interval string                                                                         `json:"interval"`
+		Value    int64                                                                          `json:"value"`
+	} `json:"comparison"`
+	ConditionResult bool                                                                       `json:"conditionResult"`
+	Type            OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCountType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCountType defines model for OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount.Type.
+type OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCountType string
+
+// OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCountFilter defines model for OrganizationWorkflow_ActionFilter_Condition_EventUniqueUserFrequencyCount_Filter.
+type OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCountFilter struct {
+	Attribute *string `json:"attribute,omitempty"`
+	Key       *string `json:"key,omitempty"`
+	Match     *string `json:"match,omitempty"`
+	Value     *string `json:"value,omitempty"`
+}
+
+// OrganizationWorkflowActionFilterConditionIssueCategory defines model for OrganizationWorkflow_ActionFilter_Condition_IssueCategory.
+type OrganizationWorkflowActionFilterConditionIssueCategory struct {
+	Comparison struct {
+		Value int64 `json:"value"`
+	} `json:"comparison"`
+	ConditionResult bool                                                       `json:"conditionResult"`
+	Type            OrganizationWorkflowActionFilterConditionIssueCategoryType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterConditionIssueCategoryType defines model for OrganizationWorkflowActionFilterConditionIssueCategory.Type.
+type OrganizationWorkflowActionFilterConditionIssueCategoryType string
+
+// OrganizationWorkflowActionFilterConditionIssueOccurrences defines model for OrganizationWorkflow_ActionFilter_Condition_IssueOccurrences.
+type OrganizationWorkflowActionFilterConditionIssueOccurrences struct {
+	Comparison struct {
+		Value int64 `json:"value"`
+	} `json:"comparison"`
+	ConditionResult bool                                                          `json:"conditionResult"`
+	Type            OrganizationWorkflowActionFilterConditionIssueOccurrencesType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterConditionIssueOccurrencesType defines model for OrganizationWorkflowActionFilterConditionIssueOccurrences.Type.
+type OrganizationWorkflowActionFilterConditionIssueOccurrencesType string
+
+// OrganizationWorkflowActionFilterConditionIssuePriorityDeescalating defines model for OrganizationWorkflow_ActionFilter_Condition_IssuePriorityDeescalating.
+type OrganizationWorkflowActionFilterConditionIssuePriorityDeescalating struct {
+	Comparison      bool                                                                   `json:"comparison"`
+	ConditionResult bool                                                                   `json:"conditionResult"`
+	Type            OrganizationWorkflowActionFilterConditionIssuePriorityDeescalatingType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterConditionIssuePriorityDeescalatingType defines model for OrganizationWorkflowActionFilterConditionIssuePriorityDeescalating.Type.
+type OrganizationWorkflowActionFilterConditionIssuePriorityDeescalatingType string
+
+// OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual defines model for OrganizationWorkflow_ActionFilter_Condition_IssuePriorityGreaterOrEqual.
+type OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual struct {
+	Comparison      int64                                                                    `json:"comparison"`
+	ConditionResult bool                                                                     `json:"conditionResult"`
+	Type            OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqualType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqualType defines model for OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual.Type.
+type OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqualType string
+
+// OrganizationWorkflowActionFilterConditionLatestAdoptedRelease defines model for OrganizationWorkflow_ActionFilter_Condition_LatestAdoptedRelease.
+type OrganizationWorkflowActionFilterConditionLatestAdoptedRelease struct {
+	Comparison struct {
+		AgeComparison  string `json:"ageComparison"`
+		Environment    string `json:"environment"`
+		ReleaseAgeType string `json:"releaseAgeType"`
+	} `json:"comparison"`
+	ConditionResult bool                                                              `json:"conditionResult"`
+	Type            OrganizationWorkflowActionFilterConditionLatestAdoptedReleaseType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterConditionLatestAdoptedReleaseType defines model for OrganizationWorkflowActionFilterConditionLatestAdoptedRelease.Type.
+type OrganizationWorkflowActionFilterConditionLatestAdoptedReleaseType string
+
+// OrganizationWorkflowActionFilterConditionLatestRelease defines model for OrganizationWorkflow_ActionFilter_Condition_LatestRelease.
+type OrganizationWorkflowActionFilterConditionLatestRelease struct {
+	Comparison      bool                                                       `json:"comparison"`
+	ConditionResult bool                                                       `json:"conditionResult"`
+	Type            OrganizationWorkflowActionFilterConditionLatestReleaseType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterConditionLatestReleaseType defines model for OrganizationWorkflowActionFilterConditionLatestRelease.Type.
+type OrganizationWorkflowActionFilterConditionLatestReleaseType string
+
+// OrganizationWorkflowActionFilterConditionLevel defines model for OrganizationWorkflow_ActionFilter_Condition_Level.
+type OrganizationWorkflowActionFilterConditionLevel struct {
+	Comparison struct {
+		Level int64  `json:"level"`
+		Match string `json:"match"`
+	} `json:"comparison"`
+	ConditionResult bool                                               `json:"conditionResult"`
+	Type            OrganizationWorkflowActionFilterConditionLevelType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterConditionLevelType defines model for OrganizationWorkflowActionFilterConditionLevel.Type.
+type OrganizationWorkflowActionFilterConditionLevelType string
+
+// OrganizationWorkflowActionFilterConditionPercentSessionsCount defines model for OrganizationWorkflow_ActionFilter_Condition_PercentSessionsCount.
+type OrganizationWorkflowActionFilterConditionPercentSessionsCount struct {
+	Comparison struct {
+		Interval string `json:"interval"`
+		Value    int64  `json:"value"`
+	} `json:"comparison"`
+	ConditionResult bool                                                              `json:"conditionResult"`
+	Type            OrganizationWorkflowActionFilterConditionPercentSessionsCountType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterConditionPercentSessionsCountType defines model for OrganizationWorkflowActionFilterConditionPercentSessionsCount.Type.
+type OrganizationWorkflowActionFilterConditionPercentSessionsCountType string
+
+// OrganizationWorkflowActionFilterConditionPercentSessionsPercent defines model for OrganizationWorkflow_ActionFilter_Condition_PercentSessionsPercent.
+type OrganizationWorkflowActionFilterConditionPercentSessionsPercent struct {
+	Comparison struct {
+		ComparisonInterval string `json:"comparisonInterval"`
+		Interval           string `json:"interval"`
+		Value              int64  `json:"value"`
+	} `json:"comparison"`
+	ConditionResult bool                                                                `json:"conditionResult"`
+	Type            OrganizationWorkflowActionFilterConditionPercentSessionsPercentType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterConditionPercentSessionsPercentType defines model for OrganizationWorkflowActionFilterConditionPercentSessionsPercent.Type.
+type OrganizationWorkflowActionFilterConditionPercentSessionsPercentType string
+
+// OrganizationWorkflowActionFilterConditionTaggedEvent defines model for OrganizationWorkflow_ActionFilter_Condition_TaggedEvent.
+type OrganizationWorkflowActionFilterConditionTaggedEvent struct {
+	Comparison struct {
+		Key   string  `json:"key"`
+		Match string  `json:"match"`
+		Value *string `json:"value,omitempty"`
+	} `json:"comparison"`
+	ConditionResult bool                                                     `json:"conditionResult"`
+	Type            OrganizationWorkflowActionFilterConditionTaggedEventType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterConditionTaggedEventType defines model for OrganizationWorkflowActionFilterConditionTaggedEvent.Type.
+type OrganizationWorkflowActionFilterConditionTaggedEventType string
+
+// OrganizationWorkflowConfig defines model for OrganizationWorkflow_Config.
+type OrganizationWorkflowConfig struct {
+	Frequency int64 `json:"frequency"`
+}
+
+// OrganizationWorkflowTrigger defines model for OrganizationWorkflow_Trigger.
+type OrganizationWorkflowTrigger struct {
+	Conditions []OrganizationWorkflowTriggerCondition `json:"conditions"`
+	LogicType  OrganizationWorkflowTriggerLogicType   `json:"logicType"`
+}
+
+// OrganizationWorkflowTriggerLogicType defines model for OrganizationWorkflowTrigger.LogicType.
+type OrganizationWorkflowTriggerLogicType string
+
+// OrganizationWorkflowTriggerCondition defines model for OrganizationWorkflow_Trigger_Condition.
+type OrganizationWorkflowTriggerCondition struct {
+	Comparison      OrganizationWorkflowTriggerCondition_Comparison `json:"comparison"`
+	ConditionResult bool                                            `json:"conditionResult"`
+	Type            string                                          `json:"type"`
+}
+
+// OrganizationWorkflowTriggerConditionComparison0 defines model for .
+type OrganizationWorkflowTriggerConditionComparison0 = bool
+
+// OrganizationWorkflowTriggerConditionComparison1 defines model for .
+type OrganizationWorkflowTriggerConditionComparison1 = map[string]interface{}
+
+// OrganizationWorkflowTriggerCondition_Comparison defines model for OrganizationWorkflowTriggerCondition.Comparison.
+type OrganizationWorkflowTriggerCondition_Comparison struct {
+	union json.RawMessage
+}
+
 // Project defines model for Project.
 type Project struct {
 	AllowedDomains       []string                  `json:"allowedDomains"`
@@ -699,6 +2086,282 @@ type ProjectKey struct {
 	}] `json:"rateLimit"`
 	Secret string `json:"secret"`
 }
+
+// ProjectMonitor defines model for ProjectMonitor.
+type ProjectMonitor struct {
+	ConditionGroup ProjectMonitorConditionGroup           `json:"conditionGroup"`
+	Config         ProjectMonitorConfig                   `json:"config"`
+	DataSources    []ProjectMonitorDataSourceWrapper      `json:"dataSources"`
+	DateCreated    time.Time                              `json:"dateCreated"`
+	DateUpdated    time.Time                              `json:"dateUpdated"`
+	Description    nullable.Nullable[string]              `json:"description"`
+	Enabled        bool                                   `json:"enabled"`
+	Id             string                                 `json:"id"`
+	Name           string                                 `json:"name"`
+	Owner          nullable.Nullable[ProjectMonitorOwner] `json:"owner"`
+	ProjectId      string                                 `json:"projectId"`
+	Type           string                                 `json:"type"`
+}
+
+// ProjectMonitorRequest defines model for ProjectMonitorRequest.
+type ProjectMonitorRequest struct {
+	union json.RawMessage
+}
+
+// ProjectMonitorRequestBase defines model for ProjectMonitorRequest_Base.
+type ProjectMonitorRequestBase struct {
+	Config      *ProjectMonitorConfig     `json:"config,omitempty"`
+	Description nullable.Nullable[string] `json:"description"`
+	Enabled     nullable.Nullable[bool]   `json:"enabled,omitempty"`
+	Name        string                    `json:"name"`
+	Owner       nullable.Nullable[string] `json:"owner"`
+	ProjectId   string                    `json:"projectId"`
+}
+
+// ProjectMonitorRequestMetricIssue defines model for ProjectMonitorRequest_MetricIssue.
+type ProjectMonitorRequestMetricIssue struct {
+	ConditionGroup ProjectMonitorConditionGroup                     `json:"conditionGroup"`
+	Config         *ProjectMonitorConfig                            `json:"config,omitempty"`
+	DataSources    []ProjectMonitorDataSourceSnubaQuerySubscription `json:"dataSources"`
+	Description    nullable.Nullable[string]                        `json:"description"`
+	Enabled        nullable.Nullable[bool]                          `json:"enabled,omitempty"`
+	Name           string                                           `json:"name"`
+	Owner          nullable.Nullable[string]                        `json:"owner"`
+	ProjectId      string                                           `json:"projectId"`
+	Type           ProjectMonitorRequestMetricIssueType             `json:"type"`
+}
+
+// ProjectMonitorRequestMetricIssueType defines model for ProjectMonitorRequestMetricIssue.Type.
+type ProjectMonitorRequestMetricIssueType string
+
+// ProjectMonitorRequestMonitorCheckInFailure defines model for ProjectMonitorRequest_MonitorCheckInFailure.
+type ProjectMonitorRequestMonitorCheckInFailure struct {
+	Config      *ProjectMonitorConfig                          `json:"config,omitempty"`
+	DataSources []ProjectMonitorDataSourceCron                 `json:"dataSources"`
+	Description nullable.Nullable[string]                      `json:"description"`
+	Enabled     nullable.Nullable[bool]                        `json:"enabled,omitempty"`
+	Name        string                                         `json:"name"`
+	Owner       nullable.Nullable[string]                      `json:"owner"`
+	ProjectId   string                                         `json:"projectId"`
+	Type        ProjectMonitorRequestMonitorCheckInFailureType `json:"type"`
+}
+
+// ProjectMonitorRequestMonitorCheckInFailureType defines model for ProjectMonitorRequestMonitorCheckInFailure.Type.
+type ProjectMonitorRequestMonitorCheckInFailureType string
+
+// ProjectMonitorRequestUptimeDomainFailure defines model for ProjectMonitorRequest_UptimeDomainFailure.
+type ProjectMonitorRequestUptimeDomainFailure struct {
+	Config      *ProjectMonitorConfig                         `json:"config,omitempty"`
+	DataSources []ProjectMonitorDataSourceUptimeDomainFailure `json:"dataSources"`
+	Description nullable.Nullable[string]                     `json:"description"`
+	Enabled     nullable.Nullable[bool]                       `json:"enabled,omitempty"`
+	Name        string                                        `json:"name"`
+	Owner       nullable.Nullable[string]                     `json:"owner"`
+	ProjectId   string                                        `json:"projectId"`
+	Type        ProjectMonitorRequestUptimeDomainFailureType  `json:"type"`
+}
+
+// ProjectMonitorRequestUptimeDomainFailureType defines model for ProjectMonitorRequestUptimeDomainFailure.Type.
+type ProjectMonitorRequestUptimeDomainFailureType string
+
+// ProjectMonitorConditionGroup defines model for ProjectMonitor_ConditionGroup.
+type ProjectMonitorConditionGroup struct {
+	Conditions []ProjectMonitorConditionGroupCondition `json:"conditions"`
+	LogicType  ProjectMonitorConditionGroupLogicType   `json:"logicType"`
+}
+
+// ProjectMonitorConditionGroupLogicType defines model for ProjectMonitorConditionGroup.LogicType.
+type ProjectMonitorConditionGroupLogicType string
+
+// ProjectMonitorConditionGroupCondition defines model for ProjectMonitor_ConditionGroup_Condition.
+type ProjectMonitorConditionGroupCondition struct {
+	Comparison      ProjectMonitorConditionGroupCondition_Comparison `json:"comparison"`
+	ConditionResult int64                                            `json:"conditionResult"`
+	Type            string                                           `json:"type"`
+}
+
+// ProjectMonitorConditionGroupConditionComparison0 defines model for .
+type ProjectMonitorConditionGroupConditionComparison0 = string
+
+// ProjectMonitorConditionGroupConditionComparison1 defines model for .
+type ProjectMonitorConditionGroupConditionComparison1 = int64
+
+// ProjectMonitorConditionGroupConditionComparison2 defines model for .
+type ProjectMonitorConditionGroupConditionComparison2 struct {
+	Seasonality   string `json:"seasonality"`
+	Sensitivity   string `json:"sensitivity"`
+	ThresholdType int64  `json:"thresholdType"`
+}
+
+// ProjectMonitorConditionGroupCondition_Comparison defines model for ProjectMonitorConditionGroupCondition.Comparison.
+type ProjectMonitorConditionGroupCondition_Comparison struct {
+	union json.RawMessage
+}
+
+// ProjectMonitorConfig defines model for ProjectMonitor_Config.
+type ProjectMonitorConfig struct {
+	union json.RawMessage
+}
+
+// ProjectMonitorConfigMetricIssue defines model for ProjectMonitor_Config_MetricIssue.
+type ProjectMonitorConfigMetricIssue struct {
+	ComparisonDelta *int64  `json:"comparisonDelta,omitempty"`
+	DetectionType   *string `json:"detectionType,omitempty"`
+}
+
+// ProjectMonitorConfigUptimeDomainFailure defines model for ProjectMonitor_Config_UptimeDomainFailure.
+type ProjectMonitorConfigUptimeDomainFailure struct {
+	DowntimeThreshold int64                                       `json:"downtimeThreshold"`
+	Environment       string                                      `json:"environment"`
+	Mode              ProjectMonitorConfigUptimeDomainFailureMode `json:"mode"`
+	RecoveryThreshold int64                                       `json:"recoveryThreshold"`
+}
+
+// ProjectMonitorConfigUptimeDomainFailureMode defines model for ProjectMonitorConfigUptimeDomainFailure.Mode.
+type ProjectMonitorConfigUptimeDomainFailureMode int64
+
+// ProjectMonitorDataSourceConfigCron defines model for ProjectMonitor_DataSource_Config_Cron.
+type ProjectMonitorDataSourceConfigCron struct {
+	union json.RawMessage
+}
+
+// ProjectMonitorDataSourceConfigCronBase defines model for ProjectMonitor_DataSource_Config_Cron_Base.
+type ProjectMonitorDataSourceConfigCronBase struct {
+	CheckinMargin         int64  `json:"checkin_margin"`
+	FailureIssueThreshold int64  `json:"failure_issue_threshold"`
+	MaxRuntime            int64  `json:"max_runtime"`
+	RecoveryThreshold     int64  `json:"recovery_threshold"`
+	Timezone              string `json:"timezone"`
+}
+
+// ProjectMonitorDataSourceConfigCronCrontab defines model for ProjectMonitor_DataSource_Config_Cron_Crontab.
+type ProjectMonitorDataSourceConfigCronCrontab struct {
+	CheckinMargin         int64                                                 `json:"checkin_margin"`
+	FailureIssueThreshold int64                                                 `json:"failure_issue_threshold"`
+	MaxRuntime            int64                                                 `json:"max_runtime"`
+	RecoveryThreshold     int64                                                 `json:"recovery_threshold"`
+	Schedule              string                                                `json:"schedule"`
+	ScheduleType          ProjectMonitorDataSourceConfigCronCrontabScheduleType `json:"schedule_type"`
+	Timezone              string                                                `json:"timezone"`
+}
+
+// ProjectMonitorDataSourceConfigCronCrontabScheduleType defines model for ProjectMonitorDataSourceConfigCronCrontab.ScheduleType.
+type ProjectMonitorDataSourceConfigCronCrontabScheduleType string
+
+// ProjectMonitorDataSourceConfigCronInterval defines model for ProjectMonitor_DataSource_Config_Cron_Interval.
+type ProjectMonitorDataSourceConfigCronInterval struct {
+	CheckinMargin         int64                                                      `json:"checkin_margin"`
+	FailureIssueThreshold int64                                                      `json:"failure_issue_threshold"`
+	MaxRuntime            int64                                                      `json:"max_runtime"`
+	RecoveryThreshold     int64                                                      `json:"recovery_threshold"`
+	Schedule              []ProjectMonitorDataSourceConfigCronInterval_Schedule_Item `json:"schedule"`
+	ScheduleType          ProjectMonitorDataSourceConfigCronIntervalScheduleType     `json:"schedule_type"`
+	Timezone              string                                                     `json:"timezone"`
+}
+
+// ProjectMonitorDataSourceConfigCronInterval_Schedule_Item defines model for ProjectMonitor_DataSource_Config_Cron_Interval.schedule.Item.
+type ProjectMonitorDataSourceConfigCronInterval_Schedule_Item struct {
+	union json.RawMessage
+}
+
+// ProjectMonitorDataSourceConfigCronIntervalScheduleType defines model for ProjectMonitorDataSourceConfigCronInterval.ScheduleType.
+type ProjectMonitorDataSourceConfigCronIntervalScheduleType string
+
+// ProjectMonitorDataSourceConfigCronIntervalUnit defines model for ProjectMonitor_DataSource_Config_Cron_Interval_Unit.
+type ProjectMonitorDataSourceConfigCronIntervalUnit = string
+
+// ProjectMonitorDataSourceConfigCronIntervalValue defines model for ProjectMonitor_DataSource_Config_Cron_Interval_Value.
+type ProjectMonitorDataSourceConfigCronIntervalValue = int64
+
+// ProjectMonitorDataSourceCron defines model for ProjectMonitor_DataSource_Cron.
+type ProjectMonitorDataSourceCron struct {
+	Config ProjectMonitorDataSourceConfigCron `json:"config"`
+	Name   string                             `json:"name"`
+}
+
+// ProjectMonitorDataSourceSnubaQuerySubscription defines model for ProjectMonitor_DataSource_SnubaQuerySubscription.
+type ProjectMonitorDataSourceSnubaQuerySubscription struct {
+	Aggregate         string                    `json:"aggregate"`
+	Dataset           string                    `json:"dataset"`
+	Environment       nullable.Nullable[string] `json:"environment"`
+	EventTypes        []string                  `json:"eventTypes"`
+	ExtrapolationMode nullable.Nullable[string] `json:"extrapolationMode"`
+	Query             nullable.Nullable[string] `json:"query"`
+	QueryType         nullable.Nullable[int64]  `json:"queryType"`
+	TimeWindow        nullable.Nullable[int64]  `json:"timeWindow"`
+}
+
+// ProjectMonitorDataSourceUptimeDomainFailure defines model for ProjectMonitor_DataSource_UptimeDomainFailure.
+type ProjectMonitorDataSourceUptimeDomainFailure struct {
+	Assertion       nullable.Nullable[json.RawMessage] `json:"assertion"`
+	Body            nullable.Nullable[string]          `json:"body"`
+	Headers         [][]string                         `json:"headers"`
+	IntervalSeconds int64                              `json:"intervalSeconds"`
+	Method          string                             `json:"method"`
+	TimeoutMs       int64                              `json:"timeoutMs"`
+	TraceSampling   bool                               `json:"traceSampling"`
+	Url             string                             `json:"url"`
+}
+
+// ProjectMonitorDataSourceWrapper defines model for ProjectMonitor_DataSource_Wrapper.
+type ProjectMonitorDataSourceWrapper struct {
+	union json.RawMessage
+}
+
+// ProjectMonitorDataSourceWrapperCronMonitor defines model for ProjectMonitor_DataSource_Wrapper_CronMonitor.
+type ProjectMonitorDataSourceWrapperCronMonitor struct {
+	QueryObj ProjectMonitorDataSourceCron                   `json:"queryObj"`
+	Type     ProjectMonitorDataSourceWrapperCronMonitorType `json:"type"`
+}
+
+// ProjectMonitorDataSourceWrapperCronMonitorType defines model for ProjectMonitorDataSourceWrapperCronMonitor.Type.
+type ProjectMonitorDataSourceWrapperCronMonitorType string
+
+// ProjectMonitorDataSourceWrapperSnubaQuerySubscription defines model for ProjectMonitor_DataSource_Wrapper_SnubaQuerySubscription.
+type ProjectMonitorDataSourceWrapperSnubaQuerySubscription struct {
+	QueryObj struct {
+		SnubaQuery ProjectMonitorDataSourceSnubaQuerySubscription `json:"snubaQuery"`
+	} `json:"queryObj"`
+	Type ProjectMonitorDataSourceWrapperSnubaQuerySubscriptionType `json:"type"`
+}
+
+// ProjectMonitorDataSourceWrapperSnubaQuerySubscriptionType defines model for ProjectMonitorDataSourceWrapperSnubaQuerySubscription.Type.
+type ProjectMonitorDataSourceWrapperSnubaQuerySubscriptionType string
+
+// ProjectMonitorDataSourceWrapperUptimeSubscription defines model for ProjectMonitor_DataSource_Wrapper_UptimeSubscription.
+type ProjectMonitorDataSourceWrapperUptimeSubscription struct {
+	QueryObj ProjectMonitorDataSourceUptimeDomainFailure           `json:"queryObj"`
+	Type     ProjectMonitorDataSourceWrapperUptimeSubscriptionType `json:"type"`
+}
+
+// ProjectMonitorDataSourceWrapperUptimeSubscriptionType defines model for ProjectMonitorDataSourceWrapperUptimeSubscription.Type.
+type ProjectMonitorDataSourceWrapperUptimeSubscriptionType string
+
+// ProjectMonitorOwner defines model for ProjectMonitor_Owner.
+type ProjectMonitorOwner struct {
+	union json.RawMessage
+}
+
+// ProjectMonitorOwnerTeam defines model for ProjectMonitor_Owner_Team.
+type ProjectMonitorOwnerTeam struct {
+	Id   string                      `json:"id"`
+	Name string                      `json:"name"`
+	Type ProjectMonitorOwnerTeamType `json:"type"`
+}
+
+// ProjectMonitorOwnerTeamType defines model for ProjectMonitorOwnerTeam.Type.
+type ProjectMonitorOwnerTeamType string
+
+// ProjectMonitorOwnerUser defines model for ProjectMonitor_Owner_User.
+type ProjectMonitorOwnerUser struct {
+	Email string                      `json:"email"`
+	Id    string                      `json:"id"`
+	Name  string                      `json:"name"`
+	Type  ProjectMonitorOwnerUserType `json:"type"`
+}
+
+// ProjectMonitorOwnerUserType defines model for ProjectMonitorOwnerUser.Type.
+type ProjectMonitorOwnerUserType string
 
 // ProjectOwnership defines model for ProjectOwnership.
 type ProjectOwnership struct {
@@ -1172,8 +2835,23 @@ type TeamRoleListItem struct {
 	Scopes           []string `json:"scopes"`
 }
 
+// UpdateOrganizationWorkflowRequest defines model for UpdateOrganizationWorkflowRequest.
+type UpdateOrganizationWorkflowRequest struct {
+	ActionFilters []OrganizationWorkflowActionFilter `json:"actionFilters"`
+	Config        OrganizationWorkflowConfig         `json:"config"`
+	DetectorIds   []string                           `json:"detectorIds"`
+	Enabled       bool                               `json:"enabled"`
+	Environment   string                             `json:"environment"`
+	Id            string                             `json:"id"`
+	Name          string                             `json:"name"`
+	Triggers      OrganizationWorkflowTrigger        `json:"triggers"`
+}
+
 // Cursor defines model for cursor.
 type Cursor = string
+
+// DetectorId defines model for detector_id.
+type DetectorId = string
 
 // IntegrationId defines model for integration_id.
 type IntegrationId = string
@@ -1189,6 +2867,12 @@ type ProjectIdOrSlug = string
 
 // TeamIdOrSlug defines model for team_id_or_slug.
 type TeamIdOrSlug = string
+
+// ListOrganizationMonitorsParams defines parameters for ListOrganizationMonitors.
+type ListOrganizationMonitorsParams struct {
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+	Query  *string `form:"query,omitempty" json:"query,omitempty"`
+}
 
 // ListOrganizationIntegrationsParams defines parameters for ListOrganizationIntegrations.
 type ListOrganizationIntegrationsParams struct {
@@ -1238,6 +2922,11 @@ type DisableSpikeProtectionJSONBody struct {
 // EnableSpikeProtectionJSONBody defines parameters for EnableSpikeProtection.
 type EnableSpikeProtectionJSONBody struct {
 	Projects []string `json:"projects"`
+}
+
+// ListOrganizationWorkflowsParams defines parameters for ListOrganizationWorkflows.
+type ListOrganizationWorkflowsParams struct {
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
 }
 
 // UpdateOrganizationProjectJSONBody defines parameters for UpdateOrganizationProject.
@@ -1343,6 +3032,9 @@ type CreateOrganizationTeamProjectJSONBody struct {
 	Slug         *string `json:"slug,omitempty"`
 }
 
+// UpdateProjectMonitorJSONRequestBody defines body for UpdateProjectMonitor for application/json ContentType.
+type UpdateProjectMonitorJSONRequestBody = ProjectMonitorRequest
+
 // UpdateOrganizationIntegrationJSONRequestBody defines body for UpdateOrganizationIntegration for application/json ContentType.
 type UpdateOrganizationIntegrationJSONRequestBody UpdateOrganizationIntegrationJSONBody
 
@@ -1352,11 +3044,20 @@ type CreateOrganizationMemberJSONRequestBody CreateOrganizationMemberJSONBody
 // UpdateOrganizationMemberJSONRequestBody defines body for UpdateOrganizationMember for application/json ContentType.
 type UpdateOrganizationMemberJSONRequestBody UpdateOrganizationMemberJSONBody
 
+// CreateProjectMonitorJSONRequestBody defines body for CreateProjectMonitor for application/json ContentType.
+type CreateProjectMonitorJSONRequestBody = ProjectMonitorRequest
+
 // DisableSpikeProtectionJSONRequestBody defines body for DisableSpikeProtection for application/json ContentType.
 type DisableSpikeProtectionJSONRequestBody DisableSpikeProtectionJSONBody
 
 // EnableSpikeProtectionJSONRequestBody defines body for EnableSpikeProtection for application/json ContentType.
 type EnableSpikeProtectionJSONRequestBody EnableSpikeProtectionJSONBody
+
+// CreateOrganizationWorkflowJSONRequestBody defines body for CreateOrganizationWorkflow for application/json ContentType.
+type CreateOrganizationWorkflowJSONRequestBody = OrganizationWorkflowRequest
+
+// UpdateOrganizationWorkflowJSONRequestBody defines body for UpdateOrganizationWorkflow for application/json ContentType.
+type UpdateOrganizationWorkflowJSONRequestBody = UpdateOrganizationWorkflowRequest
 
 // UpdateOrganizationProjectJSONRequestBody defines body for UpdateOrganizationProject for application/json ContentType.
 type UpdateOrganizationProjectJSONRequestBody UpdateOrganizationProjectJSONBody
@@ -1617,6 +3318,1626 @@ func (t *OrganizationIntegration) UnmarshalJSON(b []byte) error {
 		}
 	}
 
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterActionEmail returns the union data inside the OrganizationWorkflowActionFilterAction as a OrganizationWorkflowActionFilterActionEmail
+func (t OrganizationWorkflowActionFilterAction) AsOrganizationWorkflowActionFilterActionEmail() (OrganizationWorkflowActionFilterActionEmail, error) {
+	var body OrganizationWorkflowActionFilterActionEmail
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterActionEmail overwrites any union data inside the OrganizationWorkflowActionFilterAction as the provided OrganizationWorkflowActionFilterActionEmail
+func (t *OrganizationWorkflowActionFilterAction) FromOrganizationWorkflowActionFilterActionEmail(v OrganizationWorkflowActionFilterActionEmail) error {
+	v.Type = "email"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterActionEmail performs a merge with any union data inside the OrganizationWorkflowActionFilterAction, using the provided OrganizationWorkflowActionFilterActionEmail
+func (t *OrganizationWorkflowActionFilterAction) MergeOrganizationWorkflowActionFilterActionEmail(v OrganizationWorkflowActionFilterActionEmail) error {
+	v.Type = "email"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterActionPlugin returns the union data inside the OrganizationWorkflowActionFilterAction as a OrganizationWorkflowActionFilterActionPlugin
+func (t OrganizationWorkflowActionFilterAction) AsOrganizationWorkflowActionFilterActionPlugin() (OrganizationWorkflowActionFilterActionPlugin, error) {
+	var body OrganizationWorkflowActionFilterActionPlugin
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterActionPlugin overwrites any union data inside the OrganizationWorkflowActionFilterAction as the provided OrganizationWorkflowActionFilterActionPlugin
+func (t *OrganizationWorkflowActionFilterAction) FromOrganizationWorkflowActionFilterActionPlugin(v OrganizationWorkflowActionFilterActionPlugin) error {
+	v.Type = "plugin"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterActionPlugin performs a merge with any union data inside the OrganizationWorkflowActionFilterAction, using the provided OrganizationWorkflowActionFilterActionPlugin
+func (t *OrganizationWorkflowActionFilterAction) MergeOrganizationWorkflowActionFilterActionPlugin(v OrganizationWorkflowActionFilterActionPlugin) error {
+	v.Type = "plugin"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterActionSlack returns the union data inside the OrganizationWorkflowActionFilterAction as a OrganizationWorkflowActionFilterActionSlack
+func (t OrganizationWorkflowActionFilterAction) AsOrganizationWorkflowActionFilterActionSlack() (OrganizationWorkflowActionFilterActionSlack, error) {
+	var body OrganizationWorkflowActionFilterActionSlack
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterActionSlack overwrites any union data inside the OrganizationWorkflowActionFilterAction as the provided OrganizationWorkflowActionFilterActionSlack
+func (t *OrganizationWorkflowActionFilterAction) FromOrganizationWorkflowActionFilterActionSlack(v OrganizationWorkflowActionFilterActionSlack) error {
+	v.Type = "slack"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterActionSlack performs a merge with any union data inside the OrganizationWorkflowActionFilterAction, using the provided OrganizationWorkflowActionFilterActionSlack
+func (t *OrganizationWorkflowActionFilterAction) MergeOrganizationWorkflowActionFilterActionSlack(v OrganizationWorkflowActionFilterActionSlack) error {
+	v.Type = "slack"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterActionPagerDuty returns the union data inside the OrganizationWorkflowActionFilterAction as a OrganizationWorkflowActionFilterActionPagerDuty
+func (t OrganizationWorkflowActionFilterAction) AsOrganizationWorkflowActionFilterActionPagerDuty() (OrganizationWorkflowActionFilterActionPagerDuty, error) {
+	var body OrganizationWorkflowActionFilterActionPagerDuty
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterActionPagerDuty overwrites any union data inside the OrganizationWorkflowActionFilterAction as the provided OrganizationWorkflowActionFilterActionPagerDuty
+func (t *OrganizationWorkflowActionFilterAction) FromOrganizationWorkflowActionFilterActionPagerDuty(v OrganizationWorkflowActionFilterActionPagerDuty) error {
+	v.Type = "pagerduty"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterActionPagerDuty performs a merge with any union data inside the OrganizationWorkflowActionFilterAction, using the provided OrganizationWorkflowActionFilterActionPagerDuty
+func (t *OrganizationWorkflowActionFilterAction) MergeOrganizationWorkflowActionFilterActionPagerDuty(v OrganizationWorkflowActionFilterActionPagerDuty) error {
+	v.Type = "pagerduty"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterActionDiscord returns the union data inside the OrganizationWorkflowActionFilterAction as a OrganizationWorkflowActionFilterActionDiscord
+func (t OrganizationWorkflowActionFilterAction) AsOrganizationWorkflowActionFilterActionDiscord() (OrganizationWorkflowActionFilterActionDiscord, error) {
+	var body OrganizationWorkflowActionFilterActionDiscord
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterActionDiscord overwrites any union data inside the OrganizationWorkflowActionFilterAction as the provided OrganizationWorkflowActionFilterActionDiscord
+func (t *OrganizationWorkflowActionFilterAction) FromOrganizationWorkflowActionFilterActionDiscord(v OrganizationWorkflowActionFilterActionDiscord) error {
+	v.Type = "discord"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterActionDiscord performs a merge with any union data inside the OrganizationWorkflowActionFilterAction, using the provided OrganizationWorkflowActionFilterActionDiscord
+func (t *OrganizationWorkflowActionFilterAction) MergeOrganizationWorkflowActionFilterActionDiscord(v OrganizationWorkflowActionFilterActionDiscord) error {
+	v.Type = "discord"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterActionMsTeams returns the union data inside the OrganizationWorkflowActionFilterAction as a OrganizationWorkflowActionFilterActionMsTeams
+func (t OrganizationWorkflowActionFilterAction) AsOrganizationWorkflowActionFilterActionMsTeams() (OrganizationWorkflowActionFilterActionMsTeams, error) {
+	var body OrganizationWorkflowActionFilterActionMsTeams
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterActionMsTeams overwrites any union data inside the OrganizationWorkflowActionFilterAction as the provided OrganizationWorkflowActionFilterActionMsTeams
+func (t *OrganizationWorkflowActionFilterAction) FromOrganizationWorkflowActionFilterActionMsTeams(v OrganizationWorkflowActionFilterActionMsTeams) error {
+	v.Type = "msteams"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterActionMsTeams performs a merge with any union data inside the OrganizationWorkflowActionFilterAction, using the provided OrganizationWorkflowActionFilterActionMsTeams
+func (t *OrganizationWorkflowActionFilterAction) MergeOrganizationWorkflowActionFilterActionMsTeams(v OrganizationWorkflowActionFilterActionMsTeams) error {
+	v.Type = "msteams"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterActionOpsgenie returns the union data inside the OrganizationWorkflowActionFilterAction as a OrganizationWorkflowActionFilterActionOpsgenie
+func (t OrganizationWorkflowActionFilterAction) AsOrganizationWorkflowActionFilterActionOpsgenie() (OrganizationWorkflowActionFilterActionOpsgenie, error) {
+	var body OrganizationWorkflowActionFilterActionOpsgenie
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterActionOpsgenie overwrites any union data inside the OrganizationWorkflowActionFilterAction as the provided OrganizationWorkflowActionFilterActionOpsgenie
+func (t *OrganizationWorkflowActionFilterAction) FromOrganizationWorkflowActionFilterActionOpsgenie(v OrganizationWorkflowActionFilterActionOpsgenie) error {
+	v.Type = "opsgenie"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterActionOpsgenie performs a merge with any union data inside the OrganizationWorkflowActionFilterAction, using the provided OrganizationWorkflowActionFilterActionOpsgenie
+func (t *OrganizationWorkflowActionFilterAction) MergeOrganizationWorkflowActionFilterActionOpsgenie(v OrganizationWorkflowActionFilterActionOpsgenie) error {
+	v.Type = "opsgenie"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterActionVsts returns the union data inside the OrganizationWorkflowActionFilterAction as a OrganizationWorkflowActionFilterActionVsts
+func (t OrganizationWorkflowActionFilterAction) AsOrganizationWorkflowActionFilterActionVsts() (OrganizationWorkflowActionFilterActionVsts, error) {
+	var body OrganizationWorkflowActionFilterActionVsts
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterActionVsts overwrites any union data inside the OrganizationWorkflowActionFilterAction as the provided OrganizationWorkflowActionFilterActionVsts
+func (t *OrganizationWorkflowActionFilterAction) FromOrganizationWorkflowActionFilterActionVsts(v OrganizationWorkflowActionFilterActionVsts) error {
+	v.Type = "vsts"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterActionVsts performs a merge with any union data inside the OrganizationWorkflowActionFilterAction, using the provided OrganizationWorkflowActionFilterActionVsts
+func (t *OrganizationWorkflowActionFilterAction) MergeOrganizationWorkflowActionFilterActionVsts(v OrganizationWorkflowActionFilterActionVsts) error {
+	v.Type = "vsts"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterActionJira returns the union data inside the OrganizationWorkflowActionFilterAction as a OrganizationWorkflowActionFilterActionJira
+func (t OrganizationWorkflowActionFilterAction) AsOrganizationWorkflowActionFilterActionJira() (OrganizationWorkflowActionFilterActionJira, error) {
+	var body OrganizationWorkflowActionFilterActionJira
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterActionJira overwrites any union data inside the OrganizationWorkflowActionFilterAction as the provided OrganizationWorkflowActionFilterActionJira
+func (t *OrganizationWorkflowActionFilterAction) FromOrganizationWorkflowActionFilterActionJira(v OrganizationWorkflowActionFilterActionJira) error {
+	v.Type = "jira"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterActionJira performs a merge with any union data inside the OrganizationWorkflowActionFilterAction, using the provided OrganizationWorkflowActionFilterActionJira
+func (t *OrganizationWorkflowActionFilterAction) MergeOrganizationWorkflowActionFilterActionJira(v OrganizationWorkflowActionFilterActionJira) error {
+	v.Type = "jira"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterActionJiraServer returns the union data inside the OrganizationWorkflowActionFilterAction as a OrganizationWorkflowActionFilterActionJiraServer
+func (t OrganizationWorkflowActionFilterAction) AsOrganizationWorkflowActionFilterActionJiraServer() (OrganizationWorkflowActionFilterActionJiraServer, error) {
+	var body OrganizationWorkflowActionFilterActionJiraServer
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterActionJiraServer overwrites any union data inside the OrganizationWorkflowActionFilterAction as the provided OrganizationWorkflowActionFilterActionJiraServer
+func (t *OrganizationWorkflowActionFilterAction) FromOrganizationWorkflowActionFilterActionJiraServer(v OrganizationWorkflowActionFilterActionJiraServer) error {
+	v.Type = "jira_server"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterActionJiraServer performs a merge with any union data inside the OrganizationWorkflowActionFilterAction, using the provided OrganizationWorkflowActionFilterActionJiraServer
+func (t *OrganizationWorkflowActionFilterAction) MergeOrganizationWorkflowActionFilterActionJiraServer(v OrganizationWorkflowActionFilterActionJiraServer) error {
+	v.Type = "jira_server"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterActionGitHub returns the union data inside the OrganizationWorkflowActionFilterAction as a OrganizationWorkflowActionFilterActionGitHub
+func (t OrganizationWorkflowActionFilterAction) AsOrganizationWorkflowActionFilterActionGitHub() (OrganizationWorkflowActionFilterActionGitHub, error) {
+	var body OrganizationWorkflowActionFilterActionGitHub
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterActionGitHub overwrites any union data inside the OrganizationWorkflowActionFilterAction as the provided OrganizationWorkflowActionFilterActionGitHub
+func (t *OrganizationWorkflowActionFilterAction) FromOrganizationWorkflowActionFilterActionGitHub(v OrganizationWorkflowActionFilterActionGitHub) error {
+	v.Type = "github"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterActionGitHub performs a merge with any union data inside the OrganizationWorkflowActionFilterAction, using the provided OrganizationWorkflowActionFilterActionGitHub
+func (t *OrganizationWorkflowActionFilterAction) MergeOrganizationWorkflowActionFilterActionGitHub(v OrganizationWorkflowActionFilterActionGitHub) error {
+	v.Type = "github"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t OrganizationWorkflowActionFilterAction) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t OrganizationWorkflowActionFilterAction) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "discord":
+		return t.AsOrganizationWorkflowActionFilterActionDiscord()
+	case "email":
+		return t.AsOrganizationWorkflowActionFilterActionEmail()
+	case "github":
+		return t.AsOrganizationWorkflowActionFilterActionGitHub()
+	case "jira":
+		return t.AsOrganizationWorkflowActionFilterActionJira()
+	case "jira_server":
+		return t.AsOrganizationWorkflowActionFilterActionJiraServer()
+	case "msteams":
+		return t.AsOrganizationWorkflowActionFilterActionMsTeams()
+	case "opsgenie":
+		return t.AsOrganizationWorkflowActionFilterActionOpsgenie()
+	case "pagerduty":
+		return t.AsOrganizationWorkflowActionFilterActionPagerDuty()
+	case "plugin":
+		return t.AsOrganizationWorkflowActionFilterActionPlugin()
+	case "slack":
+		return t.AsOrganizationWorkflowActionFilterActionSlack()
+	case "vsts":
+		return t.AsOrganizationWorkflowActionFilterActionVsts()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t OrganizationWorkflowActionFilterAction) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *OrganizationWorkflowActionFilterAction) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionAgeComparison returns the union data inside the OrganizationWorkflowActionFilterCondition as a OrganizationWorkflowActionFilterConditionAgeComparison
+func (t OrganizationWorkflowActionFilterCondition) AsOrganizationWorkflowActionFilterConditionAgeComparison() (OrganizationWorkflowActionFilterConditionAgeComparison, error) {
+	var body OrganizationWorkflowActionFilterConditionAgeComparison
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionAgeComparison overwrites any union data inside the OrganizationWorkflowActionFilterCondition as the provided OrganizationWorkflowActionFilterConditionAgeComparison
+func (t *OrganizationWorkflowActionFilterCondition) FromOrganizationWorkflowActionFilterConditionAgeComparison(v OrganizationWorkflowActionFilterConditionAgeComparison) error {
+	v.Type = "age_comparison"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionAgeComparison performs a merge with any union data inside the OrganizationWorkflowActionFilterCondition, using the provided OrganizationWorkflowActionFilterConditionAgeComparison
+func (t *OrganizationWorkflowActionFilterCondition) MergeOrganizationWorkflowActionFilterConditionAgeComparison(v OrganizationWorkflowActionFilterConditionAgeComparison) error {
+	v.Type = "age_comparison"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionAssignedTo returns the union data inside the OrganizationWorkflowActionFilterCondition as a OrganizationWorkflowActionFilterConditionAssignedTo
+func (t OrganizationWorkflowActionFilterCondition) AsOrganizationWorkflowActionFilterConditionAssignedTo() (OrganizationWorkflowActionFilterConditionAssignedTo, error) {
+	var body OrganizationWorkflowActionFilterConditionAssignedTo
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionAssignedTo overwrites any union data inside the OrganizationWorkflowActionFilterCondition as the provided OrganizationWorkflowActionFilterConditionAssignedTo
+func (t *OrganizationWorkflowActionFilterCondition) FromOrganizationWorkflowActionFilterConditionAssignedTo(v OrganizationWorkflowActionFilterConditionAssignedTo) error {
+	v.Type = "assigned_to"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionAssignedTo performs a merge with any union data inside the OrganizationWorkflowActionFilterCondition, using the provided OrganizationWorkflowActionFilterConditionAssignedTo
+func (t *OrganizationWorkflowActionFilterCondition) MergeOrganizationWorkflowActionFilterConditionAssignedTo(v OrganizationWorkflowActionFilterConditionAssignedTo) error {
+	v.Type = "assigned_to"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionIssueCategory returns the union data inside the OrganizationWorkflowActionFilterCondition as a OrganizationWorkflowActionFilterConditionIssueCategory
+func (t OrganizationWorkflowActionFilterCondition) AsOrganizationWorkflowActionFilterConditionIssueCategory() (OrganizationWorkflowActionFilterConditionIssueCategory, error) {
+	var body OrganizationWorkflowActionFilterConditionIssueCategory
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionIssueCategory overwrites any union data inside the OrganizationWorkflowActionFilterCondition as the provided OrganizationWorkflowActionFilterConditionIssueCategory
+func (t *OrganizationWorkflowActionFilterCondition) FromOrganizationWorkflowActionFilterConditionIssueCategory(v OrganizationWorkflowActionFilterConditionIssueCategory) error {
+	v.Type = "issue_category"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionIssueCategory performs a merge with any union data inside the OrganizationWorkflowActionFilterCondition, using the provided OrganizationWorkflowActionFilterConditionIssueCategory
+func (t *OrganizationWorkflowActionFilterCondition) MergeOrganizationWorkflowActionFilterConditionIssueCategory(v OrganizationWorkflowActionFilterConditionIssueCategory) error {
+	v.Type = "issue_category"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionIssueOccurrences returns the union data inside the OrganizationWorkflowActionFilterCondition as a OrganizationWorkflowActionFilterConditionIssueOccurrences
+func (t OrganizationWorkflowActionFilterCondition) AsOrganizationWorkflowActionFilterConditionIssueOccurrences() (OrganizationWorkflowActionFilterConditionIssueOccurrences, error) {
+	var body OrganizationWorkflowActionFilterConditionIssueOccurrences
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionIssueOccurrences overwrites any union data inside the OrganizationWorkflowActionFilterCondition as the provided OrganizationWorkflowActionFilterConditionIssueOccurrences
+func (t *OrganizationWorkflowActionFilterCondition) FromOrganizationWorkflowActionFilterConditionIssueOccurrences(v OrganizationWorkflowActionFilterConditionIssueOccurrences) error {
+	v.Type = "issue_occurrences"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionIssueOccurrences performs a merge with any union data inside the OrganizationWorkflowActionFilterCondition, using the provided OrganizationWorkflowActionFilterConditionIssueOccurrences
+func (t *OrganizationWorkflowActionFilterCondition) MergeOrganizationWorkflowActionFilterConditionIssueOccurrences(v OrganizationWorkflowActionFilterConditionIssueOccurrences) error {
+	v.Type = "issue_occurrences"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionIssuePriorityDeescalating returns the union data inside the OrganizationWorkflowActionFilterCondition as a OrganizationWorkflowActionFilterConditionIssuePriorityDeescalating
+func (t OrganizationWorkflowActionFilterCondition) AsOrganizationWorkflowActionFilterConditionIssuePriorityDeescalating() (OrganizationWorkflowActionFilterConditionIssuePriorityDeescalating, error) {
+	var body OrganizationWorkflowActionFilterConditionIssuePriorityDeescalating
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionIssuePriorityDeescalating overwrites any union data inside the OrganizationWorkflowActionFilterCondition as the provided OrganizationWorkflowActionFilterConditionIssuePriorityDeescalating
+func (t *OrganizationWorkflowActionFilterCondition) FromOrganizationWorkflowActionFilterConditionIssuePriorityDeescalating(v OrganizationWorkflowActionFilterConditionIssuePriorityDeescalating) error {
+	v.Type = "issue_priority_deescalating"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionIssuePriorityDeescalating performs a merge with any union data inside the OrganizationWorkflowActionFilterCondition, using the provided OrganizationWorkflowActionFilterConditionIssuePriorityDeescalating
+func (t *OrganizationWorkflowActionFilterCondition) MergeOrganizationWorkflowActionFilterConditionIssuePriorityDeescalating(v OrganizationWorkflowActionFilterConditionIssuePriorityDeescalating) error {
+	v.Type = "issue_priority_deescalating"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual returns the union data inside the OrganizationWorkflowActionFilterCondition as a OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual
+func (t OrganizationWorkflowActionFilterCondition) AsOrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual() (OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual, error) {
+	var body OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual overwrites any union data inside the OrganizationWorkflowActionFilterCondition as the provided OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual
+func (t *OrganizationWorkflowActionFilterCondition) FromOrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual(v OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual) error {
+	v.Type = "issue_priority_greater_or_equal"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual performs a merge with any union data inside the OrganizationWorkflowActionFilterCondition, using the provided OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual
+func (t *OrganizationWorkflowActionFilterCondition) MergeOrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual(v OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual) error {
+	v.Type = "issue_priority_greater_or_equal"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount returns the union data inside the OrganizationWorkflowActionFilterCondition as a OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount
+func (t OrganizationWorkflowActionFilterCondition) AsOrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount() (OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount, error) {
+	var body OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount overwrites any union data inside the OrganizationWorkflowActionFilterCondition as the provided OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount
+func (t *OrganizationWorkflowActionFilterCondition) FromOrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount(v OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount) error {
+	v.Type = "event_unique_user_frequency_count"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount performs a merge with any union data inside the OrganizationWorkflowActionFilterCondition, using the provided OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount
+func (t *OrganizationWorkflowActionFilterCondition) MergeOrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount(v OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount) error {
+	v.Type = "event_unique_user_frequency_count"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionEventFrequencyCount returns the union data inside the OrganizationWorkflowActionFilterCondition as a OrganizationWorkflowActionFilterConditionEventFrequencyCount
+func (t OrganizationWorkflowActionFilterCondition) AsOrganizationWorkflowActionFilterConditionEventFrequencyCount() (OrganizationWorkflowActionFilterConditionEventFrequencyCount, error) {
+	var body OrganizationWorkflowActionFilterConditionEventFrequencyCount
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionEventFrequencyCount overwrites any union data inside the OrganizationWorkflowActionFilterCondition as the provided OrganizationWorkflowActionFilterConditionEventFrequencyCount
+func (t *OrganizationWorkflowActionFilterCondition) FromOrganizationWorkflowActionFilterConditionEventFrequencyCount(v OrganizationWorkflowActionFilterConditionEventFrequencyCount) error {
+	v.Type = "event_frequency_count"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionEventFrequencyCount performs a merge with any union data inside the OrganizationWorkflowActionFilterCondition, using the provided OrganizationWorkflowActionFilterConditionEventFrequencyCount
+func (t *OrganizationWorkflowActionFilterCondition) MergeOrganizationWorkflowActionFilterConditionEventFrequencyCount(v OrganizationWorkflowActionFilterConditionEventFrequencyCount) error {
+	v.Type = "event_frequency_count"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionEventFrequencyPercent returns the union data inside the OrganizationWorkflowActionFilterCondition as a OrganizationWorkflowActionFilterConditionEventFrequencyPercent
+func (t OrganizationWorkflowActionFilterCondition) AsOrganizationWorkflowActionFilterConditionEventFrequencyPercent() (OrganizationWorkflowActionFilterConditionEventFrequencyPercent, error) {
+	var body OrganizationWorkflowActionFilterConditionEventFrequencyPercent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionEventFrequencyPercent overwrites any union data inside the OrganizationWorkflowActionFilterCondition as the provided OrganizationWorkflowActionFilterConditionEventFrequencyPercent
+func (t *OrganizationWorkflowActionFilterCondition) FromOrganizationWorkflowActionFilterConditionEventFrequencyPercent(v OrganizationWorkflowActionFilterConditionEventFrequencyPercent) error {
+	v.Type = "event_frequency_percent"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionEventFrequencyPercent performs a merge with any union data inside the OrganizationWorkflowActionFilterCondition, using the provided OrganizationWorkflowActionFilterConditionEventFrequencyPercent
+func (t *OrganizationWorkflowActionFilterCondition) MergeOrganizationWorkflowActionFilterConditionEventFrequencyPercent(v OrganizationWorkflowActionFilterConditionEventFrequencyPercent) error {
+	v.Type = "event_frequency_percent"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionPercentSessionsCount returns the union data inside the OrganizationWorkflowActionFilterCondition as a OrganizationWorkflowActionFilterConditionPercentSessionsCount
+func (t OrganizationWorkflowActionFilterCondition) AsOrganizationWorkflowActionFilterConditionPercentSessionsCount() (OrganizationWorkflowActionFilterConditionPercentSessionsCount, error) {
+	var body OrganizationWorkflowActionFilterConditionPercentSessionsCount
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionPercentSessionsCount overwrites any union data inside the OrganizationWorkflowActionFilterCondition as the provided OrganizationWorkflowActionFilterConditionPercentSessionsCount
+func (t *OrganizationWorkflowActionFilterCondition) FromOrganizationWorkflowActionFilterConditionPercentSessionsCount(v OrganizationWorkflowActionFilterConditionPercentSessionsCount) error {
+	v.Type = "percent_sessions_count"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionPercentSessionsCount performs a merge with any union data inside the OrganizationWorkflowActionFilterCondition, using the provided OrganizationWorkflowActionFilterConditionPercentSessionsCount
+func (t *OrganizationWorkflowActionFilterCondition) MergeOrganizationWorkflowActionFilterConditionPercentSessionsCount(v OrganizationWorkflowActionFilterConditionPercentSessionsCount) error {
+	v.Type = "percent_sessions_count"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionPercentSessionsPercent returns the union data inside the OrganizationWorkflowActionFilterCondition as a OrganizationWorkflowActionFilterConditionPercentSessionsPercent
+func (t OrganizationWorkflowActionFilterCondition) AsOrganizationWorkflowActionFilterConditionPercentSessionsPercent() (OrganizationWorkflowActionFilterConditionPercentSessionsPercent, error) {
+	var body OrganizationWorkflowActionFilterConditionPercentSessionsPercent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionPercentSessionsPercent overwrites any union data inside the OrganizationWorkflowActionFilterCondition as the provided OrganizationWorkflowActionFilterConditionPercentSessionsPercent
+func (t *OrganizationWorkflowActionFilterCondition) FromOrganizationWorkflowActionFilterConditionPercentSessionsPercent(v OrganizationWorkflowActionFilterConditionPercentSessionsPercent) error {
+	v.Type = "percent_sessions_percent"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionPercentSessionsPercent performs a merge with any union data inside the OrganizationWorkflowActionFilterCondition, using the provided OrganizationWorkflowActionFilterConditionPercentSessionsPercent
+func (t *OrganizationWorkflowActionFilterCondition) MergeOrganizationWorkflowActionFilterConditionPercentSessionsPercent(v OrganizationWorkflowActionFilterConditionPercentSessionsPercent) error {
+	v.Type = "percent_sessions_percent"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionEventAttribute returns the union data inside the OrganizationWorkflowActionFilterCondition as a OrganizationWorkflowActionFilterConditionEventAttribute
+func (t OrganizationWorkflowActionFilterCondition) AsOrganizationWorkflowActionFilterConditionEventAttribute() (OrganizationWorkflowActionFilterConditionEventAttribute, error) {
+	var body OrganizationWorkflowActionFilterConditionEventAttribute
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionEventAttribute overwrites any union data inside the OrganizationWorkflowActionFilterCondition as the provided OrganizationWorkflowActionFilterConditionEventAttribute
+func (t *OrganizationWorkflowActionFilterCondition) FromOrganizationWorkflowActionFilterConditionEventAttribute(v OrganizationWorkflowActionFilterConditionEventAttribute) error {
+	v.Type = "event_attribute"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionEventAttribute performs a merge with any union data inside the OrganizationWorkflowActionFilterCondition, using the provided OrganizationWorkflowActionFilterConditionEventAttribute
+func (t *OrganizationWorkflowActionFilterCondition) MergeOrganizationWorkflowActionFilterConditionEventAttribute(v OrganizationWorkflowActionFilterConditionEventAttribute) error {
+	v.Type = "event_attribute"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionTaggedEvent returns the union data inside the OrganizationWorkflowActionFilterCondition as a OrganizationWorkflowActionFilterConditionTaggedEvent
+func (t OrganizationWorkflowActionFilterCondition) AsOrganizationWorkflowActionFilterConditionTaggedEvent() (OrganizationWorkflowActionFilterConditionTaggedEvent, error) {
+	var body OrganizationWorkflowActionFilterConditionTaggedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionTaggedEvent overwrites any union data inside the OrganizationWorkflowActionFilterCondition as the provided OrganizationWorkflowActionFilterConditionTaggedEvent
+func (t *OrganizationWorkflowActionFilterCondition) FromOrganizationWorkflowActionFilterConditionTaggedEvent(v OrganizationWorkflowActionFilterConditionTaggedEvent) error {
+	v.Type = "tagged_event"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionTaggedEvent performs a merge with any union data inside the OrganizationWorkflowActionFilterCondition, using the provided OrganizationWorkflowActionFilterConditionTaggedEvent
+func (t *OrganizationWorkflowActionFilterCondition) MergeOrganizationWorkflowActionFilterConditionTaggedEvent(v OrganizationWorkflowActionFilterConditionTaggedEvent) error {
+	v.Type = "tagged_event"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionLatestRelease returns the union data inside the OrganizationWorkflowActionFilterCondition as a OrganizationWorkflowActionFilterConditionLatestRelease
+func (t OrganizationWorkflowActionFilterCondition) AsOrganizationWorkflowActionFilterConditionLatestRelease() (OrganizationWorkflowActionFilterConditionLatestRelease, error) {
+	var body OrganizationWorkflowActionFilterConditionLatestRelease
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionLatestRelease overwrites any union data inside the OrganizationWorkflowActionFilterCondition as the provided OrganizationWorkflowActionFilterConditionLatestRelease
+func (t *OrganizationWorkflowActionFilterCondition) FromOrganizationWorkflowActionFilterConditionLatestRelease(v OrganizationWorkflowActionFilterConditionLatestRelease) error {
+	v.Type = "latest_release"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionLatestRelease performs a merge with any union data inside the OrganizationWorkflowActionFilterCondition, using the provided OrganizationWorkflowActionFilterConditionLatestRelease
+func (t *OrganizationWorkflowActionFilterCondition) MergeOrganizationWorkflowActionFilterConditionLatestRelease(v OrganizationWorkflowActionFilterConditionLatestRelease) error {
+	v.Type = "latest_release"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionLatestAdoptedRelease returns the union data inside the OrganizationWorkflowActionFilterCondition as a OrganizationWorkflowActionFilterConditionLatestAdoptedRelease
+func (t OrganizationWorkflowActionFilterCondition) AsOrganizationWorkflowActionFilterConditionLatestAdoptedRelease() (OrganizationWorkflowActionFilterConditionLatestAdoptedRelease, error) {
+	var body OrganizationWorkflowActionFilterConditionLatestAdoptedRelease
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionLatestAdoptedRelease overwrites any union data inside the OrganizationWorkflowActionFilterCondition as the provided OrganizationWorkflowActionFilterConditionLatestAdoptedRelease
+func (t *OrganizationWorkflowActionFilterCondition) FromOrganizationWorkflowActionFilterConditionLatestAdoptedRelease(v OrganizationWorkflowActionFilterConditionLatestAdoptedRelease) error {
+	v.Type = "latest_adopted_release"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionLatestAdoptedRelease performs a merge with any union data inside the OrganizationWorkflowActionFilterCondition, using the provided OrganizationWorkflowActionFilterConditionLatestAdoptedRelease
+func (t *OrganizationWorkflowActionFilterCondition) MergeOrganizationWorkflowActionFilterConditionLatestAdoptedRelease(v OrganizationWorkflowActionFilterConditionLatestAdoptedRelease) error {
+	v.Type = "latest_adopted_release"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionLevel returns the union data inside the OrganizationWorkflowActionFilterCondition as a OrganizationWorkflowActionFilterConditionLevel
+func (t OrganizationWorkflowActionFilterCondition) AsOrganizationWorkflowActionFilterConditionLevel() (OrganizationWorkflowActionFilterConditionLevel, error) {
+	var body OrganizationWorkflowActionFilterConditionLevel
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionLevel overwrites any union data inside the OrganizationWorkflowActionFilterCondition as the provided OrganizationWorkflowActionFilterConditionLevel
+func (t *OrganizationWorkflowActionFilterCondition) FromOrganizationWorkflowActionFilterConditionLevel(v OrganizationWorkflowActionFilterConditionLevel) error {
+	v.Type = "level"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionLevel performs a merge with any union data inside the OrganizationWorkflowActionFilterCondition, using the provided OrganizationWorkflowActionFilterConditionLevel
+func (t *OrganizationWorkflowActionFilterCondition) MergeOrganizationWorkflowActionFilterConditionLevel(v OrganizationWorkflowActionFilterConditionLevel) error {
+	v.Type = "level"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t OrganizationWorkflowActionFilterCondition) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t OrganizationWorkflowActionFilterCondition) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "age_comparison":
+		return t.AsOrganizationWorkflowActionFilterConditionAgeComparison()
+	case "assigned_to":
+		return t.AsOrganizationWorkflowActionFilterConditionAssignedTo()
+	case "event_attribute":
+		return t.AsOrganizationWorkflowActionFilterConditionEventAttribute()
+	case "event_frequency_count":
+		return t.AsOrganizationWorkflowActionFilterConditionEventFrequencyCount()
+	case "event_frequency_percent":
+		return t.AsOrganizationWorkflowActionFilterConditionEventFrequencyPercent()
+	case "event_unique_user_frequency_count":
+		return t.AsOrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCount()
+	case "issue_category":
+		return t.AsOrganizationWorkflowActionFilterConditionIssueCategory()
+	case "issue_occurrences":
+		return t.AsOrganizationWorkflowActionFilterConditionIssueOccurrences()
+	case "issue_priority_deescalating":
+		return t.AsOrganizationWorkflowActionFilterConditionIssuePriorityDeescalating()
+	case "issue_priority_greater_or_equal":
+		return t.AsOrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual()
+	case "latest_adopted_release":
+		return t.AsOrganizationWorkflowActionFilterConditionLatestAdoptedRelease()
+	case "latest_release":
+		return t.AsOrganizationWorkflowActionFilterConditionLatestRelease()
+	case "level":
+		return t.AsOrganizationWorkflowActionFilterConditionLevel()
+	case "percent_sessions_count":
+		return t.AsOrganizationWorkflowActionFilterConditionPercentSessionsCount()
+	case "percent_sessions_percent":
+		return t.AsOrganizationWorkflowActionFilterConditionPercentSessionsPercent()
+	case "tagged_event":
+		return t.AsOrganizationWorkflowActionFilterConditionTaggedEvent()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t OrganizationWorkflowActionFilterCondition) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *OrganizationWorkflowActionFilterCondition) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0 returns the union data inside the OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier as a OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0
+func (t OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier) AsOrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0() (OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0, error) {
+	var body OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0 overwrites any union data inside the OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier as the provided OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0
+func (t *OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier) FromOrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0(v OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0 performs a merge with any union data inside the OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier, using the provided OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0
+func (t *OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier) MergeOrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0(v OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier1 returns the union data inside the OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier as a OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier1
+func (t OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier) AsOrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier1() (OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier1, error) {
+	var body OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier1 overwrites any union data inside the OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier as the provided OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier1
+func (t *OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier) FromOrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier1(v OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier1 performs a merge with any union data inside the OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier, using the provided OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier1
+func (t *OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier) MergeOrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier1(v OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *OrganizationWorkflowActionFilterConditionAssignedTo_Comparison_TargetIdentifier) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsOrganizationWorkflowTriggerConditionComparison0 returns the union data inside the OrganizationWorkflowTriggerCondition_Comparison as a OrganizationWorkflowTriggerConditionComparison0
+func (t OrganizationWorkflowTriggerCondition_Comparison) AsOrganizationWorkflowTriggerConditionComparison0() (OrganizationWorkflowTriggerConditionComparison0, error) {
+	var body OrganizationWorkflowTriggerConditionComparison0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowTriggerConditionComparison0 overwrites any union data inside the OrganizationWorkflowTriggerCondition_Comparison as the provided OrganizationWorkflowTriggerConditionComparison0
+func (t *OrganizationWorkflowTriggerCondition_Comparison) FromOrganizationWorkflowTriggerConditionComparison0(v OrganizationWorkflowTriggerConditionComparison0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowTriggerConditionComparison0 performs a merge with any union data inside the OrganizationWorkflowTriggerCondition_Comparison, using the provided OrganizationWorkflowTriggerConditionComparison0
+func (t *OrganizationWorkflowTriggerCondition_Comparison) MergeOrganizationWorkflowTriggerConditionComparison0(v OrganizationWorkflowTriggerConditionComparison0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowTriggerConditionComparison1 returns the union data inside the OrganizationWorkflowTriggerCondition_Comparison as a OrganizationWorkflowTriggerConditionComparison1
+func (t OrganizationWorkflowTriggerCondition_Comparison) AsOrganizationWorkflowTriggerConditionComparison1() (OrganizationWorkflowTriggerConditionComparison1, error) {
+	var body OrganizationWorkflowTriggerConditionComparison1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowTriggerConditionComparison1 overwrites any union data inside the OrganizationWorkflowTriggerCondition_Comparison as the provided OrganizationWorkflowTriggerConditionComparison1
+func (t *OrganizationWorkflowTriggerCondition_Comparison) FromOrganizationWorkflowTriggerConditionComparison1(v OrganizationWorkflowTriggerConditionComparison1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowTriggerConditionComparison1 performs a merge with any union data inside the OrganizationWorkflowTriggerCondition_Comparison, using the provided OrganizationWorkflowTriggerConditionComparison1
+func (t *OrganizationWorkflowTriggerCondition_Comparison) MergeOrganizationWorkflowTriggerConditionComparison1(v OrganizationWorkflowTriggerConditionComparison1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t OrganizationWorkflowTriggerCondition_Comparison) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *OrganizationWorkflowTriggerCondition_Comparison) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsProjectMonitorRequestMetricIssue returns the union data inside the ProjectMonitorRequest as a ProjectMonitorRequestMetricIssue
+func (t ProjectMonitorRequest) AsProjectMonitorRequestMetricIssue() (ProjectMonitorRequestMetricIssue, error) {
+	var body ProjectMonitorRequestMetricIssue
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectMonitorRequestMetricIssue overwrites any union data inside the ProjectMonitorRequest as the provided ProjectMonitorRequestMetricIssue
+func (t *ProjectMonitorRequest) FromProjectMonitorRequestMetricIssue(v ProjectMonitorRequestMetricIssue) error {
+	v.Type = "metric_issue"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectMonitorRequestMetricIssue performs a merge with any union data inside the ProjectMonitorRequest, using the provided ProjectMonitorRequestMetricIssue
+func (t *ProjectMonitorRequest) MergeProjectMonitorRequestMetricIssue(v ProjectMonitorRequestMetricIssue) error {
+	v.Type = "metric_issue"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectMonitorRequestMonitorCheckInFailure returns the union data inside the ProjectMonitorRequest as a ProjectMonitorRequestMonitorCheckInFailure
+func (t ProjectMonitorRequest) AsProjectMonitorRequestMonitorCheckInFailure() (ProjectMonitorRequestMonitorCheckInFailure, error) {
+	var body ProjectMonitorRequestMonitorCheckInFailure
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectMonitorRequestMonitorCheckInFailure overwrites any union data inside the ProjectMonitorRequest as the provided ProjectMonitorRequestMonitorCheckInFailure
+func (t *ProjectMonitorRequest) FromProjectMonitorRequestMonitorCheckInFailure(v ProjectMonitorRequestMonitorCheckInFailure) error {
+	v.Type = "monitor_check_in_failure"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectMonitorRequestMonitorCheckInFailure performs a merge with any union data inside the ProjectMonitorRequest, using the provided ProjectMonitorRequestMonitorCheckInFailure
+func (t *ProjectMonitorRequest) MergeProjectMonitorRequestMonitorCheckInFailure(v ProjectMonitorRequestMonitorCheckInFailure) error {
+	v.Type = "monitor_check_in_failure"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectMonitorRequestUptimeDomainFailure returns the union data inside the ProjectMonitorRequest as a ProjectMonitorRequestUptimeDomainFailure
+func (t ProjectMonitorRequest) AsProjectMonitorRequestUptimeDomainFailure() (ProjectMonitorRequestUptimeDomainFailure, error) {
+	var body ProjectMonitorRequestUptimeDomainFailure
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectMonitorRequestUptimeDomainFailure overwrites any union data inside the ProjectMonitorRequest as the provided ProjectMonitorRequestUptimeDomainFailure
+func (t *ProjectMonitorRequest) FromProjectMonitorRequestUptimeDomainFailure(v ProjectMonitorRequestUptimeDomainFailure) error {
+	v.Type = "uptime_domain_failure"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectMonitorRequestUptimeDomainFailure performs a merge with any union data inside the ProjectMonitorRequest, using the provided ProjectMonitorRequestUptimeDomainFailure
+func (t *ProjectMonitorRequest) MergeProjectMonitorRequestUptimeDomainFailure(v ProjectMonitorRequestUptimeDomainFailure) error {
+	v.Type = "uptime_domain_failure"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ProjectMonitorRequest) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t ProjectMonitorRequest) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "metric_issue":
+		return t.AsProjectMonitorRequestMetricIssue()
+	case "monitor_check_in_failure":
+		return t.AsProjectMonitorRequestMonitorCheckInFailure()
+	case "uptime_domain_failure":
+		return t.AsProjectMonitorRequestUptimeDomainFailure()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t ProjectMonitorRequest) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ProjectMonitorRequest) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsProjectMonitorConditionGroupConditionComparison0 returns the union data inside the ProjectMonitorConditionGroupCondition_Comparison as a ProjectMonitorConditionGroupConditionComparison0
+func (t ProjectMonitorConditionGroupCondition_Comparison) AsProjectMonitorConditionGroupConditionComparison0() (ProjectMonitorConditionGroupConditionComparison0, error) {
+	var body ProjectMonitorConditionGroupConditionComparison0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectMonitorConditionGroupConditionComparison0 overwrites any union data inside the ProjectMonitorConditionGroupCondition_Comparison as the provided ProjectMonitorConditionGroupConditionComparison0
+func (t *ProjectMonitorConditionGroupCondition_Comparison) FromProjectMonitorConditionGroupConditionComparison0(v ProjectMonitorConditionGroupConditionComparison0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectMonitorConditionGroupConditionComparison0 performs a merge with any union data inside the ProjectMonitorConditionGroupCondition_Comparison, using the provided ProjectMonitorConditionGroupConditionComparison0
+func (t *ProjectMonitorConditionGroupCondition_Comparison) MergeProjectMonitorConditionGroupConditionComparison0(v ProjectMonitorConditionGroupConditionComparison0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectMonitorConditionGroupConditionComparison1 returns the union data inside the ProjectMonitorConditionGroupCondition_Comparison as a ProjectMonitorConditionGroupConditionComparison1
+func (t ProjectMonitorConditionGroupCondition_Comparison) AsProjectMonitorConditionGroupConditionComparison1() (ProjectMonitorConditionGroupConditionComparison1, error) {
+	var body ProjectMonitorConditionGroupConditionComparison1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectMonitorConditionGroupConditionComparison1 overwrites any union data inside the ProjectMonitorConditionGroupCondition_Comparison as the provided ProjectMonitorConditionGroupConditionComparison1
+func (t *ProjectMonitorConditionGroupCondition_Comparison) FromProjectMonitorConditionGroupConditionComparison1(v ProjectMonitorConditionGroupConditionComparison1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectMonitorConditionGroupConditionComparison1 performs a merge with any union data inside the ProjectMonitorConditionGroupCondition_Comparison, using the provided ProjectMonitorConditionGroupConditionComparison1
+func (t *ProjectMonitorConditionGroupCondition_Comparison) MergeProjectMonitorConditionGroupConditionComparison1(v ProjectMonitorConditionGroupConditionComparison1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectMonitorConditionGroupConditionComparison2 returns the union data inside the ProjectMonitorConditionGroupCondition_Comparison as a ProjectMonitorConditionGroupConditionComparison2
+func (t ProjectMonitorConditionGroupCondition_Comparison) AsProjectMonitorConditionGroupConditionComparison2() (ProjectMonitorConditionGroupConditionComparison2, error) {
+	var body ProjectMonitorConditionGroupConditionComparison2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectMonitorConditionGroupConditionComparison2 overwrites any union data inside the ProjectMonitorConditionGroupCondition_Comparison as the provided ProjectMonitorConditionGroupConditionComparison2
+func (t *ProjectMonitorConditionGroupCondition_Comparison) FromProjectMonitorConditionGroupConditionComparison2(v ProjectMonitorConditionGroupConditionComparison2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectMonitorConditionGroupConditionComparison2 performs a merge with any union data inside the ProjectMonitorConditionGroupCondition_Comparison, using the provided ProjectMonitorConditionGroupConditionComparison2
+func (t *ProjectMonitorConditionGroupCondition_Comparison) MergeProjectMonitorConditionGroupConditionComparison2(v ProjectMonitorConditionGroupConditionComparison2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ProjectMonitorConditionGroupCondition_Comparison) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ProjectMonitorConditionGroupCondition_Comparison) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsProjectMonitorConfigMetricIssue returns the union data inside the ProjectMonitorConfig as a ProjectMonitorConfigMetricIssue
+func (t ProjectMonitorConfig) AsProjectMonitorConfigMetricIssue() (ProjectMonitorConfigMetricIssue, error) {
+	var body ProjectMonitorConfigMetricIssue
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectMonitorConfigMetricIssue overwrites any union data inside the ProjectMonitorConfig as the provided ProjectMonitorConfigMetricIssue
+func (t *ProjectMonitorConfig) FromProjectMonitorConfigMetricIssue(v ProjectMonitorConfigMetricIssue) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectMonitorConfigMetricIssue performs a merge with any union data inside the ProjectMonitorConfig, using the provided ProjectMonitorConfigMetricIssue
+func (t *ProjectMonitorConfig) MergeProjectMonitorConfigMetricIssue(v ProjectMonitorConfigMetricIssue) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectMonitorConfigUptimeDomainFailure returns the union data inside the ProjectMonitorConfig as a ProjectMonitorConfigUptimeDomainFailure
+func (t ProjectMonitorConfig) AsProjectMonitorConfigUptimeDomainFailure() (ProjectMonitorConfigUptimeDomainFailure, error) {
+	var body ProjectMonitorConfigUptimeDomainFailure
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectMonitorConfigUptimeDomainFailure overwrites any union data inside the ProjectMonitorConfig as the provided ProjectMonitorConfigUptimeDomainFailure
+func (t *ProjectMonitorConfig) FromProjectMonitorConfigUptimeDomainFailure(v ProjectMonitorConfigUptimeDomainFailure) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectMonitorConfigUptimeDomainFailure performs a merge with any union data inside the ProjectMonitorConfig, using the provided ProjectMonitorConfigUptimeDomainFailure
+func (t *ProjectMonitorConfig) MergeProjectMonitorConfigUptimeDomainFailure(v ProjectMonitorConfigUptimeDomainFailure) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ProjectMonitorConfig) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ProjectMonitorConfig) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsProjectMonitorDataSourceConfigCronCrontab returns the union data inside the ProjectMonitorDataSourceConfigCron as a ProjectMonitorDataSourceConfigCronCrontab
+func (t ProjectMonitorDataSourceConfigCron) AsProjectMonitorDataSourceConfigCronCrontab() (ProjectMonitorDataSourceConfigCronCrontab, error) {
+	var body ProjectMonitorDataSourceConfigCronCrontab
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectMonitorDataSourceConfigCronCrontab overwrites any union data inside the ProjectMonitorDataSourceConfigCron as the provided ProjectMonitorDataSourceConfigCronCrontab
+func (t *ProjectMonitorDataSourceConfigCron) FromProjectMonitorDataSourceConfigCronCrontab(v ProjectMonitorDataSourceConfigCronCrontab) error {
+	v.ScheduleType = "crontab"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectMonitorDataSourceConfigCronCrontab performs a merge with any union data inside the ProjectMonitorDataSourceConfigCron, using the provided ProjectMonitorDataSourceConfigCronCrontab
+func (t *ProjectMonitorDataSourceConfigCron) MergeProjectMonitorDataSourceConfigCronCrontab(v ProjectMonitorDataSourceConfigCronCrontab) error {
+	v.ScheduleType = "crontab"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectMonitorDataSourceConfigCronInterval returns the union data inside the ProjectMonitorDataSourceConfigCron as a ProjectMonitorDataSourceConfigCronInterval
+func (t ProjectMonitorDataSourceConfigCron) AsProjectMonitorDataSourceConfigCronInterval() (ProjectMonitorDataSourceConfigCronInterval, error) {
+	var body ProjectMonitorDataSourceConfigCronInterval
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectMonitorDataSourceConfigCronInterval overwrites any union data inside the ProjectMonitorDataSourceConfigCron as the provided ProjectMonitorDataSourceConfigCronInterval
+func (t *ProjectMonitorDataSourceConfigCron) FromProjectMonitorDataSourceConfigCronInterval(v ProjectMonitorDataSourceConfigCronInterval) error {
+	v.ScheduleType = "interval"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectMonitorDataSourceConfigCronInterval performs a merge with any union data inside the ProjectMonitorDataSourceConfigCron, using the provided ProjectMonitorDataSourceConfigCronInterval
+func (t *ProjectMonitorDataSourceConfigCron) MergeProjectMonitorDataSourceConfigCronInterval(v ProjectMonitorDataSourceConfigCronInterval) error {
+	v.ScheduleType = "interval"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ProjectMonitorDataSourceConfigCron) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"schedule_type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t ProjectMonitorDataSourceConfigCron) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "crontab":
+		return t.AsProjectMonitorDataSourceConfigCronCrontab()
+	case "interval":
+		return t.AsProjectMonitorDataSourceConfigCronInterval()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t ProjectMonitorDataSourceConfigCron) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ProjectMonitorDataSourceConfigCron) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsProjectMonitorDataSourceConfigCronIntervalValue returns the union data inside the ProjectMonitorDataSourceConfigCronInterval_Schedule_Item as a ProjectMonitorDataSourceConfigCronIntervalValue
+func (t ProjectMonitorDataSourceConfigCronInterval_Schedule_Item) AsProjectMonitorDataSourceConfigCronIntervalValue() (ProjectMonitorDataSourceConfigCronIntervalValue, error) {
+	var body ProjectMonitorDataSourceConfigCronIntervalValue
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectMonitorDataSourceConfigCronIntervalValue overwrites any union data inside the ProjectMonitorDataSourceConfigCronInterval_Schedule_Item as the provided ProjectMonitorDataSourceConfigCronIntervalValue
+func (t *ProjectMonitorDataSourceConfigCronInterval_Schedule_Item) FromProjectMonitorDataSourceConfigCronIntervalValue(v ProjectMonitorDataSourceConfigCronIntervalValue) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectMonitorDataSourceConfigCronIntervalValue performs a merge with any union data inside the ProjectMonitorDataSourceConfigCronInterval_Schedule_Item, using the provided ProjectMonitorDataSourceConfigCronIntervalValue
+func (t *ProjectMonitorDataSourceConfigCronInterval_Schedule_Item) MergeProjectMonitorDataSourceConfigCronIntervalValue(v ProjectMonitorDataSourceConfigCronIntervalValue) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectMonitorDataSourceConfigCronIntervalUnit returns the union data inside the ProjectMonitorDataSourceConfigCronInterval_Schedule_Item as a ProjectMonitorDataSourceConfigCronIntervalUnit
+func (t ProjectMonitorDataSourceConfigCronInterval_Schedule_Item) AsProjectMonitorDataSourceConfigCronIntervalUnit() (ProjectMonitorDataSourceConfigCronIntervalUnit, error) {
+	var body ProjectMonitorDataSourceConfigCronIntervalUnit
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectMonitorDataSourceConfigCronIntervalUnit overwrites any union data inside the ProjectMonitorDataSourceConfigCronInterval_Schedule_Item as the provided ProjectMonitorDataSourceConfigCronIntervalUnit
+func (t *ProjectMonitorDataSourceConfigCronInterval_Schedule_Item) FromProjectMonitorDataSourceConfigCronIntervalUnit(v ProjectMonitorDataSourceConfigCronIntervalUnit) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectMonitorDataSourceConfigCronIntervalUnit performs a merge with any union data inside the ProjectMonitorDataSourceConfigCronInterval_Schedule_Item, using the provided ProjectMonitorDataSourceConfigCronIntervalUnit
+func (t *ProjectMonitorDataSourceConfigCronInterval_Schedule_Item) MergeProjectMonitorDataSourceConfigCronIntervalUnit(v ProjectMonitorDataSourceConfigCronIntervalUnit) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ProjectMonitorDataSourceConfigCronInterval_Schedule_Item) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ProjectMonitorDataSourceConfigCronInterval_Schedule_Item) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsProjectMonitorDataSourceWrapperCronMonitor returns the union data inside the ProjectMonitorDataSourceWrapper as a ProjectMonitorDataSourceWrapperCronMonitor
+func (t ProjectMonitorDataSourceWrapper) AsProjectMonitorDataSourceWrapperCronMonitor() (ProjectMonitorDataSourceWrapperCronMonitor, error) {
+	var body ProjectMonitorDataSourceWrapperCronMonitor
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectMonitorDataSourceWrapperCronMonitor overwrites any union data inside the ProjectMonitorDataSourceWrapper as the provided ProjectMonitorDataSourceWrapperCronMonitor
+func (t *ProjectMonitorDataSourceWrapper) FromProjectMonitorDataSourceWrapperCronMonitor(v ProjectMonitorDataSourceWrapperCronMonitor) error {
+	v.Type = "cron_monitor"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectMonitorDataSourceWrapperCronMonitor performs a merge with any union data inside the ProjectMonitorDataSourceWrapper, using the provided ProjectMonitorDataSourceWrapperCronMonitor
+func (t *ProjectMonitorDataSourceWrapper) MergeProjectMonitorDataSourceWrapperCronMonitor(v ProjectMonitorDataSourceWrapperCronMonitor) error {
+	v.Type = "cron_monitor"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectMonitorDataSourceWrapperSnubaQuerySubscription returns the union data inside the ProjectMonitorDataSourceWrapper as a ProjectMonitorDataSourceWrapperSnubaQuerySubscription
+func (t ProjectMonitorDataSourceWrapper) AsProjectMonitorDataSourceWrapperSnubaQuerySubscription() (ProjectMonitorDataSourceWrapperSnubaQuerySubscription, error) {
+	var body ProjectMonitorDataSourceWrapperSnubaQuerySubscription
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectMonitorDataSourceWrapperSnubaQuerySubscription overwrites any union data inside the ProjectMonitorDataSourceWrapper as the provided ProjectMonitorDataSourceWrapperSnubaQuerySubscription
+func (t *ProjectMonitorDataSourceWrapper) FromProjectMonitorDataSourceWrapperSnubaQuerySubscription(v ProjectMonitorDataSourceWrapperSnubaQuerySubscription) error {
+	v.Type = "snuba_query_subscription"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectMonitorDataSourceWrapperSnubaQuerySubscription performs a merge with any union data inside the ProjectMonitorDataSourceWrapper, using the provided ProjectMonitorDataSourceWrapperSnubaQuerySubscription
+func (t *ProjectMonitorDataSourceWrapper) MergeProjectMonitorDataSourceWrapperSnubaQuerySubscription(v ProjectMonitorDataSourceWrapperSnubaQuerySubscription) error {
+	v.Type = "snuba_query_subscription"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectMonitorDataSourceWrapperUptimeSubscription returns the union data inside the ProjectMonitorDataSourceWrapper as a ProjectMonitorDataSourceWrapperUptimeSubscription
+func (t ProjectMonitorDataSourceWrapper) AsProjectMonitorDataSourceWrapperUptimeSubscription() (ProjectMonitorDataSourceWrapperUptimeSubscription, error) {
+	var body ProjectMonitorDataSourceWrapperUptimeSubscription
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectMonitorDataSourceWrapperUptimeSubscription overwrites any union data inside the ProjectMonitorDataSourceWrapper as the provided ProjectMonitorDataSourceWrapperUptimeSubscription
+func (t *ProjectMonitorDataSourceWrapper) FromProjectMonitorDataSourceWrapperUptimeSubscription(v ProjectMonitorDataSourceWrapperUptimeSubscription) error {
+	v.Type = "uptime_subscription"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectMonitorDataSourceWrapperUptimeSubscription performs a merge with any union data inside the ProjectMonitorDataSourceWrapper, using the provided ProjectMonitorDataSourceWrapperUptimeSubscription
+func (t *ProjectMonitorDataSourceWrapper) MergeProjectMonitorDataSourceWrapperUptimeSubscription(v ProjectMonitorDataSourceWrapperUptimeSubscription) error {
+	v.Type = "uptime_subscription"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ProjectMonitorDataSourceWrapper) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t ProjectMonitorDataSourceWrapper) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "cron_monitor":
+		return t.AsProjectMonitorDataSourceWrapperCronMonitor()
+	case "snuba_query_subscription":
+		return t.AsProjectMonitorDataSourceWrapperSnubaQuerySubscription()
+	case "uptime_subscription":
+		return t.AsProjectMonitorDataSourceWrapperUptimeSubscription()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t ProjectMonitorDataSourceWrapper) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ProjectMonitorDataSourceWrapper) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsProjectMonitorOwnerUser returns the union data inside the ProjectMonitorOwner as a ProjectMonitorOwnerUser
+func (t ProjectMonitorOwner) AsProjectMonitorOwnerUser() (ProjectMonitorOwnerUser, error) {
+	var body ProjectMonitorOwnerUser
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectMonitorOwnerUser overwrites any union data inside the ProjectMonitorOwner as the provided ProjectMonitorOwnerUser
+func (t *ProjectMonitorOwner) FromProjectMonitorOwnerUser(v ProjectMonitorOwnerUser) error {
+	v.Type = "user"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectMonitorOwnerUser performs a merge with any union data inside the ProjectMonitorOwner, using the provided ProjectMonitorOwnerUser
+func (t *ProjectMonitorOwner) MergeProjectMonitorOwnerUser(v ProjectMonitorOwnerUser) error {
+	v.Type = "user"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectMonitorOwnerTeam returns the union data inside the ProjectMonitorOwner as a ProjectMonitorOwnerTeam
+func (t ProjectMonitorOwner) AsProjectMonitorOwnerTeam() (ProjectMonitorOwnerTeam, error) {
+	var body ProjectMonitorOwnerTeam
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectMonitorOwnerTeam overwrites any union data inside the ProjectMonitorOwner as the provided ProjectMonitorOwnerTeam
+func (t *ProjectMonitorOwner) FromProjectMonitorOwnerTeam(v ProjectMonitorOwnerTeam) error {
+	v.Type = "team"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectMonitorOwnerTeam performs a merge with any union data inside the ProjectMonitorOwner, using the provided ProjectMonitorOwnerTeam
+func (t *ProjectMonitorOwner) MergeProjectMonitorOwnerTeam(v ProjectMonitorOwnerTeam) error {
+	v.Type = "team"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ProjectMonitorOwner) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t ProjectMonitorOwner) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "team":
+		return t.AsProjectMonitorOwnerTeam()
+	case "user":
+		return t.AsProjectMonitorOwnerUser()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t ProjectMonitorOwner) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ProjectMonitorOwner) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
 	return err
 }
 
@@ -2840,6 +6161,20 @@ type ClientInterface interface {
 	// GetOrganization request
 	GetOrganization(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListOrganizationMonitors request
+	ListOrganizationMonitors(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationMonitorsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteProjectMonitor request
+	DeleteProjectMonitor(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetProjectMonitor request
+	GetProjectMonitor(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateProjectMonitorWithBody request with any body
+	UpdateProjectMonitorWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateProjectMonitor(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, body UpdateProjectMonitorJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListOrganizationIntegrations request
 	ListOrganizationIntegrations(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationIntegrationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -2873,6 +6208,11 @@ type ClientInterface interface {
 	// ListOrganizationProjects request
 	ListOrganizationProjects(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationProjectsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreateProjectMonitorWithBody request with any body
+	CreateProjectMonitorWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateProjectMonitor(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body CreateProjectMonitorJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListSentryAppInstallations request
 	ListSentryAppInstallations(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListSentryAppInstallationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -2885,6 +6225,25 @@ type ClientInterface interface {
 	EnableSpikeProtectionWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	EnableSpikeProtection(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body EnableSpikeProtectionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListOrganizationWorkflows request
+	ListOrganizationWorkflows(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationWorkflowsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateOrganizationWorkflowWithBody request with any body
+	CreateOrganizationWorkflowWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateOrganizationWorkflow(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationWorkflowJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteOrganizationWorkflow request
+	DeleteOrganizationWorkflow(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetOrganizationWorkflow request
+	GetOrganizationWorkflow(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateOrganizationWorkflowWithBody request with any body
+	UpdateOrganizationWorkflowWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateOrganizationWorkflow(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, body UpdateOrganizationWorkflowJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteOrganizationProject request
 	DeleteOrganizationProject(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -2969,6 +6328,66 @@ func (c *Client) HealthCheck(ctx context.Context, reqEditors ...RequestEditorFn)
 
 func (c *Client) GetOrganization(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetOrganizationRequest(c.Server, organizationIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListOrganizationMonitors(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationMonitorsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListOrganizationMonitorsRequest(c.Server, organizationIdOrSlug, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteProjectMonitor(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteProjectMonitorRequest(c.Server, organizationIdOrSlug, detectorId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetProjectMonitor(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetProjectMonitorRequest(c.Server, organizationIdOrSlug, detectorId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateProjectMonitorWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateProjectMonitorRequestWithBody(c.Server, organizationIdOrSlug, detectorId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateProjectMonitor(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, body UpdateProjectMonitorJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateProjectMonitorRequest(c.Server, organizationIdOrSlug, detectorId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -3123,6 +6542,30 @@ func (c *Client) ListOrganizationProjects(ctx context.Context, organizationIdOrS
 	return c.Client.Do(req)
 }
 
+func (c *Client) CreateProjectMonitorWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateProjectMonitorRequestWithBody(c.Server, organizationIdOrSlug, projectIdOrSlug, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateProjectMonitor(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body CreateProjectMonitorJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateProjectMonitorRequest(c.Server, organizationIdOrSlug, projectIdOrSlug, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) ListSentryAppInstallations(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListSentryAppInstallationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListSentryAppInstallationsRequest(c.Server, organizationIdOrSlug, params)
 	if err != nil {
@@ -3173,6 +6616,90 @@ func (c *Client) EnableSpikeProtectionWithBody(ctx context.Context, organization
 
 func (c *Client) EnableSpikeProtection(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body EnableSpikeProtectionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewEnableSpikeProtectionRequest(c.Server, organizationIdOrSlug, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListOrganizationWorkflows(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationWorkflowsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListOrganizationWorkflowsRequest(c.Server, organizationIdOrSlug, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateOrganizationWorkflowWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateOrganizationWorkflowRequestWithBody(c.Server, organizationIdOrSlug, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateOrganizationWorkflow(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationWorkflowJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateOrganizationWorkflowRequest(c.Server, organizationIdOrSlug, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteOrganizationWorkflow(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteOrganizationWorkflowRequest(c.Server, organizationIdOrSlug, workflowId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetOrganizationWorkflow(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetOrganizationWorkflowRequest(c.Server, organizationIdOrSlug, workflowId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateOrganizationWorkflowWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateOrganizationWorkflowRequestWithBody(c.Server, organizationIdOrSlug, workflowId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateOrganizationWorkflow(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, body UpdateOrganizationWorkflowJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateOrganizationWorkflowRequest(c.Server, organizationIdOrSlug, workflowId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -3540,6 +7067,214 @@ func NewGetOrganizationRequest(server string, organizationIdOrSlug OrganizationI
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewListOrganizationMonitorsRequest generates requests for ListOrganizationMonitors
+func NewListOrganizationMonitorsRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationMonitorsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/detectors/", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Query != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "query", *params.Query, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDeleteProjectMonitorRequest generates requests for DeleteProjectMonitor
+func NewDeleteProjectMonitorRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "detector_id", detectorId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/detectors/%s/", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetProjectMonitorRequest generates requests for GetProjectMonitor
+func NewGetProjectMonitorRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "detector_id", detectorId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/detectors/%s/", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateProjectMonitorRequest calls the generic UpdateProjectMonitor builder with application/json body
+func NewUpdateProjectMonitorRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, body UpdateProjectMonitorJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateProjectMonitorRequestWithBody(server, organizationIdOrSlug, detectorId, "application/json", bodyReader)
+}
+
+// NewUpdateProjectMonitorRequestWithBody generates requests for UpdateProjectMonitor with any type of body
+func NewUpdateProjectMonitorRequestWithBody(server string, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "detector_id", detectorId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/detectors/%s/", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -4022,6 +7757,60 @@ func NewListOrganizationProjectsRequest(server string, organizationIdOrSlug Orga
 	return req, nil
 }
 
+// NewCreateProjectMonitorRequest calls the generic CreateProjectMonitor builder with application/json body
+func NewCreateProjectMonitorRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body CreateProjectMonitorJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateProjectMonitorRequestWithBody(server, organizationIdOrSlug, projectIdOrSlug, "application/json", bodyReader)
+}
+
+// NewCreateProjectMonitorRequestWithBody generates requests for CreateProjectMonitor with any type of body
+func NewCreateProjectMonitorRequestWithBody(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "project_id_or_slug", projectIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/projects/%s/detectors/", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewListSentryAppInstallationsRequest generates requests for ListSentryAppInstallations
 func NewListSentryAppInstallationsRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, params *ListSentryAppInstallationsParams) (*http.Request, error) {
 	var err error
@@ -4163,6 +7952,245 @@ func NewEnableSpikeProtectionRequestWithBody(server string, organizationIdOrSlug
 	}
 
 	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListOrganizationWorkflowsRequest generates requests for ListOrganizationWorkflows
+func NewListOrganizationWorkflowsRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationWorkflowsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/workflows/", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateOrganizationWorkflowRequest calls the generic CreateOrganizationWorkflow builder with application/json body
+func NewCreateOrganizationWorkflowRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationWorkflowJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateOrganizationWorkflowRequestWithBody(server, organizationIdOrSlug, "application/json", bodyReader)
+}
+
+// NewCreateOrganizationWorkflowRequestWithBody generates requests for CreateOrganizationWorkflow with any type of body
+func NewCreateOrganizationWorkflowRequestWithBody(server string, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/workflows/", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteOrganizationWorkflowRequest generates requests for DeleteOrganizationWorkflow
+func NewDeleteOrganizationWorkflowRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, workflowId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "workflow_id", workflowId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/workflows/%s/", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetOrganizationWorkflowRequest generates requests for GetOrganizationWorkflow
+func NewGetOrganizationWorkflowRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, workflowId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "workflow_id", workflowId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/workflows/%s/", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateOrganizationWorkflowRequest calls the generic UpdateOrganizationWorkflow builder with application/json body
+func NewUpdateOrganizationWorkflowRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, body UpdateOrganizationWorkflowJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateOrganizationWorkflowRequestWithBody(server, organizationIdOrSlug, workflowId, "application/json", bodyReader)
+}
+
+// NewUpdateOrganizationWorkflowRequestWithBody generates requests for UpdateOrganizationWorkflow with any type of body
+func NewUpdateOrganizationWorkflowRequestWithBody(server string, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "workflow_id", workflowId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/workflows/%s/", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
@@ -5144,6 +9172,20 @@ type ClientWithResponsesInterface interface {
 	// GetOrganizationWithResponse request
 	GetOrganizationWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*GetOrganizationResponse, error)
 
+	// ListOrganizationMonitorsWithResponse request
+	ListOrganizationMonitorsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationMonitorsParams, reqEditors ...RequestEditorFn) (*ListOrganizationMonitorsResponse, error)
+
+	// DeleteProjectMonitorWithResponse request
+	DeleteProjectMonitorWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, reqEditors ...RequestEditorFn) (*DeleteProjectMonitorResponse, error)
+
+	// GetProjectMonitorWithResponse request
+	GetProjectMonitorWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, reqEditors ...RequestEditorFn) (*GetProjectMonitorResponse, error)
+
+	// UpdateProjectMonitorWithBodyWithResponse request with any body
+	UpdateProjectMonitorWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProjectMonitorResponse, error)
+
+	UpdateProjectMonitorWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, body UpdateProjectMonitorJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectMonitorResponse, error)
+
 	// ListOrganizationIntegrationsWithResponse request
 	ListOrganizationIntegrationsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationIntegrationsParams, reqEditors ...RequestEditorFn) (*ListOrganizationIntegrationsResponse, error)
 
@@ -5177,6 +9219,11 @@ type ClientWithResponsesInterface interface {
 	// ListOrganizationProjectsWithResponse request
 	ListOrganizationProjectsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationProjectsParams, reqEditors ...RequestEditorFn) (*ListOrganizationProjectsResponse, error)
 
+	// CreateProjectMonitorWithBodyWithResponse request with any body
+	CreateProjectMonitorWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateProjectMonitorResponse, error)
+
+	CreateProjectMonitorWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body CreateProjectMonitorJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateProjectMonitorResponse, error)
+
 	// ListSentryAppInstallationsWithResponse request
 	ListSentryAppInstallationsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListSentryAppInstallationsParams, reqEditors ...RequestEditorFn) (*ListSentryAppInstallationsResponse, error)
 
@@ -5189,6 +9236,25 @@ type ClientWithResponsesInterface interface {
 	EnableSpikeProtectionWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*EnableSpikeProtectionResponse, error)
 
 	EnableSpikeProtectionWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body EnableSpikeProtectionJSONRequestBody, reqEditors ...RequestEditorFn) (*EnableSpikeProtectionResponse, error)
+
+	// ListOrganizationWorkflowsWithResponse request
+	ListOrganizationWorkflowsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationWorkflowsParams, reqEditors ...RequestEditorFn) (*ListOrganizationWorkflowsResponse, error)
+
+	// CreateOrganizationWorkflowWithBodyWithResponse request with any body
+	CreateOrganizationWorkflowWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOrganizationWorkflowResponse, error)
+
+	CreateOrganizationWorkflowWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationWorkflowJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateOrganizationWorkflowResponse, error)
+
+	// DeleteOrganizationWorkflowWithResponse request
+	DeleteOrganizationWorkflowWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, reqEditors ...RequestEditorFn) (*DeleteOrganizationWorkflowResponse, error)
+
+	// GetOrganizationWorkflowWithResponse request
+	GetOrganizationWorkflowWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, reqEditors ...RequestEditorFn) (*GetOrganizationWorkflowResponse, error)
+
+	// UpdateOrganizationWorkflowWithBodyWithResponse request with any body
+	UpdateOrganizationWorkflowWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateOrganizationWorkflowResponse, error)
+
+	UpdateOrganizationWorkflowWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, body UpdateOrganizationWorkflowJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateOrganizationWorkflowResponse, error)
 
 	// DeleteOrganizationProjectWithResponse request
 	DeleteOrganizationProjectWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, reqEditors ...RequestEditorFn) (*DeleteOrganizationProjectResponse, error)
@@ -5296,6 +9362,93 @@ func (r GetOrganizationResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetOrganizationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListOrganizationMonitorsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]ProjectMonitor
+}
+
+// Status returns HTTPResponse.Status
+func (r ListOrganizationMonitorsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListOrganizationMonitorsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteProjectMonitorResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteProjectMonitorResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteProjectMonitorResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetProjectMonitorResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ProjectMonitor
+}
+
+// Status returns HTTPResponse.Status
+func (r GetProjectMonitorResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetProjectMonitorResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateProjectMonitorResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ProjectMonitor
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateProjectMonitorResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateProjectMonitorResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -5498,6 +9651,28 @@ func (r ListOrganizationProjectsResponse) StatusCode() int {
 	return 0
 }
 
+type CreateProjectMonitorResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *ProjectMonitor
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateProjectMonitorResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateProjectMonitorResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListSentryAppInstallationsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -5556,6 +9731,115 @@ func (r EnableSpikeProtectionResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r EnableSpikeProtectionResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListOrganizationWorkflowsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]OrganizationWorkflow
+}
+
+// Status returns HTTPResponse.Status
+func (r ListOrganizationWorkflowsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListOrganizationWorkflowsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateOrganizationWorkflowResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *OrganizationWorkflow
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateOrganizationWorkflowResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateOrganizationWorkflowResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteOrganizationWorkflowResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteOrganizationWorkflowResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteOrganizationWorkflowResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetOrganizationWorkflowResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *OrganizationWorkflow
+}
+
+// Status returns HTTPResponse.Status
+func (r GetOrganizationWorkflowResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetOrganizationWorkflowResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateOrganizationWorkflowResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *OrganizationWorkflow
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateOrganizationWorkflowResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateOrganizationWorkflowResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -5983,6 +10267,50 @@ func (c *ClientWithResponses) GetOrganizationWithResponse(ctx context.Context, o
 	return ParseGetOrganizationResponse(rsp)
 }
 
+// ListOrganizationMonitorsWithResponse request returning *ListOrganizationMonitorsResponse
+func (c *ClientWithResponses) ListOrganizationMonitorsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationMonitorsParams, reqEditors ...RequestEditorFn) (*ListOrganizationMonitorsResponse, error) {
+	rsp, err := c.ListOrganizationMonitors(ctx, organizationIdOrSlug, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListOrganizationMonitorsResponse(rsp)
+}
+
+// DeleteProjectMonitorWithResponse request returning *DeleteProjectMonitorResponse
+func (c *ClientWithResponses) DeleteProjectMonitorWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, reqEditors ...RequestEditorFn) (*DeleteProjectMonitorResponse, error) {
+	rsp, err := c.DeleteProjectMonitor(ctx, organizationIdOrSlug, detectorId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteProjectMonitorResponse(rsp)
+}
+
+// GetProjectMonitorWithResponse request returning *GetProjectMonitorResponse
+func (c *ClientWithResponses) GetProjectMonitorWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, reqEditors ...RequestEditorFn) (*GetProjectMonitorResponse, error) {
+	rsp, err := c.GetProjectMonitor(ctx, organizationIdOrSlug, detectorId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetProjectMonitorResponse(rsp)
+}
+
+// UpdateProjectMonitorWithBodyWithResponse request with arbitrary body returning *UpdateProjectMonitorResponse
+func (c *ClientWithResponses) UpdateProjectMonitorWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProjectMonitorResponse, error) {
+	rsp, err := c.UpdateProjectMonitorWithBody(ctx, organizationIdOrSlug, detectorId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateProjectMonitorResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateProjectMonitorWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, body UpdateProjectMonitorJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectMonitorResponse, error) {
+	rsp, err := c.UpdateProjectMonitor(ctx, organizationIdOrSlug, detectorId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateProjectMonitorResponse(rsp)
+}
+
 // ListOrganizationIntegrationsWithResponse request returning *ListOrganizationIntegrationsResponse
 func (c *ClientWithResponses) ListOrganizationIntegrationsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationIntegrationsParams, reqEditors ...RequestEditorFn) (*ListOrganizationIntegrationsResponse, error) {
 	rsp, err := c.ListOrganizationIntegrations(ctx, organizationIdOrSlug, params, reqEditors...)
@@ -6088,6 +10416,23 @@ func (c *ClientWithResponses) ListOrganizationProjectsWithResponse(ctx context.C
 	return ParseListOrganizationProjectsResponse(rsp)
 }
 
+// CreateProjectMonitorWithBodyWithResponse request with arbitrary body returning *CreateProjectMonitorResponse
+func (c *ClientWithResponses) CreateProjectMonitorWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateProjectMonitorResponse, error) {
+	rsp, err := c.CreateProjectMonitorWithBody(ctx, organizationIdOrSlug, projectIdOrSlug, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateProjectMonitorResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateProjectMonitorWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body CreateProjectMonitorJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateProjectMonitorResponse, error) {
+	rsp, err := c.CreateProjectMonitor(ctx, organizationIdOrSlug, projectIdOrSlug, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateProjectMonitorResponse(rsp)
+}
+
 // ListSentryAppInstallationsWithResponse request returning *ListSentryAppInstallationsResponse
 func (c *ClientWithResponses) ListSentryAppInstallationsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListSentryAppInstallationsParams, reqEditors ...RequestEditorFn) (*ListSentryAppInstallationsResponse, error) {
 	rsp, err := c.ListSentryAppInstallations(ctx, organizationIdOrSlug, params, reqEditors...)
@@ -6129,6 +10474,67 @@ func (c *ClientWithResponses) EnableSpikeProtectionWithResponse(ctx context.Cont
 		return nil, err
 	}
 	return ParseEnableSpikeProtectionResponse(rsp)
+}
+
+// ListOrganizationWorkflowsWithResponse request returning *ListOrganizationWorkflowsResponse
+func (c *ClientWithResponses) ListOrganizationWorkflowsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationWorkflowsParams, reqEditors ...RequestEditorFn) (*ListOrganizationWorkflowsResponse, error) {
+	rsp, err := c.ListOrganizationWorkflows(ctx, organizationIdOrSlug, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListOrganizationWorkflowsResponse(rsp)
+}
+
+// CreateOrganizationWorkflowWithBodyWithResponse request with arbitrary body returning *CreateOrganizationWorkflowResponse
+func (c *ClientWithResponses) CreateOrganizationWorkflowWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOrganizationWorkflowResponse, error) {
+	rsp, err := c.CreateOrganizationWorkflowWithBody(ctx, organizationIdOrSlug, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateOrganizationWorkflowResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateOrganizationWorkflowWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationWorkflowJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateOrganizationWorkflowResponse, error) {
+	rsp, err := c.CreateOrganizationWorkflow(ctx, organizationIdOrSlug, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateOrganizationWorkflowResponse(rsp)
+}
+
+// DeleteOrganizationWorkflowWithResponse request returning *DeleteOrganizationWorkflowResponse
+func (c *ClientWithResponses) DeleteOrganizationWorkflowWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, reqEditors ...RequestEditorFn) (*DeleteOrganizationWorkflowResponse, error) {
+	rsp, err := c.DeleteOrganizationWorkflow(ctx, organizationIdOrSlug, workflowId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteOrganizationWorkflowResponse(rsp)
+}
+
+// GetOrganizationWorkflowWithResponse request returning *GetOrganizationWorkflowResponse
+func (c *ClientWithResponses) GetOrganizationWorkflowWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, reqEditors ...RequestEditorFn) (*GetOrganizationWorkflowResponse, error) {
+	rsp, err := c.GetOrganizationWorkflow(ctx, organizationIdOrSlug, workflowId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetOrganizationWorkflowResponse(rsp)
+}
+
+// UpdateOrganizationWorkflowWithBodyWithResponse request with arbitrary body returning *UpdateOrganizationWorkflowResponse
+func (c *ClientWithResponses) UpdateOrganizationWorkflowWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateOrganizationWorkflowResponse, error) {
+	rsp, err := c.UpdateOrganizationWorkflowWithBody(ctx, organizationIdOrSlug, workflowId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateOrganizationWorkflowResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateOrganizationWorkflowWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, workflowId string, body UpdateOrganizationWorkflowJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateOrganizationWorkflowResponse, error) {
+	rsp, err := c.UpdateOrganizationWorkflow(ctx, organizationIdOrSlug, workflowId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateOrganizationWorkflowResponse(rsp)
 }
 
 // DeleteOrganizationProjectWithResponse request returning *DeleteOrganizationProjectResponse
@@ -6391,6 +10797,100 @@ func ParseGetOrganizationResponse(rsp *http.Response) (*GetOrganizationResponse,
 	return response, nil
 }
 
+// ParseListOrganizationMonitorsResponse parses an HTTP response from a ListOrganizationMonitorsWithResponse call
+func ParseListOrganizationMonitorsResponse(rsp *http.Response) (*ListOrganizationMonitorsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListOrganizationMonitorsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []ProjectMonitor
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteProjectMonitorResponse parses an HTTP response from a DeleteProjectMonitorWithResponse call
+func ParseDeleteProjectMonitorResponse(rsp *http.Response) (*DeleteProjectMonitorResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteProjectMonitorResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetProjectMonitorResponse parses an HTTP response from a GetProjectMonitorWithResponse call
+func ParseGetProjectMonitorResponse(rsp *http.Response) (*GetProjectMonitorResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetProjectMonitorResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProjectMonitor
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateProjectMonitorResponse parses an HTTP response from a UpdateProjectMonitorWithResponse call
+func ParseUpdateProjectMonitorResponse(rsp *http.Response) (*UpdateProjectMonitorResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateProjectMonitorResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProjectMonitor
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseListOrganizationIntegrationsResponse parses an HTTP response from a ListOrganizationIntegrationsWithResponse call
 func ParseListOrganizationIntegrationsResponse(rsp *http.Response) (*ListOrganizationIntegrationsResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -6605,6 +11105,32 @@ func ParseListOrganizationProjectsResponse(rsp *http.Response) (*ListOrganizatio
 	return response, nil
 }
 
+// ParseCreateProjectMonitorResponse parses an HTTP response from a CreateProjectMonitorWithResponse call
+func ParseCreateProjectMonitorResponse(rsp *http.Response) (*CreateProjectMonitorResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateProjectMonitorResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest ProjectMonitor
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseListSentryAppInstallationsResponse parses an HTTP response from a ListSentryAppInstallationsWithResponse call
 func ParseListSentryAppInstallationsResponse(rsp *http.Response) (*ListSentryAppInstallationsResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -6658,6 +11184,126 @@ func ParseEnableSpikeProtectionResponse(rsp *http.Response) (*EnableSpikeProtect
 	response := &EnableSpikeProtectionResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseListOrganizationWorkflowsResponse parses an HTTP response from a ListOrganizationWorkflowsWithResponse call
+func ParseListOrganizationWorkflowsResponse(rsp *http.Response) (*ListOrganizationWorkflowsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListOrganizationWorkflowsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []OrganizationWorkflow
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateOrganizationWorkflowResponse parses an HTTP response from a CreateOrganizationWorkflowWithResponse call
+func ParseCreateOrganizationWorkflowResponse(rsp *http.Response) (*CreateOrganizationWorkflowResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateOrganizationWorkflowResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest OrganizationWorkflow
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteOrganizationWorkflowResponse parses an HTTP response from a DeleteOrganizationWorkflowWithResponse call
+func ParseDeleteOrganizationWorkflowResponse(rsp *http.Response) (*DeleteOrganizationWorkflowResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteOrganizationWorkflowResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetOrganizationWorkflowResponse parses an HTTP response from a GetOrganizationWorkflowWithResponse call
+func ParseGetOrganizationWorkflowResponse(rsp *http.Response) (*GetOrganizationWorkflowResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetOrganizationWorkflowResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest OrganizationWorkflow
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateOrganizationWorkflowResponse parses an HTTP response from a UpdateOrganizationWorkflowWithResponse call
+func ParseUpdateOrganizationWorkflowResponse(rsp *http.Response) (*UpdateOrganizationWorkflowResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateOrganizationWorkflowResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest OrganizationWorkflow
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	}
 
 	return response, nil

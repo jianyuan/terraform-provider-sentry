@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/function"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/jianyuan/go-sentry/v2/sentry"
@@ -17,6 +18,7 @@ import (
 )
 
 var _ provider.Provider = &SentryProvider{}
+var _ provider.ProviderWithFunctions = &SentryProvider{}
 
 // SentryProvider defines the provider implementation.
 type SentryProvider struct {
@@ -148,6 +150,22 @@ func (p *SentryProvider) DataSources(ctx context.Context) []func() datasource.Da
 		NewSentryAppInstallationDataSource,
 		NewTeamDataSource,
 	)
+}
+
+func (p *SentryProvider) Functions(ctx context.Context) []func() function.Function {
+	return []func() function.Function{
+		NewAssertionFunction,
+		NewOpAndFunction,
+		NewOpHeaderCheckFunction,
+		NewOpHeaderOperandGlobFunction,
+		NewOpHeaderOperandLiteralFunction,
+		NewOpJsonpathFunction,
+		NewOpJsonpathOperandGlobFunction,
+		NewOpJsonpathOperandLiteralFunction,
+		NewOpNotFunction,
+		NewOpOrFunction,
+		NewOpStatusCodeCheckFunction,
+	}
 }
 
 func New(version string) func() provider.Provider {
