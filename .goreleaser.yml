@@ -1,15 +1,14 @@
 # Visit https://goreleaser.com for documentation on how to customize this
 # behavior.
-
 version: 2
-
 before:
   hooks:
+    # this is just an example and not a requirement for provider building/publishing
     - go mod tidy
 builds:
   - env:
       # goreleaser does not work with CGO, it could also complicate
-      # usage by users in CI/CD systems like Terraform Cloud where
+      # usage by users in CI/CD systems like HCP Terraform where
       # they are unable to install libraries.
       - CGO_ENABLED=0
     mod_timestamp: "{{ .CommitTimestamp }}"
@@ -30,9 +29,12 @@ builds:
     ignore:
       - goos: darwin
         goarch: "386"
+      - goos: windows
+        goarch: arm
     binary: "{{ .ProjectName }}_v{{ .Version }}"
 archives:
-  - format: zip
+  - formats:
+      - zip
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 checksum:
   extra_files:
@@ -47,7 +49,7 @@ signs:
       # need to pass the batch flag to indicate its not interactive.
       - "--batch"
       - "--local-user"
-      - "{{ .Env.GPG_FINGERPRINT }}"
+      - "{{ .Env.GPG_FINGERPRINT }}" # set this environment variable for your signing key
       - "--output"
       - "${signature}"
       - "--detach-sign"
@@ -56,7 +58,7 @@ release:
   extra_files:
     - glob: "terraform-registry-manifest.json"
       name_template: "{{ .ProjectName }}_{{ .Version }}_manifest.json"
-  # Manually examine the release before it goes live:
-  draft: true
+  # If you want to manually examine the release before its live, uncomment this line:
+  # draft: true
 changelog:
   disable: true
