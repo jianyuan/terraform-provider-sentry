@@ -1002,7 +1002,7 @@ components:
         - pending
         - expired
         - orgRole
-        - user 
+        - user
       properties:
         id:
           type: string
@@ -1917,7 +1917,8 @@ components:
         name:
           type: string
         account:
-          type: string
+          type: integer
+          x-go-type: json.Number
         team:
           type: string
         priority:
@@ -1939,7 +1940,8 @@ components:
         name:
           type: string
         account:
-          type: string
+          type: integer
+          x-go-type: json.Number
         service:
           type: string
         severity:
@@ -2006,7 +2008,8 @@ components:
         name:
           type: string
         server:
-          type: string
+          type: integer
+          x-go-type: json.Number
         channel_id:
           type: string
         tags:
@@ -2029,7 +2032,8 @@ components:
         name:
           type: string
         integration:
-          type: string
+          type: integer
+          x-go-type: json.Number
         project:
           type: string
         issueType:
@@ -2082,7 +2086,8 @@ components:
         name:
           type: string
         integration:
-          type: string
+          type: integer
+          x-go-type: json.Number
         repo:
           type: string
         assignee:
@@ -2112,7 +2117,8 @@ components:
         name:
           type: string
         integration:
-          type: string
+          type: integer
+          x-go-type: json.Number
         repo:
           type: string
         assignee:
@@ -2143,7 +2149,8 @@ components:
         name:
           type: string
         integration:
-          type: string
+          type: integer
+          x-go-type: json.Number
         project:
           type: string
         work_item_type:

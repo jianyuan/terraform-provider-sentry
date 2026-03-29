@@ -734,7 +734,7 @@ type ProjectRuleAction struct {
 type ProjectRuleActionAzureDevopsCreateTicket struct {
 	DynamicFormFields []map[string]interface{}                   `json:"dynamic_form_fields"`
 	Id                ProjectRuleActionAzureDevopsCreateTicketId `json:"id"`
-	Integration       string                                     `json:"integration"`
+	Integration       json.Number                                `json:"integration"`
 	Name              *string                                    `json:"name,omitempty"`
 	Project           string                                     `json:"project"`
 	Uuid              *string                                    `json:"uuid,omitempty"`
@@ -749,7 +749,7 @@ type ProjectRuleActionDiscordNotifyService struct {
 	ChannelId string                                  `json:"channel_id"`
 	Id        ProjectRuleActionDiscordNotifyServiceId `json:"id"`
 	Name      *string                                 `json:"name,omitempty"`
-	Server    string                                  `json:"server"`
+	Server    json.Number                             `json:"server"`
 	Tags      *string                                 `json:"tags,omitempty"`
 	Uuid      *string                                 `json:"uuid,omitempty"`
 }
@@ -762,7 +762,7 @@ type ProjectRuleActionGitHubCreateTicket struct {
 	Assignee          *string                               `json:"assignee,omitempty"`
 	DynamicFormFields []map[string]interface{}              `json:"dynamic_form_fields"`
 	Id                ProjectRuleActionGitHubCreateTicketId `json:"id"`
-	Integration       string                                `json:"integration"`
+	Integration       json.Number                           `json:"integration"`
 	Labels            *[]string                             `json:"labels,omitempty"`
 	Name              *string                               `json:"name,omitempty"`
 	Repo              string                                `json:"repo"`
@@ -777,7 +777,7 @@ type ProjectRuleActionGitHubEnterpriseCreateTicket struct {
 	Assignee          *string                                         `json:"assignee,omitempty"`
 	DynamicFormFields []map[string]interface{}                        `json:"dynamic_form_fields"`
 	Id                ProjectRuleActionGitHubEnterpriseCreateTicketId `json:"id"`
-	Integration       string                                          `json:"integration"`
+	Integration       json.Number                                     `json:"integration"`
 	Labels            *[]string                                       `json:"labels,omitempty"`
 	Name              *string                                         `json:"name,omitempty"`
 	Repo              string                                          `json:"repo"`
@@ -791,7 +791,7 @@ type ProjectRuleActionGitHubEnterpriseCreateTicketId string
 type ProjectRuleActionJiraCreateTicket struct {
 	DynamicFormFields []map[string]interface{}            `json:"dynamic_form_fields"`
 	Id                ProjectRuleActionJiraCreateTicketId `json:"id"`
-	Integration       string                              `json:"integration"`
+	Integration       json.Number                         `json:"integration"`
 	IssueType         string                              `json:"issueType"`
 	Name              *string                             `json:"name,omitempty"`
 	Project           string                              `json:"project"`
@@ -891,7 +891,7 @@ type ProjectRuleActionNotifyEventServiceId string
 
 // ProjectRuleActionOpsgenieNotifyTeam defines model for ProjectRuleActionOpsgenieNotifyTeam.
 type ProjectRuleActionOpsgenieNotifyTeam struct {
-	Account  string                                `json:"account"`
+	Account  json.Number                           `json:"account"`
 	Id       ProjectRuleActionOpsgenieNotifyTeamId `json:"id"`
 	Name     *string                               `json:"name,omitempty"`
 	Priority string                                `json:"priority"`
@@ -904,7 +904,7 @@ type ProjectRuleActionOpsgenieNotifyTeamId string
 
 // ProjectRuleActionPagerDutyNotifyService defines model for ProjectRuleActionPagerDutyNotifyService.
 type ProjectRuleActionPagerDutyNotifyService struct {
-	Account  string                                    `json:"account"`
+	Account  json.Number                               `json:"account"`
 	Id       ProjectRuleActionPagerDutyNotifyServiceId `json:"id"`
 	Name     *string                                   `json:"name,omitempty"`
 	Service  string                                    `json:"service"`

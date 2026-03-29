@@ -906,7 +906,7 @@ type IssueAlertActionOpsgenieNotifyTeam struct {
 
 func (m *IssueAlertActionOpsgenieNotifyTeam) Fill(ctx context.Context, action apiclient.ProjectRuleActionOpsgenieNotifyTeam) (diags diag.Diagnostics) {
 	m.Name = types.StringPointerValue(action.Name)
-	m.Account = types.StringValue(action.Account)
+	m.Account = types.StringValue(action.Account.String())
 	m.Team = types.StringValue(action.Team)
 	m.Priority = types.StringValue(action.Priority)
 	return
@@ -917,7 +917,7 @@ func (m IssueAlertActionOpsgenieNotifyTeam) ToApi(ctx context.Context) (*apiclie
 	var v apiclient.ProjectRuleAction
 	err := v.FromProjectRuleActionOpsgenieNotifyTeam(apiclient.ProjectRuleActionOpsgenieNotifyTeam{
 		Name:     m.Name.ValueStringPointer(),
-		Account:  m.Account.ValueString(),
+		Account:  json.Number(m.Account.ValueString()),
 		Team:     m.Team.ValueString(),
 		Priority: m.Priority.ValueString(),
 	})
@@ -937,7 +937,7 @@ type IssueAlertActionPagerDutyNotifyServiceModel struct {
 
 func (m *IssueAlertActionPagerDutyNotifyServiceModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionPagerDutyNotifyService) (diags diag.Diagnostics) {
 	m.Name = types.StringPointerValue(action.Name)
-	m.Account = types.StringValue(action.Account)
+	m.Account = types.StringValue(action.Account.String())
 	m.Service = types.StringValue(action.Service)
 	m.Severity = types.StringValue(action.Severity)
 	return
@@ -948,7 +948,7 @@ func (m IssueAlertActionPagerDutyNotifyServiceModel) ToApi(ctx context.Context) 
 	var v apiclient.ProjectRuleAction
 	err := v.FromProjectRuleActionPagerDutyNotifyService(apiclient.ProjectRuleActionPagerDutyNotifyService{
 		Name:     m.Name.ValueStringPointer(),
-		Account:  m.Account.ValueString(),
+		Account:  json.Number(m.Account.ValueString()),
 		Service:  m.Service.ValueString(),
 		Severity: m.Severity.ValueString(),
 	})
@@ -1036,7 +1036,7 @@ type IssueAlertActionDiscordNotifyServiceModel struct {
 
 func (m *IssueAlertActionDiscordNotifyServiceModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionDiscordNotifyService) (diags diag.Diagnostics) {
 	m.Name = types.StringPointerValue(action.Name)
-	m.Server = types.StringValue(action.Server)
+	m.Server = types.StringValue(action.Server.String())
 	m.ChannelId = types.StringValue(action.ChannelId)
 	m.Tags = tfutils.MergeDiagnostics(sentrytypes.StringSetPointerValue(action.Tags))(&diags)
 	return
@@ -1047,7 +1047,7 @@ func (m IssueAlertActionDiscordNotifyServiceModel) ToApi(ctx context.Context) (*
 	var v apiclient.ProjectRuleAction
 	err := v.FromProjectRuleActionDiscordNotifyService(apiclient.ProjectRuleActionDiscordNotifyService{
 		Name:      m.Name.ValueStringPointer(),
-		Server:    m.Server.ValueString(),
+		Server:    json.Number(m.Server.ValueString()),
 		ChannelId: m.ChannelId.ValueString(),
 		Tags:      tfutils.MergeDiagnostics(m.Tags.ValueStringPointer(ctx))(&diags),
 	})
@@ -1067,7 +1067,7 @@ type IssueAlertActionJiraCreateTicketModel struct {
 
 func (m *IssueAlertActionJiraCreateTicketModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionJiraCreateTicket) (diags diag.Diagnostics) {
 	m.Name = types.StringPointerValue(action.Name)
-	m.Integration = types.StringValue(action.Integration)
+	m.Integration = types.StringValue(action.Integration.String())
 	m.Project = types.StringValue(action.Project)
 	m.IssueType = types.StringValue(action.IssueType)
 	return
@@ -1078,7 +1078,7 @@ func (m IssueAlertActionJiraCreateTicketModel) ToApi(ctx context.Context) (*apic
 	var v apiclient.ProjectRuleAction
 	err := v.FromProjectRuleActionJiraCreateTicket(apiclient.ProjectRuleActionJiraCreateTicket{
 		Name:              m.Name.ValueStringPointer(),
-		Integration:       m.Integration.ValueString(),
+		Integration:       json.Number(m.Integration.ValueString()),
 		Project:           m.Project.ValueString(),
 		IssueType:         m.IssueType.ValueString(),
 		DynamicFormFields: []map[string]interface{}{{"dummy": "dummy"}},
@@ -1132,7 +1132,7 @@ type IssueAlertActionGitHubCreateTicketModel struct {
 
 func (m *IssueAlertActionGitHubCreateTicketModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionGitHubCreateTicket) (diags diag.Diagnostics) {
 	m.Name = types.StringPointerValue(action.Name)
-	m.Integration = types.StringValue(action.Integration)
+	m.Integration = types.StringValue(action.Integration.String())
 	m.Repo = types.StringValue(action.Repo)
 	m.Assignee = types.StringPointerValue(action.Assignee)
 
@@ -1151,7 +1151,7 @@ func (m IssueAlertActionGitHubCreateTicketModel) ToApi(ctx context.Context) (*ap
 
 	body := apiclient.ProjectRuleActionGitHubCreateTicket{
 		Name:              m.Name.ValueStringPointer(),
-		Integration:       m.Integration.ValueString(),
+		Integration:       json.Number(m.Integration.ValueString()),
 		Repo:              m.Repo.ValueString(),
 		Assignee:          m.Assignee.ValueStringPointer(),
 		DynamicFormFields: []map[string]interface{}{{"dummy": "dummy"}},
@@ -1186,7 +1186,7 @@ type IssueAlertActionGitHubEnterpriseCreateTicketModel struct {
 
 func (m *IssueAlertActionGitHubEnterpriseCreateTicketModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionGitHubEnterpriseCreateTicket) (diags diag.Diagnostics) {
 	m.Name = types.StringPointerValue(action.Name)
-	m.Integration = types.StringValue(action.Integration)
+	m.Integration = types.StringValue(action.Integration.String())
 	m.Repo = types.StringValue(action.Repo)
 	m.Assignee = types.StringPointerValue(action.Assignee)
 
@@ -1205,7 +1205,7 @@ func (m IssueAlertActionGitHubEnterpriseCreateTicketModel) ToApi(ctx context.Con
 
 	body := apiclient.ProjectRuleActionGitHubEnterpriseCreateTicket{
 		Name:              m.Name.ValueStringPointer(),
-		Integration:       m.Integration.ValueString(),
+		Integration:       json.Number(m.Integration.ValueString()),
 		Repo:              m.Repo.ValueString(),
 		Assignee:          m.Assignee.ValueStringPointer(),
 		DynamicFormFields: []map[string]interface{}{{"dummy": "dummy"}},
@@ -1239,7 +1239,7 @@ type IssueAlertActionAzureDevopsCreateTicketModel struct {
 
 func (m *IssueAlertActionAzureDevopsCreateTicketModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionAzureDevopsCreateTicket) (diags diag.Diagnostics) {
 	m.Name = types.StringPointerValue(action.Name)
-	m.Integration = types.StringValue(action.Integration)
+	m.Integration = types.StringValue(action.Integration.String())
 	m.Project = types.StringValue(action.Project)
 	m.WorkItemType = types.StringValue(action.WorkItemType)
 	return
@@ -1250,7 +1250,7 @@ func (m IssueAlertActionAzureDevopsCreateTicketModel) ToApi(ctx context.Context)
 	var v apiclient.ProjectRuleAction
 	err := v.FromProjectRuleActionAzureDevopsCreateTicket(apiclient.ProjectRuleActionAzureDevopsCreateTicket{
 		Name:              m.Name.ValueStringPointer(),
-		Integration:       m.Integration.ValueString(),
+		Integration:       json.Number(m.Integration.ValueString()),
 		Project:           m.Project.ValueString(),
 		WorkItemType:      m.WorkItemType.ValueString(),
 		DynamicFormFields: []map[string]interface{}{{"dummy": "dummy"}},
