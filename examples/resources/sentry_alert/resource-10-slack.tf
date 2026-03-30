@@ -1,6 +1,6 @@
 # Retrieve a Slack integration
 data "sentry_organization_integration" "slack" {
-  organization = sentry_project.test.organization
+  organization = "my-org"
 
   provider_key = "slack"
   name         = "Slack Workspace" # Name of your Slack workspace

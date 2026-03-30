@@ -1,6 +1,6 @@
 # Retrieve a VSTS integration
 data "sentry_organization_integration" "vsts" {
-  organization = sentry_project.test.organization
+  organization = "my-org"
 
   provider_key = "vsts"
   name         = "Azure DevOps"

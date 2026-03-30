@@ -3,12 +3,15 @@
 page_title: "sentry_issue_alert Resource - terraform-provider-sentry"
 subcategory: ""
 description: |-
+  ⚠️ This resource is deprecated. Please migrate to sentry_alert alert.md resource instead.
   Create an Issue Alert Rule for a Project. See the Sentry Documentation https://docs.sentry.io/api/alerts/create-an-issue-alert-rule-for-a-project/ for more information.
   NOTE: The conditions, filters, and actions attributes, which are JSON strings, have been deprecated in favor of conditions_v2, filters_v2, and actions_v2, which are lists of objects.
   The *_v2 attributes are available starting from v0.14.2.
 ---
 
 # sentry_issue_alert (Resource)
+
+⚠️ This resource is deprecated. Please migrate to [`sentry_alert`](alert.md) resource instead.
 
 Create an Issue Alert Rule for a Project. See the [Sentry Documentation](https://docs.sentry.io/api/alerts/create-an-issue-alert-rule-for-a-project/) for more information.
 

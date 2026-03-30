@@ -17,7 +17,8 @@ import (
 
 func resourceSentryMetricAlert() *schema.Resource {
 	return &schema.Resource{
-		Description: "Sentry Metric Alert resource.",
+		Description:        "⚠️ This resource is deprecated. Please migrate to [`sentry_metric_monitor`](metric_monitor.md) and [`sentry_alert`](alert.md) resources instead.\n\nSentry Metric Alert resource.",
+		DeprecationMessage: "This resource is deprecated. Please migrate to `sentry_metric_monitor` and `sentry_alert` resources instead.",
 
 		CreateContext: resourceSentryMetricAlertCreate,
 		ReadContext:   resourceSentryMetricAlertRead,

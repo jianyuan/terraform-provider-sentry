@@ -1,6 +1,6 @@
 # Retrieve an Opsgenie integration
 data "sentry_organization_integration" "opsgenie" {
-  organization = sentry_project.test.organization
+  organization = "my-org"
   provider_key = "opsgenie"
   name         = "Opsgenie"
 }

@@ -82,8 +82,7 @@ resource "sentry_alert" "default" {
 ```terraform
 # Retrieve a Discord integration
 data "sentry_organization_integration" "discord" {
-  organization = sentry_project.test.organization
-
+  organization = "my-org"
   provider_key = "discord"
   name         = "Discord Server" # Name of your Discord server
 }
@@ -97,8 +96,8 @@ resource "sentry_alert" "default" {
       actions = [
         {
           discord = {
-            channel_id     = "123456789012345678"
             integration_id = data.sentry_organization_integration.discord.id
+            channel_id     = "123456789012345678"
             tags           = "environment, level"
           }
         }
@@ -111,6 +110,7 @@ resource "sentry_alert" "default" {
 #### Email
 
 ```terraform
+# Send a notification to issue owners. If no issue owners, then send to all members.
 resource "sentry_alert" "default" {
   # ...
 
@@ -120,8 +120,52 @@ resource "sentry_alert" "default" {
       actions = [
         {
           email = {
-            target_type      = "issue_owners"
+            target_type      = "IssueOwners"
             fallthrough_type = "AllMembers"
+          }
+        }
+      ]
+    }
+  ]
+}
+
+# Send a notification to a team. If no issue owners, then send to all members.
+data "sentry_team" "team" { /* ... */ }
+
+resource "sentry_alert" "default" {
+  # ...
+
+  action_filters = [
+    {
+      logic_type = "all"
+      actions = [
+        {
+          email = {
+            target_type       = "Team"
+            target_identifier = data.sentry_team.team.internal_id
+            fallthrough_type  = "AllMembers"
+          }
+        }
+      ]
+    }
+  ]
+}
+
+# Send a notification to a user. If no issue owners, then send to all members.
+data "sentry_organization_member" "member" { /* ... */ }
+
+resource "sentry_alert" "default" {
+  # ...
+
+  action_filters = [
+    {
+      logic_type = "all"
+      actions = [
+        {
+          email = {
+            target_type       = "Member"
+            target_identifier = data.sentry_organization_member.member.internal_id
+            fallthrough_type  = "AllMembers"
           }
         }
       ]
@@ -135,10 +179,9 @@ resource "sentry_alert" "default" {
 ```terraform
 # Retrieve a GitHub integration
 data "sentry_organization_integration" "github" {
-  organization = sentry_project.test.organization
-
+  organization = "my-org"
   provider_key = "github"
-  name         = "GitHub"
+  name         = "terraform-provider-sentry"
 }
 
 resource "sentry_alert" "default" {
@@ -167,8 +210,7 @@ resource "sentry_alert" "default" {
 ```terraform
 # Retrieve a Jira integration
 data "sentry_organization_integration" "jira" {
-  organization = sentry_project.test.organization
-
+  organization = "my-org"
   provider_key = "jira"
   name         = "JIRA" # Name of your Jira server
 }
@@ -183,6 +225,8 @@ resource "sentry_alert" "default" {
         {
           jira = {
             integration_id = data.sentry_organization_integration.jira.id
+            project        = "349719"
+            issue_type     = "1"
           }
         }
       ]
@@ -196,8 +240,7 @@ resource "sentry_alert" "default" {
 ```terraform
 # Retrieve a Jira Server integration
 data "sentry_organization_integration" "jira_server" {
-  organization = sentry_project.test.organization
-
+  organization = "my-org"
   provider_key = "jira_server"
   name         = "JIRA" # Name of your Jira server
 }
@@ -212,6 +255,8 @@ resource "sentry_alert" "default" {
         {
           jira_server = {
             integration_id = data.sentry_organization_integration.jira_server.id
+            project        = "349719"
+            issue_type     = "1"
           }
         }
       ]
@@ -225,8 +270,7 @@ resource "sentry_alert" "default" {
 ```terraform
 # Retrieve a MS Teams integration
 data "sentry_organization_integration" "msteams" {
-  organization = sentry_project.test.organization
-
+  organization = "my-org"
   provider_key = "msteams"
   name         = "My Team" # Name of your Microsoft Teams team
 }
@@ -256,7 +300,7 @@ resource "sentry_alert" "default" {
 ```terraform
 # Retrieve an Opsgenie integration
 data "sentry_organization_integration" "opsgenie" {
-  organization = sentry_project.test.organization
+  organization = "my-org"
   provider_key = "opsgenie"
   name         = "Opsgenie"
 }
@@ -295,7 +339,7 @@ resource "sentry_alert" "default" {
 ```terraform
 # Retrieve a PagerDuty integration
 data "sentry_organization_integration" "pagerduty" {
-  organization = sentry_project.test.organization
+  organization = "my-org"
   provider_key = "pagerduty"
   name         = "PagerDuty"
 }
@@ -354,7 +398,7 @@ resource "sentry_alert" "default" {
 ```terraform
 # Retrieve a Slack integration
 data "sentry_organization_integration" "slack" {
-  organization = sentry_project.test.organization
+  organization = "my-org"
 
   provider_key = "slack"
   name         = "Slack Workspace" # Name of your Slack workspace
@@ -386,7 +430,7 @@ resource "sentry_alert" "default" {
 ```terraform
 # Retrieve a VSTS integration
 data "sentry_organization_integration" "vsts" {
-  organization = sentry_project.test.organization
+  organization = "my-org"
 
   provider_key = "vsts"
   name         = "Azure DevOps"
@@ -905,10 +949,11 @@ Optional:
 Required:
 
 - `integration_id` (String) The ID of the Jira integration.
+- `project` (String) The ID of the Jira project.
 
 Optional:
 
-- `data` (Map of String) A list of any fields you want to include in the ticket as objects.
+- `issue_type` (String) The ID of the type of issue that the ticket should be created as.
 
 
 <a id="nestedatt--action_filters--actions--jira_server"></a>
@@ -917,10 +962,11 @@ Optional:
 Required:
 
 - `integration_id` (String) The ID of the Jira Server integration.
+- `project` (String) The ID of the Jira project.
 
 Optional:
 
-- `data` (Map of String) A list of any fields you want to include in the ticket as objects.
+- `issue_type` (String) The ID of the type of issue that the ticket should be created as.
 
 
 <a id="nestedatt--action_filters--actions--msteams"></a>

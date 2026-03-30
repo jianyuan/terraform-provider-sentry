@@ -1,9 +1,8 @@
 # Retrieve a GitHub integration
 data "sentry_organization_integration" "github" {
-  organization = sentry_project.test.organization
-
+  organization = "my-org"
   provider_key = "github"
-  name         = "GitHub"
+  name         = "terraform-provider-sentry"
 }
 
 resource "sentry_alert" "default" {

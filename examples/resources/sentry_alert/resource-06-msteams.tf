@@ -1,7 +1,6 @@
 # Retrieve a MS Teams integration
 data "sentry_organization_integration" "msteams" {
-  organization = sentry_project.test.organization
-
+  organization = "my-org"
   provider_key = "msteams"
   name         = "My Team" # Name of your Microsoft Teams team
 }
