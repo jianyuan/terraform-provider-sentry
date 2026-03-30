@@ -1646,12 +1646,16 @@ export const RESOURCES: Array<Resource> = [
                     computedOptionalRequired: "required",
                   },
                   {
-                    name: "data",
-                    type: "map",
-                    description:
-                      "A list of any fields you want to include in the ticket as objects.",
-                    computedOptionalRequired: "optional",
-                    elementType: "string",
+                    name: "project",
+                    type: "string",
+                    description: "The ID of the Azure DevOps project.",
+                    computedOptionalRequired: "required",
+                  },
+                  {
+                    name: "work_item_type",
+                    type: "string",
+                    description: "The type of work item to create.",
+                    computedOptionalRequired: "required",
                   },
                 ],
               },
@@ -1678,7 +1682,7 @@ export const RESOURCES: Array<Resource> = [
                     type: "string",
                     description:
                       "The ID of the type of issue that the ticket should be created as.",
-                    computedOptionalRequired: "optional",
+                    computedOptionalRequired: "required",
                   },
                 ],
               },
@@ -1705,7 +1709,7 @@ export const RESOURCES: Array<Resource> = [
                     type: "string",
                     description:
                       "The ID of the type of issue that the ticket should be created as.",
-                    computedOptionalRequired: "optional",
+                    computedOptionalRequired: "required",
                   },
                 ],
               },

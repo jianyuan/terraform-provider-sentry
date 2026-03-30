@@ -751,10 +751,15 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 												Required:            true,
 												CustomType:          supertypes.StringType{},
 											},
-											"data": schema.MapAttribute{
-												MarkdownDescription: "A list of any fields you want to include in the ticket as objects.",
-												Optional:            true,
-												CustomType:          supertypes.NewMapTypeOf[string](ctx),
+											"project": schema.StringAttribute{
+												MarkdownDescription: "The ID of the Azure DevOps project.",
+												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"work_item_type": schema.StringAttribute{
+												MarkdownDescription: "The type of work item to create.",
+												Required:            true,
+												CustomType:          supertypes.StringType{},
 											},
 										},
 									},
@@ -778,7 +783,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 											},
 											"issue_type": schema.StringAttribute{
 												MarkdownDescription: "The ID of the type of issue that the ticket should be created as.",
-												Optional:            true,
+												Required:            true,
 												CustomType:          supertypes.StringType{},
 											},
 										},
@@ -803,7 +808,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 											},
 											"issue_type": schema.StringAttribute{
 												MarkdownDescription: "The ID of the type of issue that the ticket should be created as.",
-												Optional:            true,
+												Required:            true,
 												CustomType:          supertypes.StringType{},
 											},
 										},
@@ -1167,8 +1172,9 @@ type AlertResourceModelActionFiltersItemActionsItemOpsgenie struct {
 }
 
 type AlertResourceModelActionFiltersItemActionsItemVsts struct {
-	IntegrationId supertypes.StringValue        `tfsdk:"integration_id"`
-	Data          supertypes.MapValueOf[string] `tfsdk:"data"`
+	IntegrationId supertypes.StringValue `tfsdk:"integration_id"`
+	Project       supertypes.StringValue `tfsdk:"project"`
+	WorkItemType  supertypes.StringValue `tfsdk:"work_item_type"`
 }
 
 type AlertResourceModelActionFiltersItemActionsItemJira struct {

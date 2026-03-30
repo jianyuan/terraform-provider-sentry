@@ -446,6 +446,8 @@ resource "sentry_alert" "default" {
         {
           vsts = {
             integration_id = data.sentry_organization_integration.vsts.id
+            project        = "0389485"
+            work_item_type = "Microsoft.VSTS.WorkItemTypes.Task"
           }
         }
       ]
@@ -949,11 +951,8 @@ Optional:
 Required:
 
 - `integration_id` (String) The ID of the Jira integration.
-- `project` (String) The ID of the Jira project.
-
-Optional:
-
 - `issue_type` (String) The ID of the type of issue that the ticket should be created as.
+- `project` (String) The ID of the Jira project.
 
 
 <a id="nestedatt--action_filters--actions--jira_server"></a>
@@ -962,11 +961,8 @@ Optional:
 Required:
 
 - `integration_id` (String) The ID of the Jira Server integration.
-- `project` (String) The ID of the Jira project.
-
-Optional:
-
 - `issue_type` (String) The ID of the type of issue that the ticket should be created as.
+- `project` (String) The ID of the Jira project.
 
 
 <a id="nestedatt--action_filters--actions--msteams"></a>
@@ -1026,10 +1022,8 @@ Optional:
 Required:
 
 - `integration_id` (String) The ID of the OpsGenie integration.
-
-Optional:
-
-- `data` (Map of String) A list of any fields you want to include in the ticket as objects.
+- `project` (String) The ID of the Azure DevOps project.
+- `work_item_type` (String) The type of work item to create.
 
 
 

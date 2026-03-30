@@ -1767,7 +1767,12 @@ type OrganizationWorkflowActionFilterActionVsts struct {
 	Config struct {
 		TargetType OrganizationWorkflowActionFilterActionVstsConfigTargetType `json:"targetType"`
 	} `json:"config"`
-	Data          map[string]string                              `json:"data"`
+	Data struct {
+		AdditionalFields struct {
+			Project      string `json:"project"`
+			WorkItemType string `json:"work_item_type"`
+		} `json:"additionalFields"`
+	} `json:"data"`
 	IntegrationId string                                         `json:"integrationId"`
 	Type          OrganizationWorkflowActionFilterActionVstsType `json:"type"`
 }

@@ -442,11 +442,8 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				var outVsts apiclient.OrganizationWorkflowActionFilterActionVsts
 				outVsts.IntegrationId = inVsts.IntegrationId.Get()
 				outVsts.Config.TargetType = "specific"
-				if inVsts.Data.IsKnown() {
-					outVsts.Data = inVsts.Data.DiagsGet(ctx, diags)
-				} else {
-					outVsts.Data = map[string]string{}
-				}
+				outVsts.Data.AdditionalFields.Project = inVsts.Project.Get()
+				outVsts.Data.AdditionalFields.WorkItemType = inVsts.WorkItemType.Get()
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -901,10 +898,8 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 			case apiclient.OrganizationWorkflowActionFilterActionVsts:
 				var outVsts AlertResourceModelActionFiltersItemActionsItemVsts
 				outVsts.IntegrationId = supertypes.NewStringValue(actionValue.IntegrationId)
-				outVsts.Data.DiagsSet(ctx, diags, actionValue.Data)
-				if diags.HasError() {
-					return
-				}
+				outVsts.Project = supertypes.NewStringValue(actionValue.Data.AdditionalFields.Project)
+				outVsts.WorkItemType = supertypes.NewStringValue(actionValue.Data.AdditionalFields.WorkItemType)
 
 				outAction.Vsts = supertypes.NewSingleNestedObjectValueOf(ctx, &outVsts)
 
@@ -913,9 +908,6 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 				outJira.IntegrationId = supertypes.NewStringValue(actionValue.IntegrationId)
 				outJira.Project = supertypes.NewStringValue(actionValue.Data.AdditionalFields.Project)
 				outJira.IssueType = supertypes.NewStringValue(actionValue.Data.AdditionalFields.Issuetype)
-				if diags.HasError() {
-					return
-				}
 
 				outAction.Jira = supertypes.NewSingleNestedObjectValueOf(ctx, &outJira)
 
@@ -924,9 +916,6 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 				outJiraServer.IntegrationId = supertypes.NewStringValue(actionValue.IntegrationId)
 				outJiraServer.Project = supertypes.NewStringValue(actionValue.Data.AdditionalFields.Project)
 				outJiraServer.IssueType = supertypes.NewStringValue(actionValue.Data.AdditionalFields.Issuetype)
-				if diags.HasError() {
-					return
-				}
 
 				outAction.JiraServer = supertypes.NewSingleNestedObjectValueOf(ctx, &outJiraServer)
 
@@ -938,11 +927,12 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 					outGithub.Assignee = supertypes.NewStringValue(actionValue.Data.AdditionalFields.Assignee)
 				}
 				outGithub.Labels = supertypes.NewSetValueOfSlice(ctx, actionValue.Data.AdditionalFields.Labels)
-				if diags.HasError() {
-					return
-				}
 
 				outAction.Github = supertypes.NewSingleNestedObjectValueOf(ctx, &outGithub)
+			}
+
+			if diags.HasError() {
+				return
 			}
 
 			outActions = append(outActions, outAction)

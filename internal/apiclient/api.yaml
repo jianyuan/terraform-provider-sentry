@@ -3730,8 +3730,19 @@ components:
             - vsts
         data:
           type: object
-          additionalProperties:
-            type: string
+          required:
+            - additionalFields
+          properties:
+            additionalFields:
+              type: object
+              required:
+                - project
+                - work_item_type
+              properties:
+                project:
+                  type: string
+                work_item_type:
+                  type: string
         config:
           type: object
           required:
