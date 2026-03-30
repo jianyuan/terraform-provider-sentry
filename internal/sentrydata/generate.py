@@ -306,7 +306,7 @@ def parse_intervals() -> dict[str, ResultData[Any]]:
 
 
 def get_timezones() -> dict[str, ResultData[Any]]:
-    timezones = frozenset(zoneinfo.available_timezones() - {"Factory"})
+    timezones = frozenset(zoneinfo.available_timezones() - {"Factory", "localtime"})
     return {
         "Timezones": ResultData(
             github_url=None,
