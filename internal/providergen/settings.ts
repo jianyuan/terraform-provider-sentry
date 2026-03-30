@@ -1668,12 +1668,17 @@ export const RESOURCES: Array<Resource> = [
                     computedOptionalRequired: "required",
                   },
                   {
-                    name: "data",
-                    type: "map",
+                    name: "project",
+                    type: "string",
+                    description: "The ID of the Jira project.",
+                    computedOptionalRequired: "required",
+                  },
+                  {
+                    name: "issue_type",
+                    type: "string",
                     description:
-                      "A list of any fields you want to include in the ticket as objects.",
+                      "The ID of the type of issue that the ticket should be created as.",
                     computedOptionalRequired: "optional",
-                    elementType: "string",
                   },
                 ],
               },
@@ -1690,12 +1695,17 @@ export const RESOURCES: Array<Resource> = [
                     computedOptionalRequired: "required",
                   },
                   {
-                    name: "data",
-                    type: "map",
+                    name: "project",
+                    type: "string",
+                    description: "The ID of the Jira project.",
+                    computedOptionalRequired: "required",
+                  },
+                  {
+                    name: "issue_type",
+                    type: "string",
                     description:
-                      "A list of any fields you want to include in the ticket as objects.",
+                      "The ID of the type of issue that the ticket should be created as.",
                     computedOptionalRequired: "optional",
-                    elementType: "string",
                   },
                 ],
               },

@@ -3757,8 +3757,19 @@ components:
             - jira
         data:
           type: object
-          additionalProperties:
-            type: string
+          required:
+            - additionalFields
+          properties:
+            additionalFields:
+              type: object
+              required:
+                - project
+                - issuetype
+              properties:
+                project:
+                  type: string
+                issuetype:
+                  type: string
         config:
           type: object
           required:
@@ -3784,8 +3795,19 @@ components:
             - jira_server
         data:
           type: object
-          additionalProperties:
-            type: string
+          required:
+            - additionalFields
+          properties:
+            additionalFields:
+              type: object
+              required:
+                - project
+                - issuetype
+              properties:
+                project:
+                  type: string
+                issuetype:
+                  type: string
         config:
           type: object
           required:

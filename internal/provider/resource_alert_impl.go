@@ -465,11 +465,8 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				var outJira apiclient.OrganizationWorkflowActionFilterActionJira
 				outJira.IntegrationId = inJira.IntegrationId.Get()
 				outJira.Config.TargetType = "specific"
-				if inJira.Data.IsKnown() {
-					outJira.Data = inJira.Data.DiagsGet(ctx, diags)
-				} else {
-					outJira.Data = map[string]string{}
-				}
+				outJira.Data.AdditionalFields.Project = inJira.Project.Get()
+				outJira.Data.AdditionalFields.Issuetype = inJira.IssueType.Get()
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -488,11 +485,8 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				var outJiraServer apiclient.OrganizationWorkflowActionFilterActionJiraServer
 				outJiraServer.IntegrationId = inJiraServer.IntegrationId.Get()
 				outJiraServer.Config.TargetType = "specific"
-				if inJiraServer.Data.IsKnown() {
-					outJiraServer.Data = inJiraServer.Data.DiagsGet(ctx, diags)
-				} else {
-					outJiraServer.Data = map[string]string{}
-				}
+				outJiraServer.Data.AdditionalFields.Project = inJiraServer.Project.Get()
+				outJiraServer.Data.AdditionalFields.Issuetype = inJiraServer.IssueType.Get()
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -917,7 +911,8 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 			case apiclient.OrganizationWorkflowActionFilterActionJira:
 				var outJira AlertResourceModelActionFiltersItemActionsItemJira
 				outJira.IntegrationId = supertypes.NewStringValue(actionValue.IntegrationId)
-				outJira.Data.DiagsSet(ctx, diags, actionValue.Data)
+				outJira.Project = supertypes.NewStringValue(actionValue.Data.AdditionalFields.Project)
+				outJira.IssueType = supertypes.NewStringValue(actionValue.Data.AdditionalFields.Issuetype)
 				if diags.HasError() {
 					return
 				}
@@ -927,7 +922,8 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 			case apiclient.OrganizationWorkflowActionFilterActionJiraServer:
 				var outJiraServer AlertResourceModelActionFiltersItemActionsItemJiraServer
 				outJiraServer.IntegrationId = supertypes.NewStringValue(actionValue.IntegrationId)
-				outJiraServer.Data.DiagsSet(ctx, diags, actionValue.Data)
+				outJiraServer.Project = supertypes.NewStringValue(actionValue.Data.AdditionalFields.Project)
+				outJiraServer.IssueType = supertypes.NewStringValue(actionValue.Data.AdditionalFields.Issuetype)
 				if diags.HasError() {
 					return
 				}

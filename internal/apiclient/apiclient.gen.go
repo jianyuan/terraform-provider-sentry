@@ -1636,7 +1636,12 @@ type OrganizationWorkflowActionFilterActionJira struct {
 	Config struct {
 		TargetType OrganizationWorkflowActionFilterActionJiraConfigTargetType `json:"targetType"`
 	} `json:"config"`
-	Data          map[string]string                              `json:"data"`
+	Data struct {
+		AdditionalFields struct {
+			Issuetype string `json:"issuetype"`
+			Project   string `json:"project"`
+		} `json:"additionalFields"`
+	} `json:"data"`
 	IntegrationId string                                         `json:"integrationId"`
 	Type          OrganizationWorkflowActionFilterActionJiraType `json:"type"`
 }
@@ -1652,7 +1657,12 @@ type OrganizationWorkflowActionFilterActionJiraServer struct {
 	Config struct {
 		TargetType OrganizationWorkflowActionFilterActionJiraServerConfigTargetType `json:"targetType"`
 	} `json:"config"`
-	Data          map[string]string                                    `json:"data"`
+	Data struct {
+		AdditionalFields struct {
+			Issuetype string `json:"issuetype"`
+			Project   string `json:"project"`
+		} `json:"additionalFields"`
+	} `json:"data"`
 	IntegrationId string                                               `json:"integrationId"`
 	Type          OrganizationWorkflowActionFilterActionJiraServerType `json:"type"`
 }

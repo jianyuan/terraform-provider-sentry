@@ -771,10 +771,15 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 												Required:            true,
 												CustomType:          supertypes.StringType{},
 											},
-											"data": schema.MapAttribute{
-												MarkdownDescription: "A list of any fields you want to include in the ticket as objects.",
+											"project": schema.StringAttribute{
+												MarkdownDescription: "The ID of the Jira project.",
+												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"issue_type": schema.StringAttribute{
+												MarkdownDescription: "The ID of the type of issue that the ticket should be created as.",
 												Optional:            true,
-												CustomType:          supertypes.NewMapTypeOf[string](ctx),
+												CustomType:          supertypes.StringType{},
 											},
 										},
 									},
@@ -791,10 +796,15 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 												Required:            true,
 												CustomType:          supertypes.StringType{},
 											},
-											"data": schema.MapAttribute{
-												MarkdownDescription: "A list of any fields you want to include in the ticket as objects.",
+											"project": schema.StringAttribute{
+												MarkdownDescription: "The ID of the Jira project.",
+												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"issue_type": schema.StringAttribute{
+												MarkdownDescription: "The ID of the type of issue that the ticket should be created as.",
 												Optional:            true,
-												CustomType:          supertypes.NewMapTypeOf[string](ctx),
+												CustomType:          supertypes.StringType{},
 											},
 										},
 									},
@@ -1162,13 +1172,15 @@ type AlertResourceModelActionFiltersItemActionsItemVsts struct {
 }
 
 type AlertResourceModelActionFiltersItemActionsItemJira struct {
-	IntegrationId supertypes.StringValue        `tfsdk:"integration_id"`
-	Data          supertypes.MapValueOf[string] `tfsdk:"data"`
+	IntegrationId supertypes.StringValue `tfsdk:"integration_id"`
+	Project       supertypes.StringValue `tfsdk:"project"`
+	IssueType     supertypes.StringValue `tfsdk:"issue_type"`
 }
 
 type AlertResourceModelActionFiltersItemActionsItemJiraServer struct {
-	IntegrationId supertypes.StringValue        `tfsdk:"integration_id"`
-	Data          supertypes.MapValueOf[string] `tfsdk:"data"`
+	IntegrationId supertypes.StringValue `tfsdk:"integration_id"`
+	Project       supertypes.StringValue `tfsdk:"project"`
+	IssueType     supertypes.StringValue `tfsdk:"issue_type"`
 }
 
 type AlertResourceModelActionFiltersItemActionsItemGithub struct {
