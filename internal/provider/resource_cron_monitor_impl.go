@@ -21,21 +21,30 @@ func (r *CronMonitorResource) getCreateJSONRequestBody(ctx context.Context, data
 
 	switch {
 	case inSchedule.Crontab.IsKnown():
-		outDs.FromProjectMonitorDataSourceConfigCronCrontab(apiclient.ProjectMonitorDataSourceConfigCronCrontab{
+		if err := outDs.FromProjectMonitorDataSourceConfigCronCrontab(apiclient.ProjectMonitorDataSourceConfigCronCrontab{
 			CheckinMargin:         data.CheckinMarginMinutes.Get(),
 			FailureIssueThreshold: data.FailureIssueThreshold.Get(),
 			MaxRuntime:            data.MaxRuntimeMinutes.Get(),
 			RecoveryThreshold:     data.RecoveryThreshold.Get(),
 			Timezone:              data.Timezone.Get(),
 			Schedule:              inSchedule.Crontab.Get(),
-		})
+		}); err != nil {
+			diags.AddError("Failed to create cron monitor", err.Error())
+			return nil, diags
+		}
 	case inSchedule.IntervalUnit.IsKnown() && inSchedule.IntervalValue.IsKnown():
 		var intervalValue apiclient.ProjectMonitorDataSourceConfigCronInterval_Schedule_Item
-		intervalValue.FromProjectMonitorDataSourceConfigCronIntervalValue(inSchedule.IntervalValue.Get())
+		if err := intervalValue.FromProjectMonitorDataSourceConfigCronIntervalValue(inSchedule.IntervalValue.Get()); err != nil {
+			diags.AddError("Failed to create cron monitor", err.Error())
+			return nil, diags
+		}
 		var intervalUnit apiclient.ProjectMonitorDataSourceConfigCronInterval_Schedule_Item
-		intervalUnit.FromProjectMonitorDataSourceConfigCronIntervalUnit(apiclient.ProjectMonitorDataSourceConfigCronIntervalUnit(inSchedule.IntervalUnit.Get()))
+		if err := intervalUnit.FromProjectMonitorDataSourceConfigCronIntervalUnit(apiclient.ProjectMonitorDataSourceConfigCronIntervalUnit(inSchedule.IntervalUnit.Get())); err != nil {
+			diags.AddError("Failed to create cron monitor", err.Error())
+			return nil, diags
+		}
 
-		outDs.FromProjectMonitorDataSourceConfigCronInterval(apiclient.ProjectMonitorDataSourceConfigCronInterval{
+		if err := outDs.FromProjectMonitorDataSourceConfigCronInterval(apiclient.ProjectMonitorDataSourceConfigCronInterval{
 			CheckinMargin:         data.CheckinMarginMinutes.Get(),
 			FailureIssueThreshold: data.FailureIssueThreshold.Get(),
 			MaxRuntime:            data.MaxRuntimeMinutes.Get(),
@@ -45,7 +54,10 @@ func (r *CronMonitorResource) getCreateJSONRequestBody(ctx context.Context, data
 				intervalValue,
 				intervalUnit,
 			},
-		})
+		}); err != nil {
+			diags.AddError("Failed to create cron monitor", err.Error())
+			return nil, diags
+		}
 	}
 
 	out := apiclient.ProjectMonitorRequestMonitorCheckInFailure{

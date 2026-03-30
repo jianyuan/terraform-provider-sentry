@@ -60,9 +60,15 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				var outAssignedTo apiclient.OrganizationWorkflowActionFilterConditionAssignedTo
 				outAssignedTo.Comparison.TargetType = apiclient.OrganizationWorkflowActionFilterConditionAssignedToComparisonTargetType(inAssignedTo.TargetType.Get())
 				if inAssignedTo.TargetId.IsKnown() {
-					outAssignedTo.Comparison.TargetIdentifier.FromOrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0(inAssignedTo.TargetId.Get())
+					if err := outAssignedTo.Comparison.TargetIdentifier.FromOrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0(inAssignedTo.TargetId.Get()); err != nil {
+						diags.AddError("Failed to create condition", err.Error())
+						return nil, diags
+					}
 				} else {
-					outAssignedTo.Comparison.TargetIdentifier.FromOrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0("")
+					if err := outAssignedTo.Comparison.TargetIdentifier.FromOrganizationWorkflowActionFilterConditionAssignedToComparisonTargetIdentifier0(""); err != nil {
+						diags.AddError("Failed to create condition", err.Error())
+						return nil, diags
+					}
 				}
 				outAssignedTo.ConditionResult = true
 
