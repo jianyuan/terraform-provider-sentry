@@ -86,14 +86,54 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 				Required:            true,
 				CustomType:          supertypes.Int64Type{},
 			},
-			"trigger_conditions": tfutils.WithEnumSetAttributeStringElements(
-				schema.SetAttribute{
-					MarkdownDescription: "The conditions on which the alert will trigger.",
-					Required:            true,
-					CustomType:          supertypes.NewSetTypeOf[string](ctx),
+			"trigger_conditions": schema.ListNestedAttribute{
+				MarkdownDescription: "The conditions on which the alert will trigger.",
+				Required:            true,
+				CustomType:          supertypes.NewListNestedObjectTypeOf[AlertResourceModelTriggerConditionsItem](ctx),
+				Validators: []validator.List{
+					listvalidator.SizeAtLeast(1),
 				},
-				sentrydata.TriggerConditionTypes,
-			),
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"first_seen_event": schema.SingleNestedAttribute{
+							MarkdownDescription: "A new issue is created.",
+							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemFirstSeenEvent](ctx),
+							Validators: []validator.Object{
+								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event")),
+							},
+							Attributes: map[string]schema.Attribute{},
+						},
+						"issue_resolved_trigger": schema.SingleNestedAttribute{
+							MarkdownDescription: "An issue is resolved.",
+							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemIssueResolvedTrigger](ctx),
+							Validators: []validator.Object{
+								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event")),
+							},
+							Attributes: map[string]schema.Attribute{},
+						},
+						"reappeared_event": schema.SingleNestedAttribute{
+							MarkdownDescription: "An issue escalates.",
+							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemReappearedEvent](ctx),
+							Validators: []validator.Object{
+								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("regression_event")),
+							},
+							Attributes: map[string]schema.Attribute{},
+						},
+						"regression_event": schema.SingleNestedAttribute{
+							MarkdownDescription: "A resolved issue becomes unresolved.",
+							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemRegressionEvent](ctx),
+							Validators: []validator.Object{
+								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event")),
+							},
+							Attributes: map[string]schema.Attribute{},
+						},
+					},
+				},
+			},
 			"action_filters": schema.ListNestedAttribute{
 				MarkdownDescription: "The filters to run before the action will fire and the action(s) to fire.",
 				Required:            true,
@@ -991,15 +1031,34 @@ func (r *AlertResource) ImportState(ctx context.Context, req resource.ImportStat
 }
 
 type AlertResourceModel struct {
-	Id                supertypes.StringValue                                                  `tfsdk:"id"`
-	Organization      supertypes.StringValue                                                  `tfsdk:"organization"`
-	Enabled           supertypes.BoolValue                                                    `tfsdk:"enabled"`
-	Name              supertypes.StringValue                                                  `tfsdk:"name"`
-	Environment       supertypes.StringValue                                                  `tfsdk:"environment"`
-	MonitorIds        supertypes.SetValueOf[string]                                           `tfsdk:"monitor_ids"`
-	FrequencyMinutes  supertypes.Int64Value                                                   `tfsdk:"frequency_minutes"`
-	TriggerConditions supertypes.SetValueOf[string]                                           `tfsdk:"trigger_conditions"`
-	ActionFilters     supertypes.ListNestedObjectValueOf[AlertResourceModelActionFiltersItem] `tfsdk:"action_filters"`
+	Id                supertypes.StringValue                                                      `tfsdk:"id"`
+	Organization      supertypes.StringValue                                                      `tfsdk:"organization"`
+	Enabled           supertypes.BoolValue                                                        `tfsdk:"enabled"`
+	Name              supertypes.StringValue                                                      `tfsdk:"name"`
+	Environment       supertypes.StringValue                                                      `tfsdk:"environment"`
+	MonitorIds        supertypes.SetValueOf[string]                                               `tfsdk:"monitor_ids"`
+	FrequencyMinutes  supertypes.Int64Value                                                       `tfsdk:"frequency_minutes"`
+	TriggerConditions supertypes.ListNestedObjectValueOf[AlertResourceModelTriggerConditionsItem] `tfsdk:"trigger_conditions"`
+	ActionFilters     supertypes.ListNestedObjectValueOf[AlertResourceModelActionFiltersItem]     `tfsdk:"action_filters"`
+}
+
+type AlertResourceModelTriggerConditionsItem struct {
+	FirstSeenEvent       supertypes.SingleNestedObjectValueOf[AlertResourceModelTriggerConditionsItemFirstSeenEvent]       `tfsdk:"first_seen_event"`
+	IssueResolvedTrigger supertypes.SingleNestedObjectValueOf[AlertResourceModelTriggerConditionsItemIssueResolvedTrigger] `tfsdk:"issue_resolved_trigger"`
+	ReappearedEvent      supertypes.SingleNestedObjectValueOf[AlertResourceModelTriggerConditionsItemReappearedEvent]      `tfsdk:"reappeared_event"`
+	RegressionEvent      supertypes.SingleNestedObjectValueOf[AlertResourceModelTriggerConditionsItemRegressionEvent]      `tfsdk:"regression_event"`
+}
+
+type AlertResourceModelTriggerConditionsItemFirstSeenEvent struct {
+}
+
+type AlertResourceModelTriggerConditionsItemIssueResolvedTrigger struct {
+}
+
+type AlertResourceModelTriggerConditionsItemReappearedEvent struct {
+}
+
+type AlertResourceModelTriggerConditionsItemRegressionEvent struct {
 }
 
 type AlertResourceModelActionFiltersItem struct {

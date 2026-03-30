@@ -992,11 +992,40 @@ export const RESOURCES: Array<Resource> = [
       },
       {
         name: "trigger_conditions",
-        type: "set",
+        type: "list_nested",
         description: "The conditions on which the alert will trigger.",
         computedOptionalRequired: "required",
-        elementType: "string",
-        enum: "sentrydata.TriggerConditionTypes",
+        validators: ["listvalidator.SizeAtLeast(1)"],
+        attributes: withExactlyOneAttribute([
+          {
+            name: "first_seen_event",
+            type: "single_nested",
+            description: "A new issue is created.",
+            computedOptionalRequired: "optional",
+            attributes: [],
+          },
+          {
+            name: "issue_resolved_trigger",
+            type: "single_nested",
+            description: "An issue is resolved.",
+            computedOptionalRequired: "optional",
+            attributes: [],
+          },
+          {
+            name: "reappeared_event",
+            type: "single_nested",
+            description: "An issue escalates.",
+            computedOptionalRequired: "optional",
+            attributes: [],
+          },
+          {
+            name: "regression_event",
+            type: "single_nested",
+            description: "A resolved issue becomes unresolved.",
+            computedOptionalRequired: "optional",
+            attributes: [],
+          },
+        ]),
       },
       {
         name: "action_filters",

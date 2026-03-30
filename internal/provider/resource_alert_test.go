@@ -286,10 +286,10 @@ func testAccAlertResourceConfig(teamName, projectName, monitorName, name, opsgen
 			monitor_ids       = [sentry_metric_monitor.test.id]
 
 			trigger_conditions = [
-				"first_seen_event",
-				"issue_resolved_trigger",
-				"reappeared_event",
-				"regression_event",
+				{ first_seen_event = {} },
+				{ issue_resolved_trigger = {} },
+				{ reappeared_event = {} },
+				{ regression_event = {} },
 			]
 
 			action_filters = [

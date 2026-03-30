@@ -26,10 +26,10 @@ resource "sentry_alert" "default" {
   frequency_minutes = 1440
 
   trigger_conditions = [
-    "first_seen_event",
-    "issue_resolved_trigger",
-    "reappeared_event",
-    "regression_event",
+    { first_seen_event = {} },
+    { issue_resolved_trigger = {} },
+    { reappeared_event = {} },
+    { regression_event = {} },
   ]
 
   action_filters = [

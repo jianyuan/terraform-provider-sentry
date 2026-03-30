@@ -44,10 +44,10 @@ resource "sentry_alert" "default" {
   frequency_minutes = 1440
 
   trigger_conditions = [
-    "first_seen_event",
-    "issue_resolved_trigger",
-    "reappeared_event",
-    "regression_event",
+    { first_seen_event = {} },
+    { issue_resolved_trigger = {} },
+    { reappeared_event = {} },
+    { regression_event = {} },
   ]
 
   action_filters = [
@@ -866,7 +866,7 @@ resource "sentry_alert" "default" {
 - `monitor_ids` (Set of String) The IDs of the monitors to create alerts for.
 - `name` (String) The name of this alert.
 - `organization` (String) The organization slug or internal ID to create the alert for.
-- `trigger_conditions` (Set of String) The conditions on which the alert will trigger. Valid values are: `first_seen_event`, `issue_resolved_trigger`, `reappeared_event`, and `regression_event`.
+- `trigger_conditions` (Attributes List) The conditions on which the alert will trigger. (see [below for nested schema](#nestedatt--trigger_conditions))
 
 ### Optional
 
@@ -1202,3 +1202,31 @@ Required:
 Optional:
 
 - `value` (String) A string. Not required when match is `is` or `ns`.
+
+
+
+
+<a id="nestedatt--trigger_conditions"></a>
+### Nested Schema for `trigger_conditions`
+
+Optional:
+
+- `first_seen_event` (Attributes) A new issue is created. (see [below for nested schema](#nestedatt--trigger_conditions--first_seen_event))
+- `issue_resolved_trigger` (Attributes) An issue is resolved. (see [below for nested schema](#nestedatt--trigger_conditions--issue_resolved_trigger))
+- `reappeared_event` (Attributes) An issue escalates. (see [below for nested schema](#nestedatt--trigger_conditions--reappeared_event))
+- `regression_event` (Attributes) A resolved issue becomes unresolved. (see [below for nested schema](#nestedatt--trigger_conditions--regression_event))
+
+<a id="nestedatt--trigger_conditions--first_seen_event"></a>
+### Nested Schema for `trigger_conditions.first_seen_event`
+
+
+<a id="nestedatt--trigger_conditions--issue_resolved_trigger"></a>
+### Nested Schema for `trigger_conditions.issue_resolved_trigger`
+
+
+<a id="nestedatt--trigger_conditions--reappeared_event"></a>
+### Nested Schema for `trigger_conditions.reappeared_event`
+
+
+<a id="nestedatt--trigger_conditions--regression_event"></a>
+### Nested Schema for `trigger_conditions.regression_event`

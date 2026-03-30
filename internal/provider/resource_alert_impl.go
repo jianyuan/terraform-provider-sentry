@@ -551,11 +551,22 @@ func (r *AlertResource) getTriggerConditions(ctx context.Context, data AlertReso
 			return nil, diags
 		}
 
-		outTriggerConditions = append(outTriggerConditions, apiclient.OrganizationWorkflowTriggerCondition{
-			Type:            triggerCondition,
-			Comparison:      outTriggerConditionComparison,
-			ConditionResult: true,
-		})
+		var outTriggerCondition apiclient.OrganizationWorkflowTriggerCondition
+		outTriggerCondition.Comparison = outTriggerConditionComparison
+		outTriggerCondition.ConditionResult = true
+
+		switch {
+		case triggerCondition.FirstSeenEvent.IsKnown():
+			outTriggerCondition.Type = "first_seen_event"
+		case triggerCondition.IssueResolvedTrigger.IsKnown():
+			outTriggerCondition.Type = "issue_resolved_trigger"
+		case triggerCondition.ReappearedEvent.IsKnown():
+			outTriggerCondition.Type = "reappeared_event"
+		case triggerCondition.RegressionEvent.IsKnown():
+			outTriggerCondition.Type = "regression_event"
+		}
+
+		outTriggerConditions = append(outTriggerConditions, outTriggerCondition)
 	}
 
 	return outTriggerConditions, diags
@@ -622,11 +633,27 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 	m.FrequencyMinutes = supertypes.NewInt64Value(data.Config.Frequency)
 	m.MonitorIds = supertypes.NewSetValueOfSlice(ctx, data.DetectorIds)
 
-	var triggerConditions []string
+	var triggerConditions []AlertResourceModelTriggerConditionsItem
 	for _, triggerCondition := range data.Triggers.Conditions {
-		triggerConditions = append(triggerConditions, triggerCondition.Type)
+		outTriggerCondition := AlertResourceModelTriggerConditionsItem{
+			FirstSeenEvent:       supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemFirstSeenEvent](ctx),
+			IssueResolvedTrigger: supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemIssueResolvedTrigger](ctx),
+			ReappearedEvent:      supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemReappearedEvent](ctx),
+			RegressionEvent:      supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemRegressionEvent](ctx),
+		}
+		switch triggerCondition.Type {
+		case "first_seen_event":
+			outTriggerCondition.FirstSeenEvent = supertypes.NewSingleNestedObjectValueOf(ctx, &AlertResourceModelTriggerConditionsItemFirstSeenEvent{})
+		case "issue_resolved_trigger":
+			outTriggerCondition.IssueResolvedTrigger = supertypes.NewSingleNestedObjectValueOf(ctx, &AlertResourceModelTriggerConditionsItemIssueResolvedTrigger{})
+		case "reappeared_event":
+			outTriggerCondition.ReappearedEvent = supertypes.NewSingleNestedObjectValueOf(ctx, &AlertResourceModelTriggerConditionsItemReappearedEvent{})
+		case "regression_event":
+			outTriggerCondition.RegressionEvent = supertypes.NewSingleNestedObjectValueOf(ctx, &AlertResourceModelTriggerConditionsItemRegressionEvent{})
+		}
+		triggerConditions = append(triggerConditions, outTriggerCondition)
 	}
-	m.TriggerConditions = supertypes.NewSetValueOfSlice(ctx, triggerConditions)
+	m.TriggerConditions = supertypes.NewListNestedObjectValueOfValueSlice(ctx, triggerConditions)
 
 	var outActionFilters []AlertResourceModelActionFiltersItem
 	for _, actionFilter := range data.ActionFilters {
