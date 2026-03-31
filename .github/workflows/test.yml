@@ -51,7 +51,7 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version-file: "go.mod"
-          cache: true
+          cache-dependency-path: "go.sum"
       - run: go mod download
       - run: go build -v .
       - name: Run linters
@@ -81,7 +81,7 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version-file: "go.mod"
-          cache: true
+          cache-dependency-path: "go.sum"
       - uses: astral-sh/setup-uv@v7
       - uses: oven-sh/setup-bun@v2
       - uses: hashicorp/setup-terraform@v4
@@ -125,7 +125,7 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version-file: "go.mod"
-          cache: true
+          cache-dependency-path: "go.sum"
       - uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: ${{ matrix.terraform }}
