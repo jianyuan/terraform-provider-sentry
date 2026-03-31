@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/jianyuan/go-utils/ptr"
-	"github.com/jianyuan/go-utils/sliceutils"
+	"github.com/samber/lo"
 )
 
 var _ basetypes.SetValuable = (*StringSet)(nil)
@@ -107,9 +107,9 @@ func StringSetPointerValue(value *string) (StringSet, diag.Diagnostics) {
 	}
 
 	items := strings.Split(*value, ",")
-	elements := sliceutils.Map(func(item string) attr.Value {
+	elements := lo.Map(items, func(item string, _ int) attr.Value {
 		return types.StringValue(strings.TrimSpace(item))
-	}, items)
+	})
 
 	setValue, d := types.SetValue(types.StringType, elements)
 	diags.Append(d...)
