@@ -9,10 +9,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/jianyuan/go-utils/sliceutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
+	"github.com/samber/lo"
 )
 
 var _ datasource.DataSource = &AllProjectsDataSource{}
@@ -165,14 +165,14 @@ type AllProjectsDataSourceModel struct {
 }
 
 func (m *AllProjectsDataSourceModel) Fill(ctx context.Context, data []apiclient.Project) (diags diag.Diagnostics) {
-	m.ProjectSlugs = supertypes.NewSetValueOfSlice(ctx, sliceutils.Map(func(item apiclient.Project) string {
+	m.ProjectSlugs = supertypes.NewSetValueOfSlice(ctx, lo.Map(data, func(item apiclient.Project, _ int) string {
 		return item.Slug
-	}, data)) // Deprecated
-	m.Projects = supertypes.NewSetNestedObjectValueOfValueSlice(ctx, sliceutils.Map(func(item apiclient.Project) AllProjectsDataSourceModelProjectsItem {
+	})) // Deprecated
+	m.Projects = supertypes.NewSetNestedObjectValueOfValueSlice(ctx, lo.Map(data, func(item apiclient.Project, _ int) AllProjectsDataSourceModelProjectsItem {
 		var model AllProjectsDataSourceModelProjectsItem
 		diags.Append(model.Fill(ctx, item)...)
 		return model
-	}, data))
+	}))
 	return
 }
 
@@ -199,11 +199,11 @@ func (m *AllProjectsDataSourceModelProjectsItem) Fill(ctx context.Context, data 
 	m.Color = supertypes.NewStringValue(data.Color)
 	m.DateCreated = supertypes.NewStringValue(data.DateCreated.String())
 	m.Features = supertypes.NewSetValueOfSlice(ctx, data.Features)
-	m.Teams = supertypes.NewSetNestedObjectValueOfValueSlice(ctx, sliceutils.Map(func(item apiclient.Team) AllProjectsDataSourceModelProjectsItemTeamsItem {
+	m.Teams = supertypes.NewSetNestedObjectValueOfValueSlice(ctx, lo.Map(data.Teams, func(item apiclient.Team, _ int) AllProjectsDataSourceModelProjectsItemTeamsItem {
 		var model AllProjectsDataSourceModelProjectsItemTeamsItem
 		diags.Append(model.Fill(ctx, item)...)
 		return model
-	}, data.Teams))
+	}))
 	return
 }
 

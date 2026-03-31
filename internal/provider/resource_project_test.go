@@ -19,7 +19,7 @@ import (
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/go-utils/must"
 	"github.com/jianyuan/go-utils/ptr"
-	"github.com/jianyuan/go-utils/sliceutils"
+	"github.com/samber/lo"
 
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
@@ -155,9 +155,9 @@ func TestAccProjectResource_basic(t *testing.T) {
 		return []statecheck.StateCheck{
 			statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
 			statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
-			statecheck.ExpectKnownValue(rn, tfjsonpath.New("teams"), knownvalue.SetExact(sliceutils.Map(func(teamId int) knownvalue.Check {
+			statecheck.ExpectKnownValue(rn, tfjsonpath.New("teams"), knownvalue.SetExact(lo.Map(data.TeamIds, func(teamId int, _ int) knownvalue.Check {
 				return knownvalue.StringExact(data.AllTeamNames[teamId])
-			}, data.TeamIds))),
+			}))),
 			statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(data.ProjectName)),
 			statecheck.ExpectKnownValue(rn, tfjsonpath.New("slug"), knownvalue.NotNull()),
 			statecheck.ExpectKnownValue(rn, tfjsonpath.New("platform"), knownvalue.StringExact(data.Platform)),
@@ -176,9 +176,9 @@ func TestAccProjectResource_basic(t *testing.T) {
 			statecheck.ExpectKnownValue(rn, tfjsonpath.New("fingerprinting_rules"), knownvalue.StringExact("")),
 			statecheck.ExpectKnownValue(rn, tfjsonpath.New("grouping_enhancements"), knownvalue.StringExact("")),
 			statecheck.ExpectKnownValue(rn, tfjsonpath.New("client_security"), knownvalue.ObjectExact(map[string]knownvalue.Check{
-				"allowed_domains": knownvalue.SetExact(sliceutils.Map(func(v string) knownvalue.Check {
+				"allowed_domains": knownvalue.SetExact(lo.Map(ptr.Value(data.AllowedDomains), func(v string, _ int) knownvalue.Check {
 					return knownvalue.StringExact(v)
-				}, ptr.Value(data.AllowedDomains))),
+				})),
 				"scrape_javascript":     knownvalue.Bool(ptr.Value(data.ScrapeJavascript)),
 				"security_token":        knownvalue.NotNull(),
 				"security_token_header": knownvalue.StringExact(ptr.Value(data.SecurityTokenHeader)),
@@ -189,9 +189,9 @@ func TestAccProjectResource_basic(t *testing.T) {
 					// Computed
 					return statecheck.ExpectKnownValue(rn, tfjsonpath.New("highlight_tags"), knownvalue.NotNull())
 				}
-				return statecheck.ExpectKnownValue(rn, tfjsonpath.New("highlight_tags"), knownvalue.SetExact(sliceutils.Map(func(v string) knownvalue.Check {
+				return statecheck.ExpectKnownValue(rn, tfjsonpath.New("highlight_tags"), knownvalue.SetExact(lo.Map(*data.HighlightTags, func(v string, _ int) knownvalue.Check {
 					return knownvalue.StringExact(v)
-				}, *data.HighlightTags)))
+				})))
 			}(),
 		}
 	}

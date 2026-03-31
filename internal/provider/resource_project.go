@@ -22,8 +22,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/jianyuan/go-utils/sliceutils"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
+	"github.com/samber/lo"
 
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
@@ -60,9 +60,9 @@ func (m *ProjectFilterResourceModel) Fill(ctx context.Context, project apiclient
 		if values == "" {
 			m.BlacklistedIps = types.SetValueMust(types.StringType, []attr.Value{})
 		} else {
-			m.BlacklistedIps = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
+			m.BlacklistedIps = types.SetValueMust(types.StringType, lo.Map(strings.Split(values, "\n"), func(v string, _ int) attr.Value {
 				return types.StringValue(v)
-			}, strings.Split(values, "\n")))
+			}))
 		}
 	} else {
 		diags.Append(diagutils.NewFillError(fmt.Errorf("invalid type for filters:blacklisted_ips: %T", project.Options["filters:blacklisted_ips"])))
@@ -72,9 +72,9 @@ func (m *ProjectFilterResourceModel) Fill(ctx context.Context, project apiclient
 		if values == "" {
 			m.Releases = types.SetValueMust(types.StringType, []attr.Value{})
 		} else {
-			m.Releases = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
+			m.Releases = types.SetValueMust(types.StringType, lo.Map(strings.Split(values, "\n"), func(v string, _ int) attr.Value {
 				return types.StringValue(v)
-			}, strings.Split(values, "\n")))
+			}))
 		}
 	} else {
 		diags.Append(diagutils.NewFillError(fmt.Errorf("invalid type for filters:releases: %T", project.Options["filters:releases"])))
@@ -84,9 +84,9 @@ func (m *ProjectFilterResourceModel) Fill(ctx context.Context, project apiclient
 		if values == "" {
 			m.ErrorMessages = types.SetValueMust(types.StringType, []attr.Value{})
 		} else {
-			m.ErrorMessages = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
+			m.ErrorMessages = types.SetValueMust(types.StringType, lo.Map(strings.Split(values, "\n"), func(v string, _ int) attr.Value {
 				return types.StringValue(v)
-			}, strings.Split(values, "\n")))
+			}))
 		}
 	} else {
 		diags.Append(diagutils.NewFillError(fmt.Errorf("invalid type for filters:error_messages: %T", project.Options["filters:error_messages"])))
@@ -114,9 +114,9 @@ func (m ProjectClientSecurityResourceModel) AttributeTypes() map[string]attr.Typ
 }
 
 func (m *ProjectClientSecurityResourceModel) Fill(ctx context.Context, project apiclient.Project) (diags diag.Diagnostics) {
-	m.AllowedDomains = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
+	m.AllowedDomains = types.SetValueMust(types.StringType, lo.Map(project.AllowedDomains, func(v string, _ int) attr.Value {
 		return types.StringValue(v)
-	}, project.AllowedDomains))
+	}))
 	m.ScrapeJavascript = types.BoolValue(project.ScrapeJavaScript)
 	m.SecurityToken = types.StringValue(project.SecurityToken)
 
@@ -155,9 +155,9 @@ type ProjectResourceModel struct {
 func (m *ProjectResourceModel) Fill(ctx context.Context, project apiclient.Project) (diags diag.Diagnostics) {
 	m.Id = types.StringValue(project.Slug)
 	m.Organization = types.StringValue(project.Organization.Slug)
-	m.Teams = supertypes.NewSetValueOfSlice(ctx, sliceutils.Map(func(item apiclient.Team) string {
+	m.Teams = supertypes.NewSetValueOfSlice(ctx, lo.Map(project.Teams, func(item apiclient.Team, _ int) string {
 		return item.Slug
-	}, project.Teams))
+	}))
 	m.Name = types.StringValue(project.Name)
 	m.Slug = types.StringValue(project.Slug)
 

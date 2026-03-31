@@ -8,11 +8,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/jianyuan/go-utils/sliceutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
+	"github.com/samber/lo"
 )
 
 // Conditions
@@ -1139,9 +1139,9 @@ func (m *IssueAlertActionGitHubCreateTicketModel) Fill(ctx context.Context, acti
 	if action.Labels == nil {
 		m.Labels = types.SetNull(types.StringType)
 	} else {
-		m.Labels = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
+		m.Labels = types.SetValueMust(types.StringType, lo.Map(*action.Labels, func(v string, _ int) attr.Value {
 			return types.StringValue(v)
-		}, *action.Labels))
+		}))
 	}
 	return
 }
@@ -1193,9 +1193,9 @@ func (m *IssueAlertActionGitHubEnterpriseCreateTicketModel) Fill(ctx context.Con
 	if action.Labels == nil {
 		m.Labels = types.SetNull(types.StringType)
 	} else {
-		m.Labels = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
+		m.Labels = types.SetValueMust(types.StringType, lo.Map(*action.Labels, func(v string, _ int) attr.Value {
 			return types.StringValue(v)
-		}, *action.Labels))
+		}))
 	}
 	return
 }
@@ -1440,11 +1440,11 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 			return
 		}
 	} else if !m.ConditionsV2.IsNull() {
-		conditions := sliceutils.Map(func(condition apiclient.ProjectRuleCondition) IssueAlertConditionModel {
+		conditions := lo.Map(alert.Conditions, func(condition apiclient.ProjectRuleCondition, _ int) IssueAlertConditionModel {
 			var conditionModel IssueAlertConditionModel
 			diags.Append(conditionModel.Fill(ctx, condition)...)
 			return conditionModel
-		}, alert.Conditions)
+		})
 
 		if diags.HasError() {
 			return
@@ -1465,11 +1465,11 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 			diags.AddError("Invalid filters", err.Error())
 		}
 	} else if !m.FiltersV2.IsNull() {
-		filters := sliceutils.Map(func(filter apiclient.ProjectRuleFilter) IssueAlertFilterModel {
+		filters := lo.Map(alert.Filters, func(filter apiclient.ProjectRuleFilter, _ int) IssueAlertFilterModel {
 			var filterModel IssueAlertFilterModel
 			diags.Append(filterModel.Fill(ctx, filter)...)
 			return filterModel
-		}, alert.Filters)
+		})
 
 		if diags.HasError() {
 			return
@@ -1490,11 +1490,11 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 			diags.AddError("Invalid actions", err.Error())
 		}
 	} else if !m.ActionsV2.IsNull() {
-		actions := sliceutils.Map(func(action apiclient.ProjectRuleAction) IssueAlertActionModel {
+		actions := lo.Map(alert.Actions, func(action apiclient.ProjectRuleAction, _ int) IssueAlertActionModel {
 			var actionModel IssueAlertActionModel
 			diags.Append(actionModel.Fill(ctx, action)...)
 			return actionModel
-		}, alert.Actions)
+		})
 
 		if diags.HasError() {
 			return

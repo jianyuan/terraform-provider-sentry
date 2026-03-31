@@ -17,10 +17,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
-	"github.com/jianyuan/go-utils/sliceutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
+	"github.com/samber/lo"
 )
 
 type TeamMemberResourceModel struct {
@@ -130,27 +130,22 @@ func (r *TeamMemberResource) getEffectiveTeamRole(ctx context.Context, organizat
 	}
 	member := memberHttpResp.JSON200
 
-	memberOrgRole := sliceutils.Find(func(orgRole apiclient.OrganizationRoleListItem) bool {
+	if memberOrgRole, ok := lo.Find(org.OrgRoleList, func(orgRole apiclient.OrganizationRoleListItem) bool {
 		return orgRole.Id == member.OrgRole
-	}, org.OrgRoleList)
-
-	if hasOrgRoleOverwrite(memberOrgRole, org.OrgRoleList, org.TeamRoleList) {
-		effectiveTeamRole := sliceutils.Find(func(teamRole apiclient.TeamRoleListItem) bool {
+	}); ok && hasOrgRoleOverwrite(&memberOrgRole, org.OrgRoleList, org.TeamRoleList) {
+		if effectiveTeamRole, ok := lo.Find(org.TeamRoleList, func(teamRole apiclient.TeamRoleListItem) bool {
 			return teamRole.Id == memberOrgRole.MinimumTeamRole
-		}, org.TeamRoleList)
-		if effectiveTeamRole != nil {
+		}); ok {
 			return &effectiveTeamRole.Id, nil
 		}
 	}
 
-	teamRoleId := sliceutils.Find(func(teamRole apiclient.TeamRole) bool {
+	if teamRoleId, ok := lo.Find(member.TeamRoles, func(teamRole apiclient.TeamRole) bool {
 		return teamRole.TeamSlug == teamSlug
-	}, member.TeamRoles)
-	if teamRoleId != nil && teamRoleId.Role != nil {
-		teamRole := sliceutils.Find(func(teamRole apiclient.TeamRoleListItem) bool {
+	}); ok && teamRoleId.Role != nil {
+		if teamRole, ok := lo.Find(org.TeamRoleList, func(teamRole apiclient.TeamRoleListItem) bool {
 			return teamRole.Id == *teamRoleId.Role
-		}, org.TeamRoleList)
-		if teamRole != nil {
+		}); ok {
 			return &teamRole.Id, nil
 		}
 	}

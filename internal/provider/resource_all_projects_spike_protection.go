@@ -15,11 +15,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-utils/ptr"
-	"github.com/jianyuan/go-utils/sliceutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
+	"github.com/samber/lo"
 )
 
 type AllProjectsSpikeProtectionResourceModel struct {
@@ -29,9 +29,9 @@ type AllProjectsSpikeProtectionResourceModel struct {
 }
 
 func (m *AllProjectsSpikeProtectionResourceModel) Fill(ctx context.Context, projects []apiclient.Project) (diags diag.Diagnostics) {
-	m.Projects = types.SetValueMust(types.StringType, sliceutils.Map(func(project apiclient.Project) attr.Value {
+	m.Projects = types.SetValueMust(types.StringType, lo.Map(projects, func(project apiclient.Project, _ int) attr.Value {
 		return types.StringValue(project.Slug)
-	}, projects))
+	}))
 	return
 }
 
