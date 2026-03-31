@@ -1,0 +1,84 @@
+package provider
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework/function"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
+)
+
+var _ function.Function = &OpJsonpathFunction{}
+
+func NewOpJsonpathFunction() function.Function {
+	return &OpJsonpathFunction{}
+}
+
+type OpJsonpathFunction struct {
+}
+
+func (f OpJsonpathFunction) Metadata(_ context.Context, req function.MetadataRequest, resp *function.MetadataResponse) {
+	resp.Name = "op_jsonpath"
+}
+
+func (f OpJsonpathFunction) Definition(_ context.Context, _ function.DefinitionRequest, resp *function.DefinitionResponse) {
+	resp.Definition = function.Definition{
+		MarkdownDescription: "The JSONPath comparison operation. The `operator` parameter can be one of `equals`, `not_equal`, `less_than`, `greater_than`, `always`, or `never`. The `operand` must be constructed using either `op_jsonpath_operand_literal` or `op_jsonpath_operand_glob`.",
+		Parameters: []function.Parameter{
+			function.StringParameter{
+				Name:                "operand",
+				MarkdownDescription: "The JSONPath operand. Must be constructed using either `op_jsonpath_operand_literal` or `op_jsonpath_operand_glob`.",
+				CustomType:          jsontypes.NormalizedType{},
+			},
+			function.StringParameter{
+				Name:                "operator",
+				MarkdownDescription: "The comparison operator. Can be one of `equals`, `not_equal`, `less_than`, `greater_than`, `always`, or `never`.",
+			},
+			function.StringParameter{
+				Name:                "value",
+				MarkdownDescription: "The value to compare the JSONPath result against.",
+			},
+		},
+		Return: function.StringReturn{},
+	}
+}
+
+func (f OpJsonpathFunction) Run(ctx context.Context, req function.RunRequest, resp *function.RunResponse) {
+	var operand string
+	var operator string
+	var value string
+
+	resp.Error = function.ConcatFuncErrors(req.Arguments.Get(ctx, &operand, &operator, &value))
+	if resp.Error != nil {
+		return
+	}
+
+	if err := sentrydata.ValidateJSONUptimeAssertionForDefinition("OpJsonPathOperand", []byte(operand)); err != nil {
+		resp.Error = function.NewArgumentFuncError(0, err.Error())
+		return
+	}
+
+	if err := sentrydata.ValidateUptimeAssertionForDefinition("ComparisonType", operator); err != nil {
+		resp.Error = function.NewArgumentFuncError(1, err.Error())
+		return
+	}
+
+	out := map[string]any{
+		"op":      "json_path",
+		"operand": json.RawMessage(operand),
+		"operator": map[string]string{
+			"cmp": operator,
+		},
+		"value": value,
+	}
+
+	jsonOut, err := json.Marshal(out)
+	if err != nil {
+		resp.Error = function.ConcatFuncErrors(resp.Error, function.NewFuncError(fmt.Sprintf("failed to marshal assertion: %s", err.Error())))
+		return
+	}
+
+	resp.Error = function.ConcatFuncErrors(resp.Result.Set(ctx, string(jsonOut)))
+}

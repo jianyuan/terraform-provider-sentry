@@ -79,8 +79,7 @@ func TestAccIssueAlertResource_validation(t *testing.T) {
 					actions_v2 = [{ }]
 				`),
 				ExpectError: acctest.ExpectLiteralError(
-					`Failed to convert action: [{Exactly one action must be set Exactly one action`,
-					`must be set}]`,
+					`Failed to convert action: [{Exactly one action must be set Exactly one action must be set}]`,
 				),
 			},
 			{
@@ -90,8 +89,7 @@ func TestAccIssueAlertResource_validation(t *testing.T) {
 					filters_v2 = [{ }]
 				`),
 				ExpectError: acctest.ExpectLiteralError(
-					`Failed to convert filter: [{Exactly one filter must be set Exactly one filter`,
-					`must be set}]`,
+					`Failed to convert filter: [{Exactly one filter must be set Exactly one filter must be set}]`,
 				),
 			},
 			{
@@ -101,8 +99,7 @@ func TestAccIssueAlertResource_validation(t *testing.T) {
 					conditions_v2 = [{ }]
 				`),
 				ExpectError: acctest.ExpectLiteralError(
-					`Failed to convert condition: [{Exactly one condition must be set Exactly one`,
-					`condition must be set}]`,
+					`Failed to convert condition: [{Exactly one condition must be set Exactly one condition must be set}]`,
 				),
 			},
 			{
@@ -114,8 +111,7 @@ func TestAccIssueAlertResource_validation(t *testing.T) {
 					]
 				`),
 				ExpectError: acctest.ExpectLiteralError(
-					`Attribute "conditions_v2[0].first_seen_event" cannot be specified when`,
-					`"conditions_v2[0].regression_event" is specified`,
+					`Attribute "conditions_v2[0].first_seen_event" cannot be specified when "conditions_v2[0].regression_event" is specified`,
 				),
 			},
 		},
