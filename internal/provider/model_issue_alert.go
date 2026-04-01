@@ -525,22 +525,46 @@ func (m *IssueAlertFilterEventAttributeModel) Fill(ctx context.Context, filter a
 	}
 	m.Match = types.StringValue(match)
 
-	if filter.Value == nil || *filter.Value == "" {
+	if filter.Value == nil {
 		m.Value = types.StringNull()
+	} else if v, err := filter.Value.AsProjectRuleFilterEventAttributeValue0(); err == nil {
+		if v == "" {
+			m.Value = types.StringNull()
+		} else {
+			m.Value = types.StringValue(v)
+		}
+	} else if v, err := filter.Value.AsProjectRuleFilterEventAttributeValue1(); err == nil {
+		if v.String() == "" {
+			m.Value = types.StringNull()
+		} else {
+			m.Value = types.StringValue(v.String())
+		}
 	} else {
-		m.Value = types.StringValue(*filter.Value)
+		diags.AddError("Invalid event attribute value", fmt.Sprintf("Invalid event attribute value %q. Please report this to the provider developers.", filter.Value))
 	}
+
 	return
 }
 
 func (m IssueAlertFilterEventAttributeModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleFilter, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	var v apiclient.ProjectRuleFilter
+
+	var value *apiclient.ProjectRuleFilterEventAttribute_Value
+	if !m.Value.IsNull() && !m.Value.IsUnknown() {
+		value = &apiclient.ProjectRuleFilterEventAttribute_Value{}
+		err := value.FromProjectRuleFilterEventAttributeValue0(m.Value.ValueString())
+		if err != nil {
+			diags.AddError("Failed to convert to API model", err.Error())
+			return nil, diags
+		}
+	}
+
 	err := v.FromProjectRuleFilterEventAttribute(apiclient.ProjectRuleFilterEventAttribute{
 		Name:      m.Name.ValueStringPointer(),
 		Attribute: m.Attribute.ValueString(),
 		Match:     sentrydata.MatchTypeNameToId[m.Match.ValueString()],
-		Value:     m.Value.ValueStringPointer(),
+		Value:     value,
 	})
 	if err != nil {
 		diags.AddError("Failed to convert to API model", err.Error())
