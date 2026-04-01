@@ -96,10 +96,6 @@ func init() {
 					}
 				}
 
-				if httpResp.StatusCode() != http.StatusOK {
-					return fmt.Errorf("[ERROR] Failed to list Opsgenie integrations: %s", httpResp.Status())
-				}
-
 				params.Cursor = sentryclient.ParseNextPaginationCursor(httpResp.HTTPResponse)
 				if params.Cursor == nil {
 					break

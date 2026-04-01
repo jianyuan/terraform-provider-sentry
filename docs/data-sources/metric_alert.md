@@ -3,12 +3,12 @@
 page_title: "sentry_metric_alert Data Source - terraform-provider-sentry"
 subcategory: ""
 description: |-
-  
+  ⚠️ This resource is deprecated.
 ---
 
 # sentry_metric_alert (Data Source)
 
-
+⚠️ This resource is deprecated.
 
 ## Example Usage
 

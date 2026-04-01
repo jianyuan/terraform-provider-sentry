@@ -74,9 +74,10 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 	}, []string{"5m", "15m", "1h", "1d", "1w", "30d"})
 
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Create an Issue Alert Rule for a Project. See the [Sentry Documentation](https://docs.sentry.io/api/alerts/create-an-issue-alert-rule-for-a-project/) for more information.\n\n" +
+		MarkdownDescription: "⚠️ This resource is deprecated. Please migrate to [`sentry_alert`](alert.md) resource instead.\n\nCreate an Issue Alert Rule for a Project. See the [Sentry Documentation](https://docs.sentry.io/api/alerts/create-an-issue-alert-rule-for-a-project/) for more information.\n\n" +
 			"**NOTE:** The `conditions`, `filters`, and `actions` attributes, which are JSON strings, have been deprecated in favor of `conditions_v2`, `filters_v2`, and `actions_v2`, which are lists of objects.\n\n" +
 			"The `*_v2` attributes are available starting from v0.14.2.",
+		DeprecationMessage: "This resource is deprecated. Please migrate to `sentry_alert` resource instead.",
 
 		Version: 2,
 

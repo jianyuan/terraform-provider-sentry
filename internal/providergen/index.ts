@@ -35,13 +35,29 @@ function generateTerraformAttribute({
   if (attribute.sensitive) {
     commonParts.push("Sensitive: true,");
   }
+  if (attribute.default) {
+    commonParts.push(`Default: ${attribute.default},`);
+  }
+
+  function resolveCustomType(original: string) {
+    if (attribute.customType) {
+      return attribute.customType.type;
+    } else {
+      return original;
+    }
+  }
 
   return match(attribute)
     .with({ type: "string" }, () => {
       const parts: string[] = [];
+      if (attribute.enum) {
+        parts.push("tfutils.WithEnumStringAttribute(");
+      }
       parts.push("schema.StringAttribute{");
       parts.push(...commonParts);
-      parts.push("CustomType: supertypes.StringType{},");
+      parts.push(
+        `CustomType: ${resolveCustomType("supertypes.StringType{}")},`,
+      );
       if (attribute.validators) {
         parts.push("Validators: []validator.String{");
         parts.push(...attribute.validators.map((validator) => `${validator},`));
@@ -54,14 +70,23 @@ function generateTerraformAttribute({
         );
         parts.push("},");
       }
-      parts.push("}");
+      if (attribute.enum) {
+        parts.push("},");
+        parts.push(`${attribute.enum},`);
+        parts.push(")");
+      } else {
+        parts.push("}");
+      }
       return parts.join("\n");
     })
     .with({ type: "int" }, (attribute) => {
       const parts: string[] = [];
+      if (attribute.enum) {
+        parts.push("tfutils.WithEnumInt64Attribute(");
+      }
       parts.push("schema.Int64Attribute{");
       parts.push(...commonParts);
-      parts.push("CustomType: supertypes.Int64Type{},");
+      parts.push(`CustomType: ${resolveCustomType("supertypes.Int64Type{}")},`);
       if (attribute.validators) {
         parts.push("Validators: []validator.Int64{");
         parts.push(...attribute.validators.map((validator) => `${validator},`));
@@ -74,14 +99,20 @@ function generateTerraformAttribute({
         );
         parts.push("},");
       }
-      parts.push("}");
+      if (attribute.enum) {
+        parts.push("},");
+        parts.push(`${attribute.enum},`);
+        parts.push(")");
+      } else {
+        parts.push("}");
+      }
       return parts.join("\n");
     })
     .with({ type: "bool" }, () => {
       const parts: string[] = [];
       parts.push("schema.BoolAttribute{");
       parts.push(...commonParts);
-      parts.push("CustomType: supertypes.BoolType{},");
+      parts.push(`CustomType: ${resolveCustomType("supertypes.BoolType{}")},`);
       if (attribute.validators) {
         parts.push("Validators: []validator.Bool{");
         parts.push(...attribute.validators.map((validator) => `${validator},`));
@@ -101,7 +132,9 @@ function generateTerraformAttribute({
       const parts: string[] = [];
       parts.push("schema.ListAttribute{");
       parts.push(...commonParts);
-      parts.push("CustomType: supertypes.NewListTypeOf[string](ctx),");
+      parts.push(
+        `CustomType: ${resolveCustomType("supertypes.NewListTypeOf[string](ctx)")},`,
+      );
       if (attribute.validators) {
         parts.push("Validators: []validator.List{");
         parts.push(...attribute.validators.map((validator) => `${validator},`));
@@ -117,35 +150,22 @@ function generateTerraformAttribute({
       parts.push("}");
       return parts.join("\n");
     })
-    .with({ type: "set", elementType: "string" }, (attribute) => {
+    .with({ type: "list_nested" }, (attribute) => {
       const parts: string[] = [];
-      parts.push("schema.SetAttribute{");
+      parts.push("schema.ListNestedAttribute{");
       parts.push(...commonParts);
-      parts.push("CustomType: supertypes.NewSetTypeOf[string](ctx),");
+      parts.push(
+        `CustomType: ${resolveCustomType(
+          `supertypes.NewListNestedObjectTypeOf[${parent}${camelize(
+            attribute.name,
+          )}Item](ctx)`,
+        )},`,
+      );
       if (attribute.validators) {
-        parts.push("Validators: []validator.Set{");
+        parts.push("Validators: []validator.List{");
         parts.push(...attribute.validators.map((validator) => `${validator},`));
         parts.push("},");
       }
-      if (attribute.planModifiers) {
-        parts.push("PlanModifiers: []planmodifier.Set{");
-        parts.push(
-          ...attribute.planModifiers.map((modifier) => `${modifier},`),
-        );
-        parts.push("},");
-      }
-      parts.push("}");
-      return parts.join("\n");
-    })
-    .with({ type: "set_nested" }, (attribute) => {
-      const parts: string[] = [];
-      parts.push("schema.SetNestedAttribute{");
-      parts.push(...commonParts);
-      parts.push(
-        `CustomType: supertypes.NewSetNestedObjectTypeOf[${parent}${camelize(
-          attribute.name,
-        )}Item](ctx),`,
-      );
       parts.push("NestedObject: schema.NestedAttributeObject{");
       parts.push("Attributes: map[string]schema.Attribute{");
       for (const nestedAttribute of attribute.attributes) {
@@ -161,6 +181,123 @@ function generateTerraformAttribute({
       parts.push("}");
       return parts.join("\n");
     })
+    .with({ type: "set", elementType: "string" }, (attribute) => {
+      const parts: string[] = [];
+      if (attribute.enum) {
+        parts.push("tfutils.WithEnumSetAttributeStringElements(");
+      }
+      parts.push("schema.SetAttribute{");
+      parts.push(...commonParts);
+      parts.push(
+        `CustomType: ${resolveCustomType(
+          "supertypes.NewSetTypeOf[string](ctx)",
+        )},`,
+      );
+      if (attribute.validators) {
+        parts.push("Validators: []validator.Set{");
+        parts.push(...attribute.validators.map((validator) => `${validator},`));
+        parts.push("},");
+      }
+      if (attribute.planModifiers) {
+        parts.push("PlanModifiers: []planmodifier.Set{");
+        parts.push(
+          ...attribute.planModifiers.map((modifier) => `${modifier},`),
+        );
+        parts.push("},");
+      }
+      if (attribute.enum) {
+        parts.push("},");
+        parts.push(`${attribute.enum},`);
+        parts.push(")");
+      } else {
+        parts.push("}");
+      }
+      return parts.join("\n");
+    })
+    .with({ type: "set_nested" }, (attribute) => {
+      const parts: string[] = [];
+      parts.push("schema.SetNestedAttribute{");
+      parts.push(...commonParts);
+      parts.push(
+        `CustomType: ${resolveCustomType(
+          `supertypes.NewSetNestedObjectTypeOf[${parent}${camelize(
+            attribute.name,
+          )}Item](ctx)`,
+        )},`,
+      );
+      if (attribute.validators) {
+        parts.push("Validators: []validator.Set{");
+        parts.push(...attribute.validators.map((validator) => `${validator},`));
+        parts.push("},");
+      }
+      parts.push("NestedObject: schema.NestedAttributeObject{");
+      parts.push("Attributes: map[string]schema.Attribute{");
+      for (const nestedAttribute of attribute.attributes) {
+        parts.push(
+          `"${nestedAttribute.name}": ${generateTerraformAttribute({
+            parent: `${parent}${camelize(attribute.name)}Item`,
+            attribute: nestedAttribute,
+          })},`,
+        );
+      }
+      parts.push("},");
+      parts.push("},");
+      parts.push("}");
+      return parts.join("\n");
+    })
+    .with({ type: "single_nested" }, (attribute) => {
+      const parts: string[] = [];
+      parts.push("schema.SingleNestedAttribute{");
+      parts.push(...commonParts);
+      parts.push(
+        `CustomType: ${resolveCustomType(
+          `supertypes.NewSingleNestedObjectTypeOf[${parent}${camelize(
+            attribute.name,
+          )}](ctx)`,
+        )},`,
+      );
+      if (attribute.validators) {
+        parts.push("Validators: []validator.Object{");
+        parts.push(...attribute.validators.map((validator) => `${validator},`));
+        parts.push("},");
+      }
+      parts.push("Attributes: map[string]schema.Attribute{");
+      for (const nestedAttribute of attribute.attributes) {
+        parts.push(
+          `"${nestedAttribute.name}": ${generateTerraformAttribute({
+            parent: `${parent}${camelize(attribute.name)}`,
+            attribute: nestedAttribute,
+          })},`,
+        );
+      }
+      parts.push("},");
+      parts.push("}");
+      return parts.join("\n");
+    })
+    .with({ type: "map" }, (attribute) => {
+      const parts: string[] = [];
+      parts.push("schema.MapAttribute{");
+      parts.push(...commonParts);
+      parts.push(
+        `CustomType: ${resolveCustomType(
+          "supertypes.NewMapTypeOf[string](ctx)",
+        )},`,
+      );
+      if (attribute.validators) {
+        parts.push("Validators: []validator.Map{");
+        parts.push(...attribute.validators.map((validator) => `${validator},`));
+        parts.push("},");
+      }
+      if (attribute.planModifiers) {
+        parts.push("PlanModifiers: []planmodifier.Map{");
+        parts.push(
+          ...attribute.planModifiers.map((modifier) => `${modifier},`),
+        );
+        parts.push("},");
+      }
+      parts.push("}");
+      return parts.join("\n");
+    })
     .exhaustive();
 }
 
@@ -172,12 +309,23 @@ function generateTerraformValueType({
   attribute: Attribute;
 }) {
   return match(attribute)
+    .with(
+      { customType: { value: P.any } },
+      (attribute) => attribute.customType.value,
+    )
     .with({ type: "string" }, () => "supertypes.StringValue")
     .with({ type: "int" }, () => "supertypes.Int64Value")
     .with({ type: "bool" }, () => "supertypes.BoolValue")
     .with(
       { type: "list", elementType: "string" },
       () => "supertypes.ListValueOf[string]",
+    )
+    .with(
+      { type: "list_nested" },
+      () =>
+        `supertypes.ListNestedObjectValueOf[${parent}${camelize(
+          attribute.name,
+        )}Item]`,
     )
     .with(
       { type: "set", elementType: "string" },
@@ -190,6 +338,14 @@ function generateTerraformValueType({
           attribute.name,
         )}Item]`,
     )
+    .with(
+      { type: "single_nested" },
+      () =>
+        `supertypes.SingleNestedObjectValueOf[${parent}${camelize(
+          attribute.name,
+        )}]`,
+    )
+    .with({ type: "map" }, () => "supertypes.MapValueOf[string]")
     .exhaustive();
 }
 
@@ -265,6 +421,15 @@ function generatePrimitiveToTerraform({
         `${destVarName} = supertypes.NewListValueOfSlice(ctx, ${srcVarName})`,
     )
     .with(
+      { type: "list_nested" },
+      (attribute) =>
+        `${destVarName} = supertypes.NewListNestedObjectValueOfValueSlice(ctx, lo.Map(${srcVarName}, func(item apiclient.${attribute.model}, _ int) ${name}${camelize(attribute.name)}Item {
+          var model ${name}${camelize(attribute.name)}Item
+          diags.Append(model.Fill(ctx, item)...)
+          return model
+        }))`,
+    )
+    .with(
       { type: "set", elementType: "string" },
       () =>
         `${destVarName} = supertypes.NewSetValueOfSlice(ctx, ${srcVarName})`,
@@ -278,6 +443,8 @@ function generatePrimitiveToTerraform({
           return model
         }))`,
     )
+    .with({ type: "single_nested" }, (attribute) => "TODO")
+    .with({ type: "map" }, (attribute) => "TODO")
     .exhaustive();
 }
 
@@ -321,11 +488,19 @@ function generateModel({
 
     extras.push(
       ...match(attribute)
-        .with({ type: "set_nested" }, (attribute) => [
+        .with({ type: "list_nested" }, { type: "set_nested" }, (attribute) => [
           generateModel({
             name: `${name}${camelize(attribute.name)}Item`,
             attributes: attribute.attributes,
             srcModel: `apiclient.${attribute.model}`,
+            generateFillers,
+          }),
+        ])
+        .with({ type: "single_nested" }, (attribute) => [
+          generateModel({
+            name: `${name}${camelize(attribute.name)}`,
+            attributes: attribute.attributes,
+            srcModel: `apiclient.${attribute.model}`, // TODO: attribute.model unused
             generateFillers,
           }),
         ])
@@ -513,6 +688,8 @@ package provider
 import (
   "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
   supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
+  fint64validator "github.com/orange-cloudavenue/terraform-plugin-framework-validators/int64validator"
+  fstringvalidator "github.com/orange-cloudavenue/terraform-plugin-framework-validators/stringvalidator"
 )
 
 var _ datasource.DataSource = &${dataSourceName}{}
@@ -560,6 +737,8 @@ function generateResourceModel({ resource }: { resource: Resource }) {
   return generateModel({
     name: modelName,
     attributes: resource.attributes,
+    srcModel: `apiclient.${resource.api.model}`,
+    generateFillers: resource.generate?.modelFillers ?? false,
   });
 }
 
@@ -607,7 +786,7 @@ function generateResource({ resource }: { resource: Resource }) {
       }),
     );
   }
-  createRequestParams.push("body");
+  createRequestParams.push("*body");
 
   const readRequestParams = ["ctx"];
   if (resource.api.readRequestAttributes) {
@@ -651,7 +830,7 @@ function generateResource({ resource }: { resource: Resource }) {
       }),
     );
   }
-  updateRequestParams.push("body");
+  updateRequestParams.push("*body");
 
   const deleteRequestParams = ["ctx"];
   if (resource.api.deleteRequestAttributes) {
@@ -680,6 +859,8 @@ package provider
 import (
   "github.com/hashicorp/terraform-plugin-framework/resource/schema"
   supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
+  fint64validator "github.com/orange-cloudavenue/terraform-plugin-framework-validators/int64validator"
+  fstringvalidator "github.com/orange-cloudavenue/terraform-plugin-framework-validators/stringvalidator"
 )
 
 var _ resource.Resource = &${resourceName}{}
@@ -722,23 +903,26 @@ func (r *${resourceName}) Create(ctx context.Context, req resource.CreateRequest
   resp.Diagnostics.Append(diags...)
   if resp.Diagnostics.HasError() {
     return
+  } else if body == nil {
+    resp.Diagnostics.AddError("Provider Error", "getCreateJSONRequestBody returned a nil body")
+    return
   }
 
-  httpResp, err := r.client.${
+  httpResp, err := r.apiClient.${
     resource.api.createMethod
   }WithResponse(${createRequestParams.join(",")})
   if err != nil {
     resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create, got error: %s", err))
     return
-  } else if httpResp.StatusCode() != http.StatusOK {
+  } else if httpResp.StatusCode() != http.StatusCreated {
     resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create, got status code %d: %s", httpResp.StatusCode(), string(httpResp.Body)))
     return
-  } else if httpResp.JSON200 == nil {
+  } else if httpResp.JSON201 == nil {
     resp.Diagnostics.AddError("Client Error", "Unable to create, got empty response body")
     return
   }
 
-  resp.Diagnostics.Append(data.Fill(ctx, *httpResp.JSON200)...)
+  resp.Diagnostics.Append(data.Fill(ctx, *httpResp.JSON201)...)
   if resp.Diagnostics.HasError() {
     return
   }
@@ -767,7 +951,7 @@ func (r *${resourceName}) Read(ctx context.Context, req resource.ReadRequest, re
             }
 
             for {
-              httpResp, err := r.client.${
+              httpResp, err := r.apiClient.${
                 api.readMethod
               }WithResponse(${readRequestParams.join(",")})
               if err != nil {
@@ -813,7 +997,7 @@ func (r *${resourceName}) Read(ctx context.Context, req resource.ReadRequest, re
     )
     .otherwise(
       (api) => dedent`
-        httpResp, err := r.client.${
+        httpResp, err := r.apiClient.${
           api.readMethod
         }WithResponse(${readRequestParams.join(",")})
         if err != nil {
@@ -861,7 +1045,7 @@ func (r *${resourceName}) Update(ctx context.Context, req resource.UpdateRequest
         return
       }
 
-      httpResp, err := r.client.${
+      httpResp, err := r.apiClient.${
         resource.api.updateMethod
       }WithResponse(${updateRequestParams.join(",")})
       if err != nil {
@@ -899,7 +1083,7 @@ func (r *${resourceName}) Delete(ctx context.Context, req resource.DeleteRequest
         return
       }
 
-      httpResp, err := r.client.${
+      httpResp, err := r.apiClient.${
         resource.api.deleteMethod
       }WithResponse(${deleteRequestParams.join(",")})
       if err != nil {
@@ -907,7 +1091,7 @@ func (r *${resourceName}) Delete(ctx context.Context, req resource.DeleteRequest
         return
       } else if httpResp.StatusCode() == http.StatusNotFound {
         return
-      } else if httpResp.StatusCode() != http.StatusOK {
+      } else if httpResp.StatusCode() != http.StatusNoContent {
         resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete, got status code %d: %s", httpResp.StatusCode(), string(httpResp.Body)))
         return
       }

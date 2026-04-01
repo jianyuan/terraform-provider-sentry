@@ -21,6 +21,7 @@ require (
 	github.com/oapi-codegen/runtime v1.3.0
 	github.com/orange-cloudavenue/terraform-plugin-framework-superschema v1.11.0
 	github.com/orange-cloudavenue/terraform-plugin-framework-supertypes v1.2.0
+	github.com/orange-cloudavenue/terraform-plugin-framework-validators v1.16.0
 	github.com/peterhellberg/link v1.2.0
 	github.com/samber/lo v1.53.0
 	golang.org/x/sync v0.20.0

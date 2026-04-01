@@ -3,10 +3,13 @@
 page_title: "sentry_metric_alert Resource - terraform-provider-sentry"
 subcategory: ""
 description: |-
+  ⚠️ This resource is deprecated. Please migrate to sentry_metric_monitor metric_monitor.md and sentry_alert alert.md resources instead.
   Sentry Metric Alert resource.
 ---
 
 # sentry_metric_alert (Resource)
+
+⚠️ This resource is deprecated. Please migrate to [`sentry_metric_monitor`](metric_monitor.md) and [`sentry_alert`](alert.md) resources instead.
 
 Sentry Metric Alert resource.
 

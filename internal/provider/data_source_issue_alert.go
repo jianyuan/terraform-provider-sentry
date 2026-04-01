@@ -35,7 +35,8 @@ func (d *IssueAlertDataSource) Schema(ctx context.Context, req datasource.Schema
 	}
 
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Sentry Issue Alert data source. See the [Sentry documentation](https://docs.sentry.io/api/alerts/retrieve-an-issue-alert-rule-for-a-project/) for more information.",
+		MarkdownDescription: "⚠️ This resource is deprecated.\n\nSentry Issue Alert data source. See the [Sentry documentation](https://docs.sentry.io/api/alerts/retrieve-an-issue-alert-rule-for-a-project/) for more information.",
+		DeprecationMessage:  "This resource is deprecated.",
 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
