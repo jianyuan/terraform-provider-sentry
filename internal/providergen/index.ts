@@ -1027,7 +1027,7 @@ async function main() {
       const code = generateDataSource({ dataSource });
       return writeAndFormatGoFile(
         new URL(
-          `../provider/data_source_${dataSource.name}.go`,
+          `../provider/data_source_${dataSource.name}_gen.go`,
           import.meta.url,
         ),
         code,
@@ -1040,20 +1040,23 @@ async function main() {
 
       const code = generateResource({ resource });
       return writeAndFormatGoFile(
-        new URL(`../provider/resource_${resource.name}.go`, import.meta.url),
+        new URL(
+          `../provider/resource_${resource.name}_gen.go`,
+          import.meta.url,
+        ),
         code,
       );
     }),
-    async () => {
+    (() => {
       const code = generateProvider({
         resources: RESOURCES,
         dataSources: DATASOURCES,
       });
-      await writeAndFormatGoFile(
+      return writeAndFormatGoFile(
         new URL(`../provider/provider_gen.go`, import.meta.url),
         code,
       );
-    },
+    })(),
   ]);
 }
 
