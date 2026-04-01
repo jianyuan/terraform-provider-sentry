@@ -5,13 +5,13 @@
   "private": true,
   "devDependencies": {
     "@types/bun": "latest",
-    "prettier": "^3.7.4"
+    "prettier": "^3.8.1"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "dependencies": {
-    "dedent": "^1.7.1",
+    "dedent": "^1.7.2",
     "inflection": "^3.0.2",
     "ts-pattern": "^5.9.0"
   }
