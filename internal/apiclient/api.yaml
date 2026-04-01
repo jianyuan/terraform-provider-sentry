@@ -1747,7 +1747,10 @@ components:
         match:
           type: string
         value:
-          type: string
+          oneOf:
+            - type: string
+            - type: integer
+              x-go-type: json.Number
     ProjectRuleFilterTaggedEvent:
       type: object
       required:

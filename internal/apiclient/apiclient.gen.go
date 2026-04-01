@@ -1060,15 +1060,26 @@ type ProjectRuleFilterAssignedTo_TargetIdentifier struct {
 
 // ProjectRuleFilterEventAttribute defines model for ProjectRuleFilterEventAttribute.
 type ProjectRuleFilterEventAttribute struct {
-	Attribute string                            `json:"attribute"`
-	Id        ProjectRuleFilterEventAttributeId `json:"id"`
-	Match     string                            `json:"match"`
-	Name      *string                           `json:"name,omitempty"`
-	Value     *string                           `json:"value,omitempty"`
+	Attribute string                                 `json:"attribute"`
+	Id        ProjectRuleFilterEventAttributeId      `json:"id"`
+	Match     string                                 `json:"match"`
+	Name      *string                                `json:"name,omitempty"`
+	Value     *ProjectRuleFilterEventAttribute_Value `json:"value,omitempty"`
 }
 
 // ProjectRuleFilterEventAttributeId defines model for ProjectRuleFilterEventAttribute.Id.
 type ProjectRuleFilterEventAttributeId string
+
+// ProjectRuleFilterEventAttributeValue0 defines model for .
+type ProjectRuleFilterEventAttributeValue0 = string
+
+// ProjectRuleFilterEventAttributeValue1 defines model for .
+type ProjectRuleFilterEventAttributeValue1 = json.Number
+
+// ProjectRuleFilterEventAttribute_Value defines model for ProjectRuleFilterEventAttribute.Value.
+type ProjectRuleFilterEventAttribute_Value struct {
+	union json.RawMessage
+}
 
 // ProjectRuleFilterIssueCategory defines model for ProjectRuleFilterIssueCategory.
 type ProjectRuleFilterIssueCategory struct {
@@ -2757,6 +2768,68 @@ func (t ProjectRuleFilterAssignedTo_TargetIdentifier) MarshalJSON() ([]byte, err
 }
 
 func (t *ProjectRuleFilterAssignedTo_TargetIdentifier) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsProjectRuleFilterEventAttributeValue0 returns the union data inside the ProjectRuleFilterEventAttribute_Value as a ProjectRuleFilterEventAttributeValue0
+func (t ProjectRuleFilterEventAttribute_Value) AsProjectRuleFilterEventAttributeValue0() (ProjectRuleFilterEventAttributeValue0, error) {
+	var body ProjectRuleFilterEventAttributeValue0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectRuleFilterEventAttributeValue0 overwrites any union data inside the ProjectRuleFilterEventAttribute_Value as the provided ProjectRuleFilterEventAttributeValue0
+func (t *ProjectRuleFilterEventAttribute_Value) FromProjectRuleFilterEventAttributeValue0(v ProjectRuleFilterEventAttributeValue0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectRuleFilterEventAttributeValue0 performs a merge with any union data inside the ProjectRuleFilterEventAttribute_Value, using the provided ProjectRuleFilterEventAttributeValue0
+func (t *ProjectRuleFilterEventAttribute_Value) MergeProjectRuleFilterEventAttributeValue0(v ProjectRuleFilterEventAttributeValue0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsProjectRuleFilterEventAttributeValue1 returns the union data inside the ProjectRuleFilterEventAttribute_Value as a ProjectRuleFilterEventAttributeValue1
+func (t ProjectRuleFilterEventAttribute_Value) AsProjectRuleFilterEventAttributeValue1() (ProjectRuleFilterEventAttributeValue1, error) {
+	var body ProjectRuleFilterEventAttributeValue1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromProjectRuleFilterEventAttributeValue1 overwrites any union data inside the ProjectRuleFilterEventAttribute_Value as the provided ProjectRuleFilterEventAttributeValue1
+func (t *ProjectRuleFilterEventAttribute_Value) FromProjectRuleFilterEventAttributeValue1(v ProjectRuleFilterEventAttributeValue1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeProjectRuleFilterEventAttributeValue1 performs a merge with any union data inside the ProjectRuleFilterEventAttribute_Value, using the provided ProjectRuleFilterEventAttributeValue1
+func (t *ProjectRuleFilterEventAttribute_Value) MergeProjectRuleFilterEventAttributeValue1(v ProjectRuleFilterEventAttributeValue1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ProjectRuleFilterEventAttribute_Value) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ProjectRuleFilterEventAttribute_Value) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
