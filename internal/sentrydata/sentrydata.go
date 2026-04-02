@@ -323,6 +323,7 @@ var Platforms = []string{
 	"python-fastapi",
 	"python-flask",
 	"python-gcpfunctions",
+	"python-litestar",
 	"python-pylons",
 	"python-pymongo",
 	"python-pyramid",
