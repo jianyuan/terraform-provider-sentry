@@ -96,5 +96,9 @@ func (m *OrganizationDataSourceModel) Fill(ctx context.Context, data apiclient.O
 	m.InternalId = supertypes.NewStringValue(data.Id)
 	m.Name = supertypes.NewStringValue(data.Name)
 	m.Id = supertypes.NewStringValue(data.Slug) // Deprecated
+
+	if m, ok := any(m).(customFiller[apiclient.Organization]); ok {
+		diags.Append(m.fill(ctx, data)...)
+	}
 	return
 }
