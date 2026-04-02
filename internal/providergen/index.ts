@@ -443,9 +443,7 @@ function generatePrimitiveToTerraform({
           return model
         }))`,
     )
-    .with({ type: "single_nested" }, (attribute) => "TODO")
-    .with({ type: "map" }, (attribute) => "TODO")
-    .exhaustive();
+    .otherwise(({ type }) => `// TODO: generate ${type}`);
 }
 
 function generateModel({
