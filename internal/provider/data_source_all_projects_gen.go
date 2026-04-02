@@ -173,6 +173,10 @@ func (m *AllProjectsDataSourceModel) Fill(ctx context.Context, data []apiclient.
 		diags.Append(model.Fill(ctx, item)...)
 		return model
 	}))
+
+	if m, ok := any(m).(customFiller[[]apiclient.Project]); ok {
+		diags.Append(m.fill(ctx, data)...)
+	}
 	return
 }
 
@@ -204,6 +208,10 @@ func (m *AllProjectsDataSourceModelProjectsItem) Fill(ctx context.Context, data 
 		diags.Append(model.Fill(ctx, item)...)
 		return model
 	}))
+
+	if m, ok := any(m).(customFiller[apiclient.Project]); ok {
+		diags.Append(m.fill(ctx, data)...)
+	}
 	return
 }
 
@@ -217,5 +225,9 @@ func (m *AllProjectsDataSourceModelProjectsItemTeamsItem) Fill(ctx context.Conte
 	m.InternalId = supertypes.NewStringValue(data.Id)
 	m.Name = supertypes.NewStringValue(data.Name)
 	m.Slug = supertypes.NewStringValue(data.Slug)
+
+	if m, ok := any(m).(customFiller[apiclient.Team]); ok {
+		diags.Append(m.fill(ctx, data)...)
+	}
 	return
 }

@@ -180,6 +180,10 @@ func (m *ProjectDataSourceModel) Fill(ctx context.Context, data apiclient.Projec
 		return model
 	}))
 	m.Id = supertypes.NewStringValue(data.Slug) // Deprecated
+
+	if m, ok := any(m).(customFiller[apiclient.Project]); ok {
+		diags.Append(m.fill(ctx, data)...)
+	}
 	return
 }
 
@@ -193,5 +197,9 @@ func (m *ProjectDataSourceModelTeamsItem) Fill(ctx context.Context, data apiclie
 	m.InternalId = supertypes.NewStringValue(data.Id)
 	m.Name = supertypes.NewStringValue(data.Name)
 	m.Slug = supertypes.NewStringValue(data.Slug)
+
+	if m, ok := any(m).(customFiller[apiclient.Team]); ok {
+		diags.Append(m.fill(ctx, data)...)
+	}
 	return
 }

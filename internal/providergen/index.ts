@@ -491,7 +491,7 @@ function generateModel({
             name: `${name}${camelize(attribute.name)}Item`,
             attributes: attribute.attributes,
             srcModel: `apiclient.${attribute.model}`,
-            generateFillers,
+            generateFillers: generateFillers && !attribute.skipFill,
           }),
         ])
         .with({ type: "single_nested" }, (attribute) => [
@@ -499,7 +499,7 @@ function generateModel({
             name: `${name}${camelize(attribute.name)}`,
             attributes: attribute.attributes,
             srcModel: `apiclient.${attribute.model}`, // TODO: attribute.model unused
-            generateFillers,
+            generateFillers: generateFillers && !attribute.skipFill,
           }),
         ])
         .otherwise(() => []),
@@ -516,6 +516,10 @@ ${
     ? dedent`
       func (m *${name}) Fill(ctx context.Context, data ${srcModel}) (diags diag.Diagnostics) {
         ${fillerLines.join("\n")}
+
+        if m, ok := any(m).(customFiller[${srcModel}]); ok {
+          diags.Append(m.fill(ctx, data)...)
+        }
         return
       }
     `
