@@ -168,14 +168,14 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										Attributes: map[string]schema.Attribute{
 											"time": tfutils.WithEnumStringAttribute(
 												schema.StringAttribute{
-													MarkdownDescription: "TODO",
+													MarkdownDescription: "The unit of time for the age comparison.",
 													Required:            true,
 													CustomType:          supertypes.StringType{},
 												},
 												[]string{"minute", "hour", "day", "week"},
 											),
 											"value": schema.Int64Attribute{
-												MarkdownDescription: "TODO",
+												MarkdownDescription: "The value of the age comparison.",
 												Required:            true,
 												CustomType:          supertypes.Int64Type{},
 												Validators: []validator.Int64{
@@ -184,7 +184,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 											},
 											"comparison_type": tfutils.WithEnumStringAttribute(
 												schema.StringAttribute{
-													MarkdownDescription: "",
+													MarkdownDescription: "The type of comparison to perform.",
 													Required:            true,
 													CustomType:          supertypes.StringType{},
 												},

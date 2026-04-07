@@ -2841,6 +2841,9 @@ components:
         - comparison
         - conditionResult
       properties:
+        id:
+          type: integer
+          x-go-type: json.Number
         type:
           type: string
         comparison:
@@ -2974,11 +2977,15 @@ components:
           items:
             type: string
         triggers:
-          $ref: "#/components/schemas/OrganizationWorkflow_Trigger"
+          oneOf:
+            - $ref: "#/components/schemas/OrganizationWorkflow_Trigger"
+            - {}
         actionFilters:
-          type: array
-          items:
-            $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter"
+          oneOf:
+            - type: array
+              items:
+                $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter"
+            - {}
     OrganizationWorkflow_Config:
       type: object
       required:

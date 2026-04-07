@@ -1531,14 +1531,33 @@ type OrganizationRoleListItem struct {
 
 // OrganizationWorkflow defines model for OrganizationWorkflow.
 type OrganizationWorkflow struct {
-	ActionFilters []OrganizationWorkflowActionFilter `json:"actionFilters"`
+	ActionFilters OrganizationWorkflow_ActionFilters `json:"actionFilters"`
 	Config        OrganizationWorkflowConfig         `json:"config"`
 	DetectorIds   []string                           `json:"detectorIds"`
 	Enabled       bool                               `json:"enabled"`
 	Environment   string                             `json:"environment"`
 	Id            string                             `json:"id"`
 	Name          string                             `json:"name"`
-	Triggers      OrganizationWorkflowTrigger        `json:"triggers"`
+	Triggers      OrganizationWorkflow_Triggers      `json:"triggers"`
+}
+
+// OrganizationWorkflowActionFilters0 defines model for .
+type OrganizationWorkflowActionFilters0 = []OrganizationWorkflowActionFilter
+
+// OrganizationWorkflowActionFilters1 defines model for .
+type OrganizationWorkflowActionFilters1 = interface{}
+
+// OrganizationWorkflow_ActionFilters defines model for OrganizationWorkflow.ActionFilters.
+type OrganizationWorkflow_ActionFilters struct {
+	union json.RawMessage
+}
+
+// OrganizationWorkflowTriggers1 defines model for .
+type OrganizationWorkflowTriggers1 = interface{}
+
+// OrganizationWorkflow_Triggers defines model for OrganizationWorkflow.Triggers.
+type OrganizationWorkflow_Triggers struct {
+	union json.RawMessage
 }
 
 // OrganizationWorkflowRequest defines model for OrganizationWorkflowRequest.
@@ -2192,6 +2211,7 @@ type ProjectMonitorConditionGroupLogicType string
 type ProjectMonitorConditionGroupCondition struct {
 	Comparison      ProjectMonitorConditionGroupCondition_Comparison `json:"comparison"`
 	ConditionResult int64                                            `json:"conditionResult"`
+	Id              *json.Number                                     `json:"id,omitempty"`
 	Type            string                                           `json:"type"`
 }
 
@@ -3344,6 +3364,130 @@ func (t *OrganizationIntegration) UnmarshalJSON(b []byte) error {
 		}
 	}
 
+	return err
+}
+
+// AsOrganizationWorkflowActionFilters0 returns the union data inside the OrganizationWorkflow_ActionFilters as a OrganizationWorkflowActionFilters0
+func (t OrganizationWorkflow_ActionFilters) AsOrganizationWorkflowActionFilters0() (OrganizationWorkflowActionFilters0, error) {
+	var body OrganizationWorkflowActionFilters0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilters0 overwrites any union data inside the OrganizationWorkflow_ActionFilters as the provided OrganizationWorkflowActionFilters0
+func (t *OrganizationWorkflow_ActionFilters) FromOrganizationWorkflowActionFilters0(v OrganizationWorkflowActionFilters0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilters0 performs a merge with any union data inside the OrganizationWorkflow_ActionFilters, using the provided OrganizationWorkflowActionFilters0
+func (t *OrganizationWorkflow_ActionFilters) MergeOrganizationWorkflowActionFilters0(v OrganizationWorkflowActionFilters0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowActionFilters1 returns the union data inside the OrganizationWorkflow_ActionFilters as a OrganizationWorkflowActionFilters1
+func (t OrganizationWorkflow_ActionFilters) AsOrganizationWorkflowActionFilters1() (OrganizationWorkflowActionFilters1, error) {
+	var body OrganizationWorkflowActionFilters1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilters1 overwrites any union data inside the OrganizationWorkflow_ActionFilters as the provided OrganizationWorkflowActionFilters1
+func (t *OrganizationWorkflow_ActionFilters) FromOrganizationWorkflowActionFilters1(v OrganizationWorkflowActionFilters1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilters1 performs a merge with any union data inside the OrganizationWorkflow_ActionFilters, using the provided OrganizationWorkflowActionFilters1
+func (t *OrganizationWorkflow_ActionFilters) MergeOrganizationWorkflowActionFilters1(v OrganizationWorkflowActionFilters1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t OrganizationWorkflow_ActionFilters) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *OrganizationWorkflow_ActionFilters) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsOrganizationWorkflowTrigger returns the union data inside the OrganizationWorkflow_Triggers as a OrganizationWorkflowTrigger
+func (t OrganizationWorkflow_Triggers) AsOrganizationWorkflowTrigger() (OrganizationWorkflowTrigger, error) {
+	var body OrganizationWorkflowTrigger
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowTrigger overwrites any union data inside the OrganizationWorkflow_Triggers as the provided OrganizationWorkflowTrigger
+func (t *OrganizationWorkflow_Triggers) FromOrganizationWorkflowTrigger(v OrganizationWorkflowTrigger) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowTrigger performs a merge with any union data inside the OrganizationWorkflow_Triggers, using the provided OrganizationWorkflowTrigger
+func (t *OrganizationWorkflow_Triggers) MergeOrganizationWorkflowTrigger(v OrganizationWorkflowTrigger) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowTriggers1 returns the union data inside the OrganizationWorkflow_Triggers as a OrganizationWorkflowTriggers1
+func (t OrganizationWorkflow_Triggers) AsOrganizationWorkflowTriggers1() (OrganizationWorkflowTriggers1, error) {
+	var body OrganizationWorkflowTriggers1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowTriggers1 overwrites any union data inside the OrganizationWorkflow_Triggers as the provided OrganizationWorkflowTriggers1
+func (t *OrganizationWorkflow_Triggers) FromOrganizationWorkflowTriggers1(v OrganizationWorkflowTriggers1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowTriggers1 performs a merge with any union data inside the OrganizationWorkflow_Triggers, using the provided OrganizationWorkflowTriggers1
+func (t *OrganizationWorkflow_Triggers) MergeOrganizationWorkflowTriggers1(v OrganizationWorkflowTriggers1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t OrganizationWorkflow_Triggers) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *OrganizationWorkflow_Triggers) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
 	return err
 }
 

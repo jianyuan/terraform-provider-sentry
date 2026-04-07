@@ -3,8 +3,10 @@ package provider
 import (
 	"context"
 	"fmt"
+	"slices"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/jianyuan/go-utils/must"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
@@ -190,6 +192,14 @@ func (m *MetricMonitorResourceModel) Fill(ctx context.Context, data apiclient.Pr
 	} else {
 		m.Owner.SetNull(ctx)
 	}
+
+	// NOTE: The API returns conditions in a random order, so we need to sort them by ID to ensure that the
+	// order is deterministic.
+	slices.SortFunc(data.ConditionGroup.Conditions, func(a, b apiclient.ProjectMonitorConditionGroupCondition) int {
+		aId := int(must.Get(a.Id.Int64()))
+		bId := int(must.Get(b.Id.Int64()))
+		return aId - bId
+	})
 
 	outConditions := make([]*MetricMonitorResourceModelConditionGroupConditionsItem, 0, len(data.ConditionGroup.Conditions))
 	for _, inCondition := range data.ConditionGroup.Conditions {
