@@ -633,8 +633,14 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 	m.FrequencyMinutes = supertypes.NewInt64Value(data.Config.Frequency)
 	m.MonitorIds = supertypes.NewSetValueOfSlice(ctx, data.DetectorIds)
 
+	triggers, err := data.Triggers.AsOrganizationWorkflowTrigger()
+	if err != nil {
+		diags.AddError("Failed to parse triggers", err.Error())
+		return diags
+	}
+
 	var triggerConditions []AlertResourceModelTriggerConditionsItem
-	for _, triggerCondition := range data.Triggers.Conditions {
+	for _, triggerCondition := range triggers.Conditions {
 		outTriggerCondition := AlertResourceModelTriggerConditionsItem{
 			FirstSeenEvent:       supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemFirstSeenEvent](ctx),
 			IssueResolvedTrigger: supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemIssueResolvedTrigger](ctx),
@@ -655,8 +661,14 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 	}
 	m.TriggerConditions = supertypes.NewListNestedObjectValueOfValueSlice(ctx, triggerConditions)
 
+	actionFilters, err := data.ActionFilters.AsOrganizationWorkflowActionFilters0()
+	if err != nil {
+		diags.AddError("Failed to parse action filters", err.Error())
+		return diags
+	}
+
 	var outActionFilters []AlertResourceModelActionFiltersItem
-	for _, actionFilter := range data.ActionFilters {
+	for _, actionFilter := range actionFilters {
 		// Conditions
 
 		// NOTE: The API returns conditions in a random order, so we need to sort them by ID to ensure that the

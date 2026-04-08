@@ -1054,9 +1054,9 @@ Optional:
 
 Required:
 
-- `comparison_type` (String) Valid values are: `older`, and `newer`.
-- `time` (String) TODO Valid values are: `minute`, `hour`, `day`, and `week`.
-- `value` (Number) TODO
+- `comparison_type` (String) The type of comparison to perform. Valid values are: `older`, and `newer`.
+- `time` (String) The unit of time for the age comparison. Valid values are: `minute`, `hour`, `day`, and `week`.
+- `value` (Number) The value of the age comparison.
 
 
 <a id="nestedatt--action_filters--conditions--assigned_to"></a>
