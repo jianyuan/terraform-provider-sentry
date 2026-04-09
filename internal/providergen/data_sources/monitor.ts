@@ -1,8 +1,15 @@
+import dedent from "dedent";
 import type { DataSource } from "../schema";
 
 export default {
   name: "monitor",
-  description: "Retrieve a monitor by ID, or by project and type.",
+  description: dedent.withOptions({ trimWhitespace: true })`
+      ⚠️ This resource is currently in beta and may be subject to change. It is supported by [New Monitors and Alerts](https://docs.sentry.io/product/new-monitors-and-alerts/) and may not be viewable in the UI today.
+
+      Retrieve a monitor by ID, or by project and type.
+
+      When you create a new project, Sentry automatically creates [default monitors](https://docs.sentry.io/product/new-monitors-and-alerts/monitors/#default-monitors). Use the \`project\` and \`type\` attributes to retrieve them. The monitor ID can then be used to set up an [alert rule for the monitor](../resources/alert.md).
+    `,
   api: {
     model: "ProjectMonitor",
     readStrategy: "custom",

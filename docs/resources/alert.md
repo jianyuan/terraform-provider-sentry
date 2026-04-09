@@ -5,6 +5,7 @@ subcategory: ""
 description: |-
   ⚠️ This resource is currently in beta and may be subject to change. It is supported by New Monitors and Alerts https://docs.sentry.io/product/new-monitors-and-alerts/ and may not be viewable in the UI today.
   Create an Alert for a Monitor in an Organization. Monitors must be created separately using the sentry_cron_monitor cron_monitor.md, sentry_metric_monitor metric_monitor.md, or sentry_uptime_monitor uptime_monitor.md resources.
+  Additionally, default monitors https://docs.sentry.io/product/new-monitors-and-alerts/monitors/#default-monitors are automatically created for each project. Use the sentry_monitor ../data-sources/monitor.md data source to retrieve them.
 ---
 
 # sentry_alert (Resource)
@@ -13,21 +14,26 @@ description: |-
 
 Create an Alert for a Monitor in an Organization. Monitors must be created separately using the [`sentry_cron_monitor`](cron_monitor.md), [`sentry_metric_monitor`](metric_monitor.md), or [`sentry_uptime_monitor`](uptime_monitor.md) resources.
 
+Additionally, [default monitors](https://docs.sentry.io/product/new-monitors-and-alerts/monitors/#default-monitors) are automatically created for each project. Use the [`sentry_monitor`](../data-sources/monitor.md) data source to retrieve them.
+
 ## Example Usage
 
 ```terraform
-resource "sentry_cron_monitor" "default" {
-  # ...
-}
+# Cron Monitor
+resource "sentry_cron_monitor" "default" { /* ... */ }
 
-resource "sentry_metric_monitor" "default" {
-  # ...
-}
+# Metric Monitor
+resource "sentry_metric_monitor" "default" { /* ... */ }
 
-resource "sentry_uptime_monitor" "default" {
-  # ...
-}
+# Uptime Monitor
+resource "sentry_uptime_monitor" "default" { /* ... */ }
 
+# Issue Stream Monitor: The default monitor tracking new issues of all types created for a project
+data "sentry_monitor" "project_issue_stream" {
+  organization = "my-organization"
+  project      = "my-project"
+  type         = "issue_stream"
+}
 
 resource "sentry_alert" "default" {
   organization = "my-organization"
@@ -39,6 +45,7 @@ resource "sentry_alert" "default" {
     sentry_cron_monitor.default.id,
     sentry_metric_monitor.default.id,
     sentry_uptime_monitor.default.id,
+    data.sentry_monitor.project_issue_stream.id,
   ]
 
   frequency_minutes = 1440
