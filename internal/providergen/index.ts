@@ -534,7 +534,11 @@ function generateDataSourceModel({ dataSource }: { dataSource: DataSource }) {
   const modelName = `${camelize(dataSource.name)}DataSourceModel`;
   const srcModel = match(dataSource.api)
     .with({ readStrategy: "paginate" }, (api) => `[]apiclient.${api.model}`)
-    .with({ readStrategy: "simple" }, (api) => `apiclient.${api.model}`)
+    .with(
+      { readStrategy: "simple" },
+      { readStrategy: "custom" },
+      (api) => `apiclient.${api.model}`,
+    )
     .exhaustive();
   return generateModel({
     name: modelName,
@@ -617,6 +621,7 @@ function generateDataSource({ dataSource }: { dataSource: DataSource }) {
         }
         return parts;
       })
+      .with({ readStrategy: "custom" }, () => [])
       .exhaustive(),
   );
 
@@ -676,6 +681,15 @@ function generateDataSource({ dataSource }: { dataSource: DataSource }) {
     }
 
     resp.Diagnostics.Append(data.Fill(ctx, *httpResp.JSON200)...)
+    if resp.Diagnostics.HasError() {
+      return
+    }
+    `,
+    )
+    .with(
+      { readStrategy: "custom" },
+      () => `
+    resp.Diagnostics.Append(d.read(ctx, &data)...)
     if resp.Diagnostics.HasError() {
       return
     }

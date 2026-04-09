@@ -90,25 +90,32 @@ export interface SingleNestedAttribute extends BaseAttribute {
 
 export interface BaseDataSourceApiStrategy {
   model: string;
-  readMethod: string;
-  readRequestAttributes?: Array<string>;
 }
 
 export type DataSourceApiStrategy =
   | SimpleDataSourceApiStrategy
-  | PaginateDataSourceApiStrategy;
+  | PaginateDataSourceApiStrategy
+  | CustomDataSourceApiStrategy;
 
 export interface SimpleDataSourceApiStrategy extends BaseDataSourceApiStrategy {
   readStrategy: "simple";
+  readMethod: string;
+  readRequestAttributes?: Array<string>;
 }
 
 export interface PaginateDataSourceApiStrategy extends BaseDataSourceApiStrategy {
   readStrategy: "paginate";
+  readMethod: string;
+  readRequestAttributes?: Array<string>;
   readModel?: string;
   readCursorParam?: string;
   readInitLoop?: string;
   readPreIterate?: string;
   readPostIterate?: string;
+}
+
+export interface CustomDataSourceApiStrategy extends BaseDataSourceApiStrategy {
+  readStrategy: "custom";
 }
 
 export interface DataSource {
