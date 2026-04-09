@@ -2057,6 +2057,7 @@ type OrganizationWorkflowTriggerLogicType string
 type OrganizationWorkflowTriggerCondition struct {
 	Comparison      OrganizationWorkflowTriggerCondition_Comparison `json:"comparison"`
 	ConditionResult bool                                            `json:"conditionResult"`
+	Id              *json.Number                                    `json:"id,omitempty"`
 	Type            string                                          `json:"type"`
 }
 
