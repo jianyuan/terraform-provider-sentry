@@ -2057,6 +2057,7 @@ type OrganizationWorkflowTriggerLogicType string
 type OrganizationWorkflowTriggerCondition struct {
 	Comparison      OrganizationWorkflowTriggerCondition_Comparison `json:"comparison"`
 	ConditionResult bool                                            `json:"conditionResult"`
+	Id              *json.Number                                    `json:"id,omitempty"`
 	Type            string                                          `json:"type"`
 }
 
@@ -2916,8 +2917,9 @@ type TeamIdOrSlug = string
 
 // ListOrganizationMonitorsParams defines parameters for ListOrganizationMonitors.
 type ListOrganizationMonitorsParams struct {
-	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
-	Query  *string `form:"query,omitempty" json:"query,omitempty"`
+	Cursor  *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+	Project *string `form:"project,omitempty" json:"project,omitempty"`
+	Query   *string `form:"query,omitempty" json:"query,omitempty"`
 }
 
 // ListOrganizationIntegrationsParams defines parameters for ListOrganizationIntegrations.
@@ -7335,6 +7337,22 @@ func NewListOrganizationMonitorsRequest(server string, organizationIdOrSlug Orga
 		if params.Cursor != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Project != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "project", *params.Project, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err

@@ -18,6 +18,7 @@ var (
 		NewAllProjectsDataSource,
 		NewCronMonitorDataSource,
 		NewMetricMonitorDataSource,
+		NewMonitorDataSource,
 		NewOrganizationDataSource,
 		NewProjectDataSource,
 		NewUptimeMonitorDataSource,
