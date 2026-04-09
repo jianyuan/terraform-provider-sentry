@@ -1,15 +1,18 @@
-resource "sentry_cron_monitor" "default" {
-  # ...
-}
+# Cron Monitor
+resource "sentry_cron_monitor" "default" { /* ... */ }
 
-resource "sentry_metric_monitor" "default" {
-  # ...
-}
+# Metric Monitor
+resource "sentry_metric_monitor" "default" { /* ... */ }
 
-resource "sentry_uptime_monitor" "default" {
-  # ...
-}
+# Uptime Monitor
+resource "sentry_uptime_monitor" "default" { /* ... */ }
 
+# Issue Stream Monitor: The default monitor tracking new issues of all types created for a project
+data "sentry_monitor" "project_issue_stream" {
+  organization = "my-organization"
+  project      = "my-project"
+  type         = "issue_stream"
+}
 
 resource "sentry_alert" "default" {
   organization = "my-organization"
@@ -21,6 +24,7 @@ resource "sentry_alert" "default" {
     sentry_cron_monitor.default.id,
     sentry_metric_monitor.default.id,
     sentry_uptime_monitor.default.id,
+    data.sentry_monitor.project_issue_stream.id,
   ]
 
   frequency_minutes = 1440
