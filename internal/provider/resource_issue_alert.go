@@ -838,12 +838,16 @@ func (r *IssueAlertResource) Create(ctx context.Context, req resource.CreateRequ
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("create", err))
 		return
-	} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
+	} else if (httpResp.StatusCode() != http.StatusOK && httpResp.StatusCode() != http.StatusCreated) || (httpResp.JSON200 == nil && httpResp.JSON201 == nil) {
 		resp.Diagnostics.Append(diagutils.NewClientStatusError("create", httpResp.StatusCode(), httpResp.Body))
 		return
 	}
 
-	resp.Diagnostics.Append(data.Fill(ctx, *httpResp.JSON200)...)
+	rule := httpResp.JSON200
+	if rule == nil {
+		rule = httpResp.JSON201
+	}
+	resp.Diagnostics.Append(data.Fill(ctx, *rule)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
