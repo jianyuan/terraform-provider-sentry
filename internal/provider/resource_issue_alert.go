@@ -408,6 +408,12 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 									Optional:   true,
 									CustomType: supertypes.NewMapTypeOf[string](ctx),
 								},
+								"settings_labels": schema.MapAttribute{
+									ElementType:         types.StringType,
+									Optional:            true,
+									Computed:            true,
+									MarkdownDescription: "Optional display labels for each settings entry, keyed by setting name. When present, the label is sent to the API so Sentry's frontend can render the correct display name for async-select fields.",
+								},
 							},
 						},
 						"opsgenie_notify_team": {
