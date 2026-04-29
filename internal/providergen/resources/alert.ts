@@ -859,6 +859,49 @@ export default {
                 },
               ],
             },
+            {
+              name: "sentry_app",
+              type: "single_nested",
+              description: "Trigger an action in a Sentry App (e.g. Rootly).",
+              computedOptionalRequired: "optional",
+              attributes: [
+                {
+                  name: "sentry_app_id",
+                  type: "string",
+                  description:
+                    "The numeric Sentry App ID. Use `tostring(data.sentry_app_installation.<name>.sentry_app_id)` to source this value.",
+                  computedOptionalRequired: "required",
+                },
+                {
+                  name: "settings",
+                  type: "list_nested",
+                  description:
+                    "Key-value settings passed to the Sentry App action. Specifying `label` preserves the human-readable display name in the Sentry UI for async select fields whose options are paginated by the third-party app.",
+                  computedOptionalRequired: "optional",
+                  attributes: [
+                    {
+                      name: "name",
+                      type: "string",
+                      description: "The name of the setting field.",
+                      computedOptionalRequired: "required",
+                    },
+                    {
+                      name: "value",
+                      type: "string",
+                      description: "The value of the setting field.",
+                      computedOptionalRequired: "required",
+                    },
+                    {
+                      name: "label",
+                      type: "string",
+                      description:
+                        "The human-readable display label for the value. Required for async select fields whose option list is paginated by the third-party app — without it the field may appear blank under certain conditions in the Sentry UI after apply.",
+                      computedOptionalRequired: "computed_optional",
+                    },
+                  ],
+                },
+              ],
+            },
           ]),
         },
       ],

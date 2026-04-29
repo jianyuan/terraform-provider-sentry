@@ -359,6 +359,36 @@ func (e OrganizationWorkflowActionFilterActionPluginType) Valid() bool {
 	}
 }
 
+// Defines values for OrganizationWorkflowActionFilterActionSentryAppConfigTargetType.
+const (
+	OrganizationWorkflowActionFilterActionSentryAppConfigTargetTypeSentryApp OrganizationWorkflowActionFilterActionSentryAppConfigTargetType = "sentry_app"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionSentryAppConfigTargetType enum.
+func (e OrganizationWorkflowActionFilterActionSentryAppConfigTargetType) Valid() bool {
+	switch e {
+	case OrganizationWorkflowActionFilterActionSentryAppConfigTargetTypeSentryApp:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrganizationWorkflowActionFilterActionSentryAppType.
+const (
+	OrganizationWorkflowActionFilterActionSentryAppTypeSentryApp OrganizationWorkflowActionFilterActionSentryAppType = "sentry_app"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionSentryAppType enum.
+func (e OrganizationWorkflowActionFilterActionSentryAppType) Valid() bool {
+	switch e {
+	case OrganizationWorkflowActionFilterActionSentryAppTypeSentryApp:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for OrganizationWorkflowActionFilterActionSlackConfigTargetType.
 const (
 	OrganizationWorkflowActionFilterActionSlackConfigTargetTypeSpecific OrganizationWorkflowActionFilterActionSlackConfigTargetType = "specific"
@@ -1759,6 +1789,29 @@ type OrganizationWorkflowActionFilterActionPlugin struct {
 
 // OrganizationWorkflowActionFilterActionPluginType defines model for OrganizationWorkflowActionFilterActionPlugin.Type.
 type OrganizationWorkflowActionFilterActionPluginType string
+
+// OrganizationWorkflowActionFilterActionSentryApp defines model for OrganizationWorkflow_ActionFilter_Action_SentryApp.
+type OrganizationWorkflowActionFilterActionSentryApp struct {
+	Config struct {
+		TargetDisplay    *string                                                         `json:"targetDisplay,omitempty"`
+		TargetIdentifier string                                                          `json:"targetIdentifier"`
+		TargetType       OrganizationWorkflowActionFilterActionSentryAppConfigTargetType `json:"targetType"`
+	} `json:"config"`
+	Data struct {
+		Settings *[]struct {
+			Label *string `json:"label,omitempty"`
+			Name  string  `json:"name"`
+			Value string  `json:"value"`
+		} `json:"settings,omitempty"`
+	} `json:"data"`
+	Type OrganizationWorkflowActionFilterActionSentryAppType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterActionSentryAppConfigTargetType defines model for OrganizationWorkflowActionFilterActionSentryApp.Config.TargetType.
+type OrganizationWorkflowActionFilterActionSentryAppConfigTargetType string
+
+// OrganizationWorkflowActionFilterActionSentryAppType defines model for OrganizationWorkflowActionFilterActionSentryApp.Type.
+type OrganizationWorkflowActionFilterActionSentryAppType string
 
 // OrganizationWorkflowActionFilterActionSlack defines model for OrganizationWorkflow_ActionFilter_Action_Slack.
 type OrganizationWorkflowActionFilterActionSlack struct {
@@ -3799,6 +3852,34 @@ func (t *OrganizationWorkflowActionFilterAction) MergeOrganizationWorkflowAction
 	return err
 }
 
+// AsOrganizationWorkflowActionFilterActionSentryApp returns the union data inside the OrganizationWorkflowActionFilterAction as a OrganizationWorkflowActionFilterActionSentryApp
+func (t OrganizationWorkflowActionFilterAction) AsOrganizationWorkflowActionFilterActionSentryApp() (OrganizationWorkflowActionFilterActionSentryApp, error) {
+	var body OrganizationWorkflowActionFilterActionSentryApp
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterActionSentryApp overwrites any union data inside the OrganizationWorkflowActionFilterAction as the provided OrganizationWorkflowActionFilterActionSentryApp
+func (t *OrganizationWorkflowActionFilterAction) FromOrganizationWorkflowActionFilterActionSentryApp(v OrganizationWorkflowActionFilterActionSentryApp) error {
+	v.Type = "sentry_app"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterActionSentryApp performs a merge with any union data inside the OrganizationWorkflowActionFilterAction, using the provided OrganizationWorkflowActionFilterActionSentryApp
+func (t *OrganizationWorkflowActionFilterAction) MergeOrganizationWorkflowActionFilterActionSentryApp(v OrganizationWorkflowActionFilterActionSentryApp) error {
+	v.Type = "sentry_app"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
 func (t OrganizationWorkflowActionFilterAction) Discriminator() (string, error) {
 	var discriminator struct {
 		Discriminator string `json:"type"`
@@ -3831,6 +3912,8 @@ func (t OrganizationWorkflowActionFilterAction) ValueByDiscriminator() (interfac
 		return t.AsOrganizationWorkflowActionFilterActionPagerDuty()
 	case "plugin":
 		return t.AsOrganizationWorkflowActionFilterActionPlugin()
+	case "sentry_app":
+		return t.AsOrganizationWorkflowActionFilterActionSentryApp()
 	case "slack":
 		return t.AsOrganizationWorkflowActionFilterActionSlack()
 	case "vsts":

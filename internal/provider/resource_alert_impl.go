@@ -521,6 +521,45 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 					return nil, diags
 				}
 
+			case inAction.SentryApp.IsKnown():
+				inSentryApp := inAction.SentryApp.DiagsGet(ctx, diags)
+				if diags.HasError() {
+					return nil, diags
+				}
+
+				var outSentryApp apiclient.OrganizationWorkflowActionFilterActionSentryApp
+				outSentryApp.Config.TargetType = "sentry_app"
+				outSentryApp.Config.TargetIdentifier = inSentryApp.SentryAppId.Get()
+
+				if inSentryApp.Settings.IsKnown() {
+					inSettings := inSentryApp.Settings.DiagsGet(ctx, diags)
+					if diags.HasError() {
+						return nil, diags
+					}
+					settings := make([]struct {
+						Label *string `json:"label,omitempty"`
+						Name  string  `json:"name"`
+						Value string  `json:"value"`
+					}, 0, len(inSettings))
+					for _, s := range inSettings {
+						settings = append(settings, struct {
+							Label *string `json:"label,omitempty"`
+							Name  string  `json:"name"`
+							Value string  `json:"value"`
+						}{
+							Name:  s.Name.Get(),
+							Value: s.Value.Get(),
+							Label: s.Label.GetPtr(),
+						})
+					}
+					outSentryApp.Data.Settings = &settings
+				}
+
+				if err := outAction.FromOrganizationWorkflowActionFilterActionSentryApp(outSentryApp); err != nil {
+					diags.AddError("Failed to create action", err.Error())
+					return nil, diags
+				}
+
 			}
 
 			outActions = append(outActions, outAction)
@@ -864,6 +903,7 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 				Jira:       supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemActionsItemJira](ctx),
 				JiraServer: supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemActionsItemJiraServer](ctx),
 				Github:     supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemActionsItemGithub](ctx),
+				SentryApp:  supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemActionsItemSentryApp](ctx),
 			}
 
 			actionValue, err := action.ValueByDiscriminator()
@@ -974,6 +1014,26 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 				outGithub.Labels = supertypes.NewSetValueOfSlice(ctx, actionValue.Data.AdditionalFields.Labels)
 
 				outAction.Github = supertypes.NewSingleNestedObjectValueOf(ctx, &outGithub)
+
+			case apiclient.OrganizationWorkflowActionFilterActionSentryApp:
+				var outSentryApp AlertResourceModelActionFiltersItemActionsItemSentryApp
+				outSentryApp.SentryAppId = supertypes.NewStringValue(actionValue.Config.TargetIdentifier)
+
+				if actionValue.Data.Settings != nil {
+					items := []AlertResourceModelActionFiltersItemActionsItemSentryAppSettingsItem{}
+					for _, s := range *actionValue.Data.Settings {
+						items = append(items, AlertResourceModelActionFiltersItemActionsItemSentryAppSettingsItem{
+							Name:  supertypes.NewStringValue(s.Name),
+							Value: supertypes.NewStringValue(s.Value),
+							Label: supertypes.NewStringPointerValueOrNull(s.Label),
+						})
+					}
+					outSentryApp.Settings = supertypes.NewListNestedObjectValueOfValueSlice(ctx, items)
+				} else {
+					outSentryApp.Settings = supertypes.NewListNestedObjectValueOfNull[AlertResourceModelActionFiltersItemActionsItemSentryAppSettingsItem](ctx)
+				}
+
+				outAction.SentryApp = supertypes.NewSingleNestedObjectValueOf(ctx, &outSentryApp)
 			}
 
 			if diags.HasError() {

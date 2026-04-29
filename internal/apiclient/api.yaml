@@ -3491,6 +3491,7 @@ components:
         - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Jira"
         - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_JiraServer"
         - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_GitHub"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_SentryApp"
       discriminator:
         propertyName: type
         mapping:
@@ -3505,6 +3506,7 @@ components:
           jira: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Jira"
           jira_server: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_JiraServer"
           github: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_GitHub"
+          sentry_app: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_SentryApp"
     OrganizationWorkflow_ActionFilter_Action_Email:
       type: object
       required:
@@ -3883,3 +3885,45 @@ components:
                 - specific
         integrationId:
           type: string
+    OrganizationWorkflow_ActionFilter_Action_SentryApp:
+      type: object
+      required:
+        - type
+        - config
+        - data
+      properties:
+        type:
+          type: string
+          enum:
+            - sentry_app
+        data:
+          type: object
+          properties:
+            settings:
+              type: array
+              items:
+                type: object
+                required:
+                  - name
+                  - value
+                properties:
+                  name:
+                    type: string
+                  value:
+                    type: string
+                  label:
+                    type: string
+        config:
+          type: object
+          required:
+            - targetType
+            - targetIdentifier
+          properties:
+            targetType:
+              type: string
+              enum:
+                - sentry_app
+            targetIdentifier:
+              type: string
+            targetDisplay:
+              type: string

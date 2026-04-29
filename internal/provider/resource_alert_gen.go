@@ -588,7 +588,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemEmail](ctx),
 										Validators: []validator.Object{
-											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("plugin"), path.MatchRelative().AtParent().AtName("slack"), path.MatchRelative().AtParent().AtName("pagerduty"), path.MatchRelative().AtParent().AtName("discord"), path.MatchRelative().AtParent().AtName("msteams"), path.MatchRelative().AtParent().AtName("opsgenie"), path.MatchRelative().AtParent().AtName("vsts"), path.MatchRelative().AtParent().AtName("jira"), path.MatchRelative().AtParent().AtName("jira_server"), path.MatchRelative().AtParent().AtName("github")),
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("plugin"), path.MatchRelative().AtParent().AtName("slack"), path.MatchRelative().AtParent().AtName("pagerduty"), path.MatchRelative().AtParent().AtName("discord"), path.MatchRelative().AtParent().AtName("msteams"), path.MatchRelative().AtParent().AtName("opsgenie"), path.MatchRelative().AtParent().AtName("vsts"), path.MatchRelative().AtParent().AtName("jira"), path.MatchRelative().AtParent().AtName("jira_server"), path.MatchRelative().AtParent().AtName("github"), path.MatchRelative().AtParent().AtName("sentry_app")),
 										},
 										Attributes: map[string]schema.Attribute{
 											"target_type": tfutils.WithEnumStringAttribute(
@@ -627,7 +627,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemPlugin](ctx),
 										Validators: []validator.Object{
-											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("email"), path.MatchRelative().AtParent().AtName("slack"), path.MatchRelative().AtParent().AtName("pagerduty"), path.MatchRelative().AtParent().AtName("discord"), path.MatchRelative().AtParent().AtName("msteams"), path.MatchRelative().AtParent().AtName("opsgenie"), path.MatchRelative().AtParent().AtName("vsts"), path.MatchRelative().AtParent().AtName("jira"), path.MatchRelative().AtParent().AtName("jira_server"), path.MatchRelative().AtParent().AtName("github")),
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("email"), path.MatchRelative().AtParent().AtName("slack"), path.MatchRelative().AtParent().AtName("pagerduty"), path.MatchRelative().AtParent().AtName("discord"), path.MatchRelative().AtParent().AtName("msteams"), path.MatchRelative().AtParent().AtName("opsgenie"), path.MatchRelative().AtParent().AtName("vsts"), path.MatchRelative().AtParent().AtName("jira"), path.MatchRelative().AtParent().AtName("jira_server"), path.MatchRelative().AtParent().AtName("github"), path.MatchRelative().AtParent().AtName("sentry_app")),
 										},
 										Attributes: map[string]schema.Attribute{},
 									},
@@ -636,7 +636,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemSlack](ctx),
 										Validators: []validator.Object{
-											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("email"), path.MatchRelative().AtParent().AtName("plugin"), path.MatchRelative().AtParent().AtName("pagerduty"), path.MatchRelative().AtParent().AtName("discord"), path.MatchRelative().AtParent().AtName("msteams"), path.MatchRelative().AtParent().AtName("opsgenie"), path.MatchRelative().AtParent().AtName("vsts"), path.MatchRelative().AtParent().AtName("jira"), path.MatchRelative().AtParent().AtName("jira_server"), path.MatchRelative().AtParent().AtName("github")),
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("email"), path.MatchRelative().AtParent().AtName("plugin"), path.MatchRelative().AtParent().AtName("pagerduty"), path.MatchRelative().AtParent().AtName("discord"), path.MatchRelative().AtParent().AtName("msteams"), path.MatchRelative().AtParent().AtName("opsgenie"), path.MatchRelative().AtParent().AtName("vsts"), path.MatchRelative().AtParent().AtName("jira"), path.MatchRelative().AtParent().AtName("jira_server"), path.MatchRelative().AtParent().AtName("github"), path.MatchRelative().AtParent().AtName("sentry_app")),
 										},
 										Attributes: map[string]schema.Attribute{
 											"integration_id": schema.StringAttribute{
@@ -673,7 +673,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemPagerduty](ctx),
 										Validators: []validator.Object{
-											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("email"), path.MatchRelative().AtParent().AtName("plugin"), path.MatchRelative().AtParent().AtName("slack"), path.MatchRelative().AtParent().AtName("discord"), path.MatchRelative().AtParent().AtName("msteams"), path.MatchRelative().AtParent().AtName("opsgenie"), path.MatchRelative().AtParent().AtName("vsts"), path.MatchRelative().AtParent().AtName("jira"), path.MatchRelative().AtParent().AtName("jira_server"), path.MatchRelative().AtParent().AtName("github")),
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("email"), path.MatchRelative().AtParent().AtName("plugin"), path.MatchRelative().AtParent().AtName("slack"), path.MatchRelative().AtParent().AtName("discord"), path.MatchRelative().AtParent().AtName("msteams"), path.MatchRelative().AtParent().AtName("opsgenie"), path.MatchRelative().AtParent().AtName("vsts"), path.MatchRelative().AtParent().AtName("jira"), path.MatchRelative().AtParent().AtName("jira_server"), path.MatchRelative().AtParent().AtName("github"), path.MatchRelative().AtParent().AtName("sentry_app")),
 										},
 										Attributes: map[string]schema.Attribute{
 											"integration_id": schema.StringAttribute{
@@ -703,7 +703,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemDiscord](ctx),
 										Validators: []validator.Object{
-											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("email"), path.MatchRelative().AtParent().AtName("plugin"), path.MatchRelative().AtParent().AtName("slack"), path.MatchRelative().AtParent().AtName("pagerduty"), path.MatchRelative().AtParent().AtName("msteams"), path.MatchRelative().AtParent().AtName("opsgenie"), path.MatchRelative().AtParent().AtName("vsts"), path.MatchRelative().AtParent().AtName("jira"), path.MatchRelative().AtParent().AtName("jira_server"), path.MatchRelative().AtParent().AtName("github")),
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("email"), path.MatchRelative().AtParent().AtName("plugin"), path.MatchRelative().AtParent().AtName("slack"), path.MatchRelative().AtParent().AtName("pagerduty"), path.MatchRelative().AtParent().AtName("msteams"), path.MatchRelative().AtParent().AtName("opsgenie"), path.MatchRelative().AtParent().AtName("vsts"), path.MatchRelative().AtParent().AtName("jira"), path.MatchRelative().AtParent().AtName("jira_server"), path.MatchRelative().AtParent().AtName("github"), path.MatchRelative().AtParent().AtName("sentry_app")),
 										},
 										Attributes: map[string]schema.Attribute{
 											"integration_id": schema.StringAttribute{
@@ -728,7 +728,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemMsteams](ctx),
 										Validators: []validator.Object{
-											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("email"), path.MatchRelative().AtParent().AtName("plugin"), path.MatchRelative().AtParent().AtName("slack"), path.MatchRelative().AtParent().AtName("pagerduty"), path.MatchRelative().AtParent().AtName("discord"), path.MatchRelative().AtParent().AtName("opsgenie"), path.MatchRelative().AtParent().AtName("vsts"), path.MatchRelative().AtParent().AtName("jira"), path.MatchRelative().AtParent().AtName("jira_server"), path.MatchRelative().AtParent().AtName("github")),
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("email"), path.MatchRelative().AtParent().AtName("plugin"), path.MatchRelative().AtParent().AtName("slack"), path.MatchRelative().AtParent().AtName("pagerduty"), path.MatchRelative().AtParent().AtName("discord"), path.MatchRelative().AtParent().AtName("opsgenie"), path.MatchRelative().AtParent().AtName("vsts"), path.MatchRelative().AtParent().AtName("jira"), path.MatchRelative().AtParent().AtName("jira_server"), path.MatchRelative().AtParent().AtName("github"), path.MatchRelative().AtParent().AtName("sentry_app")),
 										},
 										Attributes: map[string]schema.Attribute{
 											"integration_id": schema.StringAttribute{
@@ -753,7 +753,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemOpsgenie](ctx),
 										Validators: []validator.Object{
-											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("email"), path.MatchRelative().AtParent().AtName("plugin"), path.MatchRelative().AtParent().AtName("slack"), path.MatchRelative().AtParent().AtName("pagerduty"), path.MatchRelative().AtParent().AtName("discord"), path.MatchRelative().AtParent().AtName("msteams"), path.MatchRelative().AtParent().AtName("vsts"), path.MatchRelative().AtParent().AtName("jira"), path.MatchRelative().AtParent().AtName("jira_server"), path.MatchRelative().AtParent().AtName("github")),
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("email"), path.MatchRelative().AtParent().AtName("plugin"), path.MatchRelative().AtParent().AtName("slack"), path.MatchRelative().AtParent().AtName("pagerduty"), path.MatchRelative().AtParent().AtName("discord"), path.MatchRelative().AtParent().AtName("msteams"), path.MatchRelative().AtParent().AtName("vsts"), path.MatchRelative().AtParent().AtName("jira"), path.MatchRelative().AtParent().AtName("jira_server"), path.MatchRelative().AtParent().AtName("github"), path.MatchRelative().AtParent().AtName("sentry_app")),
 										},
 										Attributes: map[string]schema.Attribute{
 											"integration_id": schema.StringAttribute{
@@ -783,7 +783,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemVsts](ctx),
 										Validators: []validator.Object{
-											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("email"), path.MatchRelative().AtParent().AtName("plugin"), path.MatchRelative().AtParent().AtName("slack"), path.MatchRelative().AtParent().AtName("pagerduty"), path.MatchRelative().AtParent().AtName("discord"), path.MatchRelative().AtParent().AtName("msteams"), path.MatchRelative().AtParent().AtName("opsgenie"), path.MatchRelative().AtParent().AtName("jira"), path.MatchRelative().AtParent().AtName("jira_server"), path.MatchRelative().AtParent().AtName("github")),
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("email"), path.MatchRelative().AtParent().AtName("plugin"), path.MatchRelative().AtParent().AtName("slack"), path.MatchRelative().AtParent().AtName("pagerduty"), path.MatchRelative().AtParent().AtName("discord"), path.MatchRelative().AtParent().AtName("msteams"), path.MatchRelative().AtParent().AtName("opsgenie"), path.MatchRelative().AtParent().AtName("jira"), path.MatchRelative().AtParent().AtName("jira_server"), path.MatchRelative().AtParent().AtName("github"), path.MatchRelative().AtParent().AtName("sentry_app")),
 										},
 										Attributes: map[string]schema.Attribute{
 											"integration_id": schema.StringAttribute{
@@ -808,7 +808,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemJira](ctx),
 										Validators: []validator.Object{
-											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("email"), path.MatchRelative().AtParent().AtName("plugin"), path.MatchRelative().AtParent().AtName("slack"), path.MatchRelative().AtParent().AtName("pagerduty"), path.MatchRelative().AtParent().AtName("discord"), path.MatchRelative().AtParent().AtName("msteams"), path.MatchRelative().AtParent().AtName("opsgenie"), path.MatchRelative().AtParent().AtName("vsts"), path.MatchRelative().AtParent().AtName("jira_server"), path.MatchRelative().AtParent().AtName("github")),
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("email"), path.MatchRelative().AtParent().AtName("plugin"), path.MatchRelative().AtParent().AtName("slack"), path.MatchRelative().AtParent().AtName("pagerduty"), path.MatchRelative().AtParent().AtName("discord"), path.MatchRelative().AtParent().AtName("msteams"), path.MatchRelative().AtParent().AtName("opsgenie"), path.MatchRelative().AtParent().AtName("vsts"), path.MatchRelative().AtParent().AtName("jira_server"), path.MatchRelative().AtParent().AtName("github"), path.MatchRelative().AtParent().AtName("sentry_app")),
 										},
 										Attributes: map[string]schema.Attribute{
 											"integration_id": schema.StringAttribute{
@@ -833,7 +833,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemJiraServer](ctx),
 										Validators: []validator.Object{
-											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("email"), path.MatchRelative().AtParent().AtName("plugin"), path.MatchRelative().AtParent().AtName("slack"), path.MatchRelative().AtParent().AtName("pagerduty"), path.MatchRelative().AtParent().AtName("discord"), path.MatchRelative().AtParent().AtName("msteams"), path.MatchRelative().AtParent().AtName("opsgenie"), path.MatchRelative().AtParent().AtName("vsts"), path.MatchRelative().AtParent().AtName("jira"), path.MatchRelative().AtParent().AtName("github")),
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("email"), path.MatchRelative().AtParent().AtName("plugin"), path.MatchRelative().AtParent().AtName("slack"), path.MatchRelative().AtParent().AtName("pagerduty"), path.MatchRelative().AtParent().AtName("discord"), path.MatchRelative().AtParent().AtName("msteams"), path.MatchRelative().AtParent().AtName("opsgenie"), path.MatchRelative().AtParent().AtName("vsts"), path.MatchRelative().AtParent().AtName("jira"), path.MatchRelative().AtParent().AtName("github"), path.MatchRelative().AtParent().AtName("sentry_app")),
 										},
 										Attributes: map[string]schema.Attribute{
 											"integration_id": schema.StringAttribute{
@@ -858,7 +858,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemGithub](ctx),
 										Validators: []validator.Object{
-											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("email"), path.MatchRelative().AtParent().AtName("plugin"), path.MatchRelative().AtParent().AtName("slack"), path.MatchRelative().AtParent().AtName("pagerduty"), path.MatchRelative().AtParent().AtName("discord"), path.MatchRelative().AtParent().AtName("msteams"), path.MatchRelative().AtParent().AtName("opsgenie"), path.MatchRelative().AtParent().AtName("vsts"), path.MatchRelative().AtParent().AtName("jira"), path.MatchRelative().AtParent().AtName("jira_server")),
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("email"), path.MatchRelative().AtParent().AtName("plugin"), path.MatchRelative().AtParent().AtName("slack"), path.MatchRelative().AtParent().AtName("pagerduty"), path.MatchRelative().AtParent().AtName("discord"), path.MatchRelative().AtParent().AtName("msteams"), path.MatchRelative().AtParent().AtName("opsgenie"), path.MatchRelative().AtParent().AtName("vsts"), path.MatchRelative().AtParent().AtName("jira"), path.MatchRelative().AtParent().AtName("jira_server"), path.MatchRelative().AtParent().AtName("sentry_app")),
 										},
 										Attributes: map[string]schema.Attribute{
 											"integration_id": schema.StringAttribute{
@@ -880,6 +880,46 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 												MarkdownDescription: "A list of labels to assign to the issue.",
 												Optional:            true,
 												CustomType:          supertypes.NewSetTypeOf[string](ctx),
+											},
+										},
+									},
+									"sentry_app": schema.SingleNestedAttribute{
+										MarkdownDescription: "Trigger an action in a Sentry App (e.g. Rootly).",
+										Optional:            true,
+										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemSentryApp](ctx),
+										Validators: []validator.Object{
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("email"), path.MatchRelative().AtParent().AtName("plugin"), path.MatchRelative().AtParent().AtName("slack"), path.MatchRelative().AtParent().AtName("pagerduty"), path.MatchRelative().AtParent().AtName("discord"), path.MatchRelative().AtParent().AtName("msteams"), path.MatchRelative().AtParent().AtName("opsgenie"), path.MatchRelative().AtParent().AtName("vsts"), path.MatchRelative().AtParent().AtName("jira"), path.MatchRelative().AtParent().AtName("jira_server"), path.MatchRelative().AtParent().AtName("github")),
+										},
+										Attributes: map[string]schema.Attribute{
+											"sentry_app_id": schema.StringAttribute{
+												MarkdownDescription: "The numeric Sentry App ID. Use `tostring(data.sentry_app_installation.<name>.sentry_app_id)` to source this value.",
+												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"settings": schema.ListNestedAttribute{
+												MarkdownDescription: "Key-value settings passed to the Sentry App action. Specifying `label` preserves the human-readable display name in the Sentry UI for async select fields whose options are paginated by the third-party app.",
+												Optional:            true,
+												CustomType:          supertypes.NewListNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemSentryAppSettingsItem](ctx),
+												NestedObject: schema.NestedAttributeObject{
+													Attributes: map[string]schema.Attribute{
+														"name": schema.StringAttribute{
+															MarkdownDescription: "The name of the setting field.",
+															Required:            true,
+															CustomType:          supertypes.StringType{},
+														},
+														"value": schema.StringAttribute{
+															MarkdownDescription: "The value of the setting field.",
+															Required:            true,
+															CustomType:          supertypes.StringType{},
+														},
+														"label": schema.StringAttribute{
+															MarkdownDescription: "The human-readable display label for the value. Required for async select fields whose option list is paginated by the third-party app — without it the field may appear blank under certain conditions in the Sentry UI after apply.",
+															Optional:            true,
+															Computed:            true,
+															CustomType:          supertypes.StringType{},
+														},
+													},
+												},
 											},
 										},
 									},
@@ -1185,6 +1225,7 @@ type AlertResourceModelActionFiltersItemActionsItem struct {
 	Jira       supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemActionsItemJira]       `tfsdk:"jira"`
 	JiraServer supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemActionsItemJiraServer] `tfsdk:"jira_server"`
 	Github     supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemActionsItemGithub]     `tfsdk:"github"`
+	SentryApp  supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemActionsItemSentryApp]  `tfsdk:"sentry_app"`
 }
 
 type AlertResourceModelActionFiltersItemActionsItemEmail struct {
@@ -1253,4 +1294,15 @@ type AlertResourceModelActionFiltersItemActionsItemGithub struct {
 	Repo          supertypes.StringValue        `tfsdk:"repo"`
 	Assignee      supertypes.StringValue        `tfsdk:"assignee"`
 	Labels        supertypes.SetValueOf[string] `tfsdk:"labels"`
+}
+
+type AlertResourceModelActionFiltersItemActionsItemSentryApp struct {
+	SentryAppId supertypes.StringValue                                                                                  `tfsdk:"sentry_app_id"`
+	Settings    supertypes.ListNestedObjectValueOf[AlertResourceModelActionFiltersItemActionsItemSentryAppSettingsItem] `tfsdk:"settings"`
+}
+
+type AlertResourceModelActionFiltersItemActionsItemSentryAppSettingsItem struct {
+	Name  supertypes.StringValue `tfsdk:"name"`
+	Value supertypes.StringValue `tfsdk:"value"`
+	Label supertypes.StringValue `tfsdk:"label"`
 }
