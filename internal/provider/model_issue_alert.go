@@ -859,6 +859,7 @@ type IssueAlertActionNotifyEventSentryAppModel struct {
 	Name                      types.String `tfsdk:"name"`
 	SentryAppInstallationUuid types.String `tfsdk:"sentry_app_installation_uuid"`
 	Settings                  types.Map    `tfsdk:"settings"`
+	SettingsLabels            types.Map    `tfsdk:"settings_labels"`
 }
 
 func (m *IssueAlertActionNotifyEventSentryAppModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionNotifyEventSentryApp) (diags diag.Diagnostics) {
@@ -867,12 +868,22 @@ func (m *IssueAlertActionNotifyEventSentryAppModel) Fill(ctx context.Context, ac
 
 	if action.Settings == nil {
 		m.Settings = types.MapNull(types.StringType)
+		m.SettingsLabels = types.MapNull(types.StringType)
 	} else {
-		var settingsMap = make(map[string]attr.Value)
+		settingsMap := make(map[string]attr.Value, len(*action.Settings))
+		labelsMap := make(map[string]attr.Value, len(*action.Settings))
 		for _, setting := range *action.Settings {
 			settingsMap[setting.Name] = types.StringValue(setting.Value)
+			if setting.Label != nil {
+				labelsMap[setting.Name] = types.StringValue(*setting.Label)
+			}
 		}
 		m.Settings = types.MapValueMust(types.StringType, settingsMap)
+		if len(labelsMap) == 0 {
+			m.SettingsLabels = types.MapNull(types.StringType)
+		} else {
+			m.SettingsLabels = types.MapValueMust(types.StringType, labelsMap)
+		}
 	}
 	return
 }
@@ -882,8 +893,9 @@ func (m IssueAlertActionNotifyEventSentryAppModel) ToApi(ctx context.Context) (*
 	var v apiclient.ProjectRuleAction
 
 	var settings *[]struct {
-		Name  string `json:"name"`
-		Value string `json:"value"`
+		Label *string `json:"label,omitempty"`
+		Name  string  `json:"name"`
+		Value string  `json:"value"`
 	}
 
 	if !m.Settings.IsNull() {
@@ -893,19 +905,33 @@ func (m IssueAlertActionNotifyEventSentryAppModel) ToApi(ctx context.Context) (*
 			return nil, diags
 		}
 
+		labels := make(map[string]string)
+		if !m.SettingsLabels.IsNull() {
+			diags.Append(m.SettingsLabels.ElementsAs(ctx, &labels, false)...)
+			if diags.HasError() {
+				return nil, diags
+			}
+		}
+
 		settings = &[]struct {
-			Name  string `json:"name"`
-			Value string `json:"value"`
+			Label *string `json:"label,omitempty"`
+			Name  string  `json:"name"`
+			Value string  `json:"value"`
 		}{}
 
-		for k, v := range elements {
-			*settings = append(*settings, struct {
-				Name  string `json:"name"`
-				Value string `json:"value"`
+		for k, val := range elements {
+			entry := struct {
+				Label *string `json:"label,omitempty"`
+				Name  string  `json:"name"`
+				Value string  `json:"value"`
 			}{
 				Name:  k,
-				Value: v,
-			})
+				Value: val,
+			}
+			if lbl, ok := labels[k]; ok {
+				entry.Label = &lbl
+			}
+			*settings = append(*settings, entry)
 		}
 	}
 

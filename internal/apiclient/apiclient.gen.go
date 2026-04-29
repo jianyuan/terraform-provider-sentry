@@ -2620,8 +2620,9 @@ type ProjectRuleActionNotifyEventSentryApp struct {
 	Name                      *string                                 `json:"name,omitempty"`
 	SentryAppInstallationUuid string                                  `json:"sentryAppInstallationUuid"`
 	Settings                  *[]struct {
-		Name  string `json:"name"`
-		Value string `json:"value"`
+		Label *string `json:"label,omitempty"`
+		Name  string  `json:"name"`
+		Value string  `json:"value"`
 	} `json:"settings,omitempty"`
 	Uuid *string `json:"uuid,omitempty"`
 }
