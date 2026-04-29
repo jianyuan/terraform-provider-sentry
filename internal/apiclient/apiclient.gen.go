@@ -10300,6 +10300,7 @@ type CreateProjectRuleResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ProjectRule
+	JSON201      *ProjectRule
 	JSON202      *struct {
 		Uuid string `json:"uuid"`
 	}
@@ -11801,6 +11802,13 @@ func ParseCreateProjectRuleResponse(rsp *http.Response) (*CreateProjectRuleRespo
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest ProjectRule
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 202:
 		var dest struct {

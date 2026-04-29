@@ -961,6 +961,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProjectRule"
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectRule"
         "202":
           description: Accepted
           content:
