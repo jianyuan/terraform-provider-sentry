@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -1548,6 +1549,7 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 	if !m.Actions.IsNull() {
 		apiActions := lo.Map(alert.Actions, func(a apiclient.ProjectRuleAction, _ int) json.RawMessage {
 			b, _ := json.Marshal(a)
+			b, _ = stripLegacyActionDisplayFields(b)
 			return b
 		})
 		var priorActions []json.RawMessage
@@ -1590,4 +1592,24 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 	}
 
 	return
+}
+
+// stripLegacyActionDisplayFields removes API-injected display-only keys from the legacy
+// action JSON before storing in state. The Sentry GET endpoint unconditionally adds
+// "formFields" (live webhook schema) and "name" (generated label) to every action dict.
+// These fields are never stored server-side and cannot be stabilized in config.
+func stripLegacyActionDisplayFields(actionJSON []byte) ([]byte, error) {
+	dec := json.NewDecoder(bytes.NewReader(actionJSON))
+	dec.UseNumber()
+
+	var action map[string]interface{}
+	if err := dec.Decode(&action); err != nil {
+		return nil, err
+	}
+
+	delete(action, "formFields")
+	delete(action, "name")
+	delete(action, "hasSchemaFormConfig")
+
+	return json.Marshal(action)
 }

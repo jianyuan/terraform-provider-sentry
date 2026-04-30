@@ -801,6 +801,12 @@ func (r *IssueAlertResource) Create(ctx context.Context, req resource.CreateRequ
 
 	if !data.Actions.IsNull() {
 		resp.Diagnostics.Append(data.Actions.Unmarshal(&body.Actions)...)
+		if !resp.Diagnostics.HasError() {
+			if err := injectLegacyActionsHasSchemaFormConfig(body.Actions); err != nil {
+				resp.Diagnostics.AddError("Failed to normalize actions", err.Error())
+				return
+			}
+		}
 	} else if !data.ActionsV2.IsNull() {
 		var actions []IssueAlertActionModel
 		resp.Diagnostics.Append(data.ActionsV2.ElementsAs(ctx, &actions, false)...)
@@ -960,6 +966,12 @@ func (r *IssueAlertResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	if !data.Actions.IsNull() {
 		resp.Diagnostics.Append(data.Actions.Unmarshal(&body.Actions)...)
+		if !resp.Diagnostics.HasError() {
+			if err := injectLegacyActionsHasSchemaFormConfig(body.Actions); err != nil {
+				resp.Diagnostics.AddError("Failed to normalize actions", err.Error())
+				return
+			}
+		}
 	} else if !data.ActionsV2.IsNull() {
 		var actions []IssueAlertActionModel
 		resp.Diagnostics.Append(data.ActionsV2.ElementsAs(ctx, &actions, false)...)
@@ -1184,4 +1196,25 @@ func (r *IssueAlertResource) UpgradeState(ctx context.Context) map[int64]resourc
 			},
 		},
 	}
+}
+
+// injectLegacyActionsHasSchemaFormConfig ensures hasSchemaFormConfig is always true for
+// notify_event_sentry_app actions in the legacy actions payload. The field is required by
+// the Sentry API but never returned in GET responses, so we inject it automatically rather
+// than requiring users to include it in their jsonencode config.
+func injectLegacyActionsHasSchemaFormConfig(actions []apiclient.ProjectRuleAction) error {
+	for i, action := range actions {
+		sentryApp, err := action.AsProjectRuleActionNotifyEventSentryApp()
+		if err != nil {
+			continue
+		}
+		if sentryApp.Id != apiclient.SentryRulesActionsNotifyEventSentryAppNotifyEventSentryAppAction {
+			continue
+		}
+		sentryApp.HasSchemaFormConfig = true
+		if err := actions[i].FromProjectRuleActionNotifyEventSentryApp(sentryApp); err != nil {
+			return err
+		}
+	}
+	return nil
 }
