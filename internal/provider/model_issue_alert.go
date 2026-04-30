@@ -1426,9 +1426,9 @@ type IssueAlertModel struct {
 	Frequency    types.Int64           `tfsdk:"frequency"`
 	Environment  types.String          `tfsdk:"environment"`
 	Owner        types.String          `tfsdk:"owner"`
-	ConditionsV2 types.List            `tfsdk:"conditions_v2"`
-	FiltersV2    types.List            `tfsdk:"filters_v2"`
-	ActionsV2    types.List            `tfsdk:"actions_v2"`
+	ConditionsV2 types.Set             `tfsdk:"conditions_v2"`
+	FiltersV2    types.Set             `tfsdk:"filters_v2"`
+	ActionsV2    types.Set             `tfsdk:"actions_v2"`
 }
 
 func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule) (diags diag.Diagnostics) {
@@ -1474,7 +1474,7 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 			return
 		}
 
-		conditionsV2, d := types.ListValueFrom(ctx, issueAlertConditionV2ElemType, conditions)
+		conditionsV2, d := types.SetValueFrom(ctx, issueAlertConditionV2ElemType, conditions)
 		diags.Append(d...)
 		if diags.HasError() {
 			return
@@ -1499,7 +1499,7 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 			return
 		}
 
-		filtersV2, d := types.ListValueFrom(ctx, issueAlertFilterV2ElemType, filters)
+		filtersV2, d := types.SetValueFrom(ctx, issueAlertFilterV2ElemType, filters)
 		diags.Append(d...)
 		if diags.HasError() {
 			return
@@ -1524,7 +1524,7 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 			return
 		}
 
-		actionsV2, d := types.ListValueFrom(ctx, issueAlertActionV2ElemType, actions)
+		actionsV2, d := types.SetValueFrom(ctx, issueAlertActionV2ElemType, actions)
 		diags.Append(d...)
 		if diags.HasError() {
 			return

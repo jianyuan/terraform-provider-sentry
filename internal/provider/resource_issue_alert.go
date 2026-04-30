@@ -1137,9 +1137,9 @@ func (r *IssueAlertResource) UpgradeState(ctx context.Context) map[int64]resourc
 					Environment:  priorStateData.Environment,
 				}
 
-				upgradedStateData.ConditionsV2 = types.ListNull(issueAlertConditionV2ElemType)
-				upgradedStateData.FiltersV2 = types.ListNull(issueAlertFilterV2ElemType)
-				upgradedStateData.ActionsV2 = types.ListNull(issueAlertActionV2ElemType)
+				upgradedStateData.ConditionsV2 = types.SetNull(issueAlertConditionV2ElemType)
+				upgradedStateData.FiltersV2 = types.SetNull(issueAlertFilterV2ElemType)
+				upgradedStateData.ActionsV2 = types.SetNull(issueAlertActionV2ElemType)
 
 				upgradedStateData.Conditions = sentrytypes.NewLossyJsonNull()
 				if !priorStateData.Conditions.IsNull() {

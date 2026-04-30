@@ -23,9 +23,9 @@ func TestIssueAlertResource_elemTypesInitialized(t *testing.T) {
 
 func TestIssueAlertModel_v2FieldsHandleUnknown(t *testing.T) {
 	model := IssueAlertModel{
-		ConditionsV2: types.ListUnknown(issueAlertConditionV2ElemType),
-		FiltersV2:    types.ListUnknown(issueAlertFilterV2ElemType),
-		ActionsV2:    types.ListUnknown(issueAlertActionV2ElemType),
+		ConditionsV2: types.SetUnknown(issueAlertConditionV2ElemType),
+		FiltersV2:    types.SetUnknown(issueAlertFilterV2ElemType),
+		ActionsV2:    types.SetUnknown(issueAlertActionV2ElemType),
 	}
 
 	if !model.ConditionsV2.IsUnknown() {
@@ -41,9 +41,9 @@ func TestIssueAlertModel_v2FieldsHandleUnknown(t *testing.T) {
 
 func TestIssueAlertModel_v2FieldsHandleNull(t *testing.T) {
 	model := IssueAlertModel{
-		ConditionsV2: types.ListNull(issueAlertConditionV2ElemType),
-		FiltersV2:    types.ListNull(issueAlertFilterV2ElemType),
-		ActionsV2:    types.ListNull(issueAlertActionV2ElemType),
+		ConditionsV2: types.SetNull(issueAlertConditionV2ElemType),
+		FiltersV2:    types.SetNull(issueAlertFilterV2ElemType),
+		ActionsV2:    types.SetNull(issueAlertActionV2ElemType),
 	}
 
 	if !model.ConditionsV2.IsNull() {
