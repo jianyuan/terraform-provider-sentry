@@ -163,7 +163,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemAgeComparison](ctx),
 										Validators: []validator.Object{
-											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level")),
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level"), path.MatchRelative().AtParent().AtName("issue_type")),
 										},
 										Attributes: map[string]schema.Attribute{
 											"time": tfutils.WithEnumStringAttribute(
@@ -197,7 +197,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemAssignedTo](ctx),
 										Validators: []validator.Object{
-											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level")),
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level"), path.MatchRelative().AtParent().AtName("issue_type")),
 										},
 										Attributes: map[string]schema.Attribute{
 											"target_type": tfutils.WithEnumStringAttribute(
@@ -224,7 +224,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemIssueCategory](ctx),
 										Validators: []validator.Object{
-											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level")),
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level"), path.MatchRelative().AtParent().AtName("issue_type")),
 										},
 										Attributes: map[string]schema.Attribute{
 											"value": schema.Int64Attribute{
@@ -239,7 +239,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemIssueOccurrences](ctx),
 										Validators: []validator.Object{
-											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level")),
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level"), path.MatchRelative().AtParent().AtName("issue_type")),
 										},
 										Attributes: map[string]schema.Attribute{
 											"value": schema.Int64Attribute{
@@ -257,7 +257,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemIssuePriorityDeescalating](ctx),
 										Validators: []validator.Object{
-											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level")),
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level"), path.MatchRelative().AtParent().AtName("issue_type")),
 										},
 										Attributes: map[string]schema.Attribute{},
 									},
@@ -266,7 +266,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemIssuePriorityGreaterOrEqual](ctx),
 										Validators: []validator.Object{
-											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level")),
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level"), path.MatchRelative().AtParent().AtName("issue_type")),
 										},
 										Attributes: map[string]schema.Attribute{
 											"comparison": schema.Int64Attribute{
@@ -281,7 +281,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemEventUniqueUserFrequencyCount](ctx),
 										Validators: []validator.Object{
-											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level")),
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level"), path.MatchRelative().AtParent().AtName("issue_type")),
 										},
 										Attributes: map[string]schema.Attribute{
 											"value": schema.Int64Attribute{
@@ -343,7 +343,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemEventFrequencyCount](ctx),
 										Validators: []validator.Object{
-											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level")),
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level"), path.MatchRelative().AtParent().AtName("issue_type")),
 										},
 										Attributes: map[string]schema.Attribute{
 											"value": schema.Int64Attribute{
@@ -352,6 +352,42 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 												CustomType:          supertypes.Int64Type{},
 												Validators: []validator.Int64{
 													int64validator.AtLeast(1),
+												},
+											},
+											"filters": schema.ListNestedAttribute{
+												MarkdownDescription: "A list of additional sub-filters to evaluate before the alert will fire.",
+												Optional:            true,
+												Computed:            true,
+												CustomType:          supertypes.NewListNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemEventFrequencyCountFiltersItem](ctx),
+												NestedObject: schema.NestedAttributeObject{
+													Attributes: map[string]schema.Attribute{
+														"key": schema.StringAttribute{
+															MarkdownDescription: "The key of the filter. Conflicts with `attribute`.",
+															Optional:            true,
+															CustomType:          supertypes.StringType{},
+															Validators: []validator.String{
+																stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("attribute")),
+															},
+														},
+														"attribute": schema.StringAttribute{
+															MarkdownDescription: "The attribute of the filter. Conflicts with `key`.",
+															Optional:            true,
+															CustomType:          supertypes.StringType{},
+															Validators: []validator.String{
+																stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("key")),
+															},
+														},
+														"match": schema.StringAttribute{
+															MarkdownDescription: "The match type of the filter.",
+															Optional:            true,
+															CustomType:          supertypes.StringType{},
+														},
+														"value": schema.StringAttribute{
+															MarkdownDescription: "The value of the filter.",
+															Optional:            true,
+															CustomType:          supertypes.StringType{},
+														},
+													},
 												},
 											},
 											"interval": tfutils.WithEnumStringAttribute(
@@ -369,7 +405,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemEventFrequencyPercent](ctx),
 										Validators: []validator.Object{
-											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level")),
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level"), path.MatchRelative().AtParent().AtName("issue_type")),
 										},
 										Attributes: map[string]schema.Attribute{
 											"value": schema.Int64Attribute{
@@ -378,6 +414,42 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 												CustomType:          supertypes.Int64Type{},
 												Validators: []validator.Int64{
 													int64validator.AtLeast(1),
+												},
+											},
+											"filters": schema.ListNestedAttribute{
+												MarkdownDescription: "A list of additional sub-filters to evaluate before the alert will fire.",
+												Optional:            true,
+												Computed:            true,
+												CustomType:          supertypes.NewListNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemEventFrequencyPercentFiltersItem](ctx),
+												NestedObject: schema.NestedAttributeObject{
+													Attributes: map[string]schema.Attribute{
+														"key": schema.StringAttribute{
+															MarkdownDescription: "The key of the filter. Conflicts with `attribute`.",
+															Optional:            true,
+															CustomType:          supertypes.StringType{},
+															Validators: []validator.String{
+																stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("attribute")),
+															},
+														},
+														"attribute": schema.StringAttribute{
+															MarkdownDescription: "The attribute of the filter. Conflicts with `key`.",
+															Optional:            true,
+															CustomType:          supertypes.StringType{},
+															Validators: []validator.String{
+																stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("key")),
+															},
+														},
+														"match": schema.StringAttribute{
+															MarkdownDescription: "The match type of the filter.",
+															Optional:            true,
+															CustomType:          supertypes.StringType{},
+														},
+														"value": schema.StringAttribute{
+															MarkdownDescription: "The value of the filter.",
+															Optional:            true,
+															CustomType:          supertypes.StringType{},
+														},
+													},
 												},
 											},
 											"interval": tfutils.WithEnumStringAttribute(
@@ -403,7 +475,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemPercentSessionsCount](ctx),
 										Validators: []validator.Object{
-											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level")),
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level"), path.MatchRelative().AtParent().AtName("issue_type")),
 										},
 										Attributes: map[string]schema.Attribute{
 											"value": schema.Int64Attribute{
@@ -429,7 +501,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemPercentSessionsPercent](ctx),
 										Validators: []validator.Object{
-											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level")),
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level"), path.MatchRelative().AtParent().AtName("issue_type")),
 										},
 										Attributes: map[string]schema.Attribute{
 											"value": schema.Int64Attribute{
@@ -438,6 +510,42 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 												CustomType:          supertypes.Int64Type{},
 												Validators: []validator.Int64{
 													int64validator.AtLeast(1),
+												},
+											},
+											"filters": schema.ListNestedAttribute{
+												MarkdownDescription: "A list of additional sub-filters to evaluate before the alert will fire.",
+												Optional:            true,
+												Computed:            true,
+												CustomType:          supertypes.NewListNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemPercentSessionsPercentFiltersItem](ctx),
+												NestedObject: schema.NestedAttributeObject{
+													Attributes: map[string]schema.Attribute{
+														"key": schema.StringAttribute{
+															MarkdownDescription: "The key of the filter. Conflicts with `attribute`.",
+															Optional:            true,
+															CustomType:          supertypes.StringType{},
+															Validators: []validator.String{
+																stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("attribute")),
+															},
+														},
+														"attribute": schema.StringAttribute{
+															MarkdownDescription: "The attribute of the filter. Conflicts with `key`.",
+															Optional:            true,
+															CustomType:          supertypes.StringType{},
+															Validators: []validator.String{
+																stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("key")),
+															},
+														},
+														"match": schema.StringAttribute{
+															MarkdownDescription: "The match type of the filter.",
+															Optional:            true,
+															CustomType:          supertypes.StringType{},
+														},
+														"value": schema.StringAttribute{
+															MarkdownDescription: "The value of the filter.",
+															Optional:            true,
+															CustomType:          supertypes.StringType{},
+														},
+													},
 												},
 											},
 											"interval": tfutils.WithEnumStringAttribute(
@@ -463,7 +571,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemEventAttribute](ctx),
 										Validators: []validator.Object{
-											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level")),
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level"), path.MatchRelative().AtParent().AtName("issue_type")),
 										},
 										Attributes: map[string]schema.Attribute{
 											"attribute": schema.StringAttribute{
@@ -477,9 +585,12 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 												CustomType:          supertypes.StringType{},
 											},
 											"value": schema.StringAttribute{
-												MarkdownDescription: "The value to compare against.",
-												Required:            true,
+												MarkdownDescription: "The value to compare against. Not required when `match` is `is` or `ns`.",
+												Optional:            true,
 												CustomType:          supertypes.StringType{},
+												Validators: []validator.String{
+													fstringvalidator.NullIfAttributeIsOneOf(path.MatchRelative().AtParent().AtName("match"), []attr.Value{supertypes.NewStringValue("is"), supertypes.NewStringValue("ns")}),
+												},
 											},
 										},
 									},
@@ -488,7 +599,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemTaggedEvent](ctx),
 										Validators: []validator.Object{
-											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level")),
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level"), path.MatchRelative().AtParent().AtName("issue_type")),
 										},
 										Attributes: map[string]schema.Attribute{
 											"key": schema.StringAttribute{
@@ -516,7 +627,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemLatestRelease](ctx),
 										Validators: []validator.Object{
-											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level")),
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level"), path.MatchRelative().AtParent().AtName("issue_type")),
 										},
 										Attributes: map[string]schema.Attribute{},
 									},
@@ -556,7 +667,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemLevel](ctx),
 										Validators: []validator.Object{
-											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release")),
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("issue_type")),
 										},
 										Attributes: map[string]schema.Attribute{
 											"match": schema.StringAttribute{
@@ -568,6 +679,26 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 												MarkdownDescription: "The level to compare against.",
 												Required:            true,
 												CustomType:          supertypes.Int64Type{},
+											},
+										},
+									},
+									"issue_type": schema.SingleNestedAttribute{
+										MarkdownDescription: "Issue type is (or is not) `value`.",
+										Optional:            true,
+										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemIssueType](ctx),
+										Validators: []validator.Object{
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level")),
+										},
+										Attributes: map[string]schema.Attribute{
+											"value": schema.StringAttribute{
+												MarkdownDescription: "The issue type slug (e.g. `performance_large_http_payload`).",
+												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"include": schema.BoolAttribute{
+												MarkdownDescription: "If `true`, matches when the issue type equals `value`. If `false`, matches when it does not equal `value`.",
+												Required:            true,
+												CustomType:          supertypes.BoolType{},
 											},
 										},
 									},
@@ -1084,6 +1215,7 @@ type AlertResourceModelActionFiltersItemConditionsItem struct {
 	LatestRelease                 supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemConditionsItemLatestRelease]                 `tfsdk:"latest_release"`
 	LatestAdoptedRelease          supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemConditionsItemLatestAdoptedRelease]          `tfsdk:"latest_adopted_release"`
 	Level                         supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemConditionsItemLevel]                         `tfsdk:"level"`
+	IssueType                     supertypes.SingleNestedObjectValueOf[AlertResourceModelActionFiltersItemConditionsItemIssueType]                     `tfsdk:"issue_type"`
 }
 
 type AlertResourceModelActionFiltersItemConditionsItemAgeComparison struct {
@@ -1126,14 +1258,30 @@ type AlertResourceModelActionFiltersItemConditionsItemEventUniqueUserFrequencyCo
 }
 
 type AlertResourceModelActionFiltersItemConditionsItemEventFrequencyCount struct {
-	Value    supertypes.Int64Value  `tfsdk:"value"`
-	Interval supertypes.StringValue `tfsdk:"interval"`
+	Value    supertypes.Int64Value                                                                                                       `tfsdk:"value"`
+	Filters  supertypes.ListNestedObjectValueOf[AlertResourceModelActionFiltersItemConditionsItemEventFrequencyCountFiltersItem]         `tfsdk:"filters"`
+	Interval supertypes.StringValue                                                                                                      `tfsdk:"interval"`
+}
+
+type AlertResourceModelActionFiltersItemConditionsItemEventFrequencyCountFiltersItem struct {
+	Key       supertypes.StringValue `tfsdk:"key"`
+	Attribute supertypes.StringValue `tfsdk:"attribute"`
+	Match     supertypes.StringValue `tfsdk:"match"`
+	Value     supertypes.StringValue `tfsdk:"value"`
 }
 
 type AlertResourceModelActionFiltersItemConditionsItemEventFrequencyPercent struct {
-	Value              supertypes.Int64Value  `tfsdk:"value"`
-	Interval           supertypes.StringValue `tfsdk:"interval"`
-	ComparisonInterval supertypes.StringValue `tfsdk:"comparison_interval"`
+	Value              supertypes.Int64Value                                                                                                          `tfsdk:"value"`
+	Filters            supertypes.ListNestedObjectValueOf[AlertResourceModelActionFiltersItemConditionsItemEventFrequencyPercentFiltersItem]           `tfsdk:"filters"`
+	Interval           supertypes.StringValue                                                                                                         `tfsdk:"interval"`
+	ComparisonInterval supertypes.StringValue                                                                                                         `tfsdk:"comparison_interval"`
+}
+
+type AlertResourceModelActionFiltersItemConditionsItemEventFrequencyPercentFiltersItem struct {
+	Key       supertypes.StringValue `tfsdk:"key"`
+	Attribute supertypes.StringValue `tfsdk:"attribute"`
+	Match     supertypes.StringValue `tfsdk:"match"`
+	Value     supertypes.StringValue `tfsdk:"value"`
 }
 
 type AlertResourceModelActionFiltersItemConditionsItemPercentSessionsCount struct {
@@ -1142,9 +1290,17 @@ type AlertResourceModelActionFiltersItemConditionsItemPercentSessionsCount struc
 }
 
 type AlertResourceModelActionFiltersItemConditionsItemPercentSessionsPercent struct {
-	Value              supertypes.Int64Value  `tfsdk:"value"`
-	Interval           supertypes.StringValue `tfsdk:"interval"`
-	ComparisonInterval supertypes.StringValue `tfsdk:"comparison_interval"`
+	Value              supertypes.Int64Value                                                                                                              `tfsdk:"value"`
+	Filters            supertypes.ListNestedObjectValueOf[AlertResourceModelActionFiltersItemConditionsItemPercentSessionsPercentFiltersItem]               `tfsdk:"filters"`
+	Interval           supertypes.StringValue                                                                                                              `tfsdk:"interval"`
+	ComparisonInterval supertypes.StringValue                                                                                                              `tfsdk:"comparison_interval"`
+}
+
+type AlertResourceModelActionFiltersItemConditionsItemPercentSessionsPercentFiltersItem struct {
+	Key       supertypes.StringValue `tfsdk:"key"`
+	Attribute supertypes.StringValue `tfsdk:"attribute"`
+	Match     supertypes.StringValue `tfsdk:"match"`
+	Value     supertypes.StringValue `tfsdk:"value"`
 }
 
 type AlertResourceModelActionFiltersItemConditionsItemEventAttribute struct {
@@ -1171,6 +1327,11 @@ type AlertResourceModelActionFiltersItemConditionsItemLatestAdoptedRelease struc
 type AlertResourceModelActionFiltersItemConditionsItemLevel struct {
 	Match supertypes.StringValue `tfsdk:"match"`
 	Level supertypes.Int64Value  `tfsdk:"level"`
+}
+
+type AlertResourceModelActionFiltersItemConditionsItemIssueType struct {
+	Value   supertypes.StringValue `tfsdk:"value"`
+	Include supertypes.BoolValue   `tfsdk:"include"`
 }
 
 type AlertResourceModelActionFiltersItemActionsItem struct {

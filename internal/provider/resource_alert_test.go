@@ -403,6 +403,53 @@ func testAccAlertResourceConfig(teamName, projectName, monitorName, name, opsgen
 								match = "eq"
 								level = 50
 							}
+						},
+						{
+							issue_type = {
+								value   = "performance_large_http_payload"
+								include = false
+							}
+						},
+						{
+							event_attribute = {
+								attribute = "message"
+								match     = "is"
+							}
+						},
+						{
+							event_attribute = {
+								attribute = "message"
+								match     = "ns"
+							}
+						},
+						{
+							event_frequency_count = {
+								value = 10
+								filters = [
+									{ attribute = "message", match = "co", value = "error" }
+								]
+								interval = "1m"
+							}
+						},
+						{
+							event_frequency_percent = {
+								value = 50
+								filters = [
+									{ key = "tag", match = "eq", value = "test" }
+								]
+								interval  = "1h"
+								comparison_interval = "1w"
+							}
+						},
+						{
+							percent_sessions_percent = {
+								value = 25
+								filters = [
+									{ attribute = "message", match = "eq", value = "crash" }
+								]
+								interval            = "1h"
+								comparison_interval = "1w"
+							}
 						}
 					]
 					actions = [

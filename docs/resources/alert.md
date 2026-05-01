@@ -1042,6 +1042,7 @@ Optional:
 - `issue_occurrences` (Attributes) Issue frequency. (see [below for nested schema](#nestedatt--action_filters--conditions--issue_occurrences))
 - `issue_priority_deescalating` (Attributes) De-escalation. (see [below for nested schema](#nestedatt--action_filters--conditions--issue_priority_deescalating))
 - `issue_priority_greater_or_equal` (Attributes) Issue priority. (see [below for nested schema](#nestedatt--action_filters--conditions--issue_priority_greater_or_equal))
+- `issue_type` (Attributes) Issue type is (or is not) `value`. (see [below for nested schema](#nestedatt--action_filters--conditions--issue_type))
 - `latest_adopted_release` (Attributes) The `release_age_type` adopted release associated with the event's issue is `age_comparison` than the latest adopted release in `environment`. (see [below for nested schema](#nestedatt--action_filters--conditions--latest_adopted_release))
 - `latest_release` (Attributes) The event is from the latest release. (see [below for nested schema](#nestedatt--action_filters--conditions--latest_release))
 - `level` (Attributes) The event's level match `level`. (see [below for nested schema](#nestedatt--action_filters--conditions--level))
@@ -1075,7 +1076,10 @@ Required:
 
 - `attribute` (String) The attribute to evaluate.
 - `match` (String) The match type.
-- `value` (String) The value to compare against.
+
+Optional:
+
+- `value` (String) The value to compare against. Not required when `match` is `is` or `ns`.
 
 
 <a id="nestedatt--action_filters--conditions--event_frequency_count"></a>
@@ -1086,6 +1090,21 @@ Required:
 - `interval` (String) The time period in which to evaluate the value. e.g. Number of events in an issue is more than `value` in `interval`. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
 - `value` (Number) A positive integer representing the number of events in an issue that must come in before the alert will fire.
 
+Optional:
+
+- `filters` (Attributes List) A list of additional sub-filters to evaluate before the alert will fire. (see [below for nested schema](#nestedatt--action_filters--conditions--event_frequency_count--filters))
+
+<a id="nestedatt--action_filters--conditions--event_frequency_count--filters"></a>
+### Nested Schema for `action_filters.conditions.event_frequency_count.filters`
+
+Optional:
+
+- `attribute` (String) The attribute of the filter. Conflicts with `key`.
+- `key` (String) The key of the filter. Conflicts with `attribute`.
+- `match` (String) The match type of the filter.
+- `value` (String) The value of the filter.
+
+
 
 <a id="nestedatt--action_filters--conditions--event_frequency_percent"></a>
 ### Nested Schema for `action_filters.conditions.event_frequency_percent`
@@ -1095,6 +1114,21 @@ Required:
 - `comparison_interval` (String) The time period to compare against. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
 - `interval` (String) The time period in which to evaluate the value. e.g. Number of events in an issue is `comparisonInterval` percent higher `value` compared to `interval`. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
 - `value` (Number) A positive integer representing the number of events in an issue that must come in before the alert will fire.
+
+Optional:
+
+- `filters` (Attributes List) A list of additional sub-filters to evaluate before the alert will fire. (see [below for nested schema](#nestedatt--action_filters--conditions--event_frequency_percent--filters))
+
+<a id="nestedatt--action_filters--conditions--event_frequency_percent--filters"></a>
+### Nested Schema for `action_filters.conditions.event_frequency_percent.filters`
+
+Optional:
+
+- `attribute` (String) The attribute of the filter. Conflicts with `key`.
+- `key` (String) The key of the filter. Conflicts with `attribute`.
+- `match` (String) The match type of the filter.
+- `value` (String) The value of the filter.
+
 
 
 <a id="nestedatt--action_filters--conditions--event_unique_user_frequency_count"></a>
@@ -1149,6 +1183,15 @@ Required:
 - `comparison` (Number) he priority the issue must be for the alert to fire.
 
 
+<a id="nestedatt--action_filters--conditions--issue_type"></a>
+### Nested Schema for `action_filters.conditions.issue_type`
+
+Required:
+
+- `include` (Boolean) If `true`, matches when the issue type equals `value`. If `false`, matches when it does not equal `value`.
+- `value` (String) The issue type slug (e.g. `performance_large_http_payload`).
+
+
 <a id="nestedatt--action_filters--conditions--latest_adopted_release"></a>
 ### Nested Schema for `action_filters.conditions.latest_adopted_release`
 
@@ -1189,6 +1232,21 @@ Required:
 - `comparison_interval` (String) The time period to compare against. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
 - `interval` (String) The time period in which to evaluate the value. e.g. Percentage of sessions affected by an issue is `comparisonInterval` percent higher `value` compared to `interval`. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
 - `value` (Number) A positive integer representing the number of events in an issue that must come in before the alert will fire.
+
+Optional:
+
+- `filters` (Attributes List) A list of additional sub-filters to evaluate before the alert will fire. (see [below for nested schema](#nestedatt--action_filters--conditions--percent_sessions_percent--filters))
+
+<a id="nestedatt--action_filters--conditions--percent_sessions_percent--filters"></a>
+### Nested Schema for `action_filters.conditions.percent_sessions_percent.filters`
+
+Optional:
+
+- `attribute` (String) The attribute of the filter. Conflicts with `key`.
+- `key` (String) The key of the filter. Conflicts with `attribute`.
+- `match` (String) The match type of the filter.
+- `value` (String) The value of the filter.
+
 
 
 <a id="nestedatt--action_filters--conditions--tagged_event"></a>

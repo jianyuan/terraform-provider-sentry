@@ -632,6 +632,21 @@ func (e OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqualType
 	}
 }
 
+// Defines values for OrganizationWorkflowActionFilterConditionIssueTypeType.
+const (
+	IssueType OrganizationWorkflowActionFilterConditionIssueTypeType = "issue_type"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterConditionIssueTypeType enum.
+func (e OrganizationWorkflowActionFilterConditionIssueTypeType) Valid() bool {
+	switch e {
+	case IssueType:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for OrganizationWorkflowActionFilterConditionLatestAdoptedReleaseType.
 const (
 	LatestAdoptedRelease OrganizationWorkflowActionFilterConditionLatestAdoptedReleaseType = "latest_adopted_release"
@@ -1857,9 +1872,9 @@ type OrganizationWorkflowActionFilterConditionAssignedToType string
 // OrganizationWorkflowActionFilterConditionEventAttribute defines model for OrganizationWorkflow_ActionFilter_Condition_EventAttribute.
 type OrganizationWorkflowActionFilterConditionEventAttribute struct {
 	Comparison struct {
-		Attribute string `json:"attribute"`
-		Match     string `json:"match"`
-		Value     string `json:"value"`
+		Attribute string  `json:"attribute"`
+		Match     string  `json:"match"`
+		Value     *string `json:"value,omitempty"`
 	} `json:"comparison"`
 	ConditionResult bool                                                        `json:"conditionResult"`
 	Type            OrganizationWorkflowActionFilterConditionEventAttributeType `json:"type"`
@@ -1871,8 +1886,9 @@ type OrganizationWorkflowActionFilterConditionEventAttributeType string
 // OrganizationWorkflowActionFilterConditionEventFrequencyCount defines model for OrganizationWorkflow_ActionFilter_Condition_EventFrequencyCount.
 type OrganizationWorkflowActionFilterConditionEventFrequencyCount struct {
 	Comparison struct {
-		Interval string `json:"interval"`
-		Value    int64  `json:"value"`
+		Filters  *[]OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCountFilter `json:"filters,omitempty"`
+		Interval string                                                                          `json:"interval"`
+		Value    int64                                                                           `json:"value"`
 	} `json:"comparison"`
 	ConditionResult bool                                                             `json:"conditionResult"`
 	Type            OrganizationWorkflowActionFilterConditionEventFrequencyCountType `json:"type"`
@@ -1884,9 +1900,10 @@ type OrganizationWorkflowActionFilterConditionEventFrequencyCountType string
 // OrganizationWorkflowActionFilterConditionEventFrequencyPercent defines model for OrganizationWorkflow_ActionFilter_Condition_EventFrequencyPercent.
 type OrganizationWorkflowActionFilterConditionEventFrequencyPercent struct {
 	Comparison struct {
-		ComparisonInterval string `json:"comparisonInterval"`
-		Interval           string `json:"interval"`
-		Value              int64  `json:"value"`
+		ComparisonInterval string                                                                          `json:"comparisonInterval"`
+		Filters            *[]OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCountFilter `json:"filters,omitempty"`
+		Interval           string                                                                          `json:"interval"`
+		Value              int64                                                                           `json:"value"`
 	} `json:"comparison"`
 	ConditionResult bool                                                               `json:"conditionResult"`
 	Type            OrganizationWorkflowActionFilterConditionEventFrequencyPercentType `json:"type"`
@@ -1961,6 +1978,19 @@ type OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual struct
 // OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqualType defines model for OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual.Type.
 type OrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqualType string
 
+// OrganizationWorkflowActionFilterConditionIssueType defines model for OrganizationWorkflow_ActionFilter_Condition_IssueType.
+type OrganizationWorkflowActionFilterConditionIssueType struct {
+	Comparison struct {
+		Include bool   `json:"include"`
+		Value   string `json:"value"`
+	} `json:"comparison"`
+	ConditionResult bool                                                   `json:"conditionResult"`
+	Type            OrganizationWorkflowActionFilterConditionIssueTypeType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterConditionIssueTypeType defines model for OrganizationWorkflowActionFilterConditionIssueType.Type.
+type OrganizationWorkflowActionFilterConditionIssueTypeType string
+
 // OrganizationWorkflowActionFilterConditionLatestAdoptedRelease defines model for OrganizationWorkflow_ActionFilter_Condition_LatestAdoptedRelease.
 type OrganizationWorkflowActionFilterConditionLatestAdoptedRelease struct {
 	Comparison struct {
@@ -2014,9 +2044,10 @@ type OrganizationWorkflowActionFilterConditionPercentSessionsCountType string
 // OrganizationWorkflowActionFilterConditionPercentSessionsPercent defines model for OrganizationWorkflow_ActionFilter_Condition_PercentSessionsPercent.
 type OrganizationWorkflowActionFilterConditionPercentSessionsPercent struct {
 	Comparison struct {
-		ComparisonInterval string `json:"comparisonInterval"`
-		Interval           string `json:"interval"`
-		Value              int64  `json:"value"`
+		ComparisonInterval string                                                                          `json:"comparisonInterval"`
+		Filters            *[]OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCountFilter `json:"filters,omitempty"`
+		Interval           string                                                                          `json:"interval"`
+		Value              int64                                                                           `json:"value"`
 	} `json:"comparison"`
 	ConditionResult bool                                                                `json:"conditionResult"`
 	Type            OrganizationWorkflowActionFilterConditionPercentSessionsPercentType `json:"type"`
@@ -4298,6 +4329,34 @@ func (t *OrganizationWorkflowActionFilterCondition) MergeOrganizationWorkflowAct
 	return err
 }
 
+// AsOrganizationWorkflowActionFilterConditionIssueType returns the union data inside the OrganizationWorkflowActionFilterCondition as a OrganizationWorkflowActionFilterConditionIssueType
+func (t OrganizationWorkflowActionFilterCondition) AsOrganizationWorkflowActionFilterConditionIssueType() (OrganizationWorkflowActionFilterConditionIssueType, error) {
+	var body OrganizationWorkflowActionFilterConditionIssueType
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterConditionIssueType overwrites any union data inside the OrganizationWorkflowActionFilterCondition as the provided OrganizationWorkflowActionFilterConditionIssueType
+func (t *OrganizationWorkflowActionFilterCondition) FromOrganizationWorkflowActionFilterConditionIssueType(v OrganizationWorkflowActionFilterConditionIssueType) error {
+	v.Type = "issue_type"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterConditionIssueType performs a merge with any union data inside the OrganizationWorkflowActionFilterCondition, using the provided OrganizationWorkflowActionFilterConditionIssueType
+func (t *OrganizationWorkflowActionFilterCondition) MergeOrganizationWorkflowActionFilterConditionIssueType(v OrganizationWorkflowActionFilterConditionIssueType) error {
+	v.Type = "issue_type"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
 func (t OrganizationWorkflowActionFilterCondition) Discriminator() (string, error) {
 	var discriminator struct {
 		Discriminator string `json:"type"`
@@ -4332,6 +4391,8 @@ func (t OrganizationWorkflowActionFilterCondition) ValueByDiscriminator() (inter
 		return t.AsOrganizationWorkflowActionFilterConditionIssuePriorityDeescalating()
 	case "issue_priority_greater_or_equal":
 		return t.AsOrganizationWorkflowActionFilterConditionIssuePriorityGreaterOrEqual()
+	case "issue_type":
+		return t.AsOrganizationWorkflowActionFilterConditionIssueType()
 	case "latest_adopted_release":
 		return t.AsOrganizationWorkflowActionFilterConditionLatestAdoptedRelease()
 	case "latest_release":
