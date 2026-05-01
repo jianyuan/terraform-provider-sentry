@@ -6,7 +6,9 @@ import (
 	"slices"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-utils/must"
 	"github.com/jianyuan/go-utils/ptr"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
@@ -608,6 +610,25 @@ func (r *AlertResource) getTriggerConditions(ctx context.Context, data AlertReso
 		outTriggerConditions = append(outTriggerConditions, outTriggerCondition)
 	}
 
+	if !data.LegacyTriggerConditions.IsNull() && !data.LegacyTriggerConditions.IsUnknown() {
+		for _, elem := range data.LegacyTriggerConditions.Elements() {
+			typeStr, ok := elem.(types.String)
+			if !ok || typeStr.IsNull() || typeStr.IsUnknown() {
+				continue
+			}
+			var comp apiclient.OrganizationWorkflowTriggerCondition_Comparison
+			if err := comp.FromOrganizationWorkflowTriggerConditionComparison0(true); err != nil {
+				diags.AddError("Failed to build legacy trigger condition", err.Error())
+				return nil, diags
+			}
+			outTriggerConditions = append(outTriggerConditions, apiclient.OrganizationWorkflowTriggerCondition{
+				Type:            typeStr.ValueString(),
+				Comparison:      comp,
+				ConditionResult: true,
+			})
+		}
+	}
+
 	return outTriggerConditions, diags
 }
 
@@ -687,6 +708,7 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 	})
 
 	var triggerConditions []AlertResourceModelTriggerConditionsItem
+	var legacyElems []attr.Value
 	for _, triggerCondition := range triggers.Conditions {
 		outTriggerCondition := AlertResourceModelTriggerConditionsItem{
 			FirstSeenEvent:       supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemFirstSeenEvent](ctx),
@@ -697,16 +719,26 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 		switch triggerCondition.Type {
 		case "first_seen_event":
 			outTriggerCondition.FirstSeenEvent = supertypes.NewSingleNestedObjectValueOf(ctx, &AlertResourceModelTriggerConditionsItemFirstSeenEvent{})
+			triggerConditions = append(triggerConditions, outTriggerCondition)
 		case "issue_resolved_trigger":
 			outTriggerCondition.IssueResolvedTrigger = supertypes.NewSingleNestedObjectValueOf(ctx, &AlertResourceModelTriggerConditionsItemIssueResolvedTrigger{})
+			triggerConditions = append(triggerConditions, outTriggerCondition)
 		case "reappeared_event":
 			outTriggerCondition.ReappearedEvent = supertypes.NewSingleNestedObjectValueOf(ctx, &AlertResourceModelTriggerConditionsItemReappearedEvent{})
+			triggerConditions = append(triggerConditions, outTriggerCondition)
 		case "regression_event":
 			outTriggerCondition.RegressionEvent = supertypes.NewSingleNestedObjectValueOf(ctx, &AlertResourceModelTriggerConditionsItemRegressionEvent{})
+			triggerConditions = append(triggerConditions, outTriggerCondition)
+		default:
+			legacyElems = append(legacyElems, types.StringValue(triggerCondition.Type))
 		}
-		triggerConditions = append(triggerConditions, outTriggerCondition)
 	}
 	m.TriggerConditions = supertypes.NewListNestedObjectValueOfValueSlice(ctx, triggerConditions)
+	if len(legacyElems) == 0 {
+		m.LegacyTriggerConditions = types.ListNull(types.StringType)
+	} else {
+		m.LegacyTriggerConditions = types.ListValueMust(types.StringType, legacyElems)
+	}
 
 	actionFilters, err := data.ActionFilters.AsOrganizationWorkflowActionFilters0()
 	if err != nil {
