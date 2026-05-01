@@ -17,9 +17,11 @@ var (
 		NewAlertDataSource,
 		NewAllProjectsDataSource,
 		NewCronMonitorDataSource,
+		NewErrorMonitorDataSource,
 		NewMetricMonitorDataSource,
 		NewOrganizationDataSource,
 		NewProjectDataSource,
+		NewProjectIssueStreamMonitorDataSource,
 		NewUptimeMonitorDataSource,
 	}
 )
