@@ -85,6 +85,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 
 				var outIssueCategory apiclient.OrganizationWorkflowActionFilterConditionIssueCategory
 				outIssueCategory.Comparison.Value = inIssueCategory.Value.Get()
+				outIssueCategory.Comparison.Include = ptr.Ptr(inIssueCategory.Include.Get())
 				outIssueCategory.ConditionResult = true
 
 				if err := outCondition.FromOrganizationWorkflowActionFilterConditionIssueCategory(outIssueCategory); err != nil {
@@ -819,6 +820,11 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 			case apiclient.OrganizationWorkflowActionFilterConditionIssueCategory:
 				var issueCategory AlertResourceModelActionFiltersItemConditionsItemIssueCategory
 				issueCategory.Value = supertypes.NewInt64Value(conditionValue.Comparison.Value)
+				if conditionValue.Comparison.Include != nil {
+					issueCategory.Include = supertypes.NewBoolValue(*conditionValue.Comparison.Include)
+				} else {
+					issueCategory.Include = supertypes.NewBoolValue(true)
+				}
 
 				outCondition.IssueCategory = supertypes.NewSingleNestedObjectValueOf(ctx, &issueCategory)
 

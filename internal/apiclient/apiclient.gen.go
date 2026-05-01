@@ -1973,7 +1973,8 @@ type OrganizationWorkflowActionFilterConditionEventUniqueUserFrequencyCountFilte
 // OrganizationWorkflowActionFilterConditionIssueCategory defines model for OrganizationWorkflow_ActionFilter_Condition_IssueCategory.
 type OrganizationWorkflowActionFilterConditionIssueCategory struct {
 	Comparison struct {
-		Value int64 `json:"value"`
+		Include *bool `json:"include,omitempty"`
+		Value   int64 `json:"value"`
 	} `json:"comparison"`
 	ConditionResult bool                                                       `json:"conditionResult"`
 	Type            OrganizationWorkflowActionFilterConditionIssueCategoryType `json:"type"`

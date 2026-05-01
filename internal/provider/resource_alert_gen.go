@@ -232,6 +232,12 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 												Required:            true,
 												CustomType:          supertypes.Int64Type{},
 											},
+											"include": schema.BoolAttribute{
+												MarkdownDescription: "If `true`, the condition matches when the issue category is equal to `value`. If `false`, the condition matches when it is not equal. Defaults to `true`.",
+												Optional:            true,
+												Computed:            true,
+												CustomType:          supertypes.BoolType{},
+											},
 										},
 									},
 									"issue_occurrences": schema.SingleNestedAttribute{
@@ -1144,7 +1150,8 @@ type AlertResourceModelActionFiltersItemConditionsItemAssignedTo struct {
 }
 
 type AlertResourceModelActionFiltersItemConditionsItemIssueCategory struct {
-	Value supertypes.Int64Value `tfsdk:"value"`
+	Value   supertypes.Int64Value `tfsdk:"value"`
+	Include supertypes.BoolValue  `tfsdk:"include"`
 }
 
 type AlertResourceModelActionFiltersItemConditionsItemIssueOccurrences struct {

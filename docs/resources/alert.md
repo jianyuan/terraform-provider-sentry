@@ -1153,6 +1153,10 @@ Required:
 
 - `value` (Number) The issue category to filter to.
 
+Optional:
+
+- `include` (Boolean) If `true`, the condition matches when the issue category is equal to `value`. If `false`, the condition matches when it is not equal. Defaults to `true`.
+
 
 <a id="nestedatt--action_filters--conditions--issue_occurrences"></a>
 ### Nested Schema for `action_filters.conditions.issue_occurrences`
