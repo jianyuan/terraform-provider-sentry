@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"encoding/json"
 	"fmt"
 	"sort"
 	"strings"
@@ -205,4 +206,18 @@ func typesSetKey(s types.Set) string {
 	}
 	sort.Strings(strs)
 	return strings.Join(strs, ",")
+}
+
+// legacyJsonItemKey extracts a stable identity key from a raw JSON object
+// by reading its "id" field. Used to reorder legacy conditions/filters/actions
+// JSON arrays to match prior state after an API read.
+func legacyJsonItemKey(raw json.RawMessage) string {
+	dec := json.NewDecoder(strings.NewReader(string(raw)))
+	dec.UseNumber()
+	var m map[string]interface{}
+	if err := dec.Decode(&m); err != nil {
+		return string(raw)
+	}
+	id, _ := m["id"].(string)
+	return id
 }
