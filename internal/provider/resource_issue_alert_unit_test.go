@@ -234,3 +234,71 @@ func TestSlackChannel_SemanticEquals_ignoresHashPrefix(t *testing.T) {
 		})
 	}
 }
+
+func TestReorderToMatchPrior_preservesPriorOrder(t *testing.T) {
+	identity := func(s string) string { return s }
+
+	prior := []string{"a", "b", "c"}
+	incoming := []string{"c", "a", "b"}
+	got := reorderToMatchPrior(prior, incoming, identity)
+	want := []string{"a", "b", "c"}
+	if len(got) != len(want) {
+		t.Fatalf("len mismatch: got %v, want %v", got, want)
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Errorf("index %d: got %q, want %q", i, got[i], want[i])
+		}
+	}
+}
+
+func TestReorderToMatchPrior_appendsNewItems(t *testing.T) {
+	identity := func(s string) string { return s }
+
+	prior := []string{"a", "b"}
+	incoming := []string{"c", "b", "a"}
+	got := reorderToMatchPrior(prior, incoming, identity)
+	// prior items first in order, then unmatched "c"
+	want := []string{"a", "b", "c"}
+	if len(got) != len(want) {
+		t.Fatalf("len mismatch: got %v, want %v", got, want)
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Errorf("index %d: got %q, want %q", i, got[i], want[i])
+		}
+	}
+}
+
+func TestReorderToMatchPrior_handlesDuplicateTypes(t *testing.T) {
+	identity := func(s string) string { return s }
+
+	prior := []string{"x", "x", "y"}
+	incoming := []string{"y", "x", "x"}
+	got := reorderToMatchPrior(prior, incoming, identity)
+	want := []string{"x", "x", "y"}
+	if len(got) != len(want) {
+		t.Fatalf("len mismatch: got %v, want %v", got, want)
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Errorf("index %d: got %q, want %q", i, got[i], want[i])
+		}
+	}
+}
+
+func TestReorderToMatchPrior_emptyPriorReturnsincoming(t *testing.T) {
+	identity := func(s string) string { return s }
+
+	prior := []string{}
+	incoming := []string{"c", "b", "a"}
+	got := reorderToMatchPrior(prior, incoming, identity)
+	if len(got) != len(incoming) {
+		t.Fatalf("len mismatch: got %v, want %v", got, incoming)
+	}
+	for i := range incoming {
+		if got[i] != incoming[i] {
+			t.Errorf("index %d: got %q, want %q", i, got[i], incoming[i])
+		}
+	}
+}

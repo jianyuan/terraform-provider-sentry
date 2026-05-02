@@ -1464,6 +1464,14 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 			return
 		}
 	} else if !m.ConditionsV2.IsNull() {
+		var priorConditions []IssueAlertConditionModel
+		if !m.ConditionsV2.IsUnknown() {
+			diags.Append(m.ConditionsV2.ElementsAs(ctx, &priorConditions, false)...)
+			if diags.HasError() {
+				return
+			}
+		}
+
 		conditions := lo.Map(alert.Conditions, func(condition apiclient.ProjectRuleCondition, _ int) IssueAlertConditionModel {
 			var conditionModel IssueAlertConditionModel
 			diags.Append(conditionModel.Fill(ctx, condition)...)
@@ -1473,6 +1481,8 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 		if diags.HasError() {
 			return
 		}
+
+		conditions = reorderToMatchPrior(priorConditions, conditions, issueAlertConditionModelKey)
 
 		conditionsV2, d := types.ListValueFrom(ctx, issueAlertConditionV2ElemType, conditions)
 		diags.Append(d...)
@@ -1489,6 +1499,14 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 			diags.AddError("Invalid filters", err.Error())
 		}
 	} else if !m.FiltersV2.IsNull() {
+		var priorFilters []IssueAlertFilterModel
+		if !m.FiltersV2.IsUnknown() {
+			diags.Append(m.FiltersV2.ElementsAs(ctx, &priorFilters, false)...)
+			if diags.HasError() {
+				return
+			}
+		}
+
 		filters := lo.Map(alert.Filters, func(filter apiclient.ProjectRuleFilter, _ int) IssueAlertFilterModel {
 			var filterModel IssueAlertFilterModel
 			diags.Append(filterModel.Fill(ctx, filter)...)
@@ -1498,6 +1516,8 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 		if diags.HasError() {
 			return
 		}
+
+		filters = reorderToMatchPrior(priorFilters, filters, issueAlertFilterModelKey)
 
 		filtersV2, d := types.ListValueFrom(ctx, issueAlertFilterV2ElemType, filters)
 		diags.Append(d...)
@@ -1514,6 +1534,14 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 			diags.AddError("Invalid actions", err.Error())
 		}
 	} else if !m.ActionsV2.IsNull() {
+		var priorActions []IssueAlertActionModel
+		if !m.ActionsV2.IsUnknown() {
+			diags.Append(m.ActionsV2.ElementsAs(ctx, &priorActions, false)...)
+			if diags.HasError() {
+				return
+			}
+		}
+
 		actions := lo.Map(alert.Actions, func(action apiclient.ProjectRuleAction, _ int) IssueAlertActionModel {
 			var actionModel IssueAlertActionModel
 			diags.Append(actionModel.Fill(ctx, action)...)
@@ -1523,6 +1551,8 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 		if diags.HasError() {
 			return
 		}
+
+		actions = reorderToMatchPrior(priorActions, actions, issueAlertActionModelKey)
 
 		actionsV2, d := types.ListValueFrom(ctx, issueAlertActionV2ElemType, actions)
 		diags.Append(d...)
