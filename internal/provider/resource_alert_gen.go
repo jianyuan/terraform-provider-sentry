@@ -41,7 +41,7 @@ func (r *AlertResource) Metadata(ctx context.Context, req resource.MetadataReque
 
 func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "⚠️ This resource is currently in beta and may be subject to change. It is supported by [New Monitors and Alerts](https://docs.sentry.io/product/new-monitors-and-alerts/) and may not be viewable in the UI today.\n\nCreate an Alert for a Monitor in an Organization. Monitors must be created separately using the [`sentry_cron_monitor`](cron_monitor.md), [`sentry_metric_monitor`](metric_monitor.md), or [`sentry_uptime_monitor`](uptime_monitor.md) resources.",
+		MarkdownDescription: "⚠️ This resource is currently in beta and may be subject to change. It is supported by [New Monitors and Alerts](https://docs.sentry.io/product/new-monitors-and-alerts/) and may not be viewable in the UI today.\n\nCreate an Alert for a Monitor in an Organization. Monitors must be created separately using the [`sentry_cron_monitor`](cron_monitor.md), [`sentry_metric_monitor`](metric_monitor.md), or [`sentry_uptime_monitor`](uptime_monitor.md) resources.\n\nAdditionally, [default monitors](https://docs.sentry.io/product/new-monitors-and-alerts/monitors/#default-monitors) are automatically created for each project. Use the [`sentry_monitor`](../data-sources/monitor.md) data source to retrieve them.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				MarkdownDescription: "The internal ID of this alert.",
