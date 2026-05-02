@@ -1457,13 +1457,30 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 	}
 
 	if !m.Conditions.IsNull() {
-		if conditions, err := json.Marshal(alert.Conditions); err == nil {
-			m.Conditions = sentrytypes.NewLossyJsonValue(string(conditions))
+		apiConditions := lo.Map(alert.Conditions, func(c apiclient.ProjectRuleCondition, _ int) json.RawMessage {
+			b, _ := json.Marshal(c)
+			return b
+		})
+		var priorConditions []json.RawMessage
+		if !m.Conditions.IsUnknown() {
+			_ = json.Unmarshal([]byte(m.Conditions.ValueString()), &priorConditions)
+		}
+		apiConditions = reorderToMatchPrior(priorConditions, apiConditions, legacyJsonItemKey)
+		if b, err := json.Marshal(apiConditions); err == nil {
+			m.Conditions = sentrytypes.NewLossyJsonValue(string(b))
 		} else {
 			diags.AddError("Invalid conditions", err.Error())
 			return
 		}
 	} else if !m.ConditionsV2.IsNull() {
+		var priorConditions []IssueAlertConditionModel
+		if !m.ConditionsV2.IsUnknown() {
+			diags.Append(m.ConditionsV2.ElementsAs(ctx, &priorConditions, false)...)
+			if diags.HasError() {
+				return
+			}
+		}
+
 		conditions := lo.Map(alert.Conditions, func(condition apiclient.ProjectRuleCondition, _ int) IssueAlertConditionModel {
 			var conditionModel IssueAlertConditionModel
 			diags.Append(conditionModel.Fill(ctx, condition)...)
@@ -1474,6 +1491,8 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 			return
 		}
 
+		conditions = reorderToMatchPrior(priorConditions, conditions, issueAlertConditionModelKey)
+
 		conditionsV2, d := types.ListValueFrom(ctx, issueAlertConditionV2ElemType, conditions)
 		diags.Append(d...)
 		if diags.HasError() {
@@ -1483,12 +1502,29 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 	}
 
 	if !m.Filters.IsNull() {
-		if filters, err := json.Marshal(alert.Filters); err == nil {
-			m.Filters = sentrytypes.NewLossyJsonValue(string(filters))
+		apiFilters := lo.Map(alert.Filters, func(f apiclient.ProjectRuleFilter, _ int) json.RawMessage {
+			b, _ := json.Marshal(f)
+			return b
+		})
+		var priorFilters []json.RawMessage
+		if !m.Filters.IsUnknown() {
+			_ = json.Unmarshal([]byte(m.Filters.ValueString()), &priorFilters)
+		}
+		apiFilters = reorderToMatchPrior(priorFilters, apiFilters, legacyJsonItemKey)
+		if b, err := json.Marshal(apiFilters); err == nil {
+			m.Filters = sentrytypes.NewLossyJsonValue(string(b))
 		} else {
 			diags.AddError("Invalid filters", err.Error())
 		}
 	} else if !m.FiltersV2.IsNull() {
+		var priorFilters []IssueAlertFilterModel
+		if !m.FiltersV2.IsUnknown() {
+			diags.Append(m.FiltersV2.ElementsAs(ctx, &priorFilters, false)...)
+			if diags.HasError() {
+				return
+			}
+		}
+
 		filters := lo.Map(alert.Filters, func(filter apiclient.ProjectRuleFilter, _ int) IssueAlertFilterModel {
 			var filterModel IssueAlertFilterModel
 			diags.Append(filterModel.Fill(ctx, filter)...)
@@ -1499,6 +1535,8 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 			return
 		}
 
+		filters = reorderToMatchPrior(priorFilters, filters, issueAlertFilterModelKey)
+
 		filtersV2, d := types.ListValueFrom(ctx, issueAlertFilterV2ElemType, filters)
 		diags.Append(d...)
 		if diags.HasError() {
@@ -1508,12 +1546,29 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 	}
 
 	if !m.Actions.IsNull() {
-		if actions, err := json.Marshal(alert.Actions); err == nil && len(actions) > 0 {
-			m.Actions = sentrytypes.NewLossyJsonValue(string(actions))
-		} else {
+		apiActions := lo.Map(alert.Actions, func(a apiclient.ProjectRuleAction, _ int) json.RawMessage {
+			b, _ := json.Marshal(a)
+			return b
+		})
+		var priorActions []json.RawMessage
+		if !m.Actions.IsUnknown() {
+			_ = json.Unmarshal([]byte(m.Actions.ValueString()), &priorActions)
+		}
+		apiActions = reorderToMatchPrior(priorActions, apiActions, legacyJsonItemKey)
+		if b, err := json.Marshal(apiActions); err != nil {
 			diags.AddError("Invalid actions", err.Error())
+		} else {
+			m.Actions = sentrytypes.NewLossyJsonValue(string(b))
 		}
 	} else if !m.ActionsV2.IsNull() {
+		var priorActions []IssueAlertActionModel
+		if !m.ActionsV2.IsUnknown() {
+			diags.Append(m.ActionsV2.ElementsAs(ctx, &priorActions, false)...)
+			if diags.HasError() {
+				return
+			}
+		}
+
 		actions := lo.Map(alert.Actions, func(action apiclient.ProjectRuleAction, _ int) IssueAlertActionModel {
 			var actionModel IssueAlertActionModel
 			diags.Append(actionModel.Fill(ctx, action)...)
@@ -1523,6 +1578,8 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 		if diags.HasError() {
 			return
 		}
+
+		actions = reorderToMatchPrior(priorActions, actions, issueAlertActionModelKey)
 
 		actionsV2, d := types.ListValueFrom(ctx, issueAlertActionV2ElemType, actions)
 		diags.Append(d...)
