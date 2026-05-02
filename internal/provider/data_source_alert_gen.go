@@ -124,7 +124,11 @@ func (m *AlertDataSourceModel) Fill(ctx context.Context, data apiclient.Organiza
 	m.Id = supertypes.NewStringValue(data.Id)
 	m.Enabled = supertypes.NewBoolValue(data.Enabled)
 	m.Name = supertypes.NewStringValue(data.Name)
-	m.Environment = supertypes.NewStringValue(data.Environment)
+	if v, err := data.Environment.Get(); err == nil {
+		m.Environment = supertypes.NewStringValueOrNull(v)
+	} else {
+		m.Environment = supertypes.NewStringNull()
+	}
 	m.MonitorIds = supertypes.NewSetValueOfSlice(ctx, data.DetectorIds)
 	m.FrequencyMinutes = supertypes.NewInt64Value(data.Config.Frequency)
 

@@ -72,8 +72,8 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 				CustomType:          supertypes.StringType{},
 			},
 			"environment": schema.StringAttribute{
-				MarkdownDescription: "Name of the environment to create alerts in.",
-				Required:            true,
+				MarkdownDescription: "The environment to filter alerts to. Omit or set to null to apply to all environments.",
+				Optional:            true,
 				CustomType:          supertypes.StringType{},
 			},
 			"monitor_ids": schema.SetAttribute{
@@ -616,7 +616,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 											},
 											"fallthrough_type": tfutils.WithEnumStringAttribute(
 												schema.StringAttribute{
-													MarkdownDescription: "The type of fallthrough to apply when choosing to notify issue owners. Only required if the target type is `issue_owners`.",
+													MarkdownDescription: "The type of fallthrough to apply when choosing to notify issue owners. Required when `target_type` is `issue_owners`.",
 													Optional:            true,
 													CustomType:          supertypes.StringType{},
 													Validators: []validator.String{

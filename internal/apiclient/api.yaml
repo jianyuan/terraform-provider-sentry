@@ -2923,7 +2923,6 @@ components:
       required:
         - name
         - enabled
-        - environment
         - config
         - detectorIds
         - triggers
@@ -2935,6 +2934,7 @@ components:
           type: boolean
         environment:
           type: string
+          nullable: true
         config:
           $ref: "#/components/schemas/OrganizationWorkflow_Config"
         detectorIds:
@@ -2962,7 +2962,6 @@ components:
         - id
         - name
         - enabled
-        - environment
         - config
         - detectorIds
         - triggers
@@ -2976,6 +2975,7 @@ components:
           type: boolean
         environment:
           type: string
+          nullable: true
         config:
           $ref: "#/components/schemas/OrganizationWorkflow_Config"
         detectorIds:

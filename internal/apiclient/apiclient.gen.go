@@ -1565,7 +1565,7 @@ type OrganizationWorkflow struct {
 	Config        OrganizationWorkflowConfig         `json:"config"`
 	DetectorIds   []string                           `json:"detectorIds"`
 	Enabled       bool                               `json:"enabled"`
-	Environment   string                             `json:"environment"`
+	Environment   nullable.Nullable[string]          `json:"environment,omitempty"`
 	Id            string                             `json:"id"`
 	Name          string                             `json:"name"`
 	Triggers      OrganizationWorkflow_Triggers      `json:"triggers"`
@@ -1596,7 +1596,7 @@ type OrganizationWorkflowRequest struct {
 	Config        OrganizationWorkflowConfig         `json:"config"`
 	DetectorIds   []string                           `json:"detectorIds"`
 	Enabled       bool                               `json:"enabled"`
-	Environment   string                             `json:"environment"`
+	Environment   nullable.Nullable[string]          `json:"environment,omitempty"`
 	Name          string                             `json:"name"`
 	Triggers      OrganizationWorkflowTrigger        `json:"triggers"`
 }
@@ -2942,7 +2942,7 @@ type UpdateOrganizationWorkflowRequest struct {
 	Config        OrganizationWorkflowConfig         `json:"config"`
 	DetectorIds   []string                           `json:"detectorIds"`
 	Enabled       bool                               `json:"enabled"`
-	Environment   string                             `json:"environment"`
+	Environment   nullable.Nullable[string]          `json:"environment,omitempty"`
 	Id            string                             `json:"id"`
 	Name          string                             `json:"name"`
 	Triggers      OrganizationWorkflowTrigger        `json:"triggers"`
