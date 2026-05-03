@@ -885,6 +885,7 @@ func (m *IssueAlertActionNotifyEventSentryAppModel) Fill(ctx context.Context, ac
 
 	if action.Settings == nil {
 		m.Settings = supertypes.NewMapValueOfNull[string](ctx)
+		m.SettingsLabels = supertypes.NewMapValueOfNull[string](ctx)
 	} else {
 		var settingsMap = make(map[string]string, len(*action.Settings))
 		var labelsMap = make(map[string]string, len(*action.Settings))

@@ -293,8 +293,12 @@ func (d *IssueAlertDataSource) Schema(ctx context.Context, req datasource.Schema
 								"name":                         stringAttribute,
 								"sentry_app_installation_uuid": stringAttribute,
 								"settings": schema.MapAttribute{
-									ElementType: types.StringType,
-									Computed:    true,
+									Computed:   true,
+									CustomType: supertypes.NewMapTypeOf[string](ctx),
+								},
+								"settings_labels": schema.MapAttribute{
+									Computed:   true,
+									CustomType: supertypes.NewMapTypeOf[string](ctx),
 								},
 							},
 						},

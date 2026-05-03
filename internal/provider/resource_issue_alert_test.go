@@ -526,6 +526,7 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 									"stateId":    knownvalue.StringExact("23e412bc-5abc-4812-916c-f91b4e21a060"),
 									"priority":   knownvalue.StringExact("0"),
 								}),
+								"settings_labels": knownvalue.Null(),
 							}),
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
