@@ -8,7 +8,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/jianyuan/go-utils/must"
-	"github.com/jianyuan/go-utils/ptr"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
@@ -85,7 +84,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 
 				var outIssueCategory apiclient.OrganizationWorkflowActionFilterConditionIssueCategory
 				outIssueCategory.Comparison.Value = inIssueCategory.Value.Get()
-				outIssueCategory.Comparison.Include = ptr.Ptr(inIssueCategory.Include.Get())
+				outIssueCategory.Comparison.Include = new(inIssueCategory.Include.Get())
 				outIssueCategory.ConditionResult = true
 
 				if err := outCondition.FromOrganizationWorkflowActionFilterConditionIssueCategory(outIssueCategory); err != nil {
@@ -328,7 +327,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				outEmail.Config.TargetType = apiclient.OrganizationWorkflowActionFilterActionEmailConfigTargetType(inEmail.TargetType.Get())
 				outEmail.Config.TargetIdentifier = inEmail.TargetId.GetPtr()
 				if inEmail.FallthroughType.IsKnown() {
-					outEmail.Data.FallthroughType = ptr.Ptr(apiclient.OrganizationWorkflowActionFilterActionEmailDataFallthroughType(inEmail.FallthroughType.Get()))
+					outEmail.Data.FallthroughType = new(apiclient.OrganizationWorkflowActionFilterActionEmailDataFallthroughType(inEmail.FallthroughType.Get()))
 				}
 
 				if err := outAction.FromOrganizationWorkflowActionFilterActionEmail(outEmail); err != nil {
@@ -357,10 +356,10 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				outSlack.Config.TargetIdentifier = inSlack.ChannelId.Get()
 				outSlack.Config.TargetDisplay = inSlack.ChannelName.Get()
 				if inSlack.Tags.IsKnown() {
-					outSlack.Data.Tags = ptr.Ptr(inSlack.Tags.Get())
+					outSlack.Data.Tags = new(inSlack.Tags.Get())
 				}
 				if inSlack.Notes.IsKnown() {
-					outSlack.Data.Notes = ptr.Ptr(inSlack.Notes.Get())
+					outSlack.Data.Notes = new(inSlack.Notes.Get())
 				}
 
 				if err := outAction.FromOrganizationWorkflowActionFilterActionSlack(outSlack); err != nil {
@@ -397,7 +396,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				outDiscord.Config.TargetType = "specific"
 				outDiscord.Config.TargetIdentifier = inDiscord.ChannelId.Get()
 				if inDiscord.Tags.IsKnown() {
-					outDiscord.Data.Tags = ptr.Ptr(inDiscord.Tags.Get())
+					outDiscord.Data.Tags = new(inDiscord.Tags.Get())
 				}
 
 				if err := outAction.FromOrganizationWorkflowActionFilterActionDiscord(outDiscord); err != nil {
