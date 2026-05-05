@@ -18,7 +18,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
@@ -134,11 +133,6 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 						},
 					},
 				},
-			},
-			"legacy_trigger_conditions": schema.ListAttribute{
-				ElementType:         types.StringType,
-				Optional:            true,
-				MarkdownDescription: "Trigger condition types present on this alert that are not configurable in the latest Sentry alerts UI similar to `trigger_conditions` (e.g. `new_high_priority_issue`, `existing_high_priority_issue`). When omitted from config, any matching conditions returned by the API will be removed on the next apply.",
 			},
 			"action_filters": schema.ListNestedAttribute{
 				MarkdownDescription: "The filters to run before the action will fire and the action(s) to fire.",
@@ -935,6 +929,11 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 					},
 				},
 			},
+			"legacy_trigger_conditions": schema.ListAttribute{
+				MarkdownDescription: "⚠️ The trigger condition types listed here are not natively supported by this provider and may be deprecated by Sentry in a future API version. Trigger condition types present on this alert that are not representable in `trigger_conditions` (e.g. `new_high_priority_issue`, `existing_high_priority_issue`, `issue_resolution_change`). When omitted from config these will be removed on the next apply. Set explicitly to preserve them.",
+				Optional:            true,
+				CustomType:          supertypes.NewListTypeOf[string](ctx),
+			},
 		},
 	}
 }
@@ -1077,16 +1076,16 @@ func (r *AlertResource) ImportState(ctx context.Context, req resource.ImportStat
 }
 
 type AlertResourceModel struct {
-	Id                supertypes.StringValue                                                      `tfsdk:"id"`
-	Organization      supertypes.StringValue                                                      `tfsdk:"organization"`
-	Enabled           supertypes.BoolValue                                                        `tfsdk:"enabled"`
-	Name              supertypes.StringValue                                                      `tfsdk:"name"`
-	Environment       supertypes.StringValue                                                      `tfsdk:"environment"`
-	MonitorIds        supertypes.SetValueOf[string]                                               `tfsdk:"monitor_ids"`
-	FrequencyMinutes  supertypes.Int64Value                                                       `tfsdk:"frequency_minutes"`
+	Id                      supertypes.StringValue                                                      `tfsdk:"id"`
+	Organization            supertypes.StringValue                                                      `tfsdk:"organization"`
+	Enabled                 supertypes.BoolValue                                                        `tfsdk:"enabled"`
+	Name                    supertypes.StringValue                                                      `tfsdk:"name"`
+	Environment             supertypes.StringValue                                                      `tfsdk:"environment"`
+	MonitorIds              supertypes.SetValueOf[string]                                               `tfsdk:"monitor_ids"`
+	FrequencyMinutes        supertypes.Int64Value                                                       `tfsdk:"frequency_minutes"`
 	TriggerConditions       supertypes.ListNestedObjectValueOf[AlertResourceModelTriggerConditionsItem] `tfsdk:"trigger_conditions"`
-	LegacyTriggerConditions types.List                                                                   `tfsdk:"legacy_trigger_conditions"`
 	ActionFilters           supertypes.ListNestedObjectValueOf[AlertResourceModelActionFiltersItem]     `tfsdk:"action_filters"`
+	LegacyTriggerConditions supertypes.ListValueOf[string]                                              `tfsdk:"legacy_trigger_conditions"`
 }
 
 type AlertResourceModelTriggerConditionsItem struct {

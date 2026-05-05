@@ -906,5 +906,13 @@ export default {
         },
       ],
     },
+    {
+      name: "legacy_trigger_conditions",
+      type: "list",
+      description:
+        "⚠️ The trigger condition types listed here are not natively supported by this provider and may be deprecated by Sentry in a future API version. Trigger condition types present on this alert that are not representable in `trigger_conditions` (e.g. `new_high_priority_issue`, `existing_high_priority_issue`, `issue_resolution_change`). When omitted from config these will be removed on the next apply. Set explicitly to preserve them.",
+      computedOptionalRequired: "optional",
+      elementType: "string",
+    },
   ],
 } satisfies Resource;

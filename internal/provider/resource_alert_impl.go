@@ -6,9 +6,7 @@ import (
 	"slices"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-utils/must"
 	"github.com/jianyuan/go-utils/ptr"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
@@ -610,19 +608,20 @@ func (r *AlertResource) getTriggerConditions(ctx context.Context, data AlertReso
 		outTriggerConditions = append(outTriggerConditions, outTriggerCondition)
 	}
 
-	if !data.LegacyTriggerConditions.IsNull() && !data.LegacyTriggerConditions.IsUnknown() {
-		for _, elem := range data.LegacyTriggerConditions.Elements() {
-			typeStr, ok := elem.(types.String)
-			if !ok || typeStr.IsNull() || typeStr.IsUnknown() {
-				continue
-			}
+	if data.LegacyTriggerConditions.IsKnown() {
+		inLegacyTriggerConditions := data.LegacyTriggerConditions.DiagsGet(ctx, diags)
+		if diags.HasError() {
+			return nil, diags
+		}
+
+		for _, inLegacyTriggerCondition := range inLegacyTriggerConditions {
 			var comp apiclient.OrganizationWorkflowTriggerCondition_Comparison
 			if err := comp.FromOrganizationWorkflowTriggerConditionComparison0(true); err != nil {
 				diags.AddError("Failed to build legacy trigger condition", err.Error())
 				return nil, diags
 			}
 			outTriggerConditions = append(outTriggerConditions, apiclient.OrganizationWorkflowTriggerCondition{
-				Type:            typeStr.ValueString(),
+				Type:            inLegacyTriggerCondition,
 				Comparison:      comp,
 				ConditionResult: true,
 			})
@@ -708,7 +707,7 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 	})
 
 	var triggerConditions []AlertResourceModelTriggerConditionsItem
-	var legacyElems []attr.Value
+	var legacyTriggerConditions []string
 	for _, triggerCondition := range triggers.Conditions {
 		outTriggerCondition := AlertResourceModelTriggerConditionsItem{
 			FirstSeenEvent:       supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemFirstSeenEvent](ctx),
@@ -730,14 +729,14 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 			outTriggerCondition.RegressionEvent = supertypes.NewSingleNestedObjectValueOf(ctx, &AlertResourceModelTriggerConditionsItemRegressionEvent{})
 			triggerConditions = append(triggerConditions, outTriggerCondition)
 		default:
-			legacyElems = append(legacyElems, types.StringValue(triggerCondition.Type))
+			legacyTriggerConditions = append(legacyTriggerConditions, triggerCondition.Type)
 		}
 	}
 	m.TriggerConditions = supertypes.NewListNestedObjectValueOfValueSlice(ctx, triggerConditions)
-	if len(legacyElems) == 0 {
-		m.LegacyTriggerConditions = types.ListNull(types.StringType)
+	if len(legacyTriggerConditions) == 0 {
+		m.LegacyTriggerConditions.SetNull(ctx)
 	} else {
-		m.LegacyTriggerConditions = types.ListValueMust(types.StringType, legacyElems)
+		diags.Append(m.LegacyTriggerConditions.Set(ctx, legacyTriggerConditions)...)
 	}
 
 	actionFilters, err := data.ActionFilters.AsOrganizationWorkflowActionFilters0()
