@@ -608,6 +608,26 @@ func (r *AlertResource) getTriggerConditions(ctx context.Context, data AlertReso
 		outTriggerConditions = append(outTriggerConditions, outTriggerCondition)
 	}
 
+	if data.LegacyTriggerConditions.IsKnown() {
+		inLegacyTriggerConditions := data.LegacyTriggerConditions.DiagsGet(ctx, diags)
+		if diags.HasError() {
+			return nil, diags
+		}
+
+		for _, inLegacyTriggerCondition := range inLegacyTriggerConditions {
+			var comp apiclient.OrganizationWorkflowTriggerCondition_Comparison
+			if err := comp.FromOrganizationWorkflowTriggerConditionComparison0(true); err != nil {
+				diags.AddError("Failed to build legacy trigger condition", err.Error())
+				return nil, diags
+			}
+			outTriggerConditions = append(outTriggerConditions, apiclient.OrganizationWorkflowTriggerCondition{
+				Type:            inLegacyTriggerCondition,
+				Comparison:      comp,
+				ConditionResult: true,
+			})
+		}
+	}
+
 	return outTriggerConditions, diags
 }
 
@@ -687,6 +707,7 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 	})
 
 	var triggerConditions []AlertResourceModelTriggerConditionsItem
+	var legacyTriggerConditions []string
 	for _, triggerCondition := range triggers.Conditions {
 		outTriggerCondition := AlertResourceModelTriggerConditionsItem{
 			FirstSeenEvent:       supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemFirstSeenEvent](ctx),
@@ -697,16 +718,26 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 		switch triggerCondition.Type {
 		case "first_seen_event":
 			outTriggerCondition.FirstSeenEvent = supertypes.NewSingleNestedObjectValueOf(ctx, &AlertResourceModelTriggerConditionsItemFirstSeenEvent{})
+			triggerConditions = append(triggerConditions, outTriggerCondition)
 		case "issue_resolved_trigger":
 			outTriggerCondition.IssueResolvedTrigger = supertypes.NewSingleNestedObjectValueOf(ctx, &AlertResourceModelTriggerConditionsItemIssueResolvedTrigger{})
+			triggerConditions = append(triggerConditions, outTriggerCondition)
 		case "reappeared_event":
 			outTriggerCondition.ReappearedEvent = supertypes.NewSingleNestedObjectValueOf(ctx, &AlertResourceModelTriggerConditionsItemReappearedEvent{})
+			triggerConditions = append(triggerConditions, outTriggerCondition)
 		case "regression_event":
 			outTriggerCondition.RegressionEvent = supertypes.NewSingleNestedObjectValueOf(ctx, &AlertResourceModelTriggerConditionsItemRegressionEvent{})
+			triggerConditions = append(triggerConditions, outTriggerCondition)
+		default:
+			legacyTriggerConditions = append(legacyTriggerConditions, triggerCondition.Type)
 		}
-		triggerConditions = append(triggerConditions, outTriggerCondition)
 	}
 	m.TriggerConditions = supertypes.NewListNestedObjectValueOfValueSlice(ctx, triggerConditions)
+	if len(legacyTriggerConditions) == 0 {
+		m.LegacyTriggerConditions.SetNull(ctx)
+	} else {
+		diags.Append(m.LegacyTriggerConditions.Set(ctx, legacyTriggerConditions)...)
+	}
 
 	actionFilters, err := data.ActionFilters.AsOrganizationWorkflowActionFilters0()
 	if err != nil {
