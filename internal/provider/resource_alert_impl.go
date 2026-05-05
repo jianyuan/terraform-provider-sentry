@@ -10,17 +10,9 @@ import (
 	"github.com/jianyuan/go-utils/must"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
-	"github.com/oapi-codegen/nullable"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 	"github.com/samber/lo"
 )
-
-func nullableFromPtr[T any](v *T) nullable.Nullable[T] {
-	if v == nil {
-		return nullable.NewNullNullable[T]()
-	}
-	return nullable.NewNullableWithValue(*v)
-}
 
 func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResourceModel) ([]apiclient.OrganizationWorkflowActionFilter, diag.Diagnostics) {
 	var diags diag.Diagnostics
