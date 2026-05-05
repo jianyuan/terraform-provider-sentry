@@ -678,6 +678,14 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 		return diags
 	}
 
+	// NOTE: The API returns conditions in a random order, so we need to sort them by ID to ensure that the
+	// order is deterministic.
+	slices.SortFunc(triggers.Conditions, func(a, b apiclient.OrganizationWorkflowTriggerCondition) int {
+		aId := int(must.Get(a.Id.Int64()))
+		bId := int(must.Get(b.Id.Int64()))
+		return aId - bId
+	})
+
 	var triggerConditions []AlertResourceModelTriggerConditionsItem
 	for _, triggerCondition := range triggers.Conditions {
 		outTriggerCondition := AlertResourceModelTriggerConditionsItem{
