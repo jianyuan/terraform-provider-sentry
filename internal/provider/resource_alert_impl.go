@@ -955,7 +955,7 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 			case apiclient.OrganizationWorkflowActionFilterActionEmail:
 				var outEmail AlertResourceModelActionFiltersItemActionsItemEmail
 				outEmail.TargetType = supertypes.NewStringValue(string(actionValue.Config.TargetType))
-				if actionValue.Config.TargetIdentifier != nil {
+				if actionValue.Config.TargetIdentifier != nil && *actionValue.Config.TargetIdentifier != "" {
 					outEmail.TargetId = supertypes.NewStringPointerValue(actionValue.Config.TargetIdentifier)
 				}
 				if actionValue.Data.FallthroughType != nil {
