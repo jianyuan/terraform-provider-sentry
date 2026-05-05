@@ -3175,6 +3175,8 @@ components:
             value:
               type: integer
               format: int64
+            include:
+              type: boolean
         conditionResult:
           type: boolean
     OrganizationWorkflow_ActionFilter_Condition_IssueOccurrences:
