@@ -868,7 +868,7 @@ resource "sentry_alert" "default" {
 ### Optional
 
 - `enabled` (Boolean) Whether the alert is enabled. Defaults to `true`.
-- `environment` (String) The environment to filter alerts to. Omit or set to null to apply to all environments.
+- `environment` (String) The environment to filter alerts to. Omit or set to `null` to apply to all environments.
 - `legacy_trigger_conditions` (List of String) ⚠️ The trigger condition types listed here are not natively supported by this provider and may be deprecated by Sentry in a future API version. Trigger condition types present on this alert that are not representable in `trigger_conditions` (e.g. `new_high_priority_issue`, `existing_high_priority_issue`, `issue_resolution_change`). When omitted from config these will be removed on the next apply. Set explicitly to preserve them.
 
 ### Read-Only
@@ -927,7 +927,7 @@ Required:
 
 Optional:
 
-- `fallthrough_type` (String) The type of fallthrough to apply when choosing to notify issue owners. Required when `target_type` is `issue_owners`. Valid values are: `AllMembers`, `ActiveMembers`, and `NoOne`.
+- `fallthrough_type` (String) The type of fallthrough to apply when choosing to notify issue owners. Only required if the target type is `issue_owners`. Valid values are: `AllMembers`, `ActiveMembers`, and `NoOne`.
 - `target_id` (String) The internal ID of the user or team. Only required if the target type is `team` or `user`.
 
 

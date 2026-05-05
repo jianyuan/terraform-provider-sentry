@@ -49,6 +49,7 @@ export default {
       type: "string",
       description: "Name of the environment for this alert.",
       computedOptionalRequired: "computed",
+      nullable: true,
     },
     {
       name: "monitor_ids",

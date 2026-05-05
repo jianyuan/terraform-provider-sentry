@@ -57,8 +57,9 @@ export default {
     {
       name: "environment",
       type: "string",
-      description: "Name of the environment to create alerts in.",
-      computedOptionalRequired: "required",
+      description:
+        "The environment to filter alerts to. Omit or set to `null` to apply to all environments.",
+      computedOptionalRequired: "optional",
     },
     {
       name: "monitor_ids",
