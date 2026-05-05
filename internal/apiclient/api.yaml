@@ -3021,6 +3021,9 @@ components:
         - comparison
         - conditionResult
       properties:
+        id:
+          type: integer
+          x-go-type: json.Number
         type:
           type: string
         comparison:
