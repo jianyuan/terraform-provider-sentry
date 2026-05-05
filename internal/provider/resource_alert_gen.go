@@ -72,8 +72,8 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 				CustomType:          supertypes.StringType{},
 			},
 			"environment": schema.StringAttribute{
-				MarkdownDescription: "Name of the environment to create alerts in.",
-				Required:            true,
+				MarkdownDescription: "The environment to filter alerts to. Omit or set to `null` to apply to all environments.",
+				Optional:            true,
 				CustomType:          supertypes.StringType{},
 			},
 			"monitor_ids": schema.SetAttribute{

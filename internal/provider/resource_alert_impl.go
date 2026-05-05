@@ -642,7 +642,7 @@ func (r *AlertResource) getCreateJSONRequestBody(ctx context.Context, data Alert
 	req := apiclient.CreateOrganizationWorkflowJSONRequestBody{
 		Name:        data.Name.Get(),
 		Enabled:     data.Enabled.Get(),
-		Environment: data.Environment.Get(),
+		Environment: nullableFromPtr(data.Environment.GetPtr()),
 		Config: apiclient.OrganizationWorkflowConfig{
 			Frequency: data.FrequencyMinutes.Get(),
 		},
@@ -669,7 +669,7 @@ func (r *AlertResource) getUpdateJSONRequestBody(ctx context.Context, data Alert
 		Id:          data.Id.Get(),
 		Name:        data.Name.Get(),
 		Enabled:     data.Enabled.Get(),
-		Environment: data.Environment.Get(),
+		Environment: nullableFromPtr(data.Environment.GetPtr()),
 		Config: apiclient.OrganizationWorkflowConfig{
 			Frequency: data.FrequencyMinutes.Get(),
 		},
@@ -688,7 +688,11 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 	m.Id = supertypes.NewStringValue(data.Id)
 	m.Name = supertypes.NewStringValue(data.Name)
 	m.Enabled = supertypes.NewBoolValue(data.Enabled)
-	m.Environment = supertypes.NewStringValue(data.Environment)
+	if v, err := data.Environment.Get(); err == nil {
+		m.Environment = supertypes.NewStringValueOrNull(v)
+	} else {
+		m.Environment = supertypes.NewStringNull()
+	}
 	m.FrequencyMinutes = supertypes.NewInt64Value(data.Config.Frequency)
 	m.MonitorIds = supertypes.NewSetValueOfSlice(ctx, data.DetectorIds)
 
