@@ -199,6 +199,13 @@ export default {
                   description: "The issue category to filter to.",
                   computedOptionalRequired: "required",
                 },
+                {
+                  name: "include",
+                  type: "bool",
+                  description:
+                    "If `true`, the condition matches when the issue category is equal to `value`. If `false`, the condition matches when it is not equal. Defaults to `true`.",
+                  computedOptionalRequired: "computed_optional",
+                },
               ],
             },
             {
