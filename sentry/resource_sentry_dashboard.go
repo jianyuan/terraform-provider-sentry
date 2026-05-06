@@ -346,13 +346,6 @@ func flattenDashboardWidgets(widgets []*sentry.DashboardWidget) []interface{} {
 
 	widgetList := make([]interface{}, 0, len(widgets))
 	for _, widget := range widgets {
-		layoutMap := make(map[string]interface{})
-		layoutMap["x"] = widget.Layout.X
-		layoutMap["y"] = widget.Layout.Y
-		layoutMap["w"] = widget.Layout.W
-		layoutMap["h"] = widget.Layout.H
-		layoutMap["min_h"] = widget.Layout.MinH
-
 		widgetMap := make(map[string]interface{})
 		widgetMap["id"] = widget.ID
 		widgetMap["title"] = widget.Title
@@ -361,7 +354,19 @@ func flattenDashboardWidgets(widgets []*sentry.DashboardWidget) []interface{} {
 		widgetMap["query"] = flattenDashboardWidgetQueries(widget.Queries)
 		widgetMap["widget_type"] = widget.WidgetType
 		widgetMap["limit"] = widget.Limit
-		widgetMap["layout"] = []interface{}{layoutMap}
+		if widget.Layout != nil {
+			widgetMap["layout"] = []interface{}{
+				map[string]interface{}{
+					"x":     widget.Layout.X,
+					"y":     widget.Layout.Y,
+					"w":     widget.Layout.W,
+					"h":     widget.Layout.H,
+					"min_h": widget.Layout.MinH,
+				},
+			}
+		} else {
+			widgetMap["layout"] = []interface{}{}
+		}
 		widgetList = append(widgetList, widgetMap)
 	}
 	return widgetList
