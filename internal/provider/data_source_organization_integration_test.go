@@ -8,6 +8,8 @@ import (
 )
 
 func TestAccOrganizationIntegrationDataSource(t *testing.T) {
+	t.Parallel()
+
 	dn := "data.sentry_organization_integration.test"
 
 	resource.Test(t, resource.TestCase{

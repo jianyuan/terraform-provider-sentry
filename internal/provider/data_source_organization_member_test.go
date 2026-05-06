@@ -9,6 +9,8 @@ import (
 )
 
 func TestAccOrganizationMemberDataSource(t *testing.T) {
+	t.Parallel()
+
 	rn := "sentry_organization_member.test"
 	dn := "data.sentry_organization_member.test"
 	email := acctest.RandomWithPrefix("tf-member") + "@example.com"

@@ -108,6 +108,8 @@ func init() {
 }
 
 func TestAccIntegrationOpsgenieResource(t *testing.T) {
+	t.Parallel()
+
 	teamName := acctest.RandomWithPrefix("tf-opsgenie")
 	rn := "sentry_integration_opsgenie.test"
 

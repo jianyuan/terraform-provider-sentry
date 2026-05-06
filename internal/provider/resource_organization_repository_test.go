@@ -86,6 +86,8 @@ func testAccOrganizationRepositoryResourcePreCheck() error {
 }
 
 func TestAccOrganizationRepositoryResource_GitHub(t *testing.T) {
+	t.Parallel()
+
 	rn := "sentry_organization_repository.test"
 
 	resource.Test(t, resource.TestCase{
@@ -138,6 +140,8 @@ func TestAccOrganizationRepositoryResource_GitHub(t *testing.T) {
 }
 
 func TestAccOrganizationRepositoryResource_GitLab(t *testing.T) {
+	t.Parallel()
+
 	rn := "sentry_organization_repository.test"
 
 	resource.Test(t, resource.TestCase{
@@ -190,6 +194,8 @@ func TestAccOrganizationRepositoryResource_GitLab(t *testing.T) {
 }
 
 func TestAccOrganizationRepositoryResource_VSTS(t *testing.T) {
+	t.Parallel()
+
 	rn := "sentry_organization_repository.test"
 
 	resource.Test(t, resource.TestCase{

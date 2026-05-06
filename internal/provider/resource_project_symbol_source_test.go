@@ -11,6 +11,8 @@ import (
 )
 
 func TestAccProjectSymbolSourceResource(t *testing.T) {
+	t.Parallel()
+
 	rn := "sentry_project_symbol_source.test"
 	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")

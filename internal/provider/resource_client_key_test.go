@@ -17,6 +17,8 @@ import (
 )
 
 func TestAccClientKeyResource_validation(t *testing.T) {
+	t.Parallel()
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -92,6 +94,8 @@ func TestAccClientKeyResource_validation(t *testing.T) {
 }
 
 func TestAccClientKeyResource(t *testing.T) {
+	t.Parallel()
+
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	keyName := acctest.RandomWithPrefix("tf-key")

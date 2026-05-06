@@ -12,6 +12,8 @@ import (
 )
 
 func TestAccTeamDataSource(t *testing.T) {
+	t.Parallel()
+
 	teamName := acctest.RandomWithPrefix("tf-team")
 	rn := "sentry_team.test"
 	dsn := "data.sentry_team.test"

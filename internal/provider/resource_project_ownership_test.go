@@ -11,6 +11,8 @@ import (
 )
 
 func TestAccProjectOwnershipResource(t *testing.T) {
+	t.Parallel()
+
 	rn := "sentry_project_ownership.test"
 	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")
@@ -39,6 +41,8 @@ func TestAccProjectOwnershipResource(t *testing.T) {
 }
 
 func TestAccProjectOwnershipResource_IllegalAutoAssignment(t *testing.T) {
+	t.Parallel()
+
 	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")
 	fallThrough := false

@@ -11,6 +11,8 @@ import (
 )
 
 func TestOpJsonpathOperandGlobFunction_known(t *testing.T) {
+	t.Parallel()
+
 	resource.UnitTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -31,6 +33,8 @@ func TestOpJsonpathOperandGlobFunction_known(t *testing.T) {
 }
 
 func TestOpJsonpathOperandGlobFunction_null(t *testing.T) {
+	t.Parallel()
+
 	resource.UnitTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -48,6 +52,8 @@ func TestOpJsonpathOperandGlobFunction_null(t *testing.T) {
 }
 
 func TestOpJsonpathOperandGlobFunction_unknown(t *testing.T) {
+	t.Parallel()
+
 	resource.UnitTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,

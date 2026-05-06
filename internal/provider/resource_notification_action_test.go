@@ -11,6 +11,8 @@ import (
 )
 
 func TestAccNotificationActionResource(t *testing.T) {
+	t.Parallel()
+
 	rn := "sentry_notification_action.test"
 	team := acctest.RandomWithPrefix("tf-team")
 	project1 := acctest.RandomWithPrefix("tf-project")

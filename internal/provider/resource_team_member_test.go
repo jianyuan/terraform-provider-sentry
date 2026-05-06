@@ -9,6 +9,8 @@ import (
 )
 
 func TestAccTeamMemberResource(t *testing.T) {
+	t.Parallel()
+
 	rn := "sentry_team_member.test"
 	team := acctest.RandomWithPrefix("tf-team")
 	member1Email := acctest.RandomWithPrefix("tf-member") + "@example.com"
@@ -89,6 +91,8 @@ resource "sentry_team_member" "test" {
 }
 
 func TestAccTeamMemberResource_minimumPriority(t *testing.T) {
+	t.Parallel()
+
 	rn := "sentry_team_member.test"
 	team := acctest.RandomWithPrefix("tf-team")
 	memberEmail := acctest.RandomWithPrefix("tf-member") + "@example.com"

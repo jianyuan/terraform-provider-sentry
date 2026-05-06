@@ -6,6 +6,8 @@ import (
 )
 
 func TestFollowShape(t *testing.T) {
+	t.Parallel()
+
 	testCases := []struct {
 		name  string
 		shape interface{}

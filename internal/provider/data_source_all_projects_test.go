@@ -13,6 +13,8 @@ import (
 )
 
 func TestAccAllProjectsDataSource(t *testing.T) {
+	t.Parallel()
+
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	rn := "data.sentry_all_projects.test"

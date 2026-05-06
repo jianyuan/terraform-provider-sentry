@@ -11,6 +11,8 @@ import (
 )
 
 func TestAccAllClientKeysDataSource(t *testing.T) {
+	t.Parallel()
+
 	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")
 	rn := "data.sentry_all_keys.test"
