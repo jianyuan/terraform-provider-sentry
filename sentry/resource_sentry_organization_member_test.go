@@ -14,6 +14,8 @@ import (
 )
 
 func TestAccSentryOrganizationMember_basic(t *testing.T) {
+	t.Parallel()
+
 	memberEmail := acctest.RandomWithPrefix("tf-team") + "@example.com"
 	rn := "sentry_organization_member.john_doe"
 

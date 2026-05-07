@@ -16,6 +16,8 @@ import (
 )
 
 func TestAccIntegrationPagerDutyResource(t *testing.T) {
+	t.Parallel()
+
 	serviceName := acctest.RandomWithPrefix("tf-pagerduty-service")
 	integrationKey := acctest.RandomWithPrefix("tf-integration-key")
 	rn := "sentry_integration_pagerduty.test"

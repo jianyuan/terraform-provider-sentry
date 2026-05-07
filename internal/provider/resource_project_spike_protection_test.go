@@ -12,6 +12,8 @@ import (
 )
 
 func TestAccProjectSpikeProtectionResource(t *testing.T) {
+	t.Parallel()
+
 	rn := "sentry_project_spike_protection.test"
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")

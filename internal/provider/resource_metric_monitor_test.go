@@ -63,6 +63,8 @@ func init() {
 }
 
 func TestAccMetricMonitorResource_validation(t *testing.T) {
+	t.Parallel()
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -83,6 +85,8 @@ func TestAccMetricMonitorResource_validation(t *testing.T) {
 }
 
 func TestAccMetricMonitorResource_threshold(t *testing.T) {
+	t.Parallel()
+
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	monitorName := acctest.RandomWithPrefix("tf-metric-monitor")
@@ -296,6 +300,8 @@ func TestAccMetricMonitorResource_threshold(t *testing.T) {
 }
 
 func TestAccMetricMonitorResource_change(t *testing.T) {
+	t.Parallel()
+
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	monitorName := acctest.RandomWithPrefix("tf-metric-monitor")
@@ -400,6 +406,8 @@ func TestAccMetricMonitorResource_change(t *testing.T) {
 }
 
 func TestAccMetricMonitorResource_dynamic(t *testing.T) {
+	t.Parallel()
+
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	monitorName := acctest.RandomWithPrefix("tf-metric-monitor")

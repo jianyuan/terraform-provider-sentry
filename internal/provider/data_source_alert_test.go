@@ -11,6 +11,8 @@ import (
 )
 
 func TestAccAlertDataSource_basic(t *testing.T) {
+	t.Parallel()
+
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	monitorName := acctest.RandomWithPrefix("tf-monitor")

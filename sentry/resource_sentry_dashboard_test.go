@@ -13,6 +13,8 @@ import (
 )
 
 func TestAccSentryDashboard_basic(t *testing.T) {
+	t.Parallel()
+
 	dashboardTitle := acctest.RandomWithPrefix("tf-dashboard")
 	rn := "sentry_dashboard.test"
 

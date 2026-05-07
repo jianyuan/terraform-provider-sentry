@@ -9,6 +9,8 @@ import (
 )
 
 func TestAccSentryMetricAlertDataSource_basic(t *testing.T) {
+	t.Parallel()
+
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	alertName := acctest.RandomWithPrefix("tf-metric-alert")

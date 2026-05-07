@@ -39,6 +39,8 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 }
 
 func TestProvider(t *testing.T) {
+	t.Parallel()
+
 	if err := NewProvider("dev")().InternalValidate(); err != nil {
 		t.Fatalf("err: %s", err)
 	}

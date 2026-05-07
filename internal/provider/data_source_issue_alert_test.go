@@ -13,6 +13,8 @@ import (
 )
 
 func TestAccIssueAlertDataSource(t *testing.T) {
+	t.Parallel()
+
 	rn := "sentry_issue_alert.test"
 	dsn := "data.sentry_issue_alert.test"
 	team := acctest.RandomWithPrefix("tf-team")

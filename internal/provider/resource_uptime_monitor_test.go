@@ -63,6 +63,8 @@ func init() {
 }
 
 func TestAccUptimeMonitorResource_validation(t *testing.T) {
+	t.Parallel()
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -93,6 +95,8 @@ func TestAccUptimeMonitorResource_validation(t *testing.T) {
 }
 
 func TestAccUptimeMonitorResource_basic(t *testing.T) {
+	t.Parallel()
+
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	monitorName := acctest.RandomWithPrefix("tf-uptime-monitor")

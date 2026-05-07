@@ -34,6 +34,10 @@ test:
 testacc:
 	TF_ACC=1 go test ./... -v -cover -timeout 120m $(TESTARGS)
 
+.PHONY: testacc-parallel
+testacc-parallel:
+	TF_ACC=1 go tool gotestsum --format=testname --rerun-fails --packages="./..." -- ./... -v -cover -timeout 120m -count 2 -parallel 10 $(TESTARGS)
+
 .PHONY: sweep
 sweep:
 	# make sweep SWEEPARGS=-sweep-run=sentry_team

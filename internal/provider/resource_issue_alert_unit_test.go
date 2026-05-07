@@ -10,6 +10,8 @@ import (
 )
 
 func TestIssueAlertResource_elemTypesInitialized(t *testing.T) {
+	t.Parallel()
+
 	if len(issueAlertConditionV2ElemType.AttrTypes) == 0 {
 		t.Fatal("issueAlertConditionV2ElemType was not initialized")
 	}
@@ -22,6 +24,8 @@ func TestIssueAlertResource_elemTypesInitialized(t *testing.T) {
 }
 
 func TestIssueAlertModel_v2FieldsHandleUnknown(t *testing.T) {
+	t.Parallel()
+
 	model := IssueAlertModel{
 		ConditionsV2: types.ListUnknown(issueAlertConditionV2ElemType),
 		FiltersV2:    types.ListUnknown(issueAlertFilterV2ElemType),
@@ -40,6 +44,8 @@ func TestIssueAlertModel_v2FieldsHandleUnknown(t *testing.T) {
 }
 
 func TestIssueAlertModel_v2FieldsHandleNull(t *testing.T) {
+	t.Parallel()
+
 	model := IssueAlertModel{
 		ConditionsV2: types.ListNull(issueAlertConditionV2ElemType),
 		FiltersV2:    types.ListNull(issueAlertFilterV2ElemType),
@@ -58,6 +64,8 @@ func TestIssueAlertModel_v2FieldsHandleNull(t *testing.T) {
 }
 
 func TestIssueAlertConditionModel_ToApi_emptyElement(t *testing.T) {
+	t.Parallel()
+
 	model := IssueAlertConditionModel{}
 	_, diags := model.ToApi(context.Background())
 	if !diags.HasError() {
@@ -76,6 +84,8 @@ func TestIssueAlertConditionModel_ToApi_emptyElement(t *testing.T) {
 }
 
 func TestIssueAlertFilterModel_ToApi_emptyElement(t *testing.T) {
+	t.Parallel()
+
 	model := IssueAlertFilterModel{}
 	_, diags := model.ToApi(context.Background())
 	if !diags.HasError() {
@@ -94,6 +104,8 @@ func TestIssueAlertFilterModel_ToApi_emptyElement(t *testing.T) {
 }
 
 func TestIssueAlertActionModel_ToApi_emptyElement(t *testing.T) {
+	t.Parallel()
+
 	model := IssueAlertActionModel{}
 	_, diags := model.ToApi(context.Background())
 	if !diags.HasError() {
@@ -112,6 +124,8 @@ func TestIssueAlertActionModel_ToApi_emptyElement(t *testing.T) {
 }
 
 func TestIssueAlertConditionModel_ToApi_validCondition(t *testing.T) {
+	t.Parallel()
+
 	model := IssueAlertConditionModel{
 		FirstSeenEvent: &IssueAlertConditionFirstSeenEventModel{},
 	}
@@ -125,6 +139,8 @@ func TestIssueAlertConditionModel_ToApi_validCondition(t *testing.T) {
 }
 
 func TestIssueAlertFilterModel_ToApi_validFilter(t *testing.T) {
+	t.Parallel()
+
 	model := IssueAlertFilterModel{
 		LatestRelease: &IssueAlertFilterLatestReleaseModel{},
 	}
@@ -138,6 +154,8 @@ func TestIssueAlertFilterModel_ToApi_validFilter(t *testing.T) {
 }
 
 func TestIssueAlertActionModel_ToApi_validAction(t *testing.T) {
+	t.Parallel()
+
 	model := IssueAlertActionModel{
 		NotifyEvent: &IssueAlertActionNotifyEventModel{},
 	}
@@ -151,6 +169,8 @@ func TestIssueAlertActionModel_ToApi_validAction(t *testing.T) {
 }
 
 func TestIssueAlertActionSlackNotifyServiceModel_ToApi_withChannelId(t *testing.T) {
+	t.Parallel()
+
 	channelId := "C1234567890"
 	model := IssueAlertActionSlackNotifyServiceModel{
 		Workspace: types.StringValue("ws123"),
@@ -171,6 +191,8 @@ func TestIssueAlertActionSlackNotifyServiceModel_ToApi_withChannelId(t *testing.
 }
 
 func TestIssueAlertActionSlackNotifyServiceModel_ToApi_withoutChannelId(t *testing.T) {
+	t.Parallel()
+
 	model := IssueAlertActionSlackNotifyServiceModel{
 		Workspace: types.StringValue("ws123"),
 		Channel:   sentrytypes.SlackChannelValue("#general"),
@@ -190,6 +212,8 @@ func TestIssueAlertActionSlackNotifyServiceModel_ToApi_withoutChannelId(t *testi
 }
 
 func TestIssueAlertActionSlackNotifyServiceModel_Fill_setsChannelId(t *testing.T) {
+	t.Parallel()
+
 	channelId := "C9876543210"
 	action := apiclient.ProjectRuleActionSlackNotifyService{
 		Workspace: "ws123",
@@ -207,6 +231,8 @@ func TestIssueAlertActionSlackNotifyServiceModel_Fill_setsChannelId(t *testing.T
 }
 
 func TestSlackChannel_SemanticEquals_ignoresHashPrefix(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name  string
 		a, b  string
@@ -236,6 +262,8 @@ func TestSlackChannel_SemanticEquals_ignoresHashPrefix(t *testing.T) {
 }
 
 func TestReorderToMatchPrior_preservesPriorOrder(t *testing.T) {
+	t.Parallel()
+
 	identity := func(s string) string { return s }
 
 	prior := []string{"a", "b", "c"}
@@ -253,6 +281,8 @@ func TestReorderToMatchPrior_preservesPriorOrder(t *testing.T) {
 }
 
 func TestReorderToMatchPrior_appendsNewItems(t *testing.T) {
+	t.Parallel()
+
 	identity := func(s string) string { return s }
 
 	prior := []string{"a", "b"}
@@ -271,6 +301,8 @@ func TestReorderToMatchPrior_appendsNewItems(t *testing.T) {
 }
 
 func TestReorderToMatchPrior_handlesDuplicateTypes(t *testing.T) {
+	t.Parallel()
+
 	identity := func(s string) string { return s }
 
 	prior := []string{"x", "x", "y"}
@@ -288,6 +320,8 @@ func TestReorderToMatchPrior_handlesDuplicateTypes(t *testing.T) {
 }
 
 func TestReorderToMatchPrior_emptyPriorReturnsincoming(t *testing.T) {
+	t.Parallel()
+
 	identity := func(s string) string { return s }
 
 	prior := []string{}

@@ -60,6 +60,8 @@ func init() {
 }
 
 func TestAccAlertResource_validation(t *testing.T) {
+	t.Parallel()
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -213,6 +215,8 @@ func TestAccAlertResource_validation(t *testing.T) {
 }
 
 func TestAccAlertResource_basic(t *testing.T) {
+	t.Parallel()
+
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	monitorName := acctest.RandomWithPrefix("tf-monitor")

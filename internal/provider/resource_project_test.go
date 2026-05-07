@@ -71,6 +71,8 @@ func init() {
 }
 
 func TestAccProjectResource_basic(t *testing.T) {
+	t.Parallel()
+
 	teamName1 := acctest.RandomWithPrefix("tf-team")
 	teamName2 := acctest.RandomWithPrefix("tf-team")
 	teamName3 := acctest.RandomWithPrefix("tf-team")
@@ -332,6 +334,8 @@ func TestAccProjectResource_basic(t *testing.T) {
 }
 
 func TestAccProjectResource_filters(t *testing.T) {
+	t.Parallel()
+
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	rn := "sentry_project.test"
@@ -451,6 +455,8 @@ func TestAccProjectResource_filters(t *testing.T) {
 }
 
 func TestAccProjectResource_issueGrouping(t *testing.T) {
+	t.Parallel()
+
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	rn := "sentry_project.test"
@@ -552,6 +558,8 @@ func TestAccProjectResource_issueGrouping(t *testing.T) {
 }
 
 func TestAccProjectResource_noDefaultKeyOnCreate(t *testing.T) {
+	t.Parallel()
+
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	rn := "sentry_project.test"
@@ -612,6 +620,8 @@ func TestAccProjectResource_noDefaultKeyOnCreate(t *testing.T) {
 }
 
 func TestAccProjectResource_validation(t *testing.T) {
+	t.Parallel()
+
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 
@@ -665,6 +675,8 @@ func TestAccProjectResource_validation(t *testing.T) {
 }
 
 func TestAccProjectResource_upgradeFromVersion(t *testing.T) {
+	t.Parallel()
+
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	rn := "sentry_project.test"

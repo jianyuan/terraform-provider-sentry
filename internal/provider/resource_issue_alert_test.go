@@ -17,6 +17,8 @@ import (
 )
 
 func TestAccIssueAlertResource_validation(t *testing.T) {
+	t.Parallel()
+
 	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")
 	alert := acctest.RandomWithPrefix("tf-issue-alert")
@@ -119,6 +121,8 @@ func TestAccIssueAlertResource_validation(t *testing.T) {
 }
 
 func TestAccIssueAlertResource_basic(t *testing.T) {
+	t.Parallel()
+
 	rn := "sentry_issue_alert.test"
 	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")
@@ -664,6 +668,8 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 }
 
 func TestAccIssueAlertResource_emptyArray(t *testing.T) {
+	t.Parallel()
+
 	rn := "sentry_issue_alert.test"
 	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")
@@ -751,6 +757,8 @@ func TestAccIssueAlertResource_emptyArray(t *testing.T) {
 }
 
 func TestAccIssueAlertResource_jsonValues(t *testing.T) {
+	t.Parallel()
+
 	rn := "sentry_issue_alert.test"
 	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")
@@ -814,6 +822,8 @@ func TestAccIssueAlertResource_jsonValues(t *testing.T) {
 }
 
 func TestAccIssueAlertResource_jsonValues_emptyArray(t *testing.T) {
+	t.Parallel()
+
 	rn := "sentry_issue_alert.test"
 	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")
@@ -901,6 +911,8 @@ func TestAccIssueAlertResource_jsonValues_emptyArray(t *testing.T) {
 }
 
 func TestAccIssueAlertResource_slackChannelNormalization(t *testing.T) {
+	t.Parallel()
+
 	rn := "sentry_issue_alert.test"
 	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")
@@ -990,6 +1002,8 @@ func TestAccIssueAlertResource_slackChannelNormalization(t *testing.T) {
 }
 
 func TestAccIssueAlertResource_forExpression(t *testing.T) {
+	t.Parallel()
+
 	rn := "sentry_issue_alert.test"
 	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")

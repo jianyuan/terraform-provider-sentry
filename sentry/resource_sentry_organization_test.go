@@ -14,6 +14,8 @@ import (
 )
 
 func TestAccSentryOrganization_basic(t *testing.T) {
+	t.Parallel()
+
 	orgName := acctest.RandomWithPrefix("tf-org")
 	rn := "sentry_organization.test_organization"
 

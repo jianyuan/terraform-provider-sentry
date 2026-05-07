@@ -14,6 +14,8 @@ import (
 )
 
 func TestAccSentryTeam_basic(t *testing.T) {
+	t.Parallel()
+
 	teamName := acctest.RandomWithPrefix("tf-team")
 	rn := "sentry_team.test"
 

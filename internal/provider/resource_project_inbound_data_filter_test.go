@@ -10,6 +10,8 @@ import (
 )
 
 func TestAccProjectInboundDataFilterResource(t *testing.T) {
+	t.Parallel()
+
 	rn := "sentry_project_inbound_data_filter.test"
 	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")
@@ -49,6 +51,8 @@ func TestAccProjectInboundDataFilterResource(t *testing.T) {
 }
 
 func TestAccProjectInboundDataFilterResource_Conflict(t *testing.T) {
+	t.Parallel()
+
 	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")
 	filterId := "browser-extensions"
@@ -69,6 +73,8 @@ func TestAccProjectInboundDataFilterResource_Conflict(t *testing.T) {
 }
 
 func TestAccProjectInboundDataFilterResource_LegacyBrowser(t *testing.T) {
+	t.Parallel()
+
 	rn := "sentry_project_inbound_data_filter.test"
 	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")

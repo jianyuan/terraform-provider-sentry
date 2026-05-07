@@ -11,6 +11,8 @@ import (
 )
 
 func TestAccMetricMonitorDataSource_threshold(t *testing.T) {
+	t.Parallel()
+
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	monitorName := acctest.RandomWithPrefix("tf-metric-monitor")
@@ -218,6 +220,8 @@ func TestAccMetricMonitorDataSource_threshold(t *testing.T) {
 }
 
 func TestAccMetricMonitorDataSource_dynamic(t *testing.T) {
+	t.Parallel()
+
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	monitorName := acctest.RandomWithPrefix("tf-metric-monitor")

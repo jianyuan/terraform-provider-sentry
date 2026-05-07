@@ -13,6 +13,8 @@ import (
 )
 
 func TestAccClientKeyDataSource_id(t *testing.T) {
+	t.Parallel()
+
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	keyName := acctest.RandomWithPrefix("tf-key")
@@ -63,6 +65,8 @@ func TestAccClientKeyDataSource_id(t *testing.T) {
 }
 
 func TestAccClientKeyDataSource_name(t *testing.T) {
+	t.Parallel()
+
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	keyName := acctest.RandomWithPrefix("tf-key")
@@ -113,6 +117,8 @@ func TestAccClientKeyDataSource_name(t *testing.T) {
 }
 
 func TestAccClientKeyDataSource_first(t *testing.T) {
+	t.Parallel()
+
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	keyName := acctest.RandomWithPrefix("tf-key")
