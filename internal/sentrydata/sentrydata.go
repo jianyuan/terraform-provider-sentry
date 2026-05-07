@@ -217,11 +217,9 @@ var DashboardWidgetTypes = []string{
 var DashboardWidgetDisplayTypes = []string{
 	"line",
 	"area",
-	"stacked_area",
 	"bar",
 	"table",
 	"big_number",
-	"top_n",
 	"details",
 	"categorical_bar",
 	"wheel",
