@@ -31,7 +31,6 @@ var _ resource.ResourceWithImportState = &IssueAlertResource{}
 var _ resource.ResourceWithUpgradeState = &IssueAlertResource{}
 
 var (
-	issueAlertFilterV2ElemType types.ObjectType
 	issueAlertActionV2ElemType types.ObjectType
 )
 
@@ -40,7 +39,6 @@ func init() {
 	var resp resource.SchemaResponse
 	r.Schema(context.Background(), resource.SchemaRequest{}, &resp)
 
-	issueAlertFilterV2ElemType = resp.Schema.Attributes["filters_v2"].(schema.ListNestedAttribute).NestedObject.Type().(types.ObjectType)
 	issueAlertActionV2ElemType = resp.Schema.Attributes["actions_v2"].(schema.ListNestedAttribute).NestedObject.Type().(types.ObjectType)
 }
 
@@ -211,6 +209,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 			"filters_v2": schema.ListNestedAttribute{
 				MarkdownDescription: "A list of filters that determine if a rule fires after the necessary conditions have been met.",
 				Optional:            true,
+				CustomType:          supertypes.NewListNestedObjectTypeOf[IssueAlertFilterModel](ctx),
 				Validators: []validator.List{
 					listvalidator.ConflictsWith(path.MatchRoot("filters")),
 				},
@@ -219,6 +218,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 						"age_comparison": {
 							MarkdownDescription: "The issue is older or newer than `value` `time`.",
 							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[IssueAlertFilterAgeComparisonModel](ctx),
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
 								"comparison_type": tfutils.WithEnumStringAttribute(schema.StringAttribute{
@@ -235,6 +235,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 						"issue_occurrences": {
 							MarkdownDescription: "The issue has happened at least `value` times (Note: this is approximate).",
 							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[IssueAlertFilterIssueOccurrencesModel](ctx),
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
 								"value": schema.Int64Attribute{
@@ -245,6 +246,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 						"assigned_to": {
 							MarkdownDescription: "The issue is assigned to no one, team, or member.",
 							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[IssueAlertFilterAssignedToModel](ctx),
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
 								"target_type": tfutils.WithEnumStringAttribute(schema.StringAttribute{
@@ -259,6 +261,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 						"latest_adopted_release": {
 							MarkdownDescription: "The {oldest_or_newest} adopted release associated with the event's issue is {older_or_newer} than the latest adopted release in {environment}.",
 							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[IssueAlertFilterLatestAdoptedReleaseModel](ctx),
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
 								"oldest_or_newest": tfutils.WithEnumStringAttribute(schema.StringAttribute{
@@ -275,6 +278,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 						"latest_release": {
 							MarkdownDescription: "The event is from the latest release.",
 							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[IssueAlertFilterLatestReleaseModel](ctx),
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
 							},
@@ -282,6 +286,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 						"issue_category": {
 							MarkdownDescription: "The issue's category is equal to `value`.",
 							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[IssueAlertFilterIssueCategoryModel](ctx),
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
 								"value": tfutils.WithEnumStringAttribute(schema.StringAttribute{
@@ -292,6 +297,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 						"event_attribute": {
 							MarkdownDescription: "The event's `attribute` value `match` `value`.",
 							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[IssueAlertFilterEventAttributeModel](ctx),
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
 								"attribute": tfutils.WithEnumStringAttribute(schema.StringAttribute{
@@ -309,6 +315,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 						"tagged_event": {
 							MarkdownDescription: "The event's tags match `key` `match` `value`.",
 							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[IssueAlertFilterTaggedEventModel](ctx),
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
 								"key": schema.StringAttribute{
@@ -327,6 +334,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 						"level": {
 							MarkdownDescription: "The event's level is `match` `level`.",
 							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[IssueAlertFilterLevelModel](ctx),
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
 								"match": tfutils.WithEnumStringAttribute(schema.StringAttribute{
@@ -1158,7 +1166,7 @@ func (r *IssueAlertResource) UpgradeState(ctx context.Context) map[int64]resourc
 				}
 
 				upgradedStateData.ConditionsV2 = supertypes.NewListNestedObjectValueOfNull[IssueAlertConditionModel](ctx)
-				upgradedStateData.FiltersV2 = types.ListNull(issueAlertFilterV2ElemType)
+				upgradedStateData.FiltersV2 = supertypes.NewListNestedObjectValueOfNull[IssueAlertFilterModel](ctx)
 				upgradedStateData.ActionsV2 = types.ListNull(issueAlertActionV2ElemType)
 
 				upgradedStateData.Conditions = sentrytypes.NewLossyJsonNull()

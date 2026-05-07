@@ -666,36 +666,36 @@ func (m IssueAlertFilterLevelModel) ToApi(ctx context.Context) (*apiclient.Proje
 }
 
 type IssueAlertFilterModel struct {
-	AgeComparison        *IssueAlertFilterAgeComparisonModel        `tfsdk:"age_comparison"`
-	IssueOccurrences     *IssueAlertFilterIssueOccurrencesModel     `tfsdk:"issue_occurrences"`
-	AssignedTo           *IssueAlertFilterAssignedToModel           `tfsdk:"assigned_to"`
-	LatestAdoptedRelease *IssueAlertFilterLatestAdoptedReleaseModel `tfsdk:"latest_adopted_release"`
-	LatestRelease        *IssueAlertFilterLatestReleaseModel        `tfsdk:"latest_release"`
-	IssueCategory        *IssueAlertFilterIssueCategoryModel        `tfsdk:"issue_category"`
-	EventAttribute       *IssueAlertFilterEventAttributeModel       `tfsdk:"event_attribute"`
-	TaggedEvent          *IssueAlertFilterTaggedEventModel          `tfsdk:"tagged_event"`
-	Level                *IssueAlertFilterLevelModel                `tfsdk:"level"`
+	AgeComparison        supertypes.SingleNestedObjectValueOf[IssueAlertFilterAgeComparisonModel]        `tfsdk:"age_comparison"`
+	IssueOccurrences     supertypes.SingleNestedObjectValueOf[IssueAlertFilterIssueOccurrencesModel]     `tfsdk:"issue_occurrences"`
+	AssignedTo           supertypes.SingleNestedObjectValueOf[IssueAlertFilterAssignedToModel]           `tfsdk:"assigned_to"`
+	LatestAdoptedRelease supertypes.SingleNestedObjectValueOf[IssueAlertFilterLatestAdoptedReleaseModel] `tfsdk:"latest_adopted_release"`
+	LatestRelease        supertypes.SingleNestedObjectValueOf[IssueAlertFilterLatestReleaseModel]        `tfsdk:"latest_release"`
+	IssueCategory        supertypes.SingleNestedObjectValueOf[IssueAlertFilterIssueCategoryModel]        `tfsdk:"issue_category"`
+	EventAttribute       supertypes.SingleNestedObjectValueOf[IssueAlertFilterEventAttributeModel]       `tfsdk:"event_attribute"`
+	TaggedEvent          supertypes.SingleNestedObjectValueOf[IssueAlertFilterTaggedEventModel]          `tfsdk:"tagged_event"`
+	Level                supertypes.SingleNestedObjectValueOf[IssueAlertFilterLevelModel]                `tfsdk:"level"`
 }
 
 func (m IssueAlertFilterModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleFilter, diag.Diagnostics) {
-	if m.AgeComparison != nil {
-		return m.AgeComparison.ToApi(ctx)
-	} else if m.IssueOccurrences != nil {
-		return m.IssueOccurrences.ToApi(ctx)
-	} else if m.AssignedTo != nil {
-		return m.AssignedTo.ToApi(ctx)
-	} else if m.LatestAdoptedRelease != nil {
-		return m.LatestAdoptedRelease.ToApi(ctx)
-	} else if m.LatestRelease != nil {
-		return m.LatestRelease.ToApi(ctx)
-	} else if m.IssueCategory != nil {
-		return m.IssueCategory.ToApi(ctx)
-	} else if m.EventAttribute != nil {
-		return m.EventAttribute.ToApi(ctx)
-	} else if m.TaggedEvent != nil {
-		return m.TaggedEvent.ToApi(ctx)
-	} else if m.Level != nil {
-		return m.Level.ToApi(ctx)
+	if m.AgeComparison.IsKnown() {
+		return m.AgeComparison.MustGet(ctx).ToApi(ctx)
+	} else if m.IssueOccurrences.IsKnown() {
+		return m.IssueOccurrences.MustGet(ctx).ToApi(ctx)
+	} else if m.AssignedTo.IsKnown() {
+		return m.AssignedTo.MustGet(ctx).ToApi(ctx)
+	} else if m.LatestAdoptedRelease.IsKnown() {
+		return m.LatestAdoptedRelease.MustGet(ctx).ToApi(ctx)
+	} else if m.LatestRelease.IsKnown() {
+		return m.LatestRelease.MustGet(ctx).ToApi(ctx)
+	} else if m.IssueCategory.IsKnown() {
+		return m.IssueCategory.MustGet(ctx).ToApi(ctx)
+	} else if m.EventAttribute.IsKnown() {
+		return m.EventAttribute.MustGet(ctx).ToApi(ctx)
+	} else if m.TaggedEvent.IsKnown() {
+		return m.TaggedEvent.MustGet(ctx).ToApi(ctx)
+	} else if m.Level.IsKnown() {
+		return m.Level.MustGet(ctx).ToApi(ctx)
 	} else {
 		var diags diag.Diagnostics
 		diags.AddError("Exactly one filter must be set", "Exactly one filter must be set")
@@ -710,44 +710,53 @@ func (m *IssueAlertFilterModel) Fill(ctx context.Context, filter apiclient.Proje
 		return
 	}
 
-	m.AgeComparison = nil
-	m.IssueOccurrences = nil
-	m.AssignedTo = nil
-	m.LatestAdoptedRelease = nil
-	m.LatestRelease = nil
-	m.IssueCategory = nil
-	m.EventAttribute = nil
-	m.TaggedEvent = nil
-	m.Level = nil
+	m.AgeComparison = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertFilterAgeComparisonModel](ctx)
+	m.IssueOccurrences = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertFilterIssueOccurrencesModel](ctx)
+	m.AssignedTo = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertFilterAssignedToModel](ctx)
+	m.LatestAdoptedRelease = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertFilterLatestAdoptedReleaseModel](ctx)
+	m.LatestRelease = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertFilterLatestReleaseModel](ctx)
+	m.IssueCategory = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertFilterIssueCategoryModel](ctx)
+	m.EventAttribute = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertFilterEventAttributeModel](ctx)
+	m.TaggedEvent = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertFilterTaggedEventModel](ctx)
+	m.Level = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertFilterLevelModel](ctx)
 
 	switch filterValue := filterValue.(type) {
 	case apiclient.ProjectRuleFilterAgeComparison:
-		m.AgeComparison = &IssueAlertFilterAgeComparisonModel{}
-		diags.Append(m.AgeComparison.Fill(ctx, filterValue)...)
+		var out IssueAlertFilterAgeComparisonModel
+		diags.Append(out.Fill(ctx, filterValue)...)
+		m.AgeComparison = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleFilterIssueOccurrences:
-		m.IssueOccurrences = &IssueAlertFilterIssueOccurrencesModel{}
-		diags.Append(m.IssueOccurrences.Fill(ctx, filterValue)...)
+		var out IssueAlertFilterIssueOccurrencesModel
+		diags.Append(out.Fill(ctx, filterValue)...)
+		m.IssueOccurrences = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleFilterAssignedTo:
-		m.AssignedTo = &IssueAlertFilterAssignedToModel{}
-		diags.Append(m.AssignedTo.Fill(ctx, filterValue)...)
+		var out IssueAlertFilterAssignedToModel
+		diags.Append(out.Fill(ctx, filterValue)...)
+		m.AssignedTo = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleFilterLatestAdoptedRelease:
-		m.LatestAdoptedRelease = &IssueAlertFilterLatestAdoptedReleaseModel{}
-		diags.Append(m.LatestAdoptedRelease.Fill(ctx, filterValue)...)
+		var out IssueAlertFilterLatestAdoptedReleaseModel
+		diags.Append(out.Fill(ctx, filterValue)...)
+		m.LatestAdoptedRelease = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleFilterLatestRelease:
-		m.LatestRelease = &IssueAlertFilterLatestReleaseModel{}
-		diags.Append(m.LatestRelease.Fill(ctx, filterValue)...)
+		var out IssueAlertFilterLatestReleaseModel
+		diags.Append(out.Fill(ctx, filterValue)...)
+		m.LatestRelease = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleFilterIssueCategory:
-		m.IssueCategory = &IssueAlertFilterIssueCategoryModel{}
-		diags.Append(m.IssueCategory.Fill(ctx, filterValue)...)
+		var out IssueAlertFilterIssueCategoryModel
+		diags.Append(out.Fill(ctx, filterValue)...)
+		m.IssueCategory = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleFilterEventAttribute:
-		m.EventAttribute = &IssueAlertFilterEventAttributeModel{}
-		diags.Append(m.EventAttribute.Fill(ctx, filterValue)...)
+		var out IssueAlertFilterEventAttributeModel
+		diags.Append(out.Fill(ctx, filterValue)...)
+		m.EventAttribute = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleFilterTaggedEvent:
-		m.TaggedEvent = &IssueAlertFilterTaggedEventModel{}
-		diags.Append(m.TaggedEvent.Fill(ctx, filterValue)...)
+		var out IssueAlertFilterTaggedEventModel
+		diags.Append(out.Fill(ctx, filterValue)...)
+		m.TaggedEvent = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleFilterLevel:
-		m.Level = &IssueAlertFilterLevelModel{}
-		diags.Append(m.Level.Fill(ctx, filterValue)...)
+		var out IssueAlertFilterLevelModel
+		diags.Append(out.Fill(ctx, filterValue)...)
+		m.Level = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	default:
 		diags.AddError("Unsupported filter", fmt.Sprintf("Unsupported filter type %T", filterValue))
 	}
@@ -1437,7 +1446,7 @@ type IssueAlertModel struct {
 	Environment  types.String                                                 `tfsdk:"environment"`
 	Owner        types.String                                                 `tfsdk:"owner"`
 	ConditionsV2 supertypes.ListNestedObjectValueOf[IssueAlertConditionModel] `tfsdk:"conditions_v2"`
-	FiltersV2    types.List                                                   `tfsdk:"filters_v2"`
+	FiltersV2    supertypes.ListNestedObjectValueOf[IssueAlertFilterModel]    `tfsdk:"filters_v2"`
 	ActionsV2    types.List                                                   `tfsdk:"actions_v2"`
 }
 
@@ -1540,14 +1549,9 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 			return
 		}
 
-		filters = reorderToMatchPrior(priorFilters, filters, issueAlertFilterModelKey)
+		filters = reorderToMatchPrior(priorFilters, filters, issueAlertFilterModelKey(ctx))
 
-		filtersV2, d := types.ListValueFrom(ctx, issueAlertFilterV2ElemType, filters)
-		diags.Append(d...)
-		if diags.HasError() {
-			return
-		}
-		m.FiltersV2 = filtersV2
+		m.FiltersV2 = supertypes.NewListNestedObjectValueOfValueSlice(ctx, filters)
 	}
 
 	if !m.Actions.IsNull() {

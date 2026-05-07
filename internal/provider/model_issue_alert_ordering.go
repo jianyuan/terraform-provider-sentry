@@ -90,39 +90,43 @@ func issueAlertConditionModelKey(ctx context.Context) func(m IssueAlertCondition
 	}
 }
 
-func issueAlertFilterModelKey(m IssueAlertFilterModel) string {
-	switch {
-	case m.AgeComparison != nil:
-		f := m.AgeComparison
-		return fmt.Sprintf("age_comparison\x00%s\x00%d\x00%s",
-			f.ComparisonType.ValueString(), f.Value.ValueInt64(), f.Time.ValueString())
-	case m.IssueOccurrences != nil:
-		return fmt.Sprintf("issue_occurrences\x00%d", m.IssueOccurrences.Value.ValueInt64())
-	case m.AssignedTo != nil:
-		f := m.AssignedTo
-		return fmt.Sprintf("assigned_to\x00%s\x00%s",
-			f.TargetType.ValueString(), f.TargetIdentifier.ValueString())
-	case m.LatestAdoptedRelease != nil:
-		f := m.LatestAdoptedRelease
-		return fmt.Sprintf("latest_adopted_release\x00%s\x00%s\x00%s",
-			f.OldestOrNewest.ValueString(), f.OlderOrNewer.ValueString(), f.Environment.ValueString())
-	case m.LatestRelease != nil:
-		return "latest_release"
-	case m.IssueCategory != nil:
-		return fmt.Sprintf("issue_category\x00%s", m.IssueCategory.Value.ValueString())
-	case m.EventAttribute != nil:
-		f := m.EventAttribute
-		return fmt.Sprintf("event_attribute\x00%s\x00%s\x00%s",
-			f.Attribute.ValueString(), f.Match.ValueString(), f.Value.ValueString())
-	case m.TaggedEvent != nil:
-		f := m.TaggedEvent
-		return fmt.Sprintf("tagged_event\x00%s\x00%s\x00%s",
-			f.Key.ValueString(), f.Match.ValueString(), f.Value.ValueString())
-	case m.Level != nil:
-		f := m.Level
-		return fmt.Sprintf("level\x00%s\x00%s", f.Match.ValueString(), f.Level.ValueString())
-	default:
-		return ""
+func issueAlertFilterModelKey(ctx context.Context) func(m IssueAlertFilterModel) string {
+	return func(m IssueAlertFilterModel) string {
+		switch {
+		case m.AgeComparison.IsKnown():
+			f := m.AgeComparison.MustGet(ctx)
+			return fmt.Sprintf("age_comparison\x00%s\x00%d\x00%s",
+				f.ComparisonType.ValueString(), f.Value.ValueInt64(), f.Time.ValueString())
+		case m.IssueOccurrences.IsKnown():
+			f := m.IssueOccurrences.MustGet(ctx)
+			return fmt.Sprintf("issue_occurrences\x00%d", f.Value.ValueInt64())
+		case m.AssignedTo.IsKnown():
+			f := m.AssignedTo.MustGet(ctx)
+			return fmt.Sprintf("assigned_to\x00%s\x00%s",
+				f.TargetType.ValueString(), f.TargetIdentifier.ValueString())
+		case m.LatestAdoptedRelease.IsKnown():
+			f := m.LatestAdoptedRelease.MustGet(ctx)
+			return fmt.Sprintf("latest_adopted_release\x00%s\x00%s\x00%s",
+				f.OldestOrNewest.ValueString(), f.OlderOrNewer.ValueString(), f.Environment.ValueString())
+		case m.LatestRelease.IsKnown():
+			return "latest_release"
+		case m.IssueCategory.IsKnown():
+			f := m.IssueCategory.MustGet(ctx)
+			return fmt.Sprintf("issue_category\x00%s", f.Value.ValueString())
+		case m.EventAttribute.IsKnown():
+			f := m.EventAttribute.MustGet(ctx)
+			return fmt.Sprintf("event_attribute\x00%s\x00%s\x00%s",
+				f.Attribute.ValueString(), f.Match.ValueString(), f.Value.ValueString())
+		case m.TaggedEvent.IsKnown():
+			f := m.TaggedEvent.MustGet(ctx)
+			return fmt.Sprintf("tagged_event\x00%s\x00%s\x00%s",
+				f.Key.ValueString(), f.Match.ValueString(), f.Value.ValueString())
+		case m.Level.IsKnown():
+			f := m.Level.MustGet(ctx)
+			return fmt.Sprintf("level\x00%s\x00%s", f.Match.ValueString(), f.Level.ValueString())
+		default:
+			return ""
+		}
 	}
 }
 

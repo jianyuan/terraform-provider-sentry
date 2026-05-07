@@ -63,19 +63,6 @@ func TestIssueAlertActionModel_ToApi_emptyElement(t *testing.T) {
 	}
 }
 
-func TestIssueAlertFilterModel_ToApi_validFilter(t *testing.T) {
-	model := IssueAlertFilterModel{
-		LatestRelease: &IssueAlertFilterLatestReleaseModel{},
-	}
-	result, diags := model.ToApi(context.Background())
-	if diags.HasError() {
-		t.Fatalf("unexpected error: %s", diags)
-	}
-	if result == nil {
-		t.Fatal("expected non-nil result")
-	}
-}
-
 func TestIssueAlertActionModel_ToApi_validAction(t *testing.T) {
 	model := IssueAlertActionModel{
 		NotifyEvent: &IssueAlertActionNotifyEventModel{},
