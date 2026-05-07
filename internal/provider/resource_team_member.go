@@ -2,10 +2,10 @@ package provider
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"slices"
-	"strings"
 	"sync"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -22,6 +22,8 @@ import (
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 	"github.com/samber/lo"
 )
+
+var errNotFound = errors.New("not found")
 
 type TeamMemberResourceModel struct {
 	Id            types.String `tfsdk:"id"`
@@ -117,6 +119,8 @@ func (r *TeamMemberResource) getEffectiveTeamRole(ctx context.Context, organizat
 	orgHttpResp, err := r.apiClient.GetOrganizationWithResponse(ctx, organization)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read organization %q, got error: %s", organization, err)
+	} else if orgHttpResp.StatusCode() == http.StatusNotFound {
+		return nil, fmt.Errorf("unable to read organization %q: %w", organization, errNotFound)
 	} else if orgHttpResp.StatusCode() != http.StatusOK || orgHttpResp.JSON200 == nil {
 		return nil, fmt.Errorf("unable to read organization %q, got status code: %d", organization, orgHttpResp.StatusCode())
 	}
@@ -125,6 +129,8 @@ func (r *TeamMemberResource) getEffectiveTeamRole(ctx context.Context, organizat
 	memberHttpResp, err := r.apiClient.GetOrganizationMemberWithResponse(ctx, organization, memberId)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read organization member (organization=%s, member_id=%s), got error: %s", organization, memberId, err)
+	} else if memberHttpResp.StatusCode() == http.StatusNotFound {
+		return nil, fmt.Errorf("unable to read organization member (organization=%s, member_id=%s): %w", organization, memberId, errNotFound)
 	} else if memberHttpResp.StatusCode() != http.StatusOK || memberHttpResp.JSON200 == nil {
 		return nil, fmt.Errorf("unable to read organization member (organization=%s, member_id=%s), got status code: %d", organization, memberId, memberHttpResp.StatusCode())
 	}
@@ -234,9 +240,7 @@ func (r *TeamMemberResource) Read(ctx context.Context, req resource.ReadRequest,
 
 	effectiveRole, err := r.getEffectiveTeamRole(ctx, data.Organization.ValueString(), data.MemberId.ValueString(), data.Team.ValueString())
 	if err != nil {
-
-		if strings.Contains(err.Error(), "404 The requested resource does not exist") ||
-			strings.Contains(err.Error(), "unable to read organization member, got status code: 404") {
+		if errors.Is(err, errNotFound) {
 			resp.State.RemoveResource(ctx)
 		} else {
 			resp.Diagnostics.Append(diagutils.NewClientError("read", err))
