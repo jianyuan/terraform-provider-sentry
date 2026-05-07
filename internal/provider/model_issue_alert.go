@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
@@ -874,9 +873,9 @@ func (m IssueAlertActionNotifyEventServiceModel) ToApi(ctx context.Context) (*ap
 }
 
 type IssueAlertActionNotifyEventSentryAppModel struct {
-	Name                      types.String `tfsdk:"name"`
-	SentryAppInstallationUuid types.String `tfsdk:"sentry_app_installation_uuid"`
-	Settings                  types.Map    `tfsdk:"settings"`
+	Name                      types.String                  `tfsdk:"name"`
+	SentryAppInstallationUuid types.String                  `tfsdk:"sentry_app_installation_uuid"`
+	Settings                  supertypes.MapValueOf[string] `tfsdk:"settings"`
 }
 
 func (m *IssueAlertActionNotifyEventSentryAppModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionNotifyEventSentryApp) (diags diag.Diagnostics) {
@@ -884,13 +883,13 @@ func (m *IssueAlertActionNotifyEventSentryAppModel) Fill(ctx context.Context, ac
 	m.SentryAppInstallationUuid = types.StringValue(action.SentryAppInstallationUuid)
 
 	if action.Settings == nil {
-		m.Settings = types.MapNull(types.StringType)
+		m.Settings = supertypes.NewMapValueOfNull[string](ctx)
 	} else {
-		var settingsMap = make(map[string]attr.Value)
+		var settingsMap = make(map[string]string, len(*action.Settings))
 		for _, setting := range *action.Settings {
-			settingsMap[setting.Name] = types.StringValue(setting.Value)
+			settingsMap[setting.Name] = setting.Value
 		}
-		m.Settings = types.MapValueMust(types.StringType, settingsMap)
+		m.Settings = tfutils.MergeDiagnostics(supertypes.NewMapValueOfMap(ctx, settingsMap))(&diags)
 	}
 	return
 }
@@ -1166,11 +1165,11 @@ func (m IssueAlertActionJiraServerCreateTicketModel) ToApi(ctx context.Context) 
 }
 
 type IssueAlertActionGitHubCreateTicketModel struct {
-	Name        types.String `tfsdk:"name"`
-	Integration types.String `tfsdk:"integration"`
-	Repo        types.String `tfsdk:"repo"`
-	Assignee    types.String `tfsdk:"assignee"`
-	Labels      types.Set    `tfsdk:"labels"`
+	Name        types.String                  `tfsdk:"name"`
+	Integration types.String                  `tfsdk:"integration"`
+	Repo        types.String                  `tfsdk:"repo"`
+	Assignee    types.String                  `tfsdk:"assignee"`
+	Labels      supertypes.SetValueOf[string] `tfsdk:"labels"`
 }
 
 func (m *IssueAlertActionGitHubCreateTicketModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionGitHubCreateTicket) (diags diag.Diagnostics) {
@@ -1180,11 +1179,9 @@ func (m *IssueAlertActionGitHubCreateTicketModel) Fill(ctx context.Context, acti
 	m.Assignee = types.StringPointerValue(action.Assignee)
 
 	if action.Labels == nil {
-		m.Labels = types.SetNull(types.StringType)
+		m.Labels = supertypes.NewSetValueOfNull[string](ctx)
 	} else {
-		m.Labels = types.SetValueMust(types.StringType, lo.Map(*action.Labels, func(v string, _ int) attr.Value {
-			return types.StringValue(v)
-		}))
+		m.Labels = supertypes.NewSetValueOfSlice(ctx, *action.Labels)
 	}
 	return
 }
@@ -1220,11 +1217,11 @@ func (m IssueAlertActionGitHubCreateTicketModel) ToApi(ctx context.Context) (*ap
 }
 
 type IssueAlertActionGitHubEnterpriseCreateTicketModel struct {
-	Name        types.String `tfsdk:"name"`
-	Integration types.String `tfsdk:"integration"`
-	Repo        types.String `tfsdk:"repo"`
-	Assignee    types.String `tfsdk:"assignee"`
-	Labels      types.Set    `tfsdk:"labels"`
+	Name        types.String                  `tfsdk:"name"`
+	Integration types.String                  `tfsdk:"integration"`
+	Repo        types.String                  `tfsdk:"repo"`
+	Assignee    types.String                  `tfsdk:"assignee"`
+	Labels      supertypes.SetValueOf[string] `tfsdk:"labels"`
 }
 
 func (m *IssueAlertActionGitHubEnterpriseCreateTicketModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionGitHubEnterpriseCreateTicket) (diags diag.Diagnostics) {
@@ -1234,11 +1231,9 @@ func (m *IssueAlertActionGitHubEnterpriseCreateTicketModel) Fill(ctx context.Con
 	m.Assignee = types.StringPointerValue(action.Assignee)
 
 	if action.Labels == nil {
-		m.Labels = types.SetNull(types.StringType)
+		m.Labels = supertypes.NewSetValueOfNull[string](ctx)
 	} else {
-		m.Labels = types.SetValueMust(types.StringType, lo.Map(*action.Labels, func(v string, _ int) attr.Value {
-			return types.StringValue(v)
-		}))
+		m.Labels = supertypes.NewSetValueOfSlice(ctx, *action.Labels)
 	}
 	return
 }

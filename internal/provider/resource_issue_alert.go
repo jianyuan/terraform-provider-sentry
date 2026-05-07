@@ -405,8 +405,8 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 									Required: true,
 								},
 								"settings": schema.MapAttribute{
-									ElementType: types.StringType,
-									Optional:    true,
+									Optional:   true,
+									CustomType: supertypes.NewMapTypeOf[string](ctx),
 								},
 							},
 						},
@@ -584,7 +584,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 								"labels": schema.SetAttribute{
 									MarkdownDescription: "A list of labels to assign to the issue.",
 									Optional:            true,
-									ElementType:         types.StringType,
+									CustomType:          supertypes.NewSetTypeOf[string](ctx),
 								},
 							},
 						},
@@ -609,7 +609,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 								"labels": schema.SetAttribute{
 									MarkdownDescription: "A list of labels to assign to the issue.",
 									Optional:            true,
-									ElementType:         types.StringType,
+									CustomType:          supertypes.NewSetTypeOf[string](ctx),
 								},
 							},
 						},

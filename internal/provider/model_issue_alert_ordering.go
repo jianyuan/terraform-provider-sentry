@@ -7,7 +7,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
 )
 
@@ -175,14 +174,18 @@ func issueAlertActionModelKey(ctx context.Context) func(m IssueAlertActionModel)
 				f.Integration.ValueString(), f.Project.ValueString(), f.IssueType.ValueString())
 		case m.GitHubCreateTicket.IsKnown():
 			f := m.GitHubCreateTicket.MustGet(ctx)
+			labels := f.Labels.MustGet(ctx)
+			sort.Strings(labels)
 			return fmt.Sprintf("github_create_ticket\x00%s\x00%s\x00%s\x00%s",
 				f.Integration.ValueString(), f.Repo.ValueString(),
-				f.Assignee.ValueString(), typesSetKey(f.Labels))
+				f.Assignee.ValueString(), strings.Join(labels, ","))
 		case m.GitHubEnterpriseCreateTicket.IsKnown():
 			f := m.GitHubEnterpriseCreateTicket.MustGet(ctx)
+			labels := f.Labels.MustGet(ctx)
+			sort.Strings(labels)
 			return fmt.Sprintf("github_enterprise_create_ticket\x00%s\x00%s\x00%s\x00%s",
 				f.Integration.ValueString(), f.Repo.ValueString(),
-				f.Assignee.ValueString(), typesSetKey(f.Labels))
+				f.Assignee.ValueString(), strings.Join(labels, ","))
 		case m.AzureDevopsCreateTicket.IsKnown():
 			f := m.AzureDevopsCreateTicket.MustGet(ctx)
 			return fmt.Sprintf("azure_devops_create_ticket\x00%s\x00%s\x00%s",
@@ -195,19 +198,6 @@ func issueAlertActionModelKey(ctx context.Context) func(m IssueAlertActionModel)
 
 // stringSetKey produces a stable string key from a sentrytypes.StringSet.
 func stringSetKey(s sentrytypes.StringSet) string {
-	if s.IsNull() || s.IsUnknown() {
-		return ""
-	}
-	strs := make([]string, 0, len(s.Elements()))
-	for _, e := range s.Elements() {
-		strs = append(strs, e.String())
-	}
-	sort.Strings(strs)
-	return strings.Join(strs, ",")
-}
-
-// typesSetKey produces a stable string key from a types.Set.
-func typesSetKey(s types.Set) string {
 	if s.IsNull() || s.IsUnknown() {
 		return ""
 	}
