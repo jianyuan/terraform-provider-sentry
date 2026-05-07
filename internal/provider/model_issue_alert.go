@@ -1306,51 +1306,51 @@ func (m IssueAlertActionAzureDevopsCreateTicketModel) ToApi(ctx context.Context)
 }
 
 type IssueAlertActionModel struct {
-	NotifyEmail                  *IssueAlertActionNotifyEmailModel                  `tfsdk:"notify_email"`
-	NotifyEvent                  *IssueAlertActionNotifyEventModel                  `tfsdk:"notify_event"`
-	NotifyEventService           *IssueAlertActionNotifyEventServiceModel           `tfsdk:"notify_event_service"`
-	NotifyEventSentryApp         *IssueAlertActionNotifyEventSentryAppModel         `tfsdk:"notify_event_sentry_app"`
-	OpsgenieNotifyTeam           *IssueAlertActionOpsgenieNotifyTeam                `tfsdk:"opsgenie_notify_team"`
-	PagerDutyNotifyService       *IssueAlertActionPagerDutyNotifyServiceModel       `tfsdk:"pagerduty_notify_service"`
-	SlackNotifyService           *IssueAlertActionSlackNotifyServiceModel           `tfsdk:"slack_notify_service"`
-	MsTeamsNotifyService         *IssueAlertActionMsTeamsNotifyServiceModel         `tfsdk:"msteams_notify_service"`
-	DiscordNotifyService         *IssueAlertActionDiscordNotifyServiceModel         `tfsdk:"discord_notify_service"`
-	JiraCreateTicket             *IssueAlertActionJiraCreateTicketModel             `tfsdk:"jira_create_ticket"`
-	JiraServerCreateTicket       *IssueAlertActionJiraServerCreateTicketModel       `tfsdk:"jira_server_create_ticket"`
-	GitHubCreateTicket           *IssueAlertActionGitHubCreateTicketModel           `tfsdk:"github_create_ticket"`
-	GitHubEnterpriseCreateTicket *IssueAlertActionGitHubEnterpriseCreateTicketModel `tfsdk:"github_enterprise_create_ticket"`
-	AzureDevopsCreateTicket      *IssueAlertActionAzureDevopsCreateTicketModel      `tfsdk:"azure_devops_create_ticket"`
+	NotifyEmail                  supertypes.SingleNestedObjectValueOf[IssueAlertActionNotifyEmailModel]                  `tfsdk:"notify_email"`
+	NotifyEvent                  supertypes.SingleNestedObjectValueOf[IssueAlertActionNotifyEventModel]                  `tfsdk:"notify_event"`
+	NotifyEventService           supertypes.SingleNestedObjectValueOf[IssueAlertActionNotifyEventServiceModel]           `tfsdk:"notify_event_service"`
+	NotifyEventSentryApp         supertypes.SingleNestedObjectValueOf[IssueAlertActionNotifyEventSentryAppModel]         `tfsdk:"notify_event_sentry_app"`
+	OpsgenieNotifyTeam           supertypes.SingleNestedObjectValueOf[IssueAlertActionOpsgenieNotifyTeam]                `tfsdk:"opsgenie_notify_team"`
+	PagerDutyNotifyService       supertypes.SingleNestedObjectValueOf[IssueAlertActionPagerDutyNotifyServiceModel]       `tfsdk:"pagerduty_notify_service"`
+	SlackNotifyService           supertypes.SingleNestedObjectValueOf[IssueAlertActionSlackNotifyServiceModel]           `tfsdk:"slack_notify_service"`
+	MsTeamsNotifyService         supertypes.SingleNestedObjectValueOf[IssueAlertActionMsTeamsNotifyServiceModel]         `tfsdk:"msteams_notify_service"`
+	DiscordNotifyService         supertypes.SingleNestedObjectValueOf[IssueAlertActionDiscordNotifyServiceModel]         `tfsdk:"discord_notify_service"`
+	JiraCreateTicket             supertypes.SingleNestedObjectValueOf[IssueAlertActionJiraCreateTicketModel]             `tfsdk:"jira_create_ticket"`
+	JiraServerCreateTicket       supertypes.SingleNestedObjectValueOf[IssueAlertActionJiraServerCreateTicketModel]       `tfsdk:"jira_server_create_ticket"`
+	GitHubCreateTicket           supertypes.SingleNestedObjectValueOf[IssueAlertActionGitHubCreateTicketModel]           `tfsdk:"github_create_ticket"`
+	GitHubEnterpriseCreateTicket supertypes.SingleNestedObjectValueOf[IssueAlertActionGitHubEnterpriseCreateTicketModel] `tfsdk:"github_enterprise_create_ticket"`
+	AzureDevopsCreateTicket      supertypes.SingleNestedObjectValueOf[IssueAlertActionAzureDevopsCreateTicketModel]      `tfsdk:"azure_devops_create_ticket"`
 }
 
 func (m IssueAlertActionModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleAction, diag.Diagnostics) {
-	if m.NotifyEmail != nil {
-		return m.NotifyEmail.ToApi(ctx)
-	} else if m.NotifyEvent != nil {
-		return m.NotifyEvent.ToApi(ctx)
-	} else if m.NotifyEventService != nil {
-		return m.NotifyEventService.ToApi(ctx)
-	} else if m.NotifyEventSentryApp != nil {
-		return m.NotifyEventSentryApp.ToApi(ctx)
-	} else if m.OpsgenieNotifyTeam != nil {
-		return m.OpsgenieNotifyTeam.ToApi(ctx)
-	} else if m.PagerDutyNotifyService != nil {
-		return m.PagerDutyNotifyService.ToApi(ctx)
-	} else if m.SlackNotifyService != nil {
-		return m.SlackNotifyService.ToApi(ctx)
-	} else if m.MsTeamsNotifyService != nil {
-		return m.MsTeamsNotifyService.ToApi(ctx)
-	} else if m.DiscordNotifyService != nil {
-		return m.DiscordNotifyService.ToApi(ctx)
-	} else if m.JiraCreateTicket != nil {
-		return m.JiraCreateTicket.ToApi(ctx)
-	} else if m.JiraServerCreateTicket != nil {
-		return m.JiraServerCreateTicket.ToApi(ctx)
-	} else if m.GitHubCreateTicket != nil {
-		return m.GitHubCreateTicket.ToApi(ctx)
-	} else if m.GitHubEnterpriseCreateTicket != nil {
-		return m.GitHubEnterpriseCreateTicket.ToApi(ctx)
-	} else if m.AzureDevopsCreateTicket != nil {
-		return m.AzureDevopsCreateTicket.ToApi(ctx)
+	if m.NotifyEmail.IsKnown() {
+		return m.NotifyEmail.MustGet(ctx).ToApi(ctx)
+	} else if m.NotifyEvent.IsKnown() {
+		return m.NotifyEvent.MustGet(ctx).ToApi(ctx)
+	} else if m.NotifyEventService.IsKnown() {
+		return m.NotifyEventService.MustGet(ctx).ToApi(ctx)
+	} else if m.NotifyEventSentryApp.IsKnown() {
+		return m.NotifyEventSentryApp.MustGet(ctx).ToApi(ctx)
+	} else if m.OpsgenieNotifyTeam.IsKnown() {
+		return m.OpsgenieNotifyTeam.MustGet(ctx).ToApi(ctx)
+	} else if m.PagerDutyNotifyService.IsKnown() {
+		return m.PagerDutyNotifyService.MustGet(ctx).ToApi(ctx)
+	} else if m.SlackNotifyService.IsKnown() {
+		return m.SlackNotifyService.MustGet(ctx).ToApi(ctx)
+	} else if m.MsTeamsNotifyService.IsKnown() {
+		return m.MsTeamsNotifyService.MustGet(ctx).ToApi(ctx)
+	} else if m.DiscordNotifyService.IsKnown() {
+		return m.DiscordNotifyService.MustGet(ctx).ToApi(ctx)
+	} else if m.JiraCreateTicket.IsKnown() {
+		return m.JiraCreateTicket.MustGet(ctx).ToApi(ctx)
+	} else if m.JiraServerCreateTicket.IsKnown() {
+		return m.JiraServerCreateTicket.MustGet(ctx).ToApi(ctx)
+	} else if m.GitHubCreateTicket.IsKnown() {
+		return m.GitHubCreateTicket.MustGet(ctx).ToApi(ctx)
+	} else if m.GitHubEnterpriseCreateTicket.IsKnown() {
+		return m.GitHubEnterpriseCreateTicket.MustGet(ctx).ToApi(ctx)
+	} else if m.AzureDevopsCreateTicket.IsKnown() {
+		return m.AzureDevopsCreateTicket.MustGet(ctx).ToApi(ctx)
 	} else {
 		var diags diag.Diagnostics
 		diags.AddError("Exactly one action must be set", "Exactly one action must be set")
@@ -1365,64 +1365,78 @@ func (m *IssueAlertActionModel) Fill(ctx context.Context, action apiclient.Proje
 		return
 	}
 
-	m.NotifyEmail = nil
-	m.NotifyEvent = nil
-	m.NotifyEventService = nil
-	m.NotifyEventSentryApp = nil
-	m.OpsgenieNotifyTeam = nil
-	m.PagerDutyNotifyService = nil
-	m.SlackNotifyService = nil
-	m.MsTeamsNotifyService = nil
-	m.DiscordNotifyService = nil
-	m.JiraCreateTicket = nil
-	m.JiraServerCreateTicket = nil
-	m.GitHubCreateTicket = nil
-	m.GitHubEnterpriseCreateTicket = nil
-	m.AzureDevopsCreateTicket = nil
+	m.NotifyEmail = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionNotifyEmailModel](ctx)
+	m.NotifyEvent = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionNotifyEventModel](ctx)
+	m.NotifyEventService = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionNotifyEventServiceModel](ctx)
+	m.NotifyEventSentryApp = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionNotifyEventSentryAppModel](ctx)
+	m.OpsgenieNotifyTeam = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionOpsgenieNotifyTeam](ctx)
+	m.PagerDutyNotifyService = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionPagerDutyNotifyServiceModel](ctx)
+	m.SlackNotifyService = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionSlackNotifyServiceModel](ctx)
+	m.MsTeamsNotifyService = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionMsTeamsNotifyServiceModel](ctx)
+	m.DiscordNotifyService = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionDiscordNotifyServiceModel](ctx)
+	m.JiraCreateTicket = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionJiraCreateTicketModel](ctx)
+	m.JiraServerCreateTicket = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionJiraServerCreateTicketModel](ctx)
+	m.GitHubCreateTicket = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionGitHubCreateTicketModel](ctx)
+	m.GitHubEnterpriseCreateTicket = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionGitHubEnterpriseCreateTicketModel](ctx)
+	m.AzureDevopsCreateTicket = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionAzureDevopsCreateTicketModel](ctx)
 
 	switch actionValue := actionValue.(type) {
 	case apiclient.ProjectRuleActionNotifyEmail:
-		m.NotifyEmail = &IssueAlertActionNotifyEmailModel{}
-		diags.Append(m.NotifyEmail.Fill(ctx, actionValue)...)
+		var out IssueAlertActionNotifyEmailModel
+		diags.Append(out.Fill(ctx, actionValue)...)
+		m.NotifyEmail = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleActionNotifyEvent:
-		m.NotifyEvent = &IssueAlertActionNotifyEventModel{}
-		diags.Append(m.NotifyEvent.Fill(ctx, actionValue)...)
+		var out IssueAlertActionNotifyEventModel
+		diags.Append(out.Fill(ctx, actionValue)...)
+		m.NotifyEvent = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleActionNotifyEventService:
-		m.NotifyEventService = &IssueAlertActionNotifyEventServiceModel{}
-		diags.Append(m.NotifyEventService.Fill(ctx, actionValue)...)
+		var out IssueAlertActionNotifyEventServiceModel
+		diags.Append(out.Fill(ctx, actionValue)...)
+		m.NotifyEventService = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleActionNotifyEventSentryApp:
-		m.NotifyEventSentryApp = &IssueAlertActionNotifyEventSentryAppModel{}
-		diags.Append(m.NotifyEventSentryApp.Fill(ctx, actionValue)...)
+		var out IssueAlertActionNotifyEventSentryAppModel
+		diags.Append(out.Fill(ctx, actionValue)...)
+		m.NotifyEventSentryApp = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleActionOpsgenieNotifyTeam:
-		m.OpsgenieNotifyTeam = &IssueAlertActionOpsgenieNotifyTeam{}
-		diags.Append(m.OpsgenieNotifyTeam.Fill(ctx, actionValue)...)
+		var out IssueAlertActionOpsgenieNotifyTeam
+		diags.Append(out.Fill(ctx, actionValue)...)
+		m.OpsgenieNotifyTeam = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleActionPagerDutyNotifyService:
-		m.PagerDutyNotifyService = &IssueAlertActionPagerDutyNotifyServiceModel{}
-		diags.Append(m.PagerDutyNotifyService.Fill(ctx, actionValue)...)
+		var out IssueAlertActionPagerDutyNotifyServiceModel
+		diags.Append(out.Fill(ctx, actionValue)...)
+		m.PagerDutyNotifyService = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleActionSlackNotifyService:
-		m.SlackNotifyService = &IssueAlertActionSlackNotifyServiceModel{}
-		diags.Append(m.SlackNotifyService.Fill(ctx, actionValue)...)
+		var out IssueAlertActionSlackNotifyServiceModel
+		diags.Append(out.Fill(ctx, actionValue)...)
+		m.SlackNotifyService = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleActionMsTeamsNotifyService:
-		m.MsTeamsNotifyService = &IssueAlertActionMsTeamsNotifyServiceModel{}
-		diags.Append(m.MsTeamsNotifyService.Fill(ctx, actionValue)...)
+		var out IssueAlertActionMsTeamsNotifyServiceModel
+		diags.Append(out.Fill(ctx, actionValue)...)
+		m.MsTeamsNotifyService = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleActionDiscordNotifyService:
-		m.DiscordNotifyService = &IssueAlertActionDiscordNotifyServiceModel{}
-		diags.Append(m.DiscordNotifyService.Fill(ctx, actionValue)...)
+		var out IssueAlertActionDiscordNotifyServiceModel
+		diags.Append(out.Fill(ctx, actionValue)...)
+		m.DiscordNotifyService = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleActionJiraCreateTicket:
-		m.JiraCreateTicket = &IssueAlertActionJiraCreateTicketModel{}
-		diags.Append(m.JiraCreateTicket.Fill(ctx, actionValue)...)
+		var out IssueAlertActionJiraCreateTicketModel
+		diags.Append(out.Fill(ctx, actionValue)...)
+		m.JiraCreateTicket = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleActionJiraServerCreateTicket:
-		m.JiraServerCreateTicket = &IssueAlertActionJiraServerCreateTicketModel{}
-		diags.Append(m.JiraServerCreateTicket.Fill(ctx, actionValue)...)
+		var out IssueAlertActionJiraServerCreateTicketModel
+		diags.Append(out.Fill(ctx, actionValue)...)
+		m.JiraServerCreateTicket = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleActionGitHubCreateTicket:
-		m.GitHubCreateTicket = &IssueAlertActionGitHubCreateTicketModel{}
-		diags.Append(m.GitHubCreateTicket.Fill(ctx, actionValue)...)
+		var out IssueAlertActionGitHubCreateTicketModel
+		diags.Append(out.Fill(ctx, actionValue)...)
+		m.GitHubCreateTicket = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleActionGitHubEnterpriseCreateTicket:
-		m.GitHubEnterpriseCreateTicket = &IssueAlertActionGitHubEnterpriseCreateTicketModel{}
-		diags.Append(m.GitHubEnterpriseCreateTicket.Fill(ctx, actionValue)...)
+		var out IssueAlertActionGitHubEnterpriseCreateTicketModel
+		diags.Append(out.Fill(ctx, actionValue)...)
+		m.GitHubEnterpriseCreateTicket = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleActionAzureDevopsCreateTicket:
-		m.AzureDevopsCreateTicket = &IssueAlertActionAzureDevopsCreateTicketModel{}
-		diags.Append(m.AzureDevopsCreateTicket.Fill(ctx, actionValue)...)
+		var out IssueAlertActionAzureDevopsCreateTicketModel
+		diags.Append(out.Fill(ctx, actionValue)...)
+		m.AzureDevopsCreateTicket = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	default:
 		diags.AddError("Unsupported action", fmt.Sprintf("Unsupported action type %T", actionValue))
 	}
@@ -1447,7 +1461,7 @@ type IssueAlertModel struct {
 	Owner        types.String                                                 `tfsdk:"owner"`
 	ConditionsV2 supertypes.ListNestedObjectValueOf[IssueAlertConditionModel] `tfsdk:"conditions_v2"`
 	FiltersV2    supertypes.ListNestedObjectValueOf[IssueAlertFilterModel]    `tfsdk:"filters_v2"`
-	ActionsV2    types.List                                                   `tfsdk:"actions_v2"`
+	ActionsV2    supertypes.ListNestedObjectValueOf[IssueAlertActionModel]    `tfsdk:"actions_v2"`
 }
 
 func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule) (diags diag.Diagnostics) {
@@ -1589,14 +1603,9 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 			return
 		}
 
-		actions = reorderToMatchPrior(priorActions, actions, issueAlertActionModelKey)
+		actions = reorderToMatchPrior(priorActions, actions, issueAlertActionModelKey(ctx))
 
-		actionsV2, d := types.ListValueFrom(ctx, issueAlertActionV2ElemType, actions)
-		diags.Append(d...)
-		if diags.HasError() {
-			return
-		}
-		m.ActionsV2 = actionsV2
+		m.ActionsV2 = supertypes.NewListNestedObjectValueOfValueSlice(ctx, actions)
 	}
 
 	return

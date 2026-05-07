@@ -130,62 +130,66 @@ func issueAlertFilterModelKey(ctx context.Context) func(m IssueAlertFilterModel)
 	}
 }
 
-func issueAlertActionModelKey(m IssueAlertActionModel) string {
-	switch {
-	case m.NotifyEmail != nil:
-		f := m.NotifyEmail
-		return fmt.Sprintf("notify_email\x00%s\x00%s\x00%s",
-			f.TargetType.ValueString(), f.TargetIdentifier.ValueString(), f.FallthroughType.ValueString())
-	case m.NotifyEvent != nil:
-		return "notify_event"
-	case m.NotifyEventService != nil:
-		return fmt.Sprintf("notify_event_service\x00%s", m.NotifyEventService.Service.ValueString())
-	case m.NotifyEventSentryApp != nil:
-		return fmt.Sprintf("notify_event_sentry_app\x00%s", m.NotifyEventSentryApp.SentryAppInstallationUuid.ValueString())
-	case m.OpsgenieNotifyTeam != nil:
-		f := m.OpsgenieNotifyTeam
-		return fmt.Sprintf("opsgenie_notify_team\x00%s\x00%s\x00%s",
-			f.Account.ValueString(), f.Team.ValueString(), f.Priority.ValueString())
-	case m.PagerDutyNotifyService != nil:
-		f := m.PagerDutyNotifyService
-		return fmt.Sprintf("pagerduty_notify_service\x00%s\x00%s\x00%s",
-			f.Account.ValueString(), f.Service.ValueString(), f.Severity.ValueString())
-	case m.SlackNotifyService != nil:
-		f := m.SlackNotifyService
-		return fmt.Sprintf("slack_notify_service\x00%s\x00%s\x00%s",
-			f.Workspace.ValueString(), f.Channel.ValueString(), stringSetKey(f.Tags))
-	case m.MsTeamsNotifyService != nil:
-		f := m.MsTeamsNotifyService
-		return fmt.Sprintf("msteams_notify_service\x00%s\x00%s",
-			f.Team.ValueString(), f.Channel.ValueString())
-	case m.DiscordNotifyService != nil:
-		f := m.DiscordNotifyService
-		return fmt.Sprintf("discord_notify_service\x00%s\x00%s\x00%s",
-			f.Server.ValueString(), f.ChannelId.ValueString(), stringSetKey(f.Tags))
-	case m.JiraCreateTicket != nil:
-		f := m.JiraCreateTicket
-		return fmt.Sprintf("jira_create_ticket\x00%s\x00%s\x00%s",
-			f.Integration.ValueString(), f.Project.ValueString(), f.IssueType.ValueString())
-	case m.JiraServerCreateTicket != nil:
-		f := m.JiraServerCreateTicket
-		return fmt.Sprintf("jira_server_create_ticket\x00%s\x00%s\x00%s",
-			f.Integration.ValueString(), f.Project.ValueString(), f.IssueType.ValueString())
-	case m.GitHubCreateTicket != nil:
-		f := m.GitHubCreateTicket
-		return fmt.Sprintf("github_create_ticket\x00%s\x00%s\x00%s\x00%s",
-			f.Integration.ValueString(), f.Repo.ValueString(),
-			f.Assignee.ValueString(), typesSetKey(f.Labels))
-	case m.GitHubEnterpriseCreateTicket != nil:
-		f := m.GitHubEnterpriseCreateTicket
-		return fmt.Sprintf("github_enterprise_create_ticket\x00%s\x00%s\x00%s\x00%s",
-			f.Integration.ValueString(), f.Repo.ValueString(),
-			f.Assignee.ValueString(), typesSetKey(f.Labels))
-	case m.AzureDevopsCreateTicket != nil:
-		f := m.AzureDevopsCreateTicket
-		return fmt.Sprintf("azure_devops_create_ticket\x00%s\x00%s\x00%s",
-			f.Integration.ValueString(), f.Project.ValueString(), f.WorkItemType.ValueString())
-	default:
-		return ""
+func issueAlertActionModelKey(ctx context.Context) func(m IssueAlertActionModel) string {
+	return func(m IssueAlertActionModel) string {
+		switch {
+		case m.NotifyEmail.IsKnown():
+			f := m.NotifyEmail.MustGet(ctx)
+			return fmt.Sprintf("notify_email\x00%s\x00%s\x00%s",
+				f.TargetType.ValueString(), f.TargetIdentifier.ValueString(), f.FallthroughType.ValueString())
+		case m.NotifyEvent.IsKnown():
+			return "notify_event"
+		case m.NotifyEventService.IsKnown():
+			f := m.NotifyEventService.MustGet(ctx)
+			return fmt.Sprintf("notify_event_service\x00%s", f.Service.ValueString())
+		case m.NotifyEventSentryApp.IsKnown():
+			f := m.NotifyEventSentryApp.MustGet(ctx)
+			return fmt.Sprintf("notify_event_sentry_app\x00%s", f.SentryAppInstallationUuid.ValueString())
+		case m.OpsgenieNotifyTeam.IsKnown():
+			f := m.OpsgenieNotifyTeam.MustGet(ctx)
+			return fmt.Sprintf("opsgenie_notify_team\x00%s\x00%s\x00%s",
+				f.Account.ValueString(), f.Team.ValueString(), f.Priority.ValueString())
+		case m.PagerDutyNotifyService.IsKnown():
+			f := m.PagerDutyNotifyService.MustGet(ctx)
+			return fmt.Sprintf("pagerduty_notify_service\x00%s\x00%s\x00%s",
+				f.Account.ValueString(), f.Service.ValueString(), f.Severity.ValueString())
+		case m.SlackNotifyService.IsKnown():
+			f := m.SlackNotifyService.MustGet(ctx)
+			return fmt.Sprintf("slack_notify_service\x00%s\x00%s\x00%s",
+				f.Workspace.ValueString(), f.Channel.ValueString(), stringSetKey(f.Tags))
+		case m.MsTeamsNotifyService.IsKnown():
+			f := m.MsTeamsNotifyService.MustGet(ctx)
+			return fmt.Sprintf("msteams_notify_service\x00%s\x00%s",
+				f.Team.ValueString(), f.Channel.ValueString())
+		case m.DiscordNotifyService.IsKnown():
+			f := m.DiscordNotifyService.MustGet(ctx)
+			return fmt.Sprintf("discord_notify_service\x00%s\x00%s\x00%s",
+				f.Server.ValueString(), f.ChannelId.ValueString(), stringSetKey(f.Tags))
+		case m.JiraCreateTicket.IsKnown():
+			f := m.JiraCreateTicket.MustGet(ctx)
+			return fmt.Sprintf("jira_create_ticket\x00%s\x00%s\x00%s",
+				f.Integration.ValueString(), f.Project.ValueString(), f.IssueType.ValueString())
+		case m.JiraServerCreateTicket.IsKnown():
+			f := m.JiraServerCreateTicket.MustGet(ctx)
+			return fmt.Sprintf("jira_server_create_ticket\x00%s\x00%s\x00%s",
+				f.Integration.ValueString(), f.Project.ValueString(), f.IssueType.ValueString())
+		case m.GitHubCreateTicket.IsKnown():
+			f := m.GitHubCreateTicket.MustGet(ctx)
+			return fmt.Sprintf("github_create_ticket\x00%s\x00%s\x00%s\x00%s",
+				f.Integration.ValueString(), f.Repo.ValueString(),
+				f.Assignee.ValueString(), typesSetKey(f.Labels))
+		case m.GitHubEnterpriseCreateTicket.IsKnown():
+			f := m.GitHubEnterpriseCreateTicket.MustGet(ctx)
+			return fmt.Sprintf("github_enterprise_create_ticket\x00%s\x00%s\x00%s\x00%s",
+				f.Integration.ValueString(), f.Repo.ValueString(),
+				f.Assignee.ValueString(), typesSetKey(f.Labels))
+		case m.AzureDevopsCreateTicket.IsKnown():
+			f := m.AzureDevopsCreateTicket.MustGet(ctx)
+			return fmt.Sprintf("azure_devops_create_ticket\x00%s\x00%s\x00%s",
+				f.Integration.ValueString(), f.Project.ValueString(), f.WorkItemType.ValueString())
+		default:
+			return ""
+		}
 	}
 }
 

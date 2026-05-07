@@ -30,18 +30,6 @@ var _ resource.ResourceWithConfigure = &IssueAlertResource{}
 var _ resource.ResourceWithImportState = &IssueAlertResource{}
 var _ resource.ResourceWithUpgradeState = &IssueAlertResource{}
 
-var (
-	issueAlertActionV2ElemType types.ObjectType
-)
-
-func init() {
-	r := &IssueAlertResource{}
-	var resp resource.SchemaResponse
-	r.Schema(context.Background(), resource.SchemaRequest{}, &resp)
-
-	issueAlertActionV2ElemType = resp.Schema.Attributes["actions_v2"].(schema.ListNestedAttribute).NestedObject.Type().(types.ObjectType)
-}
-
 func NewIssueAlertResource() resource.Resource {
 	return &IssueAlertResource{}
 }
@@ -361,6 +349,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 			"actions_v2": schema.ListNestedAttribute{
 				MarkdownDescription: "A list of actions that take place when all required conditions and filters for the rule are met.",
 				Optional:            true,
+				CustomType:          supertypes.NewListNestedObjectTypeOf[IssueAlertActionModel](ctx),
 				Validators: []validator.List{
 					listvalidator.ConflictsWith(path.MatchRoot("actions")),
 					listvalidator.SizeAtLeast(1),
@@ -370,6 +359,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 						"notify_email": {
 							MarkdownDescription: "Send a notification to `target_type` and if none can be found then send a notification to `fallthrough_type`.",
 							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[IssueAlertActionNotifyEmailModel](ctx),
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
 								"target_type": tfutils.WithEnumStringAttribute(schema.StringAttribute{
@@ -388,6 +378,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 						"notify_event": {
 							MarkdownDescription: "Send a notification to all legacy integrations.",
 							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[IssueAlertActionNotifyEventModel](ctx),
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
 							},
@@ -395,6 +386,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 						"notify_event_service": {
 							MarkdownDescription: "Send a notification via an integration.",
 							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[IssueAlertActionNotifyEventServiceModel](ctx),
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
 								"service": schema.StringAttribute{
@@ -406,6 +398,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 						"notify_event_sentry_app": {
 							MarkdownDescription: "Send a notification to a Sentry app.",
 							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[IssueAlertActionNotifyEventSentryAppModel](ctx),
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
 								"sentry_app_installation_uuid": schema.StringAttribute{
@@ -420,6 +413,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 						"opsgenie_notify_team": {
 							MarkdownDescription: "Send a notification to Opsgenie account `account` and team `team` with `priority` priority.",
 							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[IssueAlertActionOpsgenieNotifyTeam](ctx),
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
 								"account": schema.StringAttribute{
@@ -436,6 +430,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 						"pagerduty_notify_service": {
 							MarkdownDescription: "Send a notification to PagerDuty account `account` and service `service` with `severity` severity.",
 							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[IssueAlertActionPagerDutyNotifyServiceModel](ctx),
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
 								"account": schema.StringAttribute{
@@ -452,6 +447,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 						"slack_notify_service": {
 							MarkdownDescription: "Send a notification to the `workspace` Slack workspace to `channel` (optionally, an ID: `channel_id`) and show tags `tags` and notes `notes` in notification.",
 							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[IssueAlertActionSlackNotifyServiceModel](ctx),
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
 								"workspace": schema.StringAttribute{
@@ -486,6 +482,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 						"msteams_notify_service": {
 							MarkdownDescription: "Send a notification to the `team` Team to `channel`.",
 							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[IssueAlertActionMsTeamsNotifyServiceModel](ctx),
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
 								"team": schema.StringAttribute{
@@ -504,6 +501,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 						"discord_notify_service": {
 							MarkdownDescription: "Send a notification to the `server` Discord server in the channel with ID or URL: `channel_id` and show tags `tags` in the notification.",
 							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[IssueAlertActionDiscordNotifyServiceModel](ctx),
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
 								"server": schema.StringAttribute{
@@ -528,6 +526,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 						"jira_create_ticket": {
 							MarkdownDescription: "Create a Jira issue in `integration`.",
 							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[IssueAlertActionJiraCreateTicketModel](ctx),
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
 								"integration": schema.StringAttribute{
@@ -547,6 +546,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 						"jira_server_create_ticket": {
 							MarkdownDescription: "Create a Jira Server issue in `integration`.",
 							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[IssueAlertActionJiraServerCreateTicketModel](ctx),
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
 								"integration": schema.StringAttribute{
@@ -566,6 +566,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 						"github_create_ticket": {
 							MarkdownDescription: "Create a GitHub issue in `integration`.",
 							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[IssueAlertActionGitHubCreateTicketModel](ctx),
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
 								"integration": schema.StringAttribute{
@@ -590,6 +591,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 						"github_enterprise_create_ticket": {
 							MarkdownDescription: "Create a GitHub Enterprise issue in `integration`.",
 							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[IssueAlertActionGitHubEnterpriseCreateTicketModel](ctx),
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
 								"integration": schema.StringAttribute{
@@ -614,6 +616,7 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 						"azure_devops_create_ticket": {
 							MarkdownDescription: "Create an Azure DevOps work item in `integration`.",
 							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[IssueAlertActionAzureDevopsCreateTicketModel](ctx),
 							Attributes: map[string]schema.Attribute{
 								"name": nameStringAttribute,
 								"integration": schema.StringAttribute{
@@ -1167,7 +1170,7 @@ func (r *IssueAlertResource) UpgradeState(ctx context.Context) map[int64]resourc
 
 				upgradedStateData.ConditionsV2 = supertypes.NewListNestedObjectValueOfNull[IssueAlertConditionModel](ctx)
 				upgradedStateData.FiltersV2 = supertypes.NewListNestedObjectValueOfNull[IssueAlertFilterModel](ctx)
-				upgradedStateData.ActionsV2 = types.ListNull(issueAlertActionV2ElemType)
+				upgradedStateData.ActionsV2 = supertypes.NewListNestedObjectValueOfNull[IssueAlertActionModel](ctx)
 
 				upgradedStateData.Conditions = sentrytypes.NewLossyJsonNull()
 				if !priorStateData.Conditions.IsNull() {
