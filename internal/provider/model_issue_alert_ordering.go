@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"sort"
@@ -55,35 +56,37 @@ func reorderToMatchPrior[T any, K comparable](prior, incoming []T, key func(T) K
 	return result
 }
 
-func issueAlertConditionModelKey(m IssueAlertConditionModel) string {
-	switch {
-	case m.FirstSeenEvent != nil:
-		return "first_seen_event"
-	case m.RegressionEvent != nil:
-		return "regression_event"
-	case m.ReappearedEvent != nil:
-		return "reappeared_event"
-	case m.NewHighPriorityIssue != nil:
-		return "new_high_priority_issue"
-	case m.ExistingHighPriorityIssue != nil:
-		return "existing_high_priority_issue"
-	case m.EventFrequency != nil:
-		f := m.EventFrequency
-		return fmt.Sprintf("event_frequency\x00%s\x00%s\x00%d\x00%s",
-			f.ComparisonType.ValueString(), f.Interval.ValueString(),
-			f.Value.ValueInt64(), f.ComparisonInterval.ValueString())
-	case m.EventUniqueUserFrequency != nil:
-		f := m.EventUniqueUserFrequency
-		return fmt.Sprintf("event_unique_user_frequency\x00%s\x00%s\x00%d\x00%s",
-			f.ComparisonType.ValueString(), f.Interval.ValueString(),
-			f.Value.ValueInt64(), f.ComparisonInterval.ValueString())
-	case m.EventFrequencyPercent != nil:
-		f := m.EventFrequencyPercent
-		return fmt.Sprintf("event_frequency_percent\x00%s\x00%s\x00%g\x00%s",
-			f.ComparisonType.ValueString(), f.Interval.ValueString(),
-			f.Value.ValueFloat64(), f.ComparisonInterval.ValueString())
-	default:
-		return ""
+func issueAlertConditionModelKey(ctx context.Context) func(m IssueAlertConditionModel) string {
+	return func(m IssueAlertConditionModel) string {
+		switch {
+		case m.FirstSeenEvent.IsKnown():
+			return "first_seen_event"
+		case m.RegressionEvent.IsKnown():
+			return "regression_event"
+		case m.ReappearedEvent.IsKnown():
+			return "reappeared_event"
+		case m.NewHighPriorityIssue.IsKnown():
+			return "new_high_priority_issue"
+		case m.ExistingHighPriorityIssue.IsKnown():
+			return "existing_high_priority_issue"
+		case m.EventFrequency.IsKnown():
+			f := m.EventFrequency.MustGet(ctx)
+			return fmt.Sprintf("event_frequency\x00%s\x00%s\x00%d\x00%s",
+				f.ComparisonType.ValueString(), f.Interval.ValueString(),
+				f.Value.ValueInt64(), f.ComparisonInterval.ValueString())
+		case m.EventUniqueUserFrequency.IsKnown():
+			f := m.EventUniqueUserFrequency.MustGet(ctx)
+			return fmt.Sprintf("event_unique_user_frequency\x00%s\x00%s\x00%d\x00%s",
+				f.ComparisonType.ValueString(), f.Interval.ValueString(),
+				f.Value.ValueInt64(), f.ComparisonInterval.ValueString())
+		case m.EventFrequencyPercent.IsKnown():
+			f := m.EventFrequencyPercent.MustGet(ctx)
+			return fmt.Sprintf("event_frequency_percent\x00%s\x00%s\x00%g\x00%s",
+				f.ComparisonType.ValueString(), f.Interval.ValueString(),
+				f.Value.ValueFloat64(), f.ComparisonInterval.ValueString())
+		default:
+			return ""
+		}
 	}
 }
 
