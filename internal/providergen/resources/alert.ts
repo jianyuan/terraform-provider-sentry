@@ -9,7 +9,7 @@ export default {
 
       Create an Alert for a Monitor in an Organization. Monitors must be created separately using the [\`sentry_cron_monitor\`](cron_monitor.md), [\`sentry_metric_monitor\`](metric_monitor.md), or [\`sentry_uptime_monitor\`](uptime_monitor.md) resources.
 
-      Additionally, [default monitors](https://docs.sentry.io/product/new-monitors-and-alerts/monitors/#default-monitors) are automatically created for each project. Use the [\`sentry_monitor\`](../data-sources/monitor.md) data source to retrieve them.
+      Additionally, [default monitors](https://docs.sentry.io/product/new-monitors-and-alerts/monitors/#default-monitors) are automatically created for each project. Use the [\`sentry_project_issue_stream_monitor\`](../data-sources/project_issue_stream_monitor.md) data source to retrieve them.
     `,
   api: {
     model: "OrganizationWorkflow",

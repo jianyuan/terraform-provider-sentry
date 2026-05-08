@@ -2,13 +2,13 @@ import dedent from "dedent";
 import type { DataSource } from "../schema";
 
 export default {
-  name: "monitor",
+  name: "project_issue_stream_monitor",
   description: dedent.withOptions({ trimWhitespace: true })`
       ⚠️ This resource is currently in beta and may be subject to change. It is supported by [New Monitors and Alerts](https://docs.sentry.io/product/new-monitors-and-alerts/) and may not be viewable in the UI today.
 
-      Retrieve a monitor by ID, or by project and type.
+      Retrieve a Project (Issue Stream) Monitor by project ID or slug. This is helpful for managing [default monitors](https://docs.sentry.io/product/new-monitors-and-alerts/monitors/#default-monitors) that were created by Sentry outside of Terraform. You can then map these IDs into \`sentry_alert.monitor_ids\` to define [alert rules](../resources/alert.md) for those monitors.
 
-      When you create a new project, Sentry automatically creates [default monitors](https://docs.sentry.io/product/new-monitors-and-alerts/monitors/#default-monitors). Use the \`project\` and \`type\` attributes to retrieve them. The monitor ID can then be used to set up an [alert rule for the monitor](../resources/alert.md).
+      **Note:** When multiple monitors are found, the \`first\` attribute can be set to \`true\` to return the first monitor found. If \`first\` is not set to \`true\` and multiple monitors are found, the data source will return an error.
     `,
   api: {
     model: "ProjectMonitor",
@@ -28,18 +28,9 @@ export default {
     {
       name: "project",
       type: "string",
-      description:
-        "The project slug or internal ID of the monitor. Conflicts with `id`.",
-      computedOptionalRequired: "optional",
+      description: "The project slug or internal ID of the monitor.",
+      computedOptionalRequired: "required",
       skipFill: true,
-      validators: [`stringvalidator.ConflictsWith(path.MatchRoot("id"))`],
-    },
-    {
-      name: "type",
-      type: "string",
-      description: "Monitor type to retrieve.",
-      computedOptionalRequired: "optional",
-      validators: [`stringvalidator.ConflictsWith(path.MatchRoot("id"))`],
     },
     {
       name: "first",
@@ -47,17 +38,12 @@ export default {
       description: "Return the first monitor found.",
       computedOptionalRequired: "optional",
       skipFill: true,
-      validators: [`boolvalidator.ConflictsWith(path.MatchRoot("id"))`],
     },
     {
       name: "id",
       type: "string",
-      description:
-        "The internal ID of the monitor to retrieve. Conflicts with `project`, `type`, and `first`.",
-      computedOptionalRequired: "optional",
-      validators: [
-        `stringvalidator.ConflictsWith(path.MatchRoot("project"), path.MatchRoot("type"), path.MatchRoot("first"))`,
-      ],
+      description: "The internal ID of this monitor.",
+      computedOptionalRequired: "computed",
     },
     {
       name: "enabled",

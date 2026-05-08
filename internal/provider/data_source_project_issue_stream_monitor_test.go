@@ -11,42 +11,10 @@ import (
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 )
 
-func TestAccMonitorDataSource_validation(t *testing.T) {
+func TestAccProjectIssueStreamMonitorDataSource_basic(t *testing.T) {
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				PlanOnly: true,
-				Config: testAccMonitorDataSourceConfig(teamName, projectName, `
-					id = "1"
-					first = true
-				`),
-				ExpectError: acctest.ExpectLiteralError(`Attribute "first" cannot be specified when "id" is specified`),
-			},
-			{
-				PlanOnly: true,
-				Config: testAccMonitorDataSourceConfig(teamName, projectName, `
-					id = "1"
-					project = "2"
-				`),
-				ExpectError: acctest.ExpectLiteralError(`Attribute "project" cannot be specified when "id" is specified`),
-			},
-			{
-				Config:      testAccMonitorDataSourceConfig(teamName, projectName, ``),
-				ExpectError: acctest.ExpectLiteralError("Multiple monitors found, please narrow down the search by setting the `type` attribute, and/or set the `first` attribute to `true`."),
-			},
-		},
-	})
-}
-
-func TestAccMonitorDataSource_basic(t *testing.T) {
-	teamName := acctest.RandomWithPrefix("tf-team")
-	projectName := acctest.RandomWithPrefix("tf-project")
-	rn := "data.sentry_monitor.test"
+	rn := "data.sentry_project_issue_stream_monitor.test"
 
 	checks := []statecheck.StateCheck{
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
@@ -59,9 +27,8 @@ func TestAccMonitorDataSource_basic(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccMonitorDataSourceConfig(teamName, projectName, `
+				Config: testAccProjectIssueStreamMonitorDataSourceConfig(teamName, projectName, `
 					project = sentry_project.test.id
-					type = "issue_stream"
 				`),
 				ConfigStateChecks: append(
 					checks,
@@ -74,13 +41,13 @@ func TestAccMonitorDataSource_basic(t *testing.T) {
 	})
 }
 
-func testAccMonitorDataSourceConfig(teamName, projectName, extras string) string {
+func testAccProjectIssueStreamMonitorDataSourceConfig(teamName, projectName, extras string) string {
 	return testAccProjectResourceConfig(testAccProjectResourceConfigData{
 		TeamName:    teamName,
 		ProjectName: projectName,
 		Platform:    "go",
 	}) + fmt.Sprintf(`
-		data "sentry_monitor" "test" {
+		data "sentry_project_issue_stream_monitor" "test" {
 			organization = sentry_project.test.organization
 			%s
 		}
