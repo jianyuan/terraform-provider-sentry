@@ -13,6 +13,12 @@ data "sentry_project_issue_stream_monitor" "default" {
   project      = "my-project"
 }
 
+# Project Error Monitor: The default monitor based on issue grouping/fingerprint rules.
+data "sentry_project_error_monitor" "default" {
+  organization = "my-organization"
+  project      = "my-project"
+}
+
 resource "sentry_alert" "default" {
   organization = "my-organization"
   name         = "My Alert"
@@ -24,6 +30,7 @@ resource "sentry_alert" "default" {
     sentry_metric_monitor.default.id,
     sentry_uptime_monitor.default.id,
     data.sentry_project_issue_stream_monitor.default.id,
+    data.sentry_project_error_monitor.default.id,
   ]
 
   frequency_minutes = 1440

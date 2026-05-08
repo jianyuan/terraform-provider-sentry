@@ -11,23 +11,23 @@ import (
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 )
 
-var _ datasource.DataSource = &ProjectIssueStreamMonitorDataSource{}
+var _ datasource.DataSource = &ProjectErrorMonitorDataSource{}
 
-func NewProjectIssueStreamMonitorDataSource() datasource.DataSource {
-	return &ProjectIssueStreamMonitorDataSource{}
+func NewProjectErrorMonitorDataSource() datasource.DataSource {
+	return &ProjectErrorMonitorDataSource{}
 }
 
-type ProjectIssueStreamMonitorDataSource struct {
+type ProjectErrorMonitorDataSource struct {
 	baseDataSource
 }
 
-func (d *ProjectIssueStreamMonitorDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_project_issue_stream_monitor"
+func (d *ProjectErrorMonitorDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_project_error_monitor"
 }
 
-func (d *ProjectIssueStreamMonitorDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *ProjectErrorMonitorDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "⚠️ This resource is currently in beta and may be subject to change. It is supported by [New Monitors and Alerts](https://docs.sentry.io/product/new-monitors-and-alerts/) and may not be viewable in the UI today.\n\nRetrieve a Project Issue Stream Monitor by project ID or slug. This is helpful for managing [default monitors](https://docs.sentry.io/product/new-monitors-and-alerts/monitors/#default-monitors) that were created by Sentry outside of Terraform. You can then map these IDs into `sentry_alert.monitor_ids` to define [alert rules](../resources/alert.md) for those monitors.\n\n**Note:** When multiple monitors are found, the `first` attribute can be set to `true` to return the first monitor found. If `first` is not set to `true` and multiple monitors are found, the data source will return an error.",
+		MarkdownDescription: "⚠️ This resource is currently in beta and may be subject to change. It is supported by [New Monitors and Alerts](https://docs.sentry.io/product/new-monitors-and-alerts/) and may not be viewable in the UI today.\n\nRetrieve a Project Error Monitor by project ID or slug. This is helpful for managing [default monitors](https://docs.sentry.io/product/new-monitors-and-alerts/monitors/#default-monitors) that were created by Sentry outside of Terraform. You can then map these IDs into `sentry_alert.monitor_ids` to define [alert rules](../resources/alert.md) for those monitors.\n\n**Note:** When multiple monitors are found, the `first` attribute can be set to `true` to return the first monitor found. If `first` is not set to `true` and multiple monitors are found, the data source will return an error.",
 		Attributes: map[string]schema.Attribute{
 			"organization": schema.StringAttribute{
 				MarkdownDescription: "The organization slug or internal ID of the monitor.",
@@ -67,7 +67,7 @@ func (d *ProjectIssueStreamMonitorDataSource) Schema(ctx context.Context, req da
 			"owner": schema.SingleNestedAttribute{
 				MarkdownDescription: "Sentry will assign new issues to this assignee.",
 				Computed:            true,
-				CustomType:          supertypes.NewSingleNestedObjectTypeOf[ProjectIssueStreamMonitorDataSourceModelOwner](ctx),
+				CustomType:          supertypes.NewSingleNestedObjectTypeOf[ProjectErrorMonitorDataSourceModelOwner](ctx),
 				Attributes: map[string]schema.Attribute{
 					"user_id": schema.StringAttribute{
 						MarkdownDescription: "The user internal ID to assign new issues to.",
@@ -85,8 +85,8 @@ func (d *ProjectIssueStreamMonitorDataSource) Schema(ctx context.Context, req da
 	}
 }
 
-func (d *ProjectIssueStreamMonitorDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data ProjectIssueStreamMonitorDataSourceModel
+func (d *ProjectErrorMonitorDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data ProjectErrorMonitorDataSourceModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -101,18 +101,18 @@ func (d *ProjectIssueStreamMonitorDataSource) Read(ctx context.Context, req data
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-type ProjectIssueStreamMonitorDataSourceModel struct {
-	Organization supertypes.StringValue                                                              `tfsdk:"organization"`
-	Project      supertypes.StringValue                                                              `tfsdk:"project"`
-	First        supertypes.BoolValue                                                                `tfsdk:"first"`
-	Id           supertypes.StringValue                                                              `tfsdk:"id"`
-	Enabled      supertypes.BoolValue                                                                `tfsdk:"enabled"`
-	Name         supertypes.StringValue                                                              `tfsdk:"name"`
-	Description  supertypes.StringValue                                                              `tfsdk:"description"`
-	Owner        supertypes.SingleNestedObjectValueOf[ProjectIssueStreamMonitorDataSourceModelOwner] `tfsdk:"owner"`
+type ProjectErrorMonitorDataSourceModel struct {
+	Organization supertypes.StringValue                                                        `tfsdk:"organization"`
+	Project      supertypes.StringValue                                                        `tfsdk:"project"`
+	First        supertypes.BoolValue                                                          `tfsdk:"first"`
+	Id           supertypes.StringValue                                                        `tfsdk:"id"`
+	Enabled      supertypes.BoolValue                                                          `tfsdk:"enabled"`
+	Name         supertypes.StringValue                                                        `tfsdk:"name"`
+	Description  supertypes.StringValue                                                        `tfsdk:"description"`
+	Owner        supertypes.SingleNestedObjectValueOf[ProjectErrorMonitorDataSourceModelOwner] `tfsdk:"owner"`
 }
 
-func (m *ProjectIssueStreamMonitorDataSourceModel) Fill(ctx context.Context, data apiclient.ProjectMonitor) (diags diag.Diagnostics) {
+func (m *ProjectErrorMonitorDataSourceModel) Fill(ctx context.Context, data apiclient.ProjectMonitor) (diags diag.Diagnostics) {
 	m.Id = supertypes.NewStringValue(data.Id)
 	m.Enabled = supertypes.NewBoolValue(data.Enabled)
 	m.Name = supertypes.NewStringValue(data.Name)
@@ -128,7 +128,7 @@ func (m *ProjectIssueStreamMonitorDataSourceModel) Fill(ctx context.Context, dat
 	return
 }
 
-type ProjectIssueStreamMonitorDataSourceModelOwner struct {
+type ProjectErrorMonitorDataSourceModelOwner struct {
 	UserId supertypes.StringValue `tfsdk:"user_id"`
 	TeamId supertypes.StringValue `tfsdk:"team_id"`
 }
