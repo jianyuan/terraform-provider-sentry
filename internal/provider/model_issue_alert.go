@@ -911,16 +911,15 @@ func (m IssueAlertActionNotifyEventSentryAppModel) ToApi(ctx context.Context) (*
 		Value string  `json:"value"`
 	}
 
-	if !m.Settings.IsNull() {
-		elements := make(map[string]string, len(m.Settings.Elements()))
-		diags.Append(m.Settings.ElementsAs(ctx, &elements, false)...)
+	if m.Settings.IsKnown() {
+		elements := tfutils.MergeDiagnostics(m.Settings.Get(ctx))(&diags)
 		if diags.HasError() {
 			return nil, diags
 		}
 
-		labels := make(map[string]string)
-		if !m.SettingsLabels.IsNull() {
-			diags.Append(m.SettingsLabels.ElementsAs(ctx, &labels, false)...)
+		var labels map[string]string
+		if m.SettingsLabels.IsKnown() {
+			labels = tfutils.MergeDiagnostics(m.SettingsLabels.Get(ctx))(&diags)
 			if diags.HasError() {
 				return nil, diags
 			}

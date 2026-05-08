@@ -683,9 +683,8 @@ func (r *IssueAlertResource) ValidateConfig(ctx context.Context, req resource.Va
 		return
 	}
 
-	if !data.ConditionsV2.IsNull() && !data.ConditionsV2.IsUnknown() {
-		var conditions []IssueAlertConditionModel
-		resp.Diagnostics.Append(data.ConditionsV2.ElementsAs(ctx, &conditions, false)...)
+	if data.ConditionsV2.IsKnown() {
+		conditions := tfutils.MergeDiagnostics(data.ConditionsV2.Get(ctx))(&resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -701,9 +700,8 @@ func (r *IssueAlertResource) ValidateConfig(ctx context.Context, req resource.Va
 		}
 	}
 
-	if !data.FiltersV2.IsNull() && !data.FiltersV2.IsUnknown() {
-		var filters []IssueAlertFilterModel
-		resp.Diagnostics.Append(data.FiltersV2.ElementsAs(ctx, &filters, false)...)
+	if data.FiltersV2.IsKnown() {
+		filters := tfutils.MergeDiagnostics(data.FiltersV2.Get(ctx))(&resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -727,9 +725,8 @@ func (r *IssueAlertResource) ValidateConfig(ctx context.Context, req resource.Va
 				"You must add an action for this alert to fire",
 			)
 		}
-	} else if !data.ActionsV2.IsNull() && !data.ActionsV2.IsUnknown() {
-		var actions []IssueAlertActionModel
-		resp.Diagnostics.Append(data.ActionsV2.ElementsAs(ctx, &actions, false)...)
+	} else if data.ActionsV2.IsKnown() {
+		actions := tfutils.MergeDiagnostics(data.ActionsV2.Get(ctx))(&resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}
