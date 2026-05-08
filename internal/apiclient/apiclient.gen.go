@@ -2975,8 +2975,9 @@ type bearerAuthContextKey string
 
 // ListOrganizationMonitorsParams defines parameters for ListOrganizationMonitors.
 type ListOrganizationMonitorsParams struct {
-	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
-	Query  *string `form:"query,omitempty" json:"query,omitempty"`
+	Cursor  *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+	Project *string `form:"project,omitempty" json:"project,omitempty"`
+	Query   *string `form:"query,omitempty" json:"query,omitempty"`
 }
 
 // ListOrganizationIntegrationsParams defines parameters for ListOrganizationIntegrations.
@@ -7492,6 +7493,18 @@ func NewListOrganizationMonitorsRequest(server string, organizationIdOrSlug Orga
 		if params.Cursor != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Project != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "project", *params.Project, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
 				return nil, err
 			} else {
 				for _, qp := range strings.Split(queryFrag, "&") {

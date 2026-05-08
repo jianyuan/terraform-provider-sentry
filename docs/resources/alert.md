@@ -5,6 +5,8 @@ subcategory: ""
 description: |-
   ⚠️ This resource is currently in beta and may be subject to change. It is supported by New Monitors and Alerts https://docs.sentry.io/product/new-monitors-and-alerts/ and may not be viewable in the UI today.
   Create an Alert for a Monitor in an Organization. Monitors must be created separately using the sentry_cron_monitor cron_monitor.md, sentry_metric_monitor metric_monitor.md, or sentry_uptime_monitor uptime_monitor.md resources.
+  Additionally, default monitors https://docs.sentry.io/product/new-monitors-and-alerts/monitors/#default-monitors are automatically created for each project. Use the following data sources to retrieve them:
+  sentry_project_issue_stream_monitor ../data-sources/project_issue_stream_monitor.md: The default monitor tracking new issues of all types created for a project, including issue types that may not have a dedicated Monitor detecting them (ex. Replay issues)sentry_project_error_monitor ../data-sources/project_error_monitor.md: The default monitor based on issue grouping/fingerprint rules.
 ---
 
 # sentry_alert (Resource)
@@ -13,21 +15,33 @@ description: |-
 
 Create an Alert for a Monitor in an Organization. Monitors must be created separately using the [`sentry_cron_monitor`](cron_monitor.md), [`sentry_metric_monitor`](metric_monitor.md), or [`sentry_uptime_monitor`](uptime_monitor.md) resources.
 
+Additionally, [default monitors](https://docs.sentry.io/product/new-monitors-and-alerts/monitors/#default-monitors) are automatically created for each project. Use the following data sources to retrieve them:
+  - [`sentry_project_issue_stream_monitor`](../data-sources/project_issue_stream_monitor.md): The default monitor tracking new issues of all types created for a project, including issue types that may not have a dedicated Monitor detecting them (ex. Replay issues)
+  - [`sentry_project_error_monitor`](../data-sources/project_error_monitor.md): The default monitor based on issue grouping/fingerprint rules.
+
 ## Example Usage
 
 ```terraform
-resource "sentry_cron_monitor" "default" {
-  # ...
+# Cron Monitor
+resource "sentry_cron_monitor" "default" { /* ... */ }
+
+# Metric Monitor
+resource "sentry_metric_monitor" "default" { /* ... */ }
+
+# Uptime Monitor
+resource "sentry_uptime_monitor" "default" { /* ... */ }
+
+# Project Issue Stream Monitor: The default monitor tracking new issues of all types created for a project
+data "sentry_project_issue_stream_monitor" "default" {
+  organization = "my-organization"
+  project      = "my-project"
 }
 
-resource "sentry_metric_monitor" "default" {
-  # ...
+# Project Error Monitor: The default monitor based on issue grouping/fingerprint rules.
+data "sentry_project_error_monitor" "default" {
+  organization = "my-organization"
+  project      = "my-project"
 }
-
-resource "sentry_uptime_monitor" "default" {
-  # ...
-}
-
 
 resource "sentry_alert" "default" {
   organization = "my-organization"
@@ -39,6 +53,8 @@ resource "sentry_alert" "default" {
     sentry_cron_monitor.default.id,
     sentry_metric_monitor.default.id,
     sentry_uptime_monitor.default.id,
+    data.sentry_project_issue_stream_monitor.default.id,
+    data.sentry_project_error_monitor.default.id,
   ]
 
   frequency_minutes = 1440

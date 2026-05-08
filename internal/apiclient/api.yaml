@@ -430,6 +430,11 @@ paths:
     parameters:
       - $ref: "#/components/parameters/organization_id_or_slug"
       - $ref: "#/components/parameters/cursor"
+      - name: project
+        in: query
+        required: false
+        schema:
+          type: string
       - name: query
         in: query
         required: false
