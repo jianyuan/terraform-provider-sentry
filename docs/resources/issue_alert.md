@@ -690,7 +690,7 @@ Required:
 Optional:
 
 - `settings` (Map of String)
-- `settings_labels` (Map of String) Optional display labels for each settings entry, keyed by setting name. When present, the label is sent to the API so Sentry's frontend can render the correct display name for async-select fields.
+- `settings_labels` (Map of String) Optional mapping of setting keys to human-readable display labels. This is primarily used for `async-select` fields in the Sentry UI.
 
 Read-Only:
 
