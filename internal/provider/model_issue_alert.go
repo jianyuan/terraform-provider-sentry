@@ -876,6 +876,7 @@ type IssueAlertActionNotifyEventSentryAppModel struct {
 	Name                      types.String                  `tfsdk:"name"`
 	SentryAppInstallationUuid types.String                  `tfsdk:"sentry_app_installation_uuid"`
 	Settings                  supertypes.MapValueOf[string] `tfsdk:"settings"`
+	SettingsLabels            supertypes.MapValueOf[string] `tfsdk:"settings_labels"`
 }
 
 func (m *IssueAlertActionNotifyEventSentryAppModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionNotifyEventSentryApp) (diags diag.Diagnostics) {
@@ -884,12 +885,18 @@ func (m *IssueAlertActionNotifyEventSentryAppModel) Fill(ctx context.Context, ac
 
 	if action.Settings == nil {
 		m.Settings = supertypes.NewMapValueOfNull[string](ctx)
+		m.SettingsLabels = supertypes.NewMapValueOfNull[string](ctx)
 	} else {
 		var settingsMap = make(map[string]string, len(*action.Settings))
+		var labelsMap = make(map[string]string, len(*action.Settings))
 		for _, setting := range *action.Settings {
 			settingsMap[setting.Name] = setting.Value
+			if setting.Label != nil {
+				labelsMap[setting.Name] = *setting.Label
+			}
 		}
 		m.Settings = tfutils.MergeDiagnostics(supertypes.NewMapValueOfMap(ctx, settingsMap))(&diags)
+		m.SettingsLabels = tfutils.MergeDiagnostics(supertypes.NewMapValueOfMap(ctx, labelsMap))(&diags)
 	}
 	return
 }
@@ -899,30 +906,44 @@ func (m IssueAlertActionNotifyEventSentryAppModel) ToApi(ctx context.Context) (*
 	var v apiclient.ProjectRuleAction
 
 	var settings *[]struct {
-		Name  string `json:"name"`
-		Value string `json:"value"`
+		Label *string `json:"label,omitempty"`
+		Name  string  `json:"name"`
+		Value string  `json:"value"`
 	}
 
-	if !m.Settings.IsNull() {
-		elements := make(map[string]string, len(m.Settings.Elements()))
-		diags.Append(m.Settings.ElementsAs(ctx, &elements, false)...)
+	if m.Settings.IsKnown() {
+		elements := tfutils.MergeDiagnostics(m.Settings.Get(ctx))(&diags)
 		if diags.HasError() {
 			return nil, diags
 		}
 
+		var labels map[string]string
+		if m.SettingsLabels.IsKnown() {
+			labels = tfutils.MergeDiagnostics(m.SettingsLabels.Get(ctx))(&diags)
+			if diags.HasError() {
+				return nil, diags
+			}
+		}
+
 		settings = &[]struct {
-			Name  string `json:"name"`
-			Value string `json:"value"`
+			Label *string `json:"label,omitempty"`
+			Name  string  `json:"name"`
+			Value string  `json:"value"`
 		}{}
 
-		for k, v := range elements {
-			*settings = append(*settings, struct {
-				Name  string `json:"name"`
-				Value string `json:"value"`
+		for k, val := range elements {
+			entry := struct {
+				Label *string `json:"label,omitempty"`
+				Name  string  `json:"name"`
+				Value string  `json:"value"`
 			}{
 				Name:  k,
-				Value: v,
-			})
+				Value: val,
+			}
+			if lbl, ok := labels[k]; ok {
+				entry.Label = &lbl
+			}
+			*settings = append(*settings, entry)
 		}
 	}
 

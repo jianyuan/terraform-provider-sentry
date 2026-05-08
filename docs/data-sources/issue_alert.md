@@ -173,6 +173,7 @@ Read-Only:
 - `name` (String)
 - `sentry_app_installation_uuid` (String)
 - `settings` (Map of String)
+- `settings_labels` (Map of String)
 
 
 <a id="nestedatt--actions_v2--notify_event_service"></a>

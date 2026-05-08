@@ -2127,6 +2127,8 @@ components:
                 type: string
               value:
                 type: string
+              label:
+                type: string
     ProjectRuleActionOpsgenieNotifyTeam:
       type: object
       required:
