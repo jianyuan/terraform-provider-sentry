@@ -383,11 +383,14 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 																stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("key")),
 															},
 														},
-														"match": schema.StringAttribute{
-															MarkdownDescription: "The match type of the filter.",
-															Optional:            true,
-															CustomType:          supertypes.StringType{},
-														},
+														"match": tfutils.WithEnumStringAttribute(
+															schema.StringAttribute{
+																MarkdownDescription: "The match type of the filter.",
+																Optional:            true,
+																CustomType:          supertypes.StringType{},
+															},
+															sentrydata.MatchTypeIds,
+														),
 														"value": schema.StringAttribute{
 															MarkdownDescription: "The value of the filter.",
 															Optional:            true,
@@ -445,11 +448,14 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 																stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("key")),
 															},
 														},
-														"match": schema.StringAttribute{
-															MarkdownDescription: "The match type of the filter.",
-															Optional:            true,
-															CustomType:          supertypes.StringType{},
-														},
+														"match": tfutils.WithEnumStringAttribute(
+															schema.StringAttribute{
+																MarkdownDescription: "The match type of the filter.",
+																Optional:            true,
+																CustomType:          supertypes.StringType{},
+															},
+															sentrydata.MatchTypeIds,
+														),
 														"value": schema.StringAttribute{
 															MarkdownDescription: "The value of the filter.",
 															Optional:            true,
@@ -541,11 +547,14 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 																stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("key")),
 															},
 														},
-														"match": schema.StringAttribute{
-															MarkdownDescription: "The match type of the filter.",
-															Optional:            true,
-															CustomType:          supertypes.StringType{},
-														},
+														"match": tfutils.WithEnumStringAttribute(
+															schema.StringAttribute{
+																MarkdownDescription: "The match type of the filter.",
+																Optional:            true,
+																CustomType:          supertypes.StringType{},
+															},
+															sentrydata.MatchTypeIds,
+														),
 														"value": schema.StringAttribute{
 															MarkdownDescription: "The value of the filter.",
 															Optional:            true,
@@ -642,7 +651,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemConditionsItemLatestAdoptedRelease](ctx),
 										Validators: []validator.Object{
-											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("level")),
+											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_deescalating"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("level"), path.MatchRelative().AtParent().AtName("issue_type")),
 										},
 										Attributes: map[string]schema.Attribute{
 											"environment": schema.StringAttribute{
@@ -1311,9 +1320,9 @@ type AlertResourceModelActionFiltersItemConditionsItemEventUniqueUserFrequencyCo
 }
 
 type AlertResourceModelActionFiltersItemConditionsItemEventFrequencyCount struct {
-	Value    supertypes.Int64Value                                                                                                       `tfsdk:"value"`
-	Filters  supertypes.ListNestedObjectValueOf[AlertResourceModelActionFiltersItemConditionsItemEventFrequencyCountFiltersItem]         `tfsdk:"filters"`
-	Interval supertypes.StringValue                                                                                                      `tfsdk:"interval"`
+	Value    supertypes.Int64Value                                                                                               `tfsdk:"value"`
+	Filters  supertypes.ListNestedObjectValueOf[AlertResourceModelActionFiltersItemConditionsItemEventFrequencyCountFiltersItem] `tfsdk:"filters"`
+	Interval supertypes.StringValue                                                                                              `tfsdk:"interval"`
 }
 
 type AlertResourceModelActionFiltersItemConditionsItemEventFrequencyCountFiltersItem struct {
@@ -1324,10 +1333,10 @@ type AlertResourceModelActionFiltersItemConditionsItemEventFrequencyCountFilters
 }
 
 type AlertResourceModelActionFiltersItemConditionsItemEventFrequencyPercent struct {
-	Value              supertypes.Int64Value                                                                                                          `tfsdk:"value"`
-	Filters            supertypes.ListNestedObjectValueOf[AlertResourceModelActionFiltersItemConditionsItemEventFrequencyPercentFiltersItem]           `tfsdk:"filters"`
-	Interval           supertypes.StringValue                                                                                                         `tfsdk:"interval"`
-	ComparisonInterval supertypes.StringValue                                                                                                         `tfsdk:"comparison_interval"`
+	Value              supertypes.Int64Value                                                                                                 `tfsdk:"value"`
+	Filters            supertypes.ListNestedObjectValueOf[AlertResourceModelActionFiltersItemConditionsItemEventFrequencyPercentFiltersItem] `tfsdk:"filters"`
+	Interval           supertypes.StringValue                                                                                                `tfsdk:"interval"`
+	ComparisonInterval supertypes.StringValue                                                                                                `tfsdk:"comparison_interval"`
 }
 
 type AlertResourceModelActionFiltersItemConditionsItemEventFrequencyPercentFiltersItem struct {
@@ -1343,10 +1352,10 @@ type AlertResourceModelActionFiltersItemConditionsItemPercentSessionsCount struc
 }
 
 type AlertResourceModelActionFiltersItemConditionsItemPercentSessionsPercent struct {
-	Value              supertypes.Int64Value                                                                                                              `tfsdk:"value"`
-	Filters            supertypes.ListNestedObjectValueOf[AlertResourceModelActionFiltersItemConditionsItemPercentSessionsPercentFiltersItem]               `tfsdk:"filters"`
-	Interval           supertypes.StringValue                                                                                                              `tfsdk:"interval"`
-	ComparisonInterval supertypes.StringValue                                                                                                              `tfsdk:"comparison_interval"`
+	Value              supertypes.Int64Value                                                                                                  `tfsdk:"value"`
+	Filters            supertypes.ListNestedObjectValueOf[AlertResourceModelActionFiltersItemConditionsItemPercentSessionsPercentFiltersItem] `tfsdk:"filters"`
+	Interval           supertypes.StringValue                                                                                                 `tfsdk:"interval"`
+	ComparisonInterval supertypes.StringValue                                                                                                 `tfsdk:"comparison_interval"`
 }
 
 type AlertResourceModelActionFiltersItemConditionsItemPercentSessionsPercentFiltersItem struct {

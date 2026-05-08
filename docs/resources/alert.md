@@ -1142,7 +1142,7 @@ Optional:
 
 - `attribute` (String) The attribute of the filter. Conflicts with `key`.
 - `key` (String) The key of the filter. Conflicts with `attribute`.
-- `match` (String) The match type of the filter.
+- `match` (String) The match type of the filter. Valid values are: `co`, `ew`, `eq`, `gte`, `gt`, `is`, `in`, `lte`, `lt`, `nc`, `new`, `ne`, `ns`, `nsw`, `nin`, and `sw`.
 - `value` (String) The value of the filter.
 
 
@@ -1167,7 +1167,7 @@ Optional:
 
 - `attribute` (String) The attribute of the filter. Conflicts with `key`.
 - `key` (String) The key of the filter. Conflicts with `attribute`.
-- `match` (String) The match type of the filter.
+- `match` (String) The match type of the filter. Valid values are: `co`, `ew`, `eq`, `gte`, `gt`, `is`, `in`, `lte`, `lt`, `nc`, `new`, `ne`, `ns`, `nsw`, `nin`, and `sw`.
 - `value` (String) The value of the filter.
 
 
@@ -1289,7 +1289,7 @@ Optional:
 
 - `attribute` (String) The attribute of the filter. Conflicts with `key`.
 - `key` (String) The key of the filter. Conflicts with `attribute`.
-- `match` (String) The match type of the filter.
+- `match` (String) The match type of the filter. Valid values are: `co`, `ew`, `eq`, `gte`, `gt`, `is`, `in`, `lte`, `lt`, `nc`, `new`, `ne`, `ns`, `nsw`, `nin`, and `sw`.
 - `value` (String) The value of the filter.
 
 
