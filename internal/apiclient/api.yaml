@@ -3079,6 +3079,7 @@ components:
         - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_LatestRelease"
         - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_LatestAdoptedRelease"
         - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_Level"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_IssueType"
       discriminator:
         propertyName: type
         mapping:
@@ -3098,6 +3099,7 @@ components:
           latest_release: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_LatestRelease"
           latest_adopted_release: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_LatestAdoptedRelease"
           level: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_Level"
+          issue_type: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_IssueType"
     OrganizationWorkflow_ActionFilter_Condition_AgeComparison:
       type: object
       required:
@@ -3298,6 +3300,10 @@ components:
             value:
               type: integer
               format: int64
+            filters:
+              type: array
+              items:
+                $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_EventUniqueUserFrequencyCount_Filter"
             interval:
               type: string
         conditionResult:
@@ -3323,6 +3329,10 @@ components:
             value:
               type: integer
               format: int64
+            filters:
+              type: array
+              items:
+                $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_EventUniqueUserFrequencyCount_Filter"
             interval:
               type: string
             comparisonInterval:
@@ -3374,6 +3384,10 @@ components:
             value:
               type: integer
               format: int64
+            filters:
+              type: array
+              items:
+                $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Condition_EventUniqueUserFrequencyCount_Filter"
             interval:
               type: string
             comparisonInterval:
@@ -3396,7 +3410,6 @@ components:
           required:
             - attribute
             - match
-            - value
           properties:
             attribute:
               type: string
@@ -3945,3 +3958,26 @@ components:
               type: string
             targetDisplay:
               type: string
+    OrganizationWorkflow_ActionFilter_Condition_IssueType:
+      type: object
+      required:
+        - type
+        - comparison
+        - conditionResult
+      properties:
+        type:
+          type: string
+          enum:
+            - issue_type
+        comparison:
+          type: object
+          required:
+            - value
+            - include
+          properties:
+            value:
+              type: string
+            include:
+              type: boolean
+        conditionResult:
+          type: boolean
