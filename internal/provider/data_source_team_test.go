@@ -39,9 +39,9 @@ func TestAccTeamDataSource(t *testing.T) {
 
 func testAccTeamDataSourceConfig() string {
 	return fmt.Sprintf(`
-		data "sentry_team" "test" {
-			organization = "%s"
-			slug         = "%s"
-		}
+data "sentry_team" "test" {
+	organization = "%s"
+	slug         = "%s"
+}
 `, acctest.TestOrganization, acctest.TestTeam.Slug)
 }

@@ -39,9 +39,9 @@ func TestAccProjectErrorMonitorDataSource_basic(t *testing.T) {
 
 func testAccProjectErrorMonitorDataSourceConfig() string {
 	return fmt.Sprintf(`
-		data "sentry_project_error_monitor" "test" {
-			organization = "%s"
-			project      = "%s"
-		}
-	`, acctest.TestOrganization, acctest.TestProject.Slug)
+data "sentry_project_error_monitor" "test" {
+	organization = "%s"
+	project      = "%s"
+}
+`, acctest.TestOrganization, acctest.TestProject.Slug)
 }

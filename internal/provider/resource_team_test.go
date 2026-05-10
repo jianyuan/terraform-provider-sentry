@@ -53,11 +53,11 @@ func init() {
 }
 
 func testAccTeamResourceConfig(teamName string) string {
-	return testAccOrganizationDataSourceConfig + fmt.Sprintf(`
+	return fmt.Sprintf(`
 resource "sentry_team" "test" {
-	organization = data.sentry_organization.test.slug
-	name         = "%[1]s"
-	slug         = "%[1]s"
+	organization = "%[1]s"
+	name         = "%[2]s"
+	slug         = "%[2]s"
 }
-`, teamName)
+`, acctest.TestOrganization, teamName)
 }

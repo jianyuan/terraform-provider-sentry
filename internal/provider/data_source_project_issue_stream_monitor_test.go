@@ -39,9 +39,9 @@ func TestAccProjectIssueStreamMonitorDataSource_basic(t *testing.T) {
 
 func testAccProjectIssueStreamMonitorDataSourceConfig() string {
 	return fmt.Sprintf(`
-		data "sentry_project_issue_stream_monitor" "test" {
-			organization = "%s"
-			project      = "%s"
-		}
-	`, acctest.TestOrganization, acctest.TestProject.Slug)
+data "sentry_project_issue_stream_monitor" "test" {
+	organization = "%s"
+	project      = "%s"
+}
+`, acctest.TestOrganization, acctest.TestProject.Slug)
 }

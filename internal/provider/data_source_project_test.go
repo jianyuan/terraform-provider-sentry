@@ -46,9 +46,9 @@ func TestAccProjectDataSource(t *testing.T) {
 
 func testAccProjectDataSourceConfig() string {
 	return fmt.Sprintf(`
-		data "sentry_project" "test" {
-			organization = "%s"
-			slug         = "%s"
-		}
+data "sentry_project" "test" {
+	organization = "%s"
+	slug         = "%s"
+}
 `, acctest.TestOrganization, acctest.TestProject.Slug)
 }

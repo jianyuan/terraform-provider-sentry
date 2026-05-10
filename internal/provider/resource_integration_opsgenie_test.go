@@ -203,18 +203,18 @@ func TestAccIntegrationOpsgenieResource(t *testing.T) {
 }
 
 func testAccIntegrationOpsgenieResourceConfig(teamName string) string {
-	return testAccOrganizationDataSourceConfig + fmt.Sprintf(`
+	return fmt.Sprintf(`
 data "sentry_organization_integration" "opsgenie" {
-	organization = data.sentry_organization.test.slug
+	organization = "%[1]s"
 	provider_key = "opsgenie"
-	name         = "%[1]s"
+	name         = "%[2]s"
 }
 
 resource "sentry_integration_opsgenie" "test" {
-	organization    = data.sentry_organization.test.slug
+	organization    = data.sentry_organization_integration.opsgenie.organization
 	integration_id  = data.sentry_organization_integration.opsgenie.id
-	team            = "%[2]s"
-	integration_key = "%[3]s"
+	team            = "%[3]s"
+	integration_key = "%[4]s"
 }
-`, acctest.TestOpsgenieOrganization, teamName, acctest.TestOpsgenieIntegrationKey)
+`, acctest.TestOrganization, acctest.TestOpsgenieOrganization, teamName, acctest.TestOpsgenieIntegrationKey)
 }
