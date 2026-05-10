@@ -12,8 +12,6 @@ import (
 )
 
 func TestAccProjectErrorMonitorDataSource_basic(t *testing.T) {
-	teamName := acctest.RandomWithPrefix("tf-team")
-	projectName := acctest.RandomWithPrefix("tf-project")
 	rn := "data.sentry_project_error_monitor.test"
 
 	checks := []statecheck.StateCheck{
@@ -27,9 +25,7 @@ func TestAccProjectErrorMonitorDataSource_basic(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccProjectErrorMonitorDataSourceConfig(teamName, projectName, `
-					project = sentry_project.test.id
-				`),
+				Config: testAccProjectErrorMonitorDataSourceConfig(),
 				ConfigStateChecks: append(
 					checks,
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("enabled"), knownvalue.Bool(true)),
@@ -41,15 +37,11 @@ func TestAccProjectErrorMonitorDataSource_basic(t *testing.T) {
 	})
 }
 
-func testAccProjectErrorMonitorDataSourceConfig(teamName, projectName, extras string) string {
-	return testAccProjectResourceConfig(testAccProjectResourceConfigData{
-		TeamName:    teamName,
-		ProjectName: projectName,
-		Platform:    "go",
-	}) + fmt.Sprintf(`
-		data "sentry_project_error_monitor" "test" {
-			organization = sentry_project.test.organization
-			%s
-		}
-	`, extras)
+func testAccProjectErrorMonitorDataSourceConfig() string {
+	return fmt.Sprintf(`
+data "sentry_project_error_monitor" "test" {
+	organization = "%s"
+	project      = "%s"
+}
+`, acctest.TestOrganization, acctest.TestProject.Slug)
 }

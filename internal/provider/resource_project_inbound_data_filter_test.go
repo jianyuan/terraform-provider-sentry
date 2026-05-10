@@ -11,7 +11,6 @@ import (
 
 func TestAccProjectInboundDataFilterResource(t *testing.T) {
 	rn := "sentry_project_inbound_data_filter.test"
-	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")
 	filterId := "browser-extensions"
 
@@ -20,7 +19,7 @@ func TestAccProjectInboundDataFilterResource(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccProjectInboundDataFilterConfig(team, project, filterId, "active = true"),
+				Config: testAccProjectInboundDataFilterConfig(project, filterId, "active = true"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
 					resource.TestCheckResourceAttr(rn, "project", project),
@@ -30,7 +29,7 @@ func TestAccProjectInboundDataFilterResource(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccProjectInboundDataFilterConfig(team, project, filterId, "active = false"),
+				Config: testAccProjectInboundDataFilterConfig(project, filterId, "active = false"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
 					resource.TestCheckResourceAttr(rn, "project", project),
@@ -49,7 +48,6 @@ func TestAccProjectInboundDataFilterResource(t *testing.T) {
 }
 
 func TestAccProjectInboundDataFilterResource_Conflict(t *testing.T) {
-	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")
 	filterId := "browser-extensions"
 
@@ -58,7 +56,7 @@ func TestAccProjectInboundDataFilterResource_Conflict(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccProjectInboundDataFilterConfig(team, project, filterId, `
+				Config: testAccProjectInboundDataFilterConfig(project, filterId, `
 					active = true
 					subfilters = ["android_pre_4", "ie_pre_9"]
 				`),
@@ -70,7 +68,6 @@ func TestAccProjectInboundDataFilterResource_Conflict(t *testing.T) {
 
 func TestAccProjectInboundDataFilterResource_LegacyBrowser(t *testing.T) {
 	rn := "sentry_project_inbound_data_filter.test"
-	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")
 	filterId := "legacy-browsers"
 
@@ -79,7 +76,7 @@ func TestAccProjectInboundDataFilterResource_LegacyBrowser(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccProjectInboundDataFilterConfig(team, project, filterId, "subfilters = [\"android_pre_4\", \"ie_pre_9\"]"),
+				Config: testAccProjectInboundDataFilterConfig(project, filterId, "subfilters = [\"android_pre_4\", \"ie_pre_9\"]"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
 					resource.TestCheckResourceAttr(rn, "project", project),
@@ -92,7 +89,7 @@ func TestAccProjectInboundDataFilterResource_LegacyBrowser(t *testing.T) {
 			},
 			// NOTE: Intentionally not sorting subfilters to show that the order does not matter during import.
 			{
-				Config: testAccProjectInboundDataFilterConfig(team, project, filterId, "subfilters = [\"safari_pre_6\", \"android_pre_4\"]"),
+				Config: testAccProjectInboundDataFilterConfig(project, filterId, "subfilters = [\"safari_pre_6\", \"android_pre_4\"]"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
 					resource.TestCheckResourceAttr(rn, "project", project),
@@ -112,26 +109,20 @@ func TestAccProjectInboundDataFilterResource_LegacyBrowser(t *testing.T) {
 	})
 }
 
-func testAccProjectInboundDataFilterConfig(teamName, projectName, filterId, body string) string {
-	return testAccOrganizationDataSourceConfig + fmt.Sprintf(`
-resource "sentry_team" "test" {
-	organization = data.sentry_organization.test.slug
-	name         = "%[1]s"
-	slug         = "%[1]s"
-}
-
+func testAccProjectInboundDataFilterConfig(projectName, filterId, body string) string {
+	return fmt.Sprintf(`
 resource "sentry_project" "test" {
-	organization = sentry_team.test.organization
-	teams        = [sentry_team.test.slug]
-	name         = "%[2]s"
+	organization = "%[1]s"
+	teams        = ["%[2]s"]
+	name         = "%[3]s"
 	platform     = "go"
 }
 
 resource "sentry_project_inbound_data_filter" "test" {
-	organization = sentry_project.test.organization
+	organization = "%[1]s"
 	project      = sentry_project.test.id
-	filter_id    = "%[3]s"
-	%[4]s
+	filter_id    = "%[4]s"
+	%[5]s
 }
-`, teamName, projectName, filterId, body)
+`, acctest.TestOrganization, acctest.TestTeam.Slug, projectName, filterId, body)
 }

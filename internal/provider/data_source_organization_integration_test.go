@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -28,10 +29,10 @@ func TestAccOrganizationIntegrationDataSource(t *testing.T) {
 	})
 }
 
-var testAccOrganizationIntegrationDataSourceConfig = testAccOrganizationDataSourceConfig + `
+var testAccOrganizationIntegrationDataSourceConfig = fmt.Sprintf(`
 data "sentry_organization_integration" "test" {
-	organization = data.sentry_organization.test.slug
+	organization = "%[1]s"
 	provider_key = "github"
 	name         = "jianyuan"
 }
-`
+`, acctest.TestOrganization)

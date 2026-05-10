@@ -11,7 +11,6 @@ import (
 )
 
 func TestAccMetricMonitorDataSource_threshold(t *testing.T) {
-	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	monitorName := acctest.RandomWithPrefix("tf-metric-monitor")
 	rn := "data.sentry_metric_monitor.test"
@@ -31,7 +30,7 @@ func TestAccMetricMonitorDataSource_threshold(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccMetricMonitorDataSourceConfig(teamName, projectName, monitorName, `
+				Config: testAccMetricMonitorDataSourceConfig(projectName, monitorName, `
 					aggregate = "count()"
 					dataset = "events"
 					event_types = ["default", "error"]
@@ -93,7 +92,7 @@ func TestAccMetricMonitorDataSource_threshold(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccMetricMonitorDataSourceConfig(teamName, projectName, monitorName, `
+				Config: testAccMetricMonitorDataSourceConfig(projectName, monitorName, `
 					aggregate = "count()"
 					dataset = "events"
 					event_types = ["default", "error"]
@@ -150,7 +149,7 @@ func TestAccMetricMonitorDataSource_threshold(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccMetricMonitorDataSourceConfig(teamName, projectName, monitorName+"-updated", `
+				Config: testAccMetricMonitorDataSourceConfig(projectName, monitorName+"-updated", `
 					aggregate = "count()"
 					dataset = "events"
 					event_types = ["default", "error"]
@@ -181,7 +180,7 @@ func TestAccMetricMonitorDataSource_threshold(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccMetricMonitorDataSourceConfig(teamName, projectName, monitorName+"-updated", `
+				Config: testAccMetricMonitorDataSourceConfig(projectName, monitorName+"-updated", `
 					enabled = false
 
 					aggregate = "count()"
@@ -218,7 +217,6 @@ func TestAccMetricMonitorDataSource_threshold(t *testing.T) {
 }
 
 func TestAccMetricMonitorDataSource_dynamic(t *testing.T) {
-	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	monitorName := acctest.RandomWithPrefix("tf-metric-monitor")
 	rn := "data.sentry_metric_monitor.test"
@@ -238,7 +236,7 @@ func TestAccMetricMonitorDataSource_dynamic(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccMetricMonitorDataSourceConfig(teamName, projectName, monitorName, `
+				Config: testAccMetricMonitorDataSourceConfig(projectName, monitorName, `
 					aggregate = "count()"
 					dataset = "events"
 					event_types = ["default", "error"]
@@ -295,8 +293,8 @@ func TestAccMetricMonitorDataSource_dynamic(t *testing.T) {
 	})
 }
 
-func testAccMetricMonitorDataSourceConfig(teamName, projectName, name, extras string) string {
-	return testAccMetricMonitorResourceConfig(teamName, projectName, name, extras) + `
+func testAccMetricMonitorDataSourceConfig(projectName, name, extras string) string {
+	return testAccMetricMonitorResourceConfig(projectName, name, extras) + `
 		data "sentry_metric_monitor" "test" {
 			organization = sentry_metric_monitor.test.organization
 			id           = sentry_metric_monitor.test.id

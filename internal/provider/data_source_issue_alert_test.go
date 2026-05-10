@@ -15,7 +15,6 @@ import (
 func TestAccIssueAlertDataSource(t *testing.T) {
 	rn := "sentry_issue_alert.test"
 	dsn := "data.sentry_issue_alert.test"
-	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")
 	alert := acctest.RandomWithPrefix("tf-issue-alert")
 	var alertId string
@@ -25,7 +24,7 @@ func TestAccIssueAlertDataSource(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccIssueAlertDataSourceConfig(team, project, alert),
+				Config: testAccIssueAlertDataSourceConfig(project, alert),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIssueAlertExists(rn, &alertId),
 				),
@@ -43,25 +42,19 @@ func TestAccIssueAlertDataSource(t *testing.T) {
 	})
 }
 
-func testAccIssueAlertDataSourceConfig(teamName string, projectName string, alertName string) string {
-	return testAccOrganizationDataSourceConfig + fmt.Sprintf(`
-resource "sentry_team" "test" {
-	organization = data.sentry_organization.test.slug
-	name         = "%[1]s"
-	slug         = "%[1]s"
-}
-
+func testAccIssueAlertDataSourceConfig(projectName string, alertName string) string {
+	return fmt.Sprintf(`
 resource "sentry_project" "test" {
-	organization = sentry_team.test.organization
-	teams        = [sentry_team.test.slug]
-	name         = "%[2]s"
+	organization = "%[1]s"
+	teams        = ["%[3]s"]
+	name         = "%[4]s"
 	platform     = "go"
 }
 
 resource "sentry_issue_alert" "test" {
-	organization = sentry_project.test.organization
+	organization = "%[1]s"
 	project      = sentry_project.test.id
-	name         = "%[3]s"
+	name         = "%[5]s"
 
 	action_match = "any"
 	filter_match = "any"
@@ -111,7 +104,7 @@ EOT
 	{
 		"id": "sentry.rules.filters.assigned_to.AssignedToFilter",
 		"targetType": "Team",
-		"targetIdentifier": ${parseint(sentry_team.test.internal_id, 10)}
+		"targetIdentifier": %[2]s
 	},
 	{
 		"id": "sentry.rules.filters.latest_release.LatestReleaseFilter"
@@ -146,7 +139,7 @@ EOT
 	{
 		"id": "sentry.mail.actions.NotifyEmailAction",
 		"targetType": "Team",
-		"targetIdentifier": ${parseint(sentry_team.test.internal_id, 10)}
+		"targetIdentifier": %[2]s
 	},
 	{
 		"id": "sentry.rules.actions.notify_event.NotifyEventAction"
@@ -160,5 +153,5 @@ data "sentry_issue_alert" "test" {
 	organization = sentry_issue_alert.test.organization
 	project      = sentry_issue_alert.test.project
 }
-`, teamName, projectName, alertName)
+`, acctest.TestOrganization, acctest.TestTeam.Id, acctest.TestTeam.Slug, projectName, alertName)
 }
