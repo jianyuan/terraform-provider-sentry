@@ -82,7 +82,7 @@ jobs:
         with:
           go-version-file: "go.mod"
           cache-dependency-path: "go.sum"
-      - uses: astral-sh/setup-uv@v7
+      - uses: astral-sh/setup-uv@v8.1.0
       - uses: oven-sh/setup-bun@v2
       - uses: hashicorp/setup-terraform@v4
         with:

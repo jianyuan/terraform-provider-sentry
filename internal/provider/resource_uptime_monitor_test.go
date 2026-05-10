@@ -93,7 +93,6 @@ func TestAccUptimeMonitorResource_validation(t *testing.T) {
 }
 
 func TestAccUptimeMonitorResource_basic(t *testing.T) {
-	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	monitorName := acctest.RandomWithPrefix("tf-uptime-monitor")
 	rn := "sentry_uptime_monitor.test"
@@ -113,7 +112,7 @@ func TestAccUptimeMonitorResource_basic(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccUptimeMonitorResourceConfig(teamName, projectName, monitorName, `
+				Config: testAccUptimeMonitorResourceConfig(projectName, monitorName, `
 					url = "https://sentry.io"
 					method = "GET"
 					interval_seconds = 60
@@ -138,7 +137,7 @@ func TestAccUptimeMonitorResource_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccUptimeMonitorResourceConfig(teamName, projectName, monitorName+"-updated", `
+				Config: testAccUptimeMonitorResourceConfig(projectName, monitorName+"-updated", `
 					url = "https://us.sentry.io"
 					method = "POST"
 					body = <<EOT
@@ -188,22 +187,25 @@ func TestAccUptimeMonitorResource_basic(t *testing.T) {
 	})
 }
 
-func testAccUptimeMonitorResourceConfig(teamName, projectName, name, extras string) string {
-	return testAccProjectResourceConfig(testAccProjectResourceConfigData{
-		TeamName:    teamName,
-		ProjectName: projectName,
-		Platform:    "go",
-	}) + fmt.Sprintf(`
-		resource "sentry_uptime_monitor" "test" {
-			organization = data.sentry_organization.test.slug
-			project      = sentry_project.test.slug
-			name         = "%[1]s"
+func testAccUptimeMonitorResourceConfig(projectName, name, extras string) string {
+	return fmt.Sprintf(`
+		resource "sentry_project" "test" {
+			organization = "%[1]s"
+			teams        = ["%[3]s"]
+			name         = "%[4]s"
+			platform     = "go"
+		}
 
-			%[2]s
+		resource "sentry_uptime_monitor" "test" {
+			organization = "%[1]s"
+			project      = sentry_project.test.slug
+			name         = "%[5]s"
+
+			%[6]s
 
 			owner = {
-				team_id = sentry_team.test.internal_id
+				team_id = "%[2]s"
 			}
 		}
-	`, name, extras)
+	`, acctest.TestOrganization, acctest.TestTeam.Id, acctest.TestTeam.Slug, projectName, name, extras)
 }

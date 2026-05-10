@@ -154,6 +154,26 @@ var MatchTypes = []string{
 }
 
 // https://github.com/getsentry/sentry/blob/master/src/sentry/rules/match.py
+var MatchTypeIds = []string{
+	"co",
+	"ew",
+	"eq",
+	"gte",
+	"gt",
+	"is",
+	"in",
+	"lte",
+	"lt",
+	"nc",
+	"new",
+	"ne",
+	"ns",
+	"nsw",
+	"nin",
+	"sw",
+}
+
+// https://github.com/getsentry/sentry/blob/master/src/sentry/rules/match.py
 var MatchTypeNameToId = map[string]string{
 	"CONTAINS":         "co",
 	"ENDS_WITH":        "ew",
@@ -217,11 +237,9 @@ var DashboardWidgetTypes = []string{
 var DashboardWidgetDisplayTypes = []string{
 	"line",
 	"area",
-	"stacked_area",
 	"bar",
 	"table",
 	"big_number",
-	"top_n",
 	"details",
 	"categorical_bar",
 	"wheel",

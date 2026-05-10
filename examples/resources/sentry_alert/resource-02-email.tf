@@ -8,7 +8,7 @@ resource "sentry_alert" "default" {
       actions = [
         {
           email = {
-            target_type      = "IssueOwners"
+            target_type      = "issue_owners"
             fallthrough_type = "AllMembers"
           }
         }
@@ -17,7 +17,7 @@ resource "sentry_alert" "default" {
   ]
 }
 
-# Send a notification to a team. If no issue owners, then send to all members.
+# Send a notification to a team.
 data "sentry_team" "team" { /* ... */ }
 
 resource "sentry_alert" "default" {
@@ -29,9 +29,8 @@ resource "sentry_alert" "default" {
       actions = [
         {
           email = {
-            target_type       = "Team"
-            target_identifier = data.sentry_team.team.internal_id
-            fallthrough_type  = "AllMembers"
+            target_type = "team"
+            target_id   = data.sentry_team.team.internal_id
           }
         }
       ]
@@ -39,7 +38,7 @@ resource "sentry_alert" "default" {
   ]
 }
 
-# Send a notification to a user. If no issue owners, then send to all members.
+# Send a notification to a user.
 data "sentry_organization_member" "member" { /* ... */ }
 
 resource "sentry_alert" "default" {
@@ -51,9 +50,8 @@ resource "sentry_alert" "default" {
       actions = [
         {
           email = {
-            target_type       = "Member"
-            target_identifier = data.sentry_organization_member.member.internal_id
-            fallthrough_type  = "AllMembers"
+            target_type = "user"
+            target_id   = data.sentry_organization_member.member.internal_id
           }
         }
       ]

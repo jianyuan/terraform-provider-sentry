@@ -11,7 +11,6 @@ import (
 )
 
 func TestAccUptimeMonitorDataSource_basic(t *testing.T) {
-	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	monitorName := acctest.RandomWithPrefix("tf-uptime-monitor")
 	rn := "data.sentry_uptime_monitor.test"
@@ -31,7 +30,7 @@ func TestAccUptimeMonitorDataSource_basic(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccUptimeMonitorDataSourceConfig(teamName, projectName, monitorName, `
+				Config: testAccUptimeMonitorDataSourceConfig(projectName, monitorName, `
 					url = "https://sentry.io"
 					method = "GET"
 					interval_seconds = 60
@@ -56,7 +55,7 @@ func TestAccUptimeMonitorDataSource_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccUptimeMonitorDataSourceConfig(teamName, projectName, monitorName+"-updated", `
+				Config: testAccUptimeMonitorDataSourceConfig(projectName, monitorName+"-updated", `
 					url = "https://us.sentry.io"
 					method = "POST"
 					body = <<EOT
@@ -99,8 +98,8 @@ func TestAccUptimeMonitorDataSource_basic(t *testing.T) {
 	})
 }
 
-func testAccUptimeMonitorDataSourceConfig(teamName, projectName, name, extras string) string {
-	return testAccUptimeMonitorResourceConfig(teamName, projectName, name, extras) + `
+func testAccUptimeMonitorDataSourceConfig(projectName, name, extras string) string {
+	return testAccUptimeMonitorResourceConfig(projectName, name, extras) + `
 		data "sentry_uptime_monitor" "test" {
 			organization = sentry_uptime_monitor.test.organization
 			id           = sentry_uptime_monitor.test.id
