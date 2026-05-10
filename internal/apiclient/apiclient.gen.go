@@ -2946,9 +2946,12 @@ type SentryAppInstallation struct {
 
 // Team defines model for Team.
 type Team struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
-	Slug string `json:"slug"`
+	HasAccess *bool  `json:"hasAccess,omitempty"`
+	Id        string `json:"id"`
+	IsMember  *bool  `json:"isMember,omitempty"`
+	IsPending *bool  `json:"isPending,omitempty"`
+	Name      string `json:"name"`
+	Slug      string `json:"slug"`
 }
 
 // TeamRole defines model for TeamRole.
@@ -3059,6 +3062,11 @@ type DisableSpikeProtectionJSONBody struct {
 // EnableSpikeProtectionJSONBody defines parameters for EnableSpikeProtection.
 type EnableSpikeProtectionJSONBody struct {
 	Projects []string `json:"projects"`
+}
+
+// CreateOrganizationTeamJSONBody defines parameters for CreateOrganizationTeam.
+type CreateOrganizationTeamJSONBody struct {
+	Name string `json:"name"`
 }
 
 // ListOrganizationWorkflowsParams defines parameters for ListOrganizationWorkflows.
@@ -3189,6 +3197,9 @@ type DisableSpikeProtectionJSONRequestBody DisableSpikeProtectionJSONBody
 
 // EnableSpikeProtectionJSONRequestBody defines body for EnableSpikeProtection for application/json ContentType.
 type EnableSpikeProtectionJSONRequestBody EnableSpikeProtectionJSONBody
+
+// CreateOrganizationTeamJSONRequestBody defines body for CreateOrganizationTeam for application/json ContentType.
+type CreateOrganizationTeamJSONRequestBody CreateOrganizationTeamJSONBody
 
 // CreateOrganizationWorkflowJSONRequestBody defines body for CreateOrganizationWorkflow for application/json ContentType.
 type CreateOrganizationWorkflowJSONRequestBody = OrganizationWorkflowRequest
@@ -6671,6 +6682,14 @@ type ClientInterface interface {
 
 	EnableSpikeProtection(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body EnableSpikeProtectionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListOrganizationTeams request
+	ListOrganizationTeams(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateOrganizationTeamWithBody request with any body
+	CreateOrganizationTeamWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateOrganizationTeam(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListOrganizationWorkflows request
 	ListOrganizationWorkflows(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationWorkflowsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -6749,6 +6768,9 @@ type ClientInterface interface {
 
 	// AddTeamToProject request
 	AddTeamToProject(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, teamIdOrSlug TeamIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteOrganizationTeam request
+	DeleteOrganizationTeam(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetOrganizationTeam request
 	GetOrganizationTeam(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -7061,6 +7083,42 @@ func (c *Client) EnableSpikeProtectionWithBody(ctx context.Context, organization
 
 func (c *Client) EnableSpikeProtection(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body EnableSpikeProtectionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewEnableSpikeProtectionRequest(c.Server, organizationIdOrSlug, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListOrganizationTeams(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListOrganizationTeamsRequest(c.Server, organizationIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateOrganizationTeamWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateOrganizationTeamRequestWithBody(c.Server, organizationIdOrSlug, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateOrganizationTeam(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateOrganizationTeamRequest(c.Server, organizationIdOrSlug, body)
 	if err != nil {
 		return nil, err
 	}
@@ -7409,6 +7467,18 @@ func (c *Client) RemoveTeamFromProject(ctx context.Context, organizationIdOrSlug
 
 func (c *Client) AddTeamToProject(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, teamIdOrSlug TeamIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAddTeamToProjectRequest(c.Server, organizationIdOrSlug, projectIdOrSlug, teamIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteOrganizationTeam(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteOrganizationTeamRequest(c.Server, organizationIdOrSlug, teamIdOrSlug)
 	if err != nil {
 		return nil, err
 	}
@@ -8412,6 +8482,87 @@ func NewEnableSpikeProtectionRequestWithBody(server string, organizationIdOrSlug
 	}
 
 	operationPath := fmt.Sprintf("/0/organizations/%s/spike-protections/", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListOrganizationTeamsRequest generates requests for ListOrganizationTeams
+func NewListOrganizationTeamsRequest(server string, organizationIdOrSlug OrganizationIdOrSlug) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/teams/", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateOrganizationTeamRequest calls the generic CreateOrganizationTeam builder with application/json body
+func NewCreateOrganizationTeamRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationTeamJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateOrganizationTeamRequestWithBody(server, organizationIdOrSlug, "application/json", bodyReader)
+}
+
+// NewCreateOrganizationTeamRequestWithBody generates requests for CreateOrganizationTeam with any type of body
+func NewCreateOrganizationTeamRequestWithBody(server string, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/teams/", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -9504,6 +9655,47 @@ func NewAddTeamToProjectRequest(server string, organizationIdOrSlug Organization
 	return req, nil
 }
 
+// NewDeleteOrganizationTeamRequest generates requests for DeleteOrganizationTeam
+func NewDeleteOrganizationTeamRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "team_id_or_slug", teamIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/teams/%s/%s/", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetOrganizationTeamRequest generates requests for GetOrganizationTeam
 func NewGetOrganizationTeamRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug) (*http.Request, error) {
 	var err error
@@ -9713,6 +9905,14 @@ type ClientWithResponsesInterface interface {
 
 	EnableSpikeProtectionWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body EnableSpikeProtectionJSONRequestBody, reqEditors ...RequestEditorFn) (*EnableSpikeProtectionResponse, error)
 
+	// ListOrganizationTeamsWithResponse request
+	ListOrganizationTeamsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*ListOrganizationTeamsResponse, error)
+
+	// CreateOrganizationTeamWithBodyWithResponse request with any body
+	CreateOrganizationTeamWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOrganizationTeamResponse, error)
+
+	CreateOrganizationTeamWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateOrganizationTeamResponse, error)
+
 	// ListOrganizationWorkflowsWithResponse request
 	ListOrganizationWorkflowsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationWorkflowsParams, reqEditors ...RequestEditorFn) (*ListOrganizationWorkflowsResponse, error)
 
@@ -9791,6 +9991,9 @@ type ClientWithResponsesInterface interface {
 
 	// AddTeamToProjectWithResponse request
 	AddTeamToProjectWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, teamIdOrSlug TeamIdOrSlug, reqEditors ...RequestEditorFn) (*AddTeamToProjectResponse, error)
+
+	// DeleteOrganizationTeamWithResponse request
+	DeleteOrganizationTeamWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, reqEditors ...RequestEditorFn) (*DeleteOrganizationTeamResponse, error)
 
 	// GetOrganizationTeamWithResponse request
 	GetOrganizationTeamWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, reqEditors ...RequestEditorFn) (*GetOrganizationTeamResponse, error)
@@ -10359,6 +10562,66 @@ func (r EnableSpikeProtectionResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r EnableSpikeProtectionResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ListOrganizationTeamsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]Team
+}
+
+// Status returns HTTPResponse.Status
+func (r ListOrganizationTeamsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListOrganizationTeamsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListOrganizationTeamsResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type CreateOrganizationTeamResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *Team
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateOrganizationTeamResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateOrganizationTeamResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateOrganizationTeamResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -10995,17 +11258,39 @@ func (r AddTeamToProjectResponse) ContentType() string {
 	return ""
 }
 
+type DeleteOrganizationTeamResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteOrganizationTeamResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteOrganizationTeamResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeleteOrganizationTeamResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type GetOrganizationTeamResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *struct {
-		HasAccess bool   `json:"hasAccess"`
-		Id        string `json:"id"`
-		IsMember  bool   `json:"isMember"`
-		IsPending bool   `json:"isPending"`
-		Name      string `json:"name"`
-		Slug      string `json:"slug"`
-	}
+	JSON200      *Team
 }
 
 // Status returns HTTPResponse.Status
@@ -11289,6 +11574,32 @@ func (c *ClientWithResponses) EnableSpikeProtectionWithResponse(ctx context.Cont
 	return ParseEnableSpikeProtectionResponse(rsp)
 }
 
+// ListOrganizationTeamsWithResponse request returning *ListOrganizationTeamsResponse
+func (c *ClientWithResponses) ListOrganizationTeamsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*ListOrganizationTeamsResponse, error) {
+	rsp, err := c.ListOrganizationTeams(ctx, organizationIdOrSlug, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListOrganizationTeamsResponse(rsp)
+}
+
+// CreateOrganizationTeamWithBodyWithResponse request with arbitrary body returning *CreateOrganizationTeamResponse
+func (c *ClientWithResponses) CreateOrganizationTeamWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOrganizationTeamResponse, error) {
+	rsp, err := c.CreateOrganizationTeamWithBody(ctx, organizationIdOrSlug, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateOrganizationTeamResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateOrganizationTeamWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateOrganizationTeamResponse, error) {
+	rsp, err := c.CreateOrganizationTeam(ctx, organizationIdOrSlug, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateOrganizationTeamResponse(rsp)
+}
+
 // ListOrganizationWorkflowsWithResponse request returning *ListOrganizationWorkflowsResponse
 func (c *ClientWithResponses) ListOrganizationWorkflowsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationWorkflowsParams, reqEditors ...RequestEditorFn) (*ListOrganizationWorkflowsResponse, error) {
 	rsp, err := c.ListOrganizationWorkflows(ctx, organizationIdOrSlug, params, reqEditors...)
@@ -11540,6 +11851,15 @@ func (c *ClientWithResponses) AddTeamToProjectWithResponse(ctx context.Context, 
 		return nil, err
 	}
 	return ParseAddTeamToProjectResponse(rsp)
+}
+
+// DeleteOrganizationTeamWithResponse request returning *DeleteOrganizationTeamResponse
+func (c *ClientWithResponses) DeleteOrganizationTeamWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, reqEditors ...RequestEditorFn) (*DeleteOrganizationTeamResponse, error) {
+	rsp, err := c.DeleteOrganizationTeam(ctx, organizationIdOrSlug, teamIdOrSlug, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteOrganizationTeamResponse(rsp)
 }
 
 // GetOrganizationTeamWithResponse request returning *GetOrganizationTeamResponse
@@ -11997,6 +12317,58 @@ func ParseEnableSpikeProtectionResponse(rsp *http.Response) (*EnableSpikeProtect
 	response := &EnableSpikeProtectionResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseListOrganizationTeamsResponse parses an HTTP response from a ListOrganizationTeamsWithResponse call
+func ParseListOrganizationTeamsResponse(rsp *http.Response) (*ListOrganizationTeamsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListOrganizationTeamsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []Team
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateOrganizationTeamResponse parses an HTTP response from a CreateOrganizationTeamWithResponse call
+func ParseCreateOrganizationTeamResponse(rsp *http.Response) (*CreateOrganizationTeamResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateOrganizationTeamResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest Team
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
 	}
 
 	return response, nil
@@ -12524,6 +12896,22 @@ func ParseAddTeamToProjectResponse(rsp *http.Response) (*AddTeamToProjectRespons
 	return response, nil
 }
 
+// ParseDeleteOrganizationTeamResponse parses an HTTP response from a DeleteOrganizationTeamWithResponse call
+func ParseDeleteOrganizationTeamResponse(rsp *http.Response) (*DeleteOrganizationTeamResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteOrganizationTeamResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
 // ParseGetOrganizationTeamResponse parses an HTTP response from a GetOrganizationTeamWithResponse call
 func ParseGetOrganizationTeamResponse(rsp *http.Response) (*GetOrganizationTeamResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -12539,14 +12927,7 @@ func ParseGetOrganizationTeamResponse(rsp *http.Response) (*GetOrganizationTeamR
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest struct {
-			HasAccess bool   `json:"hasAccess"`
-			Id        string `json:"id"`
-			IsMember  bool   `json:"isMember"`
-			IsPending bool   `json:"isPending"`
-			Name      string `json:"name"`
-			Slug      string `json:"slug"`
-		}
+		var dest Team
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

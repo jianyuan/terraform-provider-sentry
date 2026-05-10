@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"fmt"
 	"regexp"
 	"testing"
 
@@ -12,14 +13,12 @@ import (
 )
 
 func TestAccProjectDataSource(t *testing.T) {
-	teamName := acctest.RandomWithPrefix("tf-team")
-	projectName := acctest.RandomWithPrefix("tf-project")
 	rn := "data.sentry_project.test"
 
 	checks := []statecheck.StateCheck{
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.StringExact(projectName)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.StringExact(acctest.TestProjectName)),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("slug"), knownvalue.StringExact(projectName)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("slug"), knownvalue.StringExact(acctest.TestProjectName)),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("internal_id"), knownvalue.StringRegexp(regexp.MustCompile(`^\d+$`))),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("is_public"), knownvalue.NotNull()),
 	}
@@ -29,11 +28,11 @@ func TestAccProjectDataSource(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccProjectDataSourceConfig(teamName, projectName),
+				Config: testAccProjectDataSourceConfig(),
 				ConfigStateChecks: append(
 					checks,
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(projectName)),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("platform"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(acctest.TestProjectName)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("platform"), knownvalue.StringExact("go")),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("date_created"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("features"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("subject_template"), knownvalue.NotNull()),
@@ -45,14 +44,11 @@ func TestAccProjectDataSource(t *testing.T) {
 	})
 }
 
-func testAccProjectDataSourceConfig(teamName, projectName string) string {
-	return testAccProjectResourceConfig(testAccProjectResourceConfigData{
-		TeamName:    teamName,
-		ProjectName: projectName,
-	}) + `
-data "sentry_project" "test" {
-	organization = sentry_project.test.organization
-	slug         = sentry_project.test.id
-}
-`
+func testAccProjectDataSourceConfig() string {
+	return fmt.Sprintf(`
+		data "sentry_project" "test" {
+			organization = "%s"
+			slug         = "%s"
+		}
+`, acctest.TestOrganization, acctest.TestProject.Slug)
 }

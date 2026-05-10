@@ -66,9 +66,9 @@ func fillDataSourceTeamModel(ctx context.Context, m *datasource_team.TeamModel, 
 	m.Slug = types.StringValue(resp.JSON200.Slug)
 	m.InternalId = types.StringValue(resp.JSON200.Id)
 	m.Name = types.StringValue(resp.JSON200.Name)
-	m.Id = types.StringValue(resp.JSON200.Slug)           // Deprecated
-	m.HasAccess = types.BoolValue(resp.JSON200.HasAccess) // Deprecated
-	m.IsPending = types.BoolValue(resp.JSON200.IsPending) // Deprecated
-	m.IsMember = types.BoolValue(resp.JSON200.IsMember)   // Deprecated
+	m.Id = types.StringValue(resp.JSON200.Slug)                  // Deprecated
+	m.HasAccess = types.BoolPointerValue(resp.JSON200.HasAccess) // Deprecated
+	m.IsPending = types.BoolPointerValue(resp.JSON200.IsPending) // Deprecated
+	m.IsMember = types.BoolPointerValue(resp.JSON200.IsMember)   // Deprecated
 	return
 }
