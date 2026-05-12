@@ -2956,8 +2956,8 @@ type Team struct {
 
 // TeamRole defines model for TeamRole.
 type TeamRole struct {
-	Role     *string `json:"role,omitempty"`
-	TeamSlug string  `json:"teamSlug"`
+	Role     nullable.Nullable[string] `json:"role"`
+	TeamSlug string                    `json:"teamSlug"`
 }
 
 // TeamRoleListItem defines model for TeamRoleListItem.
