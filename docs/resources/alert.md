@@ -5,6 +5,8 @@ subcategory: ""
 description: |-
   ⚠️ This resource is currently in beta and may be subject to change. It is supported by New Monitors and Alerts https://docs.sentry.io/product/new-monitors-and-alerts/ and may not be viewable in the UI today.
   Create an Alert for a Monitor in an Organization. Monitors must be created separately using the sentry_cron_monitor cron_monitor.md, sentry_metric_monitor metric_monitor.md, or sentry_uptime_monitor uptime_monitor.md resources.
+  Additionally, default monitors https://docs.sentry.io/product/new-monitors-and-alerts/monitors/#default-monitors are automatically created for each project. Use the following data sources to retrieve them:
+  sentry_project_issue_stream_monitor ../data-sources/project_issue_stream_monitor.md: The default monitor tracking new issues of all types created for a project, including issue types that may not have a dedicated Monitor detecting them (ex. Replay issues)sentry_project_error_monitor ../data-sources/project_error_monitor.md: The default monitor based on issue grouping/fingerprint rules.
 ---
 
 # sentry_alert (Resource)
@@ -13,21 +15,33 @@ description: |-
 
 Create an Alert for a Monitor in an Organization. Monitors must be created separately using the [`sentry_cron_monitor`](cron_monitor.md), [`sentry_metric_monitor`](metric_monitor.md), or [`sentry_uptime_monitor`](uptime_monitor.md) resources.
 
+Additionally, [default monitors](https://docs.sentry.io/product/new-monitors-and-alerts/monitors/#default-monitors) are automatically created for each project. Use the following data sources to retrieve them:
+  - [`sentry_project_issue_stream_monitor`](../data-sources/project_issue_stream_monitor.md): The default monitor tracking new issues of all types created for a project, including issue types that may not have a dedicated Monitor detecting them (ex. Replay issues)
+  - [`sentry_project_error_monitor`](../data-sources/project_error_monitor.md): The default monitor based on issue grouping/fingerprint rules.
+
 ## Example Usage
 
 ```terraform
-resource "sentry_cron_monitor" "default" {
-  # ...
+# Cron Monitor
+resource "sentry_cron_monitor" "default" { /* ... */ }
+
+# Metric Monitor
+resource "sentry_metric_monitor" "default" { /* ... */ }
+
+# Uptime Monitor
+resource "sentry_uptime_monitor" "default" { /* ... */ }
+
+# Project Issue Stream Monitor: The default monitor tracking new issues of all types created for a project
+data "sentry_project_issue_stream_monitor" "default" {
+  organization = "my-organization"
+  project      = "my-project"
 }
 
-resource "sentry_metric_monitor" "default" {
-  # ...
+# Project Error Monitor: The default monitor based on issue grouping/fingerprint rules.
+data "sentry_project_error_monitor" "default" {
+  organization = "my-organization"
+  project      = "my-project"
 }
-
-resource "sentry_uptime_monitor" "default" {
-  # ...
-}
-
 
 resource "sentry_alert" "default" {
   organization = "my-organization"
@@ -39,6 +53,8 @@ resource "sentry_alert" "default" {
     sentry_cron_monitor.default.id,
     sentry_metric_monitor.default.id,
     sentry_uptime_monitor.default.id,
+    data.sentry_project_issue_stream_monitor.default.id,
+    data.sentry_project_error_monitor.default.id,
   ]
 
   frequency_minutes = 1440
@@ -1067,6 +1083,7 @@ Optional:
 - `issue_occurrences` (Attributes) Issue frequency. (see [below for nested schema](#nestedatt--action_filters--conditions--issue_occurrences))
 - `issue_priority_deescalating` (Attributes) De-escalation. (see [below for nested schema](#nestedatt--action_filters--conditions--issue_priority_deescalating))
 - `issue_priority_greater_or_equal` (Attributes) Issue priority. (see [below for nested schema](#nestedatt--action_filters--conditions--issue_priority_greater_or_equal))
+- `issue_type` (Attributes) Issue type is (or is not) `value`. (see [below for nested schema](#nestedatt--action_filters--conditions--issue_type))
 - `latest_adopted_release` (Attributes) The `release_age_type` adopted release associated with the event's issue is `age_comparison` than the latest adopted release in `environment`. (see [below for nested schema](#nestedatt--action_filters--conditions--latest_adopted_release))
 - `latest_release` (Attributes) The event is from the latest release. (see [below for nested schema](#nestedatt--action_filters--conditions--latest_release))
 - `level` (Attributes) The event's level match `level`. (see [below for nested schema](#nestedatt--action_filters--conditions--level))
@@ -1100,7 +1117,10 @@ Required:
 
 - `attribute` (String) The attribute to evaluate.
 - `match` (String) The match type.
-- `value` (String) The value to compare against.
+
+Optional:
+
+- `value` (String) The value to compare against. Not required when `match` is `is` or `ns`.
 
 
 <a id="nestedatt--action_filters--conditions--event_frequency_count"></a>
@@ -1111,6 +1131,21 @@ Required:
 - `interval` (String) The time period in which to evaluate the value. e.g. Number of events in an issue is more than `value` in `interval`. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
 - `value` (Number) A positive integer representing the number of events in an issue that must come in before the alert will fire.
 
+Optional:
+
+- `filters` (Attributes List) A list of additional sub-filters to evaluate before the alert will fire. (see [below for nested schema](#nestedatt--action_filters--conditions--event_frequency_count--filters))
+
+<a id="nestedatt--action_filters--conditions--event_frequency_count--filters"></a>
+### Nested Schema for `action_filters.conditions.event_frequency_count.filters`
+
+Optional:
+
+- `attribute` (String) The attribute of the filter. Conflicts with `key`.
+- `key` (String) The key of the filter. Conflicts with `attribute`.
+- `match` (String) The match type of the filter. Valid values are: `co`, `ew`, `eq`, `gte`, `gt`, `is`, `in`, `lte`, `lt`, `nc`, `new`, `ne`, `ns`, `nsw`, `nin`, and `sw`.
+- `value` (String) The value of the filter.
+
+
 
 <a id="nestedatt--action_filters--conditions--event_frequency_percent"></a>
 ### Nested Schema for `action_filters.conditions.event_frequency_percent`
@@ -1120,6 +1155,21 @@ Required:
 - `comparison_interval` (String) The time period to compare against. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
 - `interval` (String) The time period in which to evaluate the value. e.g. Number of events in an issue is `comparisonInterval` percent higher `value` compared to `interval`. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
 - `value` (Number) A positive integer representing the number of events in an issue that must come in before the alert will fire.
+
+Optional:
+
+- `filters` (Attributes List) A list of additional sub-filters to evaluate before the alert will fire. (see [below for nested schema](#nestedatt--action_filters--conditions--event_frequency_percent--filters))
+
+<a id="nestedatt--action_filters--conditions--event_frequency_percent--filters"></a>
+### Nested Schema for `action_filters.conditions.event_frequency_percent.filters`
+
+Optional:
+
+- `attribute` (String) The attribute of the filter. Conflicts with `key`.
+- `key` (String) The key of the filter. Conflicts with `attribute`.
+- `match` (String) The match type of the filter. Valid values are: `co`, `ew`, `eq`, `gte`, `gt`, `is`, `in`, `lte`, `lt`, `nc`, `new`, `ne`, `ns`, `nsw`, `nin`, and `sw`.
+- `value` (String) The value of the filter.
+
 
 
 <a id="nestedatt--action_filters--conditions--event_unique_user_frequency_count"></a>
@@ -1178,6 +1228,15 @@ Required:
 - `comparison` (Number) he priority the issue must be for the alert to fire.
 
 
+<a id="nestedatt--action_filters--conditions--issue_type"></a>
+### Nested Schema for `action_filters.conditions.issue_type`
+
+Required:
+
+- `include` (Boolean) If `true`, matches when the issue type equals `value`. If `false`, matches when it does not equal `value`.
+- `value` (String) The issue type slug (e.g. `performance_large_http_payload`).
+
+
 <a id="nestedatt--action_filters--conditions--latest_adopted_release"></a>
 ### Nested Schema for `action_filters.conditions.latest_adopted_release`
 
@@ -1218,6 +1277,21 @@ Required:
 - `comparison_interval` (String) The time period to compare against. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
 - `interval` (String) The time period in which to evaluate the value. e.g. Percentage of sessions affected by an issue is `comparisonInterval` percent higher `value` compared to `interval`. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
 - `value` (Number) A positive integer representing the number of events in an issue that must come in before the alert will fire.
+
+Optional:
+
+- `filters` (Attributes List) A list of additional sub-filters to evaluate before the alert will fire. (see [below for nested schema](#nestedatt--action_filters--conditions--percent_sessions_percent--filters))
+
+<a id="nestedatt--action_filters--conditions--percent_sessions_percent--filters"></a>
+### Nested Schema for `action_filters.conditions.percent_sessions_percent.filters`
+
+Optional:
+
+- `attribute` (String) The attribute of the filter. Conflicts with `key`.
+- `key` (String) The key of the filter. Conflicts with `attribute`.
+- `match` (String) The match type of the filter. Valid values are: `co`, `ew`, `eq`, `gte`, `gt`, `is`, `in`, `lte`, `lt`, `nc`, `new`, `ne`, `ns`, `nsw`, `nin`, and `sw`.
+- `value` (String) The value of the filter.
+
 
 
 <a id="nestedatt--action_filters--conditions--tagged_event"></a>

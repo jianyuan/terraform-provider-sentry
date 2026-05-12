@@ -8,6 +8,10 @@ export default {
       ⚠️ This resource is currently in beta and may be subject to change. It is supported by [New Monitors and Alerts](https://docs.sentry.io/product/new-monitors-and-alerts/) and may not be viewable in the UI today.
 
       Create an Alert for a Monitor in an Organization. Monitors must be created separately using the [\`sentry_cron_monitor\`](cron_monitor.md), [\`sentry_metric_monitor\`](metric_monitor.md), or [\`sentry_uptime_monitor\`](uptime_monitor.md) resources.
+
+      Additionally, [default monitors](https://docs.sentry.io/product/new-monitors-and-alerts/monitors/#default-monitors) are automatically created for each project. Use the following data sources to retrieve them:
+        - [\`sentry_project_issue_stream_monitor\`](../data-sources/project_issue_stream_monitor.md): The default monitor tracking new issues of all types created for a project, including issue types that may not have a dedicated Monitor detecting them (ex. Replay issues)
+        - [\`sentry_project_error_monitor\`](../data-sources/project_error_monitor.md): The default monitor based on issue grouping/fingerprint rules.
     `,
   api: {
     model: "OrganizationWorkflow",
@@ -327,6 +331,48 @@ export default {
                   validators: ["int64validator.AtLeast(1)"],
                 },
                 {
+                  name: "filters",
+                  type: "list_nested",
+                  description:
+                    "A list of additional sub-filters to evaluate before the alert will fire.",
+                  computedOptionalRequired: "computed_optional",
+                  attributes: [
+                    {
+                      name: "key",
+                      type: "string",
+                      description:
+                        "The key of the filter. Conflicts with `attribute`.",
+                      computedOptionalRequired: "optional",
+                      validators: [
+                        `stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("attribute"))`,
+                      ],
+                    },
+                    {
+                      name: "attribute",
+                      type: "string",
+                      description:
+                        "The attribute of the filter. Conflicts with `key`.",
+                      computedOptionalRequired: "optional",
+                      validators: [
+                        `stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("key"))`,
+                      ],
+                    },
+                    {
+                      name: "match",
+                      type: "string",
+                      description: "The match type of the filter.",
+                      computedOptionalRequired: "optional",
+                      enum: "sentrydata.MatchTypeIds",
+                    },
+                    {
+                      name: "value",
+                      type: "string",
+                      description: "The value of the filter.",
+                      computedOptionalRequired: "optional",
+                    },
+                  ],
+                },
+                {
                   name: "interval",
                   type: "string",
                   description:
@@ -349,6 +395,48 @@ export default {
                     "A positive integer representing the number of events in an issue that must come in before the alert will fire.",
                   computedOptionalRequired: "required",
                   validators: ["int64validator.AtLeast(1)"],
+                },
+                {
+                  name: "filters",
+                  type: "list_nested",
+                  description:
+                    "A list of additional sub-filters to evaluate before the alert will fire.",
+                  computedOptionalRequired: "computed_optional",
+                  attributes: [
+                    {
+                      name: "key",
+                      type: "string",
+                      description:
+                        "The key of the filter. Conflicts with `attribute`.",
+                      computedOptionalRequired: "optional",
+                      validators: [
+                        `stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("attribute"))`,
+                      ],
+                    },
+                    {
+                      name: "attribute",
+                      type: "string",
+                      description:
+                        "The attribute of the filter. Conflicts with `key`.",
+                      computedOptionalRequired: "optional",
+                      validators: [
+                        `stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("key"))`,
+                      ],
+                    },
+                    {
+                      name: "match",
+                      type: "string",
+                      description: "The match type of the filter.",
+                      computedOptionalRequired: "optional",
+                      enum: "sentrydata.MatchTypeIds",
+                    },
+                    {
+                      name: "value",
+                      type: "string",
+                      description: "The value of the filter.",
+                      computedOptionalRequired: "optional",
+                    },
+                  ],
                 },
                 {
                   name: "interval",
@@ -406,6 +494,48 @@ export default {
                   validators: ["int64validator.AtLeast(1)"],
                 },
                 {
+                  name: "filters",
+                  type: "list_nested",
+                  description:
+                    "A list of additional sub-filters to evaluate before the alert will fire.",
+                  computedOptionalRequired: "computed_optional",
+                  attributes: [
+                    {
+                      name: "key",
+                      type: "string",
+                      description:
+                        "The key of the filter. Conflicts with `attribute`.",
+                      computedOptionalRequired: "optional",
+                      validators: [
+                        `stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("attribute"))`,
+                      ],
+                    },
+                    {
+                      name: "attribute",
+                      type: "string",
+                      description:
+                        "The attribute of the filter. Conflicts with `key`.",
+                      computedOptionalRequired: "optional",
+                      validators: [
+                        `stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("key"))`,
+                      ],
+                    },
+                    {
+                      name: "match",
+                      type: "string",
+                      description: "The match type of the filter.",
+                      computedOptionalRequired: "optional",
+                      enum: "sentrydata.MatchTypeIds",
+                    },
+                    {
+                      name: "value",
+                      type: "string",
+                      description: "The value of the filter.",
+                      computedOptionalRequired: "optional",
+                    },
+                  ],
+                },
+                {
                   name: "interval",
                   type: "string",
                   description:
@@ -443,8 +573,12 @@ export default {
                 {
                   name: "value",
                   type: "string",
-                  description: "The value to compare against.",
-                  computedOptionalRequired: "required",
+                  description:
+                    "The value to compare against. Not required when `match` is `is` or `ns`.",
+                  computedOptionalRequired: "optional",
+                  validators: [
+                    `fstringvalidator.NullIfAttributeIsOneOf(path.MatchRelative().AtParent().AtName("match"), []attr.Value{supertypes.NewStringValue("is"), supertypes.NewStringValue("ns")})`,
+                  ],
                 },
               ],
             },
@@ -531,6 +665,28 @@ export default {
                   name: "level",
                   type: "int",
                   description: "The level to compare against.",
+                  computedOptionalRequired: "required",
+                },
+              ],
+            },
+            {
+              name: "issue_type",
+              type: "single_nested",
+              description: "Issue type is (or is not) `value`.",
+              computedOptionalRequired: "optional",
+              attributes: [
+                {
+                  name: "value",
+                  type: "string",
+                  description:
+                    "The issue type slug (e.g. `performance_large_http_payload`).",
+                  computedOptionalRequired: "required",
+                },
+                {
+                  name: "include",
+                  type: "bool",
+                  description:
+                    "If `true`, matches when the issue type equals `value`. If `false`, matches when it does not equal `value`.",
                   computedOptionalRequired: "required",
                 },
               ],

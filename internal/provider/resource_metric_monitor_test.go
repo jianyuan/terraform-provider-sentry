@@ -83,7 +83,6 @@ func TestAccMetricMonitorResource_validation(t *testing.T) {
 }
 
 func TestAccMetricMonitorResource_threshold(t *testing.T) {
-	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	monitorName := acctest.RandomWithPrefix("tf-metric-monitor")
 	rn := "sentry_metric_monitor.test"
@@ -103,7 +102,7 @@ func TestAccMetricMonitorResource_threshold(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccMetricMonitorResourceConfig(teamName, projectName, monitorName, `
+				Config: testAccMetricMonitorResourceConfig(projectName, monitorName, `
 					aggregate = "count()"
 					dataset = "events"
 					event_types = ["default", "error"]
@@ -165,7 +164,7 @@ func TestAccMetricMonitorResource_threshold(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccMetricMonitorResourceConfig(teamName, projectName, monitorName, `
+				Config: testAccMetricMonitorResourceConfig(projectName, monitorName, `
 					aggregate = "count()"
 					dataset = "events"
 					event_types = ["default", "error"]
@@ -222,7 +221,7 @@ func TestAccMetricMonitorResource_threshold(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccMetricMonitorResourceConfig(teamName, projectName, monitorName+"-updated", `
+				Config: testAccMetricMonitorResourceConfig(projectName, monitorName+"-updated", `
 					aggregate = "count()"
 					dataset = "events"
 					event_types = ["default", "error"]
@@ -253,7 +252,7 @@ func TestAccMetricMonitorResource_threshold(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccMetricMonitorResourceConfig(teamName, projectName, monitorName+"-updated", `
+				Config: testAccMetricMonitorResourceConfig(projectName, monitorName+"-updated", `
 					enabled = false
 
 					aggregate = "count()"
@@ -296,7 +295,6 @@ func TestAccMetricMonitorResource_threshold(t *testing.T) {
 }
 
 func TestAccMetricMonitorResource_change(t *testing.T) {
-	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	monitorName := acctest.RandomWithPrefix("tf-metric-monitor")
 	rn := "sentry_metric_monitor.test"
@@ -316,7 +314,7 @@ func TestAccMetricMonitorResource_change(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccMetricMonitorResourceConfig(teamName, projectName, monitorName, `
+				Config: testAccMetricMonitorResourceConfig(projectName, monitorName, `
 					aggregate = "count()"
 					dataset = "events"
 					event_types = ["default", "error"]
@@ -400,7 +398,6 @@ func TestAccMetricMonitorResource_change(t *testing.T) {
 }
 
 func TestAccMetricMonitorResource_dynamic(t *testing.T) {
-	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	monitorName := acctest.RandomWithPrefix("tf-metric-monitor")
 	rn := "sentry_metric_monitor.test"
@@ -420,7 +417,7 @@ func TestAccMetricMonitorResource_dynamic(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccMetricMonitorResourceConfig(teamName, projectName, monitorName, `
+				Config: testAccMetricMonitorResourceConfig(projectName, monitorName, `
 					aggregate = "count()"
 					dataset = "events"
 					event_types = ["default", "error"]
@@ -484,22 +481,25 @@ func TestAccMetricMonitorResource_dynamic(t *testing.T) {
 	})
 }
 
-func testAccMetricMonitorResourceConfig(teamName, projectName, name, extras string) string {
-	return testAccProjectResourceConfig(testAccProjectResourceConfigData{
-		TeamName:    teamName,
-		ProjectName: projectName,
-		Platform:    "go",
-	}) + fmt.Sprintf(`
-		resource "sentry_metric_monitor" "test" {
-			organization = data.sentry_organization.test.slug
-			project      = sentry_project.test.slug
-			name         = "%[1]s"
+func testAccMetricMonitorResourceConfig(projectName, name, extras string) string {
+	return fmt.Sprintf(`
+		resource "sentry_project" "test" {
+			organization = "%[1]s"
+			teams        = ["%[3]s"]
+			name         = "%[4]s"
+			platform     = "go"
+		}
 
-			%[2]s
+		resource "sentry_metric_monitor" "test" {
+			organization = "%[1]s"
+			project      = sentry_project.test.slug
+			name         = "%[5]s"
+
+			%[6]s
 
 			owner = {
-				team_id = sentry_team.test.internal_id
+				team_id = "%[2]s"
 			}
 		}
-	`, name, extras)
+	`, acctest.TestOrganization, acctest.TestTeam.Id, acctest.TestTeam.Slug, projectName, name, extras)
 }

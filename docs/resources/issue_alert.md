@@ -690,6 +690,7 @@ Required:
 Optional:
 
 - `settings` (Map of String)
+- `settings_labels` (Map of String) Optional mapping of setting keys to human-readable display labels. This is primarily used for `async-select` fields in the Sentry UI.
 
 Read-Only:
 

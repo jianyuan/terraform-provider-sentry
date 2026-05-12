@@ -11,7 +11,6 @@ import (
 )
 
 func TestAccCronMonitorDataSource_basic(t *testing.T) {
-	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	monitorName := acctest.RandomWithPrefix("tf-cron-monitor")
 	rn := "data.sentry_cron_monitor.test"
@@ -31,7 +30,7 @@ func TestAccCronMonitorDataSource_basic(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCronMonitorDataSourceConfig(teamName, projectName, monitorName, `
+				Config: testAccCronMonitorDataSourceConfig(projectName, monitorName, `
 					description = "cron monitor description"
 					checkin_margin_minutes = 1
 					failure_issue_threshold = 2
@@ -59,7 +58,7 @@ func TestAccCronMonitorDataSource_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCronMonitorDataSourceConfig(teamName, projectName, monitorName+"-updated", `
+				Config: testAccCronMonitorDataSourceConfig(projectName, monitorName+"-updated", `
 					enabled = true
 					checkin_margin_minutes = 10
 					failure_issue_threshold = 20
@@ -86,7 +85,7 @@ func TestAccCronMonitorDataSource_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCronMonitorDataSourceConfig(teamName, projectName, monitorName+"-updated", `
+				Config: testAccCronMonitorDataSourceConfig(projectName, monitorName+"-updated", `
 					enabled = false
 					checkin_margin_minutes = 10
 					failure_issue_threshold = 20
@@ -116,8 +115,8 @@ func TestAccCronMonitorDataSource_basic(t *testing.T) {
 	})
 }
 
-func testAccCronMonitorDataSourceConfig(teamName, projectName, name, extras string) string {
-	return testAccCronMonitorResourceConfig(teamName, projectName, name, extras) + `
+func testAccCronMonitorDataSourceConfig(projectName, name, extras string) string {
+	return testAccCronMonitorResourceConfig(projectName, name, extras) + `
 		data "sentry_cron_monitor" "test" {
 			organization = sentry_cron_monitor.test.organization
 			id           = sentry_cron_monitor.test.id

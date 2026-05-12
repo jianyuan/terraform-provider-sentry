@@ -11,7 +11,6 @@ import (
 )
 
 func TestAccAlertDataSource_basic(t *testing.T) {
-	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 	monitorName := acctest.RandomWithPrefix("tf-monitor")
 	alertName := acctest.RandomWithPrefix("tf-alert")
@@ -34,14 +33,14 @@ func TestAccAlertDataSource_basic(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccAlertDataSourceConfig(teamName, projectName, monitorName, alertName, opsgenieTeamName),
+				Config: testAccAlertDataSourceConfig(projectName, monitorName, alertName, opsgenieTeamName),
 				ConfigStateChecks: append(
 					checks,
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(alertName)),
 				),
 			},
 			{
-				Config: testAccAlertDataSourceConfig(teamName, projectName, monitorName, alertName+"-updated", opsgenieTeamName),
+				Config: testAccAlertDataSourceConfig(projectName, monitorName, alertName+"-updated", opsgenieTeamName),
 				ConfigStateChecks: append(
 					checks,
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(alertName+"-updated")),
@@ -51,8 +50,8 @@ func TestAccAlertDataSource_basic(t *testing.T) {
 	})
 }
 
-func testAccAlertDataSourceConfig(teamName, projectName, monitorName, name, opsgenieTeamName string) string {
-	return testAccAlertResourceConfig(teamName, projectName, monitorName, name, opsgenieTeamName) + `
+func testAccAlertDataSourceConfig(projectName, monitorName, name, opsgenieTeamName string) string {
+	return testAccAlertResourceConfig(projectName, monitorName, name, opsgenieTeamName) + `
 		data "sentry_alert" "test" {
 			organization = sentry_alert.test.organization
 			id           = sentry_alert.test.id

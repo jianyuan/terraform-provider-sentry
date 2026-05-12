@@ -142,9 +142,9 @@ func (r *TeamMemberResource) getEffectiveTeamRole(ctx context.Context, organizat
 
 	if teamRoleId, ok := lo.Find(member.TeamRoles, func(teamRole apiclient.TeamRole) bool {
 		return teamRole.TeamSlug == teamSlug
-	}); ok && teamRoleId.Role != nil {
+	}); ok && teamRoleId.Role.IsSpecified() && !teamRoleId.Role.IsNull() {
 		if teamRole, ok := lo.Find(org.TeamRoleList, func(teamRole apiclient.TeamRoleListItem) bool {
-			return teamRole.Id == *teamRoleId.Role
+			return teamRole.Id == teamRoleId.Role.MustGet()
 		}); ok {
 			return &teamRole.Id, nil
 		}
