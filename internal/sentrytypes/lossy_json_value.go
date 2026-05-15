@@ -147,7 +147,23 @@ func deepLossyEqual(v1, v2 interface{}, ignoreKeys []string) bool {
 			return false
 		}
 
-		if len(v1) > len(v2) {
+		// Count keys on each side excluding ignored keys. Ignored keys are allowed to
+		// appear on either side without affecting equality, so they must not contribute
+		// to the lossy length gate below.
+		v1Count := 0
+		for k := range v1 {
+			if !slices.Contains(ignoreKeys, k) {
+				v1Count++
+			}
+		}
+		v2Count := 0
+		for k := range v2 {
+			if !slices.Contains(ignoreKeys, k) {
+				v2Count++
+			}
+		}
+
+		if v1Count > v2Count {
 			return false
 		}
 

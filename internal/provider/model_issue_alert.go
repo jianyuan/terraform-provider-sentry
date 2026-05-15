@@ -1630,7 +1630,9 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 // stripLegacyActionDisplayFields removes API-injected display-only keys from the legacy
 // action JSON before storing in state. The Sentry GET endpoint unconditionally adds
 // "formFields" (live webhook schema) and "name" (generated label) to every action dict.
-// These fields are never stored server-side and cannot be stabilized in config.
+// These fields are never stored server-side and cannot be stabilized in config. The
+// nested "settings" array on sentry-app actions has the same problem with per-entry
+// "label" values, which the API returns on PUT but omits on GET.
 func stripLegacyActionDisplayFields(actionJSON []byte) ([]byte, error) {
 	dec := json.NewDecoder(bytes.NewReader(actionJSON))
 	dec.UseNumber()
@@ -1643,6 +1645,14 @@ func stripLegacyActionDisplayFields(actionJSON []byte) ([]byte, error) {
 	delete(action, "formFields")
 	delete(action, "name")
 	delete(action, "hasSchemaFormConfig")
+
+	if settings, ok := action["settings"].([]interface{}); ok {
+		for _, s := range settings {
+			if entry, ok := s.(map[string]interface{}); ok {
+				delete(entry, "label")
+			}
+		}
+	}
 
 	return json.Marshal(action)
 }
