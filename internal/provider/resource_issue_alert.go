@@ -341,7 +341,14 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 				MarkdownDescription: "**Deprecated** in favor of `actions_v2`. A list of actions that take place when all required conditions and filters for the rule are met. In JSON string format.",
 				DeprecationMessage:  "Use `actions_v2` instead.",
 				Optional:            true,
-				CustomType:          sentrytypes.LossyJsonType{},
+				// "label" is API-injected display text on sentry-app action settings
+				// entries — returned on PUT but omitted on GET. Ignoring it lets existing
+				// configs keep label keys while state stores the canonical (label-free)
+				// form. The ignore is recursive: any "label" key in the actions JSON is
+				// dropped from comparison.
+				CustomType: sentrytypes.LossyJsonType{
+					IgnoreKeys: []string{"label"},
+				},
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.MatchRoot("actions_v2")),
 				},
