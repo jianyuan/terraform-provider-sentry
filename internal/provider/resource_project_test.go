@@ -75,12 +75,18 @@ func TestAccProjectResource_basic(t *testing.T) {
 	teamName2 := acctest.RandomWithPrefix("tf-team")
 	teamName3 := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
+	projectSlug := acctest.RandomWithPrefix("tf-project")
+	projectSlugRenamed := acctest.RandomWithPrefix("tf-project")
 	rn := "sentry_project.test"
 
 	checkProperties := func(data testAccProjectResourceConfig_teamsData) func(apiclient.Project) error {
 		return func(project apiclient.Project) error {
 			if project.Name != data.ProjectName {
 				return fmt.Errorf("unexpected project name %v", project.Name)
+			}
+
+			if data.ProjectSlug != "" && project.Slug != data.ProjectSlug {
+				return fmt.Errorf("unexpected project slug %v", project.Slug)
 			}
 
 			if v, err := project.Platform.Get(); err == nil {
@@ -152,14 +158,19 @@ func TestAccProjectResource_basic(t *testing.T) {
 	}
 
 	configStateChecks := func(data testAccProjectResourceConfig_teamsData) []statecheck.StateCheck {
+		var projectSlugCheck knownvalue.Check = knownvalue.NotNull()
+		if data.ProjectSlug != "" {
+			projectSlugCheck = knownvalue.StringExact(data.ProjectSlug)
+		}
+
 		return []statecheck.StateCheck{
-			statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
+			statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), projectSlugCheck),
 			statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
 			statecheck.ExpectKnownValue(rn, tfjsonpath.New("teams"), knownvalue.SetExact(lo.Map(data.TeamIds, func(teamId int, _ int) knownvalue.Check {
 				return knownvalue.StringExact(data.AllTeamNames[teamId])
 			}))),
 			statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(data.ProjectName)),
-			statecheck.ExpectKnownValue(rn, tfjsonpath.New("slug"), knownvalue.NotNull()),
+			statecheck.ExpectKnownValue(rn, tfjsonpath.New("slug"), projectSlugCheck),
 			statecheck.ExpectKnownValue(rn, tfjsonpath.New("platform"), knownvalue.StringExact(data.Platform)),
 			statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_rules"), knownvalue.Null()),
 			statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_key"), knownvalue.Null()),
@@ -234,6 +245,7 @@ func TestAccProjectResource_basic(t *testing.T) {
 					AllTeamNames:     []string{teamName1, teamName2, teamName3},
 					TeamIds:          []int{0},
 					ProjectName:      projectName + "-renamed",
+					ProjectSlug:      projectSlug,
 					Platform:         "python",
 					ScrapeJavascript: ptr.Ptr(false),
 					VerifyTlsSsl:     ptr.Ptr(true),
@@ -242,6 +254,7 @@ func TestAccProjectResource_basic(t *testing.T) {
 					AllTeamNames:        []string{teamName1, teamName2, teamName3},
 					TeamIds:             []int{0},
 					ProjectName:         projectName + "-renamed",
+					ProjectSlug:         projectSlug,
 					Platform:            "python",
 					AllowedDomains:      ptr.Ptr([]string{"*"}),
 					ScrapeJavascript:    ptr.Ptr(false),
@@ -252,6 +265,7 @@ func TestAccProjectResource_basic(t *testing.T) {
 					AllTeamNames:        []string{teamName1, teamName2, teamName3},
 					TeamIds:             []int{0},
 					ProjectName:         projectName + "-renamed",
+					ProjectSlug:         projectSlug,
 					Platform:            "python",
 					AllowedDomains:      ptr.Ptr([]string{"*"}),
 					ScrapeJavascript:    ptr.Ptr(false),
@@ -264,6 +278,7 @@ func TestAccProjectResource_basic(t *testing.T) {
 					AllTeamNames:        []string{teamName1, teamName2, teamName3},
 					TeamIds:             []int{2},
 					ProjectName:         projectName + "-renamed-again",
+					ProjectSlug:         projectSlugRenamed,
 					Platform:            "python",
 					AllowedDomains:      ptr.Ptr([]string{"jianyuan.io", "*.jianyuan.io"}),
 					SecurityTokenHeader: ptr.Ptr("x-my-security-token"),
@@ -273,6 +288,7 @@ func TestAccProjectResource_basic(t *testing.T) {
 					AllTeamNames:        []string{teamName1, teamName2, teamName3},
 					TeamIds:             []int{2},
 					ProjectName:         projectName + "-renamed-again",
+					ProjectSlug:         projectSlugRenamed,
 					Platform:            "python",
 					AllowedDomains:      ptr.Ptr([]string{"jianyuan.io", "*.jianyuan.io"}),
 					ScrapeJavascript:    ptr.Ptr(false),
@@ -284,6 +300,7 @@ func TestAccProjectResource_basic(t *testing.T) {
 					AllTeamNames:        []string{teamName1, teamName2, teamName3},
 					TeamIds:             []int{2},
 					ProjectName:         projectName + "-renamed-again",
+					ProjectSlug:         projectSlugRenamed,
 					Platform:            "python",
 					AllowedDomains:      ptr.Ptr([]string{"jianyuan.io", "*.jianyuan.io"}),
 					ScrapeJavascript:    ptr.Ptr(false),
@@ -292,18 +309,20 @@ func TestAccProjectResource_basic(t *testing.T) {
 					HighlightTags:       ptr.Ptr([]string{"release", "environment"}),
 				}),
 			},
-			// Remove all optional attributes
+			// Remove all optional attributes except the slug, which should remain stable after rename.
 			{
 				Config: testAccProjectResourceConfig_teams(testAccProjectResourceConfig_teamsData{
 					AllTeamNames: []string{teamName1, teamName2, teamName3},
 					TeamIds:      []int{2},
 					ProjectName:  projectName + "-renamed-again",
+					ProjectSlug:  projectSlugRenamed,
 					Platform:     "python",
 				}),
 				Check: testAccCheckProject(rn, checkProperties(testAccProjectResourceConfig_teamsData{
 					AllTeamNames:        []string{teamName1, teamName2, teamName3},
 					TeamIds:             []int{2},
 					ProjectName:         projectName + "-renamed-again",
+					ProjectSlug:         projectSlugRenamed,
 					Platform:            "python",
 					AllowedDomains:      ptr.Ptr([]string{"jianyuan.io", "*.jianyuan.io"}),
 					ScrapeJavascript:    ptr.Ptr(false),
@@ -314,6 +333,7 @@ func TestAccProjectResource_basic(t *testing.T) {
 					AllTeamNames:        []string{teamName1, teamName2, teamName3},
 					TeamIds:             []int{2},
 					ProjectName:         projectName + "-renamed-again",
+					ProjectSlug:         projectSlugRenamed,
 					Platform:            "python",
 					AllowedDomains:      ptr.Ptr([]string{"jianyuan.io", "*.jianyuan.io"}),
 					ScrapeJavascript:    ptr.Ptr(false),
@@ -811,6 +831,9 @@ resource "sentry_project" "test" {
 	organization = sentry_team.test.organization
 	teams        = [sentry_team.test.slug]
 	name         = "{{ .ProjectName }}"
+	{{ if .ProjectSlug }}
+	slug         = "{{ .ProjectSlug }}"
+	{{ end }}
 	{{ if .Platform }}
 	platform = "{{ .Platform }}"
 	{{ end }}
@@ -821,6 +844,7 @@ resource "sentry_project" "test" {
 type testAccProjectResourceConfigData struct {
 	TeamName    string
 	ProjectName string
+	ProjectSlug string
 	Platform    string
 	Extras      string
 }
@@ -851,6 +875,9 @@ resource "sentry_project" "test" {
 		{{ end }}
 	]
 	name         = "{{ .ProjectName }}"
+	{{ if .ProjectSlug }}
+	slug         = "{{ .ProjectSlug }}"
+	{{ end }}
 	{{ if .Platform }}
 	platform     = "{{ .Platform }}"
 	{{ end }}
@@ -891,6 +918,7 @@ type testAccProjectResourceConfig_teamsData struct {
 	AllTeamNames        []string
 	TeamIds             []int
 	ProjectName         string
+	ProjectSlug         string
 	Platform            string
 	AllowedDomains      *[]string
 	ScrapeJavascript    *bool
