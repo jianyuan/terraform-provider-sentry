@@ -49,7 +49,6 @@ var IssueGroupCategories = []string{
 	"Mobile",
 	"Ai_Detected",
 	"Preprod",
-	"Instrumentation",
 	"Configuration",
 }
 
@@ -72,7 +71,6 @@ var IssueGroupCategoryNameToId = map[string]string{
 	"Mobile":            "15",
 	"Ai_Detected":       "16",
 	"Preprod":           "17",
-	"Instrumentation":   "18",
 	"Configuration":     "19",
 }
 
@@ -95,7 +93,6 @@ var IssueGroupCategoryIdToName = map[string]string{
 	"15": "Mobile",
 	"16": "Ai_Detected",
 	"17": "Preprod",
-	"18": "Instrumentation",
 	"19": "Configuration",
 }
 
