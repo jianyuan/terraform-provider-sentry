@@ -2266,7 +2266,8 @@ components:
         name:
           type: string
         team:
-          type: string
+          type: integer
+          x-go-type: json.Number
         channel:
           type: string
         channel_id:
