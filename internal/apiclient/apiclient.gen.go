@@ -2605,7 +2605,7 @@ type ProjectRuleActionMsTeamsNotifyService struct {
 	ChannelId *string                                 `json:"channel_id,omitempty"`
 	Id        ProjectRuleActionMsTeamsNotifyServiceId `json:"id"`
 	Name      *string                                 `json:"name,omitempty"`
-	Team      string                                  `json:"team"`
+	Team      json.Number                             `json:"team"`
 	Uuid      *string                                 `json:"uuid,omitempty"`
 }
 
