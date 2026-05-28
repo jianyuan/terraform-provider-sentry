@@ -1068,7 +1068,7 @@ type IssueAlertActionMsTeamsNotifyServiceModel struct {
 
 func (m *IssueAlertActionMsTeamsNotifyServiceModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionMsTeamsNotifyService) (diags diag.Diagnostics) {
 	m.Name = types.StringPointerValue(action.Name)
-	m.Team = types.StringValue(action.Team)
+	m.Team = types.StringValue(action.Team.String())
 	m.Channel = types.StringValue(action.Channel)
 	m.ChannelId = types.StringPointerValue(action.ChannelId)
 	return
@@ -1079,7 +1079,7 @@ func (m IssueAlertActionMsTeamsNotifyServiceModel) ToApi(ctx context.Context) (*
 	var v apiclient.ProjectRuleAction
 	err := v.FromProjectRuleActionMsTeamsNotifyService(apiclient.ProjectRuleActionMsTeamsNotifyService{
 		Name:      m.Name.ValueStringPointer(),
-		Team:      m.Team.ValueString(),
+		Team:      json.Number(m.Team.ValueString()),
 		Channel:   m.Channel.ValueString(),
 		ChannelId: m.ChannelId.ValueStringPointer(),
 	})
