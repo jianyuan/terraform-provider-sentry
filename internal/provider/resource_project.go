@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
@@ -214,7 +215,7 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 		MarkdownDescription: "Sentry Project resource.",
 
 		Attributes: map[string]schema.Attribute{
-			"id":           ResourceIdAttribute(),
+			"id":           ProjectResourceIdAttribute(),
 			"organization": ResourceOrganizationAttribute(),
 			"teams": schema.SetAttribute{
 				Description: "The slugs of the teams to create the project for.",
@@ -424,6 +425,54 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 			},
 		},
 	}
+}
+
+func ProjectResourceIdAttribute() schema.Attribute {
+	return schema.StringAttribute{
+		MarkdownDescription: "The ID of this resource.",
+		Computed:            true,
+		PlanModifiers: []planmodifier.String{
+			projectResourceIdUseStateUnlessSlugChangesModifier{},
+		},
+	}
+}
+
+type projectResourceIdUseStateUnlessSlugChangesModifier struct{}
+
+func (m projectResourceIdUseStateUnlessSlugChangesModifier) Description(_ context.Context) string {
+	return "Use the prior project ID unless the project slug is changing."
+}
+
+func (m projectResourceIdUseStateUnlessSlugChangesModifier) MarkdownDescription(_ context.Context) string {
+	return "Use the prior project ID unless the project slug is changing."
+}
+
+func (m projectResourceIdUseStateUnlessSlugChangesModifier) PlanModifyString(ctx context.Context, req planmodifier.StringRequest, resp *planmodifier.StringResponse) {
+	if req.State.Raw.IsNull() {
+		return
+	}
+
+	if !req.PlanValue.IsUnknown() {
+		return
+	}
+
+	if req.ConfigValue.IsUnknown() {
+		return
+	}
+
+	var planSlug, stateSlug types.String
+
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("slug"), &planSlug)...)
+	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("slug"), &stateSlug)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if planSlug.IsUnknown() || stateSlug.IsUnknown() || !planSlug.Equal(stateSlug) {
+		return
+	}
+
+	resp.PlanValue = req.StateValue
 }
 
 func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -799,8 +848,8 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	httpRespUpdate, err := r.apiClient.UpdateOrganizationProjectWithResponse(
 		ctx,
-		plan.Organization.ValueString(),
-		plan.Id.ValueString(),
+		state.Organization.ValueString(),
+		state.Id.ValueString(),
 		updateBody,
 	)
 	if err != nil {
@@ -865,7 +914,7 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 	httpRespRead, err := r.apiClient.GetOrganizationProjectWithResponse(
 		ctx,
 		plan.Organization.ValueString(),
-		plan.Id.ValueString(),
+		httpRespUpdate.JSON200.Slug,
 	)
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
