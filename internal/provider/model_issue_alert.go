@@ -1530,10 +1530,17 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 			}
 		}
 
-		conditions := lo.Map(alert.Conditions, func(condition apiclient.ProjectRuleCondition, _ int) IssueAlertConditionModel {
+		conditions := lo.FlatMap(alert.Conditions, func(condition apiclient.ProjectRuleCondition, _ int) []IssueAlertConditionModel {
 			var conditionModel IssueAlertConditionModel
-			diags.Append(conditionModel.Fill(ctx, condition)...)
-			return conditionModel
+			innerDiags := conditionModel.Fill(ctx, condition)
+			// The issue alert may return non-backward-compatible conditions. We'll just log a warning and skip it.
+			if innerDiags.HasError() {
+				for _, d := range innerDiags {
+					diags.AddWarning(fmt.Sprintf("Failed to convert condition %s", d.Summary()), d.Detail())
+				}
+				return nil
+			}
+			return []IssueAlertConditionModel{conditionModel}
 		})
 
 		if diags.HasError() {
@@ -1569,10 +1576,17 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 			}
 		}
 
-		filters := lo.Map(alert.Filters, func(filter apiclient.ProjectRuleFilter, _ int) IssueAlertFilterModel {
+		filters := lo.FlatMap(alert.Filters, func(filter apiclient.ProjectRuleFilter, _ int) []IssueAlertFilterModel {
 			var filterModel IssueAlertFilterModel
-			diags.Append(filterModel.Fill(ctx, filter)...)
-			return filterModel
+			innerDiags := filterModel.Fill(ctx, filter)
+			// The issue alert may return non-backward-compatible filters. We'll just log a warning and skip it.
+			if innerDiags.HasError() {
+				for _, d := range innerDiags {
+					diags.AddWarning(fmt.Sprintf("Failed to convert filter %s", d.Summary()), d.Detail())
+				}
+				return nil
+			}
+			return []IssueAlertFilterModel{filterModel}
 		})
 
 		if diags.HasError() {
@@ -1609,10 +1623,17 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 			}
 		}
 
-		actions := lo.Map(alert.Actions, func(action apiclient.ProjectRuleAction, _ int) IssueAlertActionModel {
+		actions := lo.FlatMap(alert.Actions, func(action apiclient.ProjectRuleAction, _ int) []IssueAlertActionModel {
 			var actionModel IssueAlertActionModel
-			diags.Append(actionModel.Fill(ctx, action)...)
-			return actionModel
+			innerDiags := actionModel.Fill(ctx, action)
+			// The issue alert may return non-backward-compatible actions. We'll just log a warning and skip it.
+			if innerDiags.HasError() {
+				for _, d := range innerDiags {
+					diags.AddWarning(fmt.Sprintf("Failed to convert action %s", d.Summary()), d.Detail())
+				}
+				return nil
+			}
+			return []IssueAlertActionModel{actionModel}
 		})
 
 		if diags.HasError() {
