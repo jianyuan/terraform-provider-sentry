@@ -470,6 +470,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				outMsteams.Config.TargetType = "specific"
 				outMsteams.Config.TargetIdentifier = inMsteams.TeamId.Get()
 				outMsteams.Config.TargetDisplay = inMsteams.ChannelName.Get()
+				outMsteams.Data = map[string]interface{}{}
 
 				if err := outAction.FromOrganizationWorkflowActionFilterActionMsTeams(outMsteams); err != nil {
 					diags.AddError("Failed to create action", err.Error())
