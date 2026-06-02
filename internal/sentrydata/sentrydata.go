@@ -1163,6 +1163,7 @@ var DataConditionTypes = []string{
 	"percent_sessions_count",
 	"percent_sessions_percent",
 	"every_event",
+	"seer_activity_trigger",
 }
 
 // https://github.com/getsentry/sentry/blob/master/src/sentry/workflow_engine/models/data_condition.py
