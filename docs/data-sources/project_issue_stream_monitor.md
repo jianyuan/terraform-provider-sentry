@@ -3,14 +3,11 @@
 page_title: "sentry_project_issue_stream_monitor Data Source - terraform-provider-sentry"
 subcategory: ""
 description: |-
-  ⚠️ This resource is currently in beta and may be subject to change. It is supported by New Monitors and Alerts https://docs.sentry.io/product/new-monitors-and-alerts/ and may not be viewable in the UI today.
   Retrieve a Project Issue Stream Monitor by project ID or slug. This is helpful for managing default monitors https://docs.sentry.io/product/new-monitors-and-alerts/monitors/#default-monitors that were created by Sentry outside of Terraform. You can then map these IDs into sentry_alert.monitor_ids to define alert rules ../resources/alert.md for those monitors.
   Note: When multiple monitors are found, the first attribute can be set to true to return the first monitor found. If first is not set to true and multiple monitors are found, the data source will return an error.
 ---
 
 # sentry_project_issue_stream_monitor (Data Source)
-
-⚠️ This resource is currently in beta and may be subject to change. It is supported by [New Monitors and Alerts](https://docs.sentry.io/product/new-monitors-and-alerts/) and may not be viewable in the UI today.
 
 Retrieve a Project Issue Stream Monitor by project ID or slug. This is helpful for managing [default monitors](https://docs.sentry.io/product/new-monitors-and-alerts/monitors/#default-monitors) that were created by Sentry outside of Terraform. You can then map these IDs into `sentry_alert.monitor_ids` to define [alert rules](../resources/alert.md) for those monitors.
 

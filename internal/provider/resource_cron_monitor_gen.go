@@ -38,7 +38,7 @@ func (r *CronMonitorResource) Metadata(ctx context.Context, req resource.Metadat
 
 func (r *CronMonitorResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "⚠️ This resource is currently in beta and may be subject to change. It is supported by [New Monitors and Alerts](https://docs.sentry.io/product/new-monitors-and-alerts/) and may not be viewable in the UI today.\n\nCreate a Cron Monitor for a Project.",
+		MarkdownDescription: "Create a Cron Monitor for a Project.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				MarkdownDescription: "The internal ID of this monitor.",

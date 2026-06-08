@@ -29,7 +29,7 @@ func (d *MetricMonitorDataSource) Metadata(ctx context.Context, req datasource.M
 
 func (d *MetricMonitorDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "⚠️ This resource is currently in beta and may be subject to change. It is supported by [New Monitors and Alerts](https://docs.sentry.io/product/new-monitors-and-alerts/) and may not be viewable in the UI today.\n\nRetrieve a Metric Monitor for a Project.",
+		MarkdownDescription: "Retrieve a Metric Monitor for a Project.",
 		Attributes: map[string]schema.Attribute{
 			"organization": schema.StringAttribute{
 				MarkdownDescription: "The organization slug or internal ID of the monitor.",

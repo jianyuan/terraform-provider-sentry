@@ -3,13 +3,10 @@
 page_title: "sentry_uptime_monitor Data Source - terraform-provider-sentry"
 subcategory: ""
 description: |-
-  ⚠️ This resource is currently in beta and may be subject to change. It is supported by New Monitors and Alerts https://docs.sentry.io/product/new-monitors-and-alerts/ and may not be viewable in the UI today.
   Retrieve an Uptime Monitor for a Project.
 ---
 
 # sentry_uptime_monitor (Data Source)
-
-⚠️ This resource is currently in beta and may be subject to change. It is supported by [New Monitors and Alerts](https://docs.sentry.io/product/new-monitors-and-alerts/) and may not be viewable in the UI today.
 
 Retrieve an Uptime Monitor for a Project.
 

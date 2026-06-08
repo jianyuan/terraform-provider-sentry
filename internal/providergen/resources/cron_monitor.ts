@@ -3,11 +3,7 @@ import type { Resource } from "../schema";
 
 export default {
   name: "cron_monitor",
-  description: dedent.withOptions({ trimWhitespace: true })`
-      ⚠️ This resource is currently in beta and may be subject to change. It is supported by [New Monitors and Alerts](https://docs.sentry.io/product/new-monitors-and-alerts/) and may not be viewable in the UI today.
-
-      Create a Cron Monitor for a Project.
-    `,
+  description: "Create a Cron Monitor for a Project.",
   api: {
     model: "ProjectMonitor",
     createMethod: "CreateProjectMonitor",
