@@ -45,7 +45,14 @@ func (m *MetricMonitorDataSourceModel) fill(ctx context.Context, data apiclient.
 		outCondition.Type.Set(inCondition.Type)
 
 		if inComparison, err := inCondition.Comparison.AsProjectMonitorConditionGroupConditionComparison1(); err == nil {
-			outCondition.Comparison.Set(inComparison)
+			if v, err := inComparison.Int64(); err == nil {
+				outCondition.Comparison.Set(v)
+			} else if v, err := inComparison.Float64(); err == nil {
+				outCondition.Comparison.Set(int64(v))
+			} else {
+				diags.AddError("Invalid comparison", "Unable to unmarshal comparison")
+				return
+			}
 		} else if inComparison, err := inCondition.Comparison.AsProjectMonitorConditionGroupConditionComparison2(); err == nil {
 			outCondition.ComparisonSensitivity.Set(inComparison.Sensitivity)
 			outCondition.ComparisonThresholdType.Set(sentrydata.AlertRuleThresholdTypeIdToName[inComparison.ThresholdType])
