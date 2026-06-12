@@ -2305,7 +2305,7 @@ type ProjectMonitorConditionGroupCondition struct {
 type ProjectMonitorConditionGroupConditionComparison0 = string
 
 // ProjectMonitorConditionGroupConditionComparison1 defines model for .
-type ProjectMonitorConditionGroupConditionComparison1 = int64
+type ProjectMonitorConditionGroupConditionComparison1 = json.Number
 
 // ProjectMonitorConditionGroupConditionComparison2 defines model for .
 type ProjectMonitorConditionGroupConditionComparison2 struct {

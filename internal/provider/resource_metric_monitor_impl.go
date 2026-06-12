@@ -2,8 +2,10 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"slices"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/jianyuan/go-utils/must"
@@ -72,7 +74,7 @@ func (r *MetricMonitorResource) getCreateJSONRequestBody(ctx context.Context, da
 				return nil, diags
 			}
 		} else {
-			if err := outComparison.FromProjectMonitorConditionGroupConditionComparison1(inCondition.Comparison.Get()); err != nil {
+			if err := outComparison.FromProjectMonitorConditionGroupConditionComparison1(json.Number(strconv.FormatInt(inCondition.Comparison.Get(), 10))); err != nil {
 				diags.AddError("Error marshalling JSON", err.Error())
 				return nil, diags
 			}
@@ -207,7 +209,14 @@ func (m *MetricMonitorResourceModel) Fill(ctx context.Context, data apiclient.Pr
 		outCondition.Type.Set(inCondition.Type)
 
 		if inComparison, err := inCondition.Comparison.AsProjectMonitorConditionGroupConditionComparison1(); err == nil {
-			outCondition.Comparison.Set(inComparison)
+			if v, err := inComparison.Int64(); err == nil {
+				outCondition.Comparison.Set(v)
+			} else if v, err := inComparison.Float64(); err == nil {
+				outCondition.Comparison.Set(int64(v))
+			} else {
+				diags.AddError("Invalid comparison", "Unable to unmarshal comparison")
+				return
+			}
 		} else if inComparison, err := inCondition.Comparison.AsProjectMonitorConditionGroupConditionComparison2(); err == nil {
 			outCondition.ComparisonSensitivity.Set(inComparison.Sensitivity)
 			outCondition.ComparisonThresholdType.Set(sentrydata.AlertRuleThresholdTypeIdToName[inComparison.ThresholdType])

@@ -2910,6 +2910,7 @@ components:
             - type: string
             - type: integer
               format: int64
+              x-go-type: json.Number
             - type: object
               required:
                 - seasonality
