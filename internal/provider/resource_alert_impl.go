@@ -108,8 +108,13 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				}
 
 			case inCondition.IssuePriorityDeescalating.IsKnown():
+				inIssuePriorityDeescalating := inCondition.IssuePriorityDeescalating.DiagsGet(ctx, diags)
+				if diags.HasError() {
+					return nil, diags
+				}
+
 				var outIssuePriorityDeescalating apiclient.OrganizationWorkflowActionFilterConditionIssuePriorityDeescalating
-				outIssuePriorityDeescalating.Comparison = true
+				outIssuePriorityDeescalating.Comparison = inIssuePriorityDeescalating.Comparison.Get()
 				outIssuePriorityDeescalating.ConditionResult = true
 
 				if err := outCondition.FromOrganizationWorkflowActionFilterConditionIssuePriorityDeescalating(outIssuePriorityDeescalating); err != nil {
@@ -896,6 +901,7 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 
 			case apiclient.OrganizationWorkflowActionFilterConditionIssuePriorityDeescalating:
 				var issuePriorityDeescalating AlertResourceModelActionFiltersItemConditionsItemIssuePriorityDeescalating
+				issuePriorityDeescalating.Comparison = supertypes.NewInt64Value(conditionValue.Comparison)
 
 				outCondition.IssuePriorityDeescalating = supertypes.NewSingleNestedObjectValueOf(ctx, &issuePriorityDeescalating)
 

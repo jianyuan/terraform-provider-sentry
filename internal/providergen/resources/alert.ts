@@ -232,7 +232,15 @@ export default {
               type: "single_nested",
               description: "De-escalation.",
               computedOptionalRequired: "optional",
-              attributes: [],
+              attributes: [
+                {
+                  name: "comparison",
+                  type: "int",
+                  description:
+                    "The minimum priority threshold required to trigger a de-escalation event. The rule triggers when the historical peak priority meets this threshold, and the current priority drops below it.",
+                  computedOptionalRequired: "required",
+                },
+              ],
             },
             {
               name: "issue_priority_greater_or_equal",
@@ -244,7 +252,7 @@ export default {
                   name: "comparison",
                   type: "int",
                   description:
-                    "he priority the issue must be for the alert to fire.",
+                    "The priority the issue must be for the alert to fire.",
                   computedOptionalRequired: "required",
                 },
               ],

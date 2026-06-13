@@ -681,7 +681,9 @@ resource "sentry_alert" "default" {
       logic_type = "all"
       conditions = [
         {
-          issue_priority_deescalating = {}
+          issue_priority_deescalating = {
+            comparison = 75
+          }
         }
       ]
       actions = [
@@ -1216,13 +1218,17 @@ Required:
 <a id="nestedatt--action_filters--conditions--issue_priority_deescalating"></a>
 ### Nested Schema for `action_filters.conditions.issue_priority_deescalating`
 
+Required:
+
+- `comparison` (Number) The minimum priority threshold required to trigger a de-escalation event. The rule triggers when the historical peak priority meets this threshold, and the current priority drops below it.
+
 
 <a id="nestedatt--action_filters--conditions--issue_priority_greater_or_equal"></a>
 ### Nested Schema for `action_filters.conditions.issue_priority_greater_or_equal`
 
 Required:
 
-- `comparison` (Number) he priority the issue must be for the alert to fire.
+- `comparison` (Number) The priority the issue must be for the alert to fire.
 
 
 <a id="nestedatt--action_filters--conditions--issue_type"></a>

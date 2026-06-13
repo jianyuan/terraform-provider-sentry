@@ -3274,7 +3274,8 @@ components:
           enum:
             - issue_priority_deescalating
         comparison:
-          type: boolean
+          type: integer
+          format: int64
         conditionResult:
           type: boolean
     OrganizationWorkflow_ActionFilter_Condition_IssuePriorityGreaterOrEqual:
