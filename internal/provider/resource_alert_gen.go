@@ -265,7 +265,13 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										Validators: []validator.Object{
 											objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("age_comparison"), path.MatchRelative().AtParent().AtName("assigned_to"), path.MatchRelative().AtParent().AtName("issue_category"), path.MatchRelative().AtParent().AtName("issue_occurrences"), path.MatchRelative().AtParent().AtName("issue_priority_greater_or_equal"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent"), path.MatchRelative().AtParent().AtName("event_attribute"), path.MatchRelative().AtParent().AtName("tagged_event"), path.MatchRelative().AtParent().AtName("latest_release"), path.MatchRelative().AtParent().AtName("latest_adopted_release"), path.MatchRelative().AtParent().AtName("level"), path.MatchRelative().AtParent().AtName("issue_type")),
 										},
-										Attributes: map[string]schema.Attribute{},
+										Attributes: map[string]schema.Attribute{
+											"comparison": schema.Int64Attribute{
+												MarkdownDescription: "The minimum priority threshold required to trigger a de-escalation event. The rule triggers when the historical peak priority meets this threshold, and the current priority drops below it.",
+												Required:            true,
+												CustomType:          supertypes.Int64Type{},
+											},
+										},
 									},
 									"issue_priority_greater_or_equal": schema.SingleNestedAttribute{
 										MarkdownDescription: "Issue priority.",
@@ -276,7 +282,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										},
 										Attributes: map[string]schema.Attribute{
 											"comparison": schema.Int64Attribute{
-												MarkdownDescription: "he priority the issue must be for the alert to fire.",
+												MarkdownDescription: "The priority the issue must be for the alert to fire.",
 												Required:            true,
 												CustomType:          supertypes.Int64Type{},
 											},
@@ -1300,6 +1306,7 @@ type AlertResourceModelActionFiltersItemConditionsItemIssueOccurrences struct {
 }
 
 type AlertResourceModelActionFiltersItemConditionsItemIssuePriorityDeescalating struct {
+	Comparison supertypes.Int64Value `tfsdk:"comparison"`
 }
 
 type AlertResourceModelActionFiltersItemConditionsItemIssuePriorityGreaterOrEqual struct {

@@ -6,7 +6,9 @@ resource "sentry_alert" "default" {
       logic_type = "all"
       conditions = [
         {
-          issue_priority_deescalating = {}
+          issue_priority_deescalating = {
+            comparison = 75
+          }
         }
       ]
       actions = [

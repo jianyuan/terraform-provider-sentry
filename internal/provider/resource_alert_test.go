@@ -319,7 +319,9 @@ func testAccAlertResourceConfig(projectName, monitorName, name, opsgenieTeamName
 							}
 						},
 						{
-							issue_priority_deescalating = {}
+							issue_priority_deescalating = {
+								comparison = 75
+							}
 						},
 						{
 							issue_priority_greater_or_equal = {

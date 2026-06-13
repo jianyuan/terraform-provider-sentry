@@ -2014,7 +2014,7 @@ type OrganizationWorkflowActionFilterConditionIssueOccurrencesType string
 
 // OrganizationWorkflowActionFilterConditionIssuePriorityDeescalating defines model for OrganizationWorkflow_ActionFilter_Condition_IssuePriorityDeescalating.
 type OrganizationWorkflowActionFilterConditionIssuePriorityDeescalating struct {
-	Comparison      bool                                                                   `json:"comparison"`
+	Comparison      int64                                                                  `json:"comparison"`
 	ConditionResult bool                                                                   `json:"conditionResult"`
 	Type            OrganizationWorkflowActionFilterConditionIssuePriorityDeescalatingType `json:"type"`
 }
