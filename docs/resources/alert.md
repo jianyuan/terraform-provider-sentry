@@ -878,13 +878,13 @@ resource "sentry_alert" "default" {
 - `monitor_ids` (Set of String) The IDs of the monitors to create alerts for.
 - `name` (String) The name of this alert.
 - `organization` (String) The organization slug or internal ID to create the alert for.
-- `trigger_conditions` (Attributes List) The conditions on which the alert will trigger. (see [below for nested schema](#nestedatt--trigger_conditions))
 
 ### Optional
 
 - `enabled` (Boolean) Whether the alert is enabled. Defaults to `true`.
 - `environment` (String) The environment to filter alerts to. Omit or set to `null` to apply to all environments.
 - `legacy_trigger_conditions` (List of String) ⚠️ The trigger condition types listed here are not natively supported by this provider and may be deprecated by Sentry in a future API version. Trigger condition types present on this alert that are not representable in `trigger_conditions` (e.g. `new_high_priority_issue`, `existing_high_priority_issue`, `issue_resolution_change`). When omitted from config these will be removed on the next apply. Set explicitly to preserve them.
+- `trigger_conditions` (Attributes List) The conditions on which the alert will trigger. (see [below for nested schema](#nestedatt--trigger_conditions))
 
 ### Read-Only
 
