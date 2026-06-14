@@ -700,6 +700,11 @@ func (r *AlertResource) getCreateJSONRequestBody(ctx context.Context, data Alert
 		return nil, diags
 	}
 
+	triggerConditions := append(
+		[]apiclient.OrganizationWorkflowTriggerCondition{},
+		tfutils.MergeDiagnostics(r.getTriggerConditions(ctx, data))(&diags)...,
+	)
+
 	req := apiclient.CreateOrganizationWorkflowJSONRequestBody{
 		Name:        data.Name.Get(),
 		Enabled:     data.Enabled.Get(),
@@ -710,7 +715,7 @@ func (r *AlertResource) getCreateJSONRequestBody(ctx context.Context, data Alert
 		DetectorIds: monitorIds,
 		Triggers: apiclient.OrganizationWorkflowTrigger{
 			LogicType:  apiclient.OrganizationWorkflowTriggerLogicTypeAnyShort,
-			Conditions: tfutils.MergeDiagnostics(r.getTriggerConditions(ctx, data))(&diags),
+			Conditions: triggerConditions,
 		},
 		ActionFilters: tfutils.MergeDiagnostics(r.getActionFilters(ctx, data))(&diags),
 	}
@@ -726,6 +731,11 @@ func (r *AlertResource) getUpdateJSONRequestBody(ctx context.Context, data Alert
 		return nil, diags
 	}
 
+	triggerConditions := append(
+		[]apiclient.OrganizationWorkflowTriggerCondition{},
+		tfutils.MergeDiagnostics(r.getTriggerConditions(ctx, data))(&diags)...,
+	)
+
 	req := apiclient.UpdateOrganizationWorkflowJSONRequestBody{
 		Id:          data.Id.Get(),
 		Name:        data.Name.Get(),
@@ -737,7 +747,7 @@ func (r *AlertResource) getUpdateJSONRequestBody(ctx context.Context, data Alert
 		DetectorIds: monitorIds,
 		Triggers: apiclient.OrganizationWorkflowTrigger{
 			LogicType:  apiclient.OrganizationWorkflowTriggerLogicTypeAnyShort,
-			Conditions: tfutils.MergeDiagnostics(r.getTriggerConditions(ctx, data))(&diags),
+			Conditions: triggerConditions,
 		},
 		ActionFilters: tfutils.MergeDiagnostics(r.getActionFilters(ctx, data))(&diags),
 	}
@@ -771,7 +781,7 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 		return aId - bId
 	})
 
-	var triggerConditions []AlertResourceModelTriggerConditionsItem
+	triggerConditions := []AlertResourceModelTriggerConditionsItem{}
 	var legacyTriggerConditions []string
 	for _, triggerCondition := range triggers.Conditions {
 		outTriggerCondition := AlertResourceModelTriggerConditionsItem{

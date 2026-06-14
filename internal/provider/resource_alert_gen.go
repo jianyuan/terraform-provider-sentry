@@ -88,11 +88,9 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 			},
 			"trigger_conditions": schema.ListNestedAttribute{
 				MarkdownDescription: "The conditions on which the alert will trigger.",
-				Required:            true,
+				Optional:            true,
+				Computed:            true,
 				CustomType:          supertypes.NewListNestedObjectTypeOf[AlertResourceModelTriggerConditionsItem](ctx),
-				Validators: []validator.List{
-					listvalidator.SizeAtLeast(1),
-				},
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"first_seen_event": schema.SingleNestedAttribute{

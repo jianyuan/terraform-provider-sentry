@@ -80,8 +80,7 @@ export default {
       name: "trigger_conditions",
       type: "list_nested",
       description: "The conditions on which the alert will trigger.",
-      computedOptionalRequired: "required",
-      validators: ["listvalidator.SizeAtLeast(1)"],
+      computedOptionalRequired: "computed_optional",
       attributes: withExactlyOneAttribute([
         {
           name: "first_seen_event",
