@@ -75,12 +75,12 @@ func TestAccMetricMonitorDataSource_threshold(t *testing.T) {
 						"conditions": knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
 								"type":             knownvalue.StringExact("gt"),
-								"comparison":       knownvalue.Int64Exact(100),
+								"comparison":       knownvalue.Float64Exact(100),
 								"condition_result": knownvalue.Int64Exact(75),
 							}),
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
 								"type":             knownvalue.StringExact("lte"),
-								"comparison":       knownvalue.Int64Exact(50),
+								"comparison":       knownvalue.Float64Exact(50),
 								"condition_result": knownvalue.Int64Exact(0),
 							}),
 						}),
@@ -136,12 +136,12 @@ func TestAccMetricMonitorDataSource_threshold(t *testing.T) {
 						"conditions": knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
 								"type":             knownvalue.StringExact("gt"),
-								"comparison":       knownvalue.Int64Exact(100),
+								"comparison":       knownvalue.Float64Exact(100),
 								"condition_result": knownvalue.Int64Exact(75),
 							}),
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
 								"type":             knownvalue.StringExact("lte"),
-								"comparison":       knownvalue.Int64Exact(50),
+								"comparison":       knownvalue.Float64Exact(50),
 								"condition_result": knownvalue.Int64Exact(0),
 							}),
 						}),

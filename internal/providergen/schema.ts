@@ -7,6 +7,7 @@ export type ComputedOptionalRequired =
 export type Attribute =
   | StringAttribute
   | IntAttribute
+  | Float64Attribute
   | BoolAttribute
   | ListAttribute
   | ListNestedAttribute
@@ -44,6 +45,10 @@ export interface StringAttribute extends BaseAttribute {
 
 export interface IntAttribute extends BaseAttribute {
   type: "int";
+}
+
+export interface Float64Attribute extends BaseAttribute {
+  type: "float64";
 }
 
 export interface BoolAttribute extends BaseAttribute {

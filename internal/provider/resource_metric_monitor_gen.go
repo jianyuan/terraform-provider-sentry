@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
@@ -215,13 +216,12 @@ func (r *MetricMonitorResource) Schema(ctx context.Context, req resource.SchemaR
 									},
 									sentrydata.DataConditionTypes,
 								),
-								"comparison": schema.Int64Attribute{
+								"comparison": schema.Float64Attribute{
 									MarkdownDescription: "The value to compare against. Only required for types other than `anomaly_detection`.",
 									Optional:            true,
-									CustomType:          supertypes.Int64Type{},
-									Validators: []validator.Int64{
-										fint64validator.NullIfAttributeIsOneOf(path.MatchRelative().AtParent().AtName("type"), []attr.Value{supertypes.NewStringValue("anomaly_detection")}),
-										fint64validator.RequireIfAttributeIsOneOf(path.MatchRelative().AtParent().AtName("type"), []attr.Value{supertypes.NewStringValue("eq"), supertypes.NewStringValue("gte"), supertypes.NewStringValue("gt"), supertypes.NewStringValue("lte"), supertypes.NewStringValue("lt"), supertypes.NewStringValue("ne")}),
+									Validators: []validator.Float64{
+										tfutils.NullIfAttributeIsOneOfFloat64(path.MatchRelative().AtParent().AtName("type"), []attr.Value{supertypes.NewStringValue("anomaly_detection")}),
+										tfutils.RequireIfAttributeIsOneOfFloat64(path.MatchRelative().AtParent().AtName("type"), []attr.Value{supertypes.NewStringValue("eq"), supertypes.NewStringValue("gte"), supertypes.NewStringValue("gt"), supertypes.NewStringValue("lte"), supertypes.NewStringValue("lt"), supertypes.NewStringValue("ne")}),
 									},
 								},
 								"comparison_sensitivity": tfutils.WithEnumStringAttribute(
@@ -435,7 +435,7 @@ type MetricMonitorResourceModelConditionGroup struct {
 
 type MetricMonitorResourceModelConditionGroupConditionsItem struct {
 	Type                    supertypes.StringValue `tfsdk:"type"`
-	Comparison              supertypes.Int64Value  `tfsdk:"comparison"`
+	Comparison              types.Float64          `tfsdk:"comparison"`
 	ComparisonSensitivity   supertypes.StringValue `tfsdk:"comparison_sensitivity"`
 	ComparisonThresholdType supertypes.StringValue `tfsdk:"comparison_threshold_type"`
 	ConditionResult         supertypes.Int64Value  `tfsdk:"condition_result"`
