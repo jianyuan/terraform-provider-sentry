@@ -244,6 +244,7 @@ var DashboardWidgetDisplayTypes = []string{
 	"server_tree",
 	"text",
 	"agents_traces_table",
+	"heatmap",
 }
 
 // https://github.com/getsentry/sentry/blob/master/src/sentry/models/project.py
