@@ -210,13 +210,13 @@ export default {
             },
             {
               name: "comparison",
-              type: "int",
+              type: "float64",
               description:
                 "The value to compare against. Only required for types other than `anomaly_detection`.",
               computedOptionalRequired: "optional",
               validators: [
-                `fint64validator.NullIfAttributeIsOneOf(path.MatchRelative().AtParent().AtName("type"), []attr.Value{supertypes.NewStringValue("anomaly_detection")})`,
-                `fint64validator.RequireIfAttributeIsOneOf(path.MatchRelative().AtParent().AtName("type"), []attr.Value{supertypes.NewStringValue("eq"), supertypes.NewStringValue("gte"), supertypes.NewStringValue("gt"), supertypes.NewStringValue("lte"), supertypes.NewStringValue("lt"), supertypes.NewStringValue("ne")})`,
+                `tfutils.NullIfAttributeIsOneOfFloat64(path.MatchRelative().AtParent().AtName("type"), []attr.Value{supertypes.NewStringValue("anomaly_detection")})`,
+                `tfutils.RequireIfAttributeIsOneOfFloat64(path.MatchRelative().AtParent().AtName("type"), []attr.Value{supertypes.NewStringValue("eq"), supertypes.NewStringValue("gte"), supertypes.NewStringValue("gt"), supertypes.NewStringValue("lte"), supertypes.NewStringValue("lt"), supertypes.NewStringValue("ne")})`,
               ],
             },
             {

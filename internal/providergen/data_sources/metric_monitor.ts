@@ -188,7 +188,7 @@ export default {
             },
             {
               name: "comparison",
-              type: "int",
+              type: "float64",
               description:
                 "The value to compare against. Only available for types other than `anomaly_detection`.",
               computedOptionalRequired: "computed",

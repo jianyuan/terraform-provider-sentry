@@ -108,6 +108,32 @@ function generateTerraformAttribute({
       }
       return parts.join("\n");
     })
+    .with({ type: "float64" }, (attribute) => {
+      const parts: string[] = [];
+      parts.push("schema.Float64Attribute{");
+      parts.push(...commonParts);
+      // Plain basetypes here, not supertypes.Float64Value: the supertypes wrapper inherits
+      // basetypes' Float64SemanticEquals without overriding it, so its type assertion rejects
+      // the wrapper on every plan (hashicorp/terraform-plugin-framework#786). Float64 is the
+      // only type this hits — Int64/String/Bool have no SemanticEquals to inherit.
+      if (attribute.customType) {
+        parts.push(`CustomType: ${attribute.customType.type},`);
+      }
+      if (attribute.validators) {
+        parts.push("Validators: []validator.Float64{");
+        parts.push(...attribute.validators.map((validator) => `${validator},`));
+        parts.push("},");
+      }
+      if (attribute.planModifiers) {
+        parts.push("PlanModifiers: []planmodifier.Float64{");
+        parts.push(
+          ...attribute.planModifiers.map((modifier) => `${modifier},`),
+        );
+        parts.push("},");
+      }
+      parts.push("}");
+      return parts.join("\n");
+    })
     .with({ type: "bool" }, () => {
       const parts: string[] = [];
       parts.push("schema.BoolAttribute{");
@@ -315,6 +341,7 @@ function generateTerraformValueType({
     )
     .with({ type: "string" }, () => "supertypes.StringValue")
     .with({ type: "int" }, () => "supertypes.Int64Value")
+    .with({ type: "float64" }, () => "types.Float64")
     .with({ type: "bool" }, () => "supertypes.BoolValue")
     .with(
       { type: "list", elementType: "string" },
@@ -360,6 +387,7 @@ function generateTerraformToPrimitive({
   return match(attribute)
     .with({ type: "string" }, () => `${srcVarName}.ValueString()`)
     .with({ type: "int" }, () => `${srcVarName}.ValueInt64()`)
+    .with({ type: "float64" }, () => `${srcVarName}.ValueFloat64()`)
     .with({ type: "bool" }, () => `${srcVarName}.ValueBool()`)
     .exhaustive();
 }
@@ -410,6 +438,10 @@ function generatePrimitiveToTerraform({
     .with(
       { type: "int" },
       () => `${destVarName} = supertypes.NewInt64Value(${srcVarName})`,
+    )
+    .with(
+      { type: "float64" },
+      () => `${destVarName} = types.Float64Value(${srcVarName})`,
     )
     .with(
       { type: "bool" },

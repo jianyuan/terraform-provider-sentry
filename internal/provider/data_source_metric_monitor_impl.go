@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 )
@@ -45,10 +46,8 @@ func (m *MetricMonitorDataSourceModel) fill(ctx context.Context, data apiclient.
 		outCondition.Type.Set(inCondition.Type)
 
 		if inComparison, err := inCondition.Comparison.AsProjectMonitorConditionGroupConditionComparison1(); err == nil {
-			if v, err := inComparison.Int64(); err == nil {
-				outCondition.Comparison.Set(v)
-			} else if v, err := inComparison.Float64(); err == nil {
-				outCondition.Comparison.Set(int64(v))
+			if v, err := inComparison.Float64(); err == nil {
+				outCondition.Comparison = types.Float64Value(v)
 			} else {
 				diags.AddError("Invalid comparison", "Unable to unmarshal comparison")
 				return

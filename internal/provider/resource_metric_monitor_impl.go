@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-utils/must"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
@@ -74,7 +75,8 @@ func (r *MetricMonitorResource) getCreateJSONRequestBody(ctx context.Context, da
 				return nil, diags
 			}
 		} else {
-			if err := outComparison.FromProjectMonitorConditionGroupConditionComparison1(json.Number(strconv.FormatInt(inCondition.Comparison.Get(), 10))); err != nil {
+			// Format as a JSON number so integers stay integer-shaped (100, not 100.0).
+			if err := outComparison.FromProjectMonitorConditionGroupConditionComparison1(json.Number(strconv.FormatFloat(inCondition.Comparison.ValueFloat64(), 'f', -1, 64))); err != nil {
 				diags.AddError("Error marshalling JSON", err.Error())
 				return nil, diags
 			}
@@ -209,10 +211,8 @@ func (m *MetricMonitorResourceModel) Fill(ctx context.Context, data apiclient.Pr
 		outCondition.Type.Set(inCondition.Type)
 
 		if inComparison, err := inCondition.Comparison.AsProjectMonitorConditionGroupConditionComparison1(); err == nil {
-			if v, err := inComparison.Int64(); err == nil {
-				outCondition.Comparison.Set(v)
-			} else if v, err := inComparison.Float64(); err == nil {
-				outCondition.Comparison.Set(int64(v))
+			if v, err := inComparison.Float64(); err == nil {
+				outCondition.Comparison = types.Float64Value(v)
 			} else {
 				diags.AddError("Invalid comparison", "Unable to unmarshal comparison")
 				return
