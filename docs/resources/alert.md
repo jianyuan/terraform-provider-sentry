@@ -919,6 +919,7 @@ Optional:
 - `sentry_app` (Attributes) Trigger an action in a Sentry App (e.g. Rootly). (see [below for nested schema](#nestedatt--action_filters--actions--sentry_app))
 - `slack` (Attributes) Notify on Slack. (see [below for nested schema](#nestedatt--action_filters--actions--slack))
 - `vsts` (Attributes) Notify on Azure DevOps. (see [below for nested schema](#nestedatt--action_filters--actions--vsts))
+- `webhook` (Attributes) Send a notification via a legacy integration service (e.g. an internal integration's webhook). This is the successor to the `notify_event_service` action on the legacy `sentry_issue_alert` resource. (see [below for nested schema](#nestedatt--action_filters--actions--webhook))
 
 <a id="nestedatt--action_filters--actions--discord"></a>
 ### Nested Schema for `action_filters.actions.discord`
@@ -1064,6 +1065,14 @@ Required:
 - `integration_id` (String) The ID of the OpsGenie integration.
 - `project` (String) The ID of the Azure DevOps project.
 - `work_item_type` (String) The type of work item to create.
+
+
+<a id="nestedatt--action_filters--actions--webhook"></a>
+### Nested Schema for `action_filters.actions.webhook`
+
+Required:
+
+- `service` (String) The slug of the integration service to notify. Use the special value `webhooks` to notify all legacy plugin webhooks.
 
 
 
