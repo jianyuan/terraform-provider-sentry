@@ -34,7 +34,7 @@ func init() {
 				}
 
 				for _, workflow := range *listHttpResp.JSON200 {
-					if !strings.HasPrefix(workflow.Name, "tf-alert") {
+					if !strings.HasPrefix(workflow.Name, "tf-alert") && workflow.Name != "Send a notification for high priority issues" {
 						continue
 					}
 
