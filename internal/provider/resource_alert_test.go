@@ -522,6 +522,11 @@ func testAccAlertResourceConfig(projectName, monitorName, name, opsgenieTeamName
 								labels         = ["bug"]
 							}
 						},
+						{
+							webhook = {
+								service = "terraform-provider-sentry-ea4fdd"
+							}
+						},
 					]
 				}
 			]

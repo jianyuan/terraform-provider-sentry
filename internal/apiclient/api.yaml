@@ -3577,6 +3577,7 @@ components:
         - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_JiraServer"
         - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_GitHub"
         - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_SentryApp"
+        - $ref: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Webhook"
       discriminator:
         propertyName: type
         mapping:
@@ -3592,6 +3593,7 @@ components:
           jira_server: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_JiraServer"
           github: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_GitHub"
           sentry_app: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_SentryApp"
+          webhook: "#/components/schemas/OrganizationWorkflow_ActionFilter_Action_Webhook"
     OrganizationWorkflow_ActionFilter_Action_Email:
       type: object
       required:
@@ -4011,6 +4013,26 @@ components:
             targetIdentifier:
               type: string
             targetDisplay:
+              type: string
+    OrganizationWorkflow_ActionFilter_Action_Webhook:
+      type: object
+      required:
+        - type
+        - config
+        - data
+      properties:
+        type:
+          type: string
+          enum:
+            - webhook
+        data:
+          type: object
+        config:
+          type: object
+          required:
+            - targetIdentifier
+          properties:
+            targetIdentifier:
               type: string
     OrganizationWorkflow_ActionFilter_Condition_IssueType:
       type: object

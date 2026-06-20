@@ -621,6 +621,21 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 					return nil, diags
 				}
 
+			case inAction.Webhook.IsKnown():
+				inWebhook := inAction.Webhook.DiagsGet(ctx, diags)
+				if diags.HasError() {
+					return nil, diags
+				}
+
+				var outWebhook apiclient.OrganizationWorkflowActionFilterActionWebhook
+				outWebhook.Data = map[string]any{}
+				outWebhook.Config.TargetIdentifier = inWebhook.Service.Get()
+
+				if err := outAction.FromOrganizationWorkflowActionFilterActionWebhook(outWebhook); err != nil {
+					diags.AddError("Failed to create action", err.Error())
+					return nil, diags
+				}
+
 			}
 
 			outActions = append(outActions, outAction)
@@ -1071,6 +1086,7 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 				JiraServer: supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemActionsItemJiraServer](ctx),
 				Github:     supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemActionsItemGithub](ctx),
 				SentryApp:  supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemActionsItemSentryApp](ctx),
+				Webhook:    supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelActionFiltersItemActionsItemWebhook](ctx),
 			}
 
 			actionValue, err := action.ValueByDiscriminator()
@@ -1201,6 +1217,12 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 				}
 
 				outAction.SentryApp = supertypes.NewSingleNestedObjectValueOf(ctx, &outSentryApp)
+
+			case apiclient.OrganizationWorkflowActionFilterActionWebhook:
+				var outWebhook AlertResourceModelActionFiltersItemActionsItemWebhook
+				outWebhook.Service = supertypes.NewStringValue(actionValue.Config.TargetIdentifier)
+
+				outAction.Webhook = supertypes.NewSingleNestedObjectValueOf(ctx, &outWebhook)
 			}
 
 			if diags.HasError() {

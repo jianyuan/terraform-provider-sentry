@@ -449,6 +449,21 @@ func (e OrganizationWorkflowActionFilterActionVstsType) Valid() bool {
 	}
 }
 
+// Defines values for OrganizationWorkflowActionFilterActionWebhookType.
+const (
+	Webhook OrganizationWorkflowActionFilterActionWebhookType = "webhook"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationWorkflowActionFilterActionWebhookType enum.
+func (e OrganizationWorkflowActionFilterActionWebhookType) Valid() bool {
+	switch e {
+	case Webhook:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for OrganizationWorkflowActionFilterConditionAgeComparisonComparisonComparisonType.
 const (
 	Newer OrganizationWorkflowActionFilterConditionAgeComparisonComparisonComparisonType = "newer"
@@ -1869,6 +1884,18 @@ type OrganizationWorkflowActionFilterActionVstsConfigTargetType string
 
 // OrganizationWorkflowActionFilterActionVstsType defines model for OrganizationWorkflowActionFilterActionVsts.Type.
 type OrganizationWorkflowActionFilterActionVstsType string
+
+// OrganizationWorkflowActionFilterActionWebhook defines model for OrganizationWorkflow_ActionFilter_Action_Webhook.
+type OrganizationWorkflowActionFilterActionWebhook struct {
+	Config struct {
+		TargetIdentifier string `json:"targetIdentifier"`
+	} `json:"config"`
+	Data map[string]interface{}                            `json:"data"`
+	Type OrganizationWorkflowActionFilterActionWebhookType `json:"type"`
+}
+
+// OrganizationWorkflowActionFilterActionWebhookType defines model for OrganizationWorkflowActionFilterActionWebhook.Type.
+type OrganizationWorkflowActionFilterActionWebhookType string
 
 // OrganizationWorkflowActionFilterCondition defines model for OrganizationWorkflow_ActionFilter_Condition.
 type OrganizationWorkflowActionFilterCondition struct {
@@ -3929,6 +3956,34 @@ func (t *OrganizationWorkflowActionFilterAction) MergeOrganizationWorkflowAction
 	return err
 }
 
+// AsOrganizationWorkflowActionFilterActionWebhook returns the union data inside the OrganizationWorkflowActionFilterAction as a OrganizationWorkflowActionFilterActionWebhook
+func (t OrganizationWorkflowActionFilterAction) AsOrganizationWorkflowActionFilterActionWebhook() (OrganizationWorkflowActionFilterActionWebhook, error) {
+	var body OrganizationWorkflowActionFilterActionWebhook
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowActionFilterActionWebhook overwrites any union data inside the OrganizationWorkflowActionFilterAction as the provided OrganizationWorkflowActionFilterActionWebhook
+func (t *OrganizationWorkflowActionFilterAction) FromOrganizationWorkflowActionFilterActionWebhook(v OrganizationWorkflowActionFilterActionWebhook) error {
+	v.Type = "webhook"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowActionFilterActionWebhook performs a merge with any union data inside the OrganizationWorkflowActionFilterAction, using the provided OrganizationWorkflowActionFilterActionWebhook
+func (t *OrganizationWorkflowActionFilterAction) MergeOrganizationWorkflowActionFilterActionWebhook(v OrganizationWorkflowActionFilterActionWebhook) error {
+	v.Type = "webhook"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
 func (t OrganizationWorkflowActionFilterAction) Discriminator() (string, error) {
 	var discriminator struct {
 		Discriminator string `json:"type"`
@@ -3967,6 +4022,8 @@ func (t OrganizationWorkflowActionFilterAction) ValueByDiscriminator() (interfac
 		return t.AsOrganizationWorkflowActionFilterActionSlack()
 	case "vsts":
 		return t.AsOrganizationWorkflowActionFilterActionVsts()
+	case "webhook":
+		return t.AsOrganizationWorkflowActionFilterActionWebhook()
 	default:
 		return nil, errors.New("unknown discriminator value: " + discriminator)
 	}

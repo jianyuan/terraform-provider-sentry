@@ -1071,6 +1071,22 @@ export default {
                 },
               ],
             },
+            {
+              name: "webhook",
+              type: "single_nested",
+              description:
+                "Send a notification via a legacy integration service (e.g. an internal integration's webhook). This is the successor to the `notify_event_service` action on the legacy `sentry_issue_alert` resource.",
+              computedOptionalRequired: "optional",
+              attributes: [
+                {
+                  name: "service",
+                  type: "string",
+                  description:
+                    "The slug of the integration service to notify. Use the special value `webhooks` to notify all legacy plugin webhooks.",
+                  computedOptionalRequired: "required",
+                },
+              ],
+            },
           ]),
         },
       ],
