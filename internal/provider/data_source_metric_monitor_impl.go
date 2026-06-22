@@ -107,8 +107,7 @@ func (m *MetricMonitorDataSourceModel) fill(ctx context.Context, data apiclient.
 	if v, err := dataSource.QueryObj.SnubaQuery.QueryType.Get(); err == nil {
 		m.QueryType.Set(sentrydata.SnubaQueryTypeIdToName[v])
 	} else {
-		// BUG?
-		m.QueryType.Set(sentrydata.SnubaQueryTypeIdToName[0])
+		m.QueryType.SetNull()
 	}
 	if v, err := dataSource.QueryObj.SnubaQuery.TimeWindow.Get(); err == nil {
 		m.TimeWindowSeconds.Set(v)
