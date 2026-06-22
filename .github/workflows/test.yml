@@ -4,13 +4,10 @@ name: Tests
 # This GitHub action runs your tests for each pull request and push.
 # Optionally, you can turn it on using a schedule for regular testing.
 on:
-  pull_request_target:
-    types: [opened, synchronize]
+  pull_request:
     paths-ignore:
       - "README.md"
   push:
-    branches:
-      - main
     paths-ignore:
       - "README.md"
   # We test at a regular interval to ensure we are alerted to something breaking due
@@ -32,22 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - id: check-access
-        if: github.event_name == 'pull_request_target'
-        uses: actions-cool/check-user-permission@v2
-        with:
-          require: write
-          username: ${{ github.triggering_actor }}
-      - name: Check User Permission
-        if: github.event_name == 'pull_request_target' && steps.check-access.outputs.require-result != 'true'
-        run: |
-          echo "User ${{ github.triggering_actor }} lacks the necessary rights on this repository."
-          echo "Their current access level: ${{ steps.checkAccess.outputs.user-permission }}"
-          echo "Initial trigger for this job: ${{ github.actor }}"
-          exit 1
       - uses: actions/checkout@v7
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-go@v6
         with:
           go-version-file: "go.mod"
@@ -60,24 +42,10 @@ jobs:
           version: latest
 
   generate:
+    name: Generate
     runs-on: ubuntu-latest
     steps:
-      - id: check-access
-        if: github.event_name == 'pull_request_target'
-        uses: actions-cool/check-user-permission@v2
-        with:
-          require: write
-          username: ${{ github.triggering_actor }}
-      - name: Check User Permission
-        if: github.event_name == 'pull_request_target' && steps.check-access.outputs.require-result != 'true'
-        run: |
-          echo "User ${{ github.triggering_actor }} lacks the necessary rights on this repository."
-          echo "Their current access level: ${{ steps.checkAccess.outputs.user-permission }}"
-          echo "Initial trigger for this job: ${{ github.actor }}"
-          exit 1
       - uses: actions/checkout@v7
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-go@v6
         with:
           go-version-file: "go.mod"
@@ -98,30 +66,16 @@ jobs:
     name: Terraform Provider Acceptance Tests
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 30
+    environment: test
     strategy:
       fail-fast: false
       max-parallel: 1
       matrix:
         terraform:
-          - "1.13.*"
+          - "1.15.*"
     steps:
-      - id: check-access
-        if: github.event_name == 'pull_request_target'
-        uses: actions-cool/check-user-permission@v2
-        with:
-          require: write
-          username: ${{ github.triggering_actor }}
-      - name: Check User Permission
-        if: github.event_name == 'pull_request_target' && steps.check-access.outputs.require-result != 'true'
-        run: |
-          echo "User ${{ github.triggering_actor }} lacks the necessary rights on this repository."
-          echo "Their current access level: ${{ steps.checkAccess.outputs.user-permission }}"
-          echo "Initial trigger for this job: ${{ github.actor }}"
-          exit 1
       - uses: actions/checkout@v7
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-go@v6
         with:
           go-version-file: "go.mod"
