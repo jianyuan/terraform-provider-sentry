@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -24,6 +25,7 @@ func init() {
 			ctx := context.Background()
 
 			params := &apiclient.ListOrganizationWorkflowsParams{}
+			workflows := []apiclient.OrganizationWorkflow{}
 
 			for {
 				listHttpResp, err := acctest.SharedApiClient.ListOrganizationWorkflowsWithResponse(ctx, acctest.TestOrganization, params)
@@ -38,6 +40,19 @@ func init() {
 						continue
 					}
 
+					workflows = append(workflows, workflow)
+				}
+
+				params.Cursor = sentryclient.ParseNextPaginationCursor(listHttpResp.HTTPResponse)
+				if params.Cursor == nil {
+					break
+				}
+			}
+
+			var wg sync.WaitGroup
+
+			for _, workflow := range workflows {
+				wg.Go(func() {
 					deleteHttpResp, err := acctest.SharedApiClient.DeleteOrganizationWorkflowWithResponse(ctx, acctest.TestOrganization, workflow.Id)
 					if err != nil {
 						log.Printf("[ERROR] Failed to delete alert: %s", err)
@@ -46,13 +61,10 @@ func init() {
 					} else {
 						log.Printf("[INFO] Deleted alert: %s (ID: %s)", workflow.Name, workflow.Id)
 					}
-				}
-
-				params.Cursor = sentryclient.ParseNextPaginationCursor(listHttpResp.HTTPResponse)
-				if params.Cursor == nil {
-					break
-				}
+				})
 			}
+
+			wg.Wait()
 
 			return nil
 		},
