@@ -9,10 +9,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-utils/must"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
@@ -898,6 +900,10 @@ func (r *IssueAlertResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
+	resp.Diagnostics.Append(r.read(ctx, &resp.State, &data)...)
+}
+
+func (r *IssueAlertResource) read(ctx context.Context, state *tfsdk.State, data *IssueAlertModel) (diags diag.Diagnostics) {
 	httpResp, err := r.apiClient.GetProjectRuleWithResponse(
 		ctx,
 		data.Organization.ValueString(),
@@ -905,22 +911,23 @@ func (r *IssueAlertResource) Read(ctx context.Context, req resource.ReadRequest,
 		data.Id.ValueString(),
 	)
 	if err != nil {
-		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
+		diags.Append(diagutils.NewClientError("read", err))
 		return
 	} else if httpResp.StatusCode() == http.StatusNotFound {
-		resp.State.RemoveResource(ctx)
+		state.RemoveResource(ctx)
 		return
 	} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
-		resp.Diagnostics.Append(diagutils.NewClientStatusError("read", httpResp.StatusCode(), httpResp.Body))
+		diags.Append(diagutils.NewClientStatusError("read", httpResp.StatusCode(), httpResp.Body))
 		return
 	}
 
-	resp.Diagnostics.Append(data.Fill(ctx, *httpResp.JSON200)...)
-	if resp.Diagnostics.HasError() {
+	diags.Append(data.Fill(ctx, *httpResp.JSON200)...)
+	if diags.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	diags.Append(state.Set(ctx, data)...)
+	return
 }
 
 func (r *IssueAlertResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -1048,12 +1055,7 @@ func (r *IssueAlertResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	resp.Diagnostics.Append(data.Fill(ctx, *httpResp.JSON200)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(r.read(ctx, &resp.State, &data)...)
 }
 
 func (r *IssueAlertResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
