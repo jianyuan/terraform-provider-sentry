@@ -2908,8 +2908,7 @@ components:
         comparison:
           oneOf:
             - type: string
-            - type: integer
-              format: int64
+            - type: number
               x-go-type: json.Number
             - type: object
               required:

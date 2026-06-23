@@ -89,12 +89,11 @@ func (r *CronMonitorResource) getCreateJSONRequestBody(ctx context.Context, data
 			return nil, diags
 		}
 
-		switch {
-		case owner.TeamId.IsKnown():
+		if owner.TeamId.IsKnown() {
 			out.Owner.Set(fmt.Sprintf("team:%s", owner.TeamId.Get()))
-		case owner.UserId.IsKnown():
+		} else if owner.UserId.IsKnown() {
 			out.Owner.Set(fmt.Sprintf("user:%s", owner.UserId.Get()))
-		default:
+		} else {
 			out.Owner.SetNull()
 		}
 	} else {

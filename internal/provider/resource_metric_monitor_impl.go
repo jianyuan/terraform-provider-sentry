@@ -18,38 +18,43 @@ import (
 func (r *MetricMonitorResource) getCreateJSONRequestBody(ctx context.Context, data MetricMonitorResourceModel) (*apiclient.CreateProjectMonitorJSONRequestBody, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	outDs := apiclient.ProjectMonitorDataSourceSnubaQuerySubscription{
-		Aggregate:  data.Aggregate.Get(),
-		Dataset:    data.Dataset.Get(),
-		EventTypes: tfutils.MergeDiagnostics(data.EventTypes.Get(ctx))(&diags),
+	outDs := apiclient.ProjectMonitorDataSourceSnubaQuerySubscription{}
+	outDs.Aggregate = data.Aggregate.Get()
+	outDs.Dataset = data.Dataset.Get()
+
+	outDs.EventTypes = tfutils.MergeDiagnostics(data.EventTypes.Get(ctx))(&diags)
+	if diags.HasError() {
+		return nil, diags
 	}
+
 	if data.Environment.IsKnown() {
 		outDs.Environment.Set(data.Environment.Get())
 	} else {
 		outDs.Environment.SetNull()
 	}
+
 	if data.Query.IsKnown() {
 		outDs.Query.Set(data.Query.Get())
 	} else {
 		outDs.Query.SetUnspecified()
 	}
+
 	if data.QueryType.IsKnown() {
 		outDs.QueryType.Set(sentrydata.SnubaQueryTypeNameToId[data.QueryType.Get()])
 	} else {
 		outDs.QueryType.SetUnspecified()
 	}
+
 	if data.TimeWindowSeconds.IsKnown() {
 		outDs.TimeWindow.Set(data.TimeWindowSeconds.Get())
 	} else {
 		outDs.TimeWindow.SetUnspecified()
 	}
+
 	if data.ExtrapolationMode.IsKnown() {
 		outDs.ExtrapolationMode.Set(data.ExtrapolationMode.Get())
 	} else {
 		outDs.ExtrapolationMode.SetNull()
-	}
-	if diags.HasError() {
-		return nil, diags
 	}
 
 	inConditionGroup := tfutils.MergeDiagnostics(data.ConditionGroup.Get(ctx))(&diags)
@@ -62,9 +67,10 @@ func (r *MetricMonitorResource) getCreateJSONRequestBody(ctx context.Context, da
 		return nil, diags
 	}
 
-	outConditions := make([]apiclient.ProjectMonitorConditionGroupCondition, 0, len(inConditions))
-	for _, inCondition := range inConditions {
+	outConditions := make([]apiclient.ProjectMonitorConditionGroupCondition, len(inConditions))
+	for i, inCondition := range inConditions {
 		var outComparison apiclient.ProjectMonitorConditionGroupCondition_Comparison
+
 		if inCondition.Type.Get() == "anomaly_detection" {
 			if err := outComparison.FromProjectMonitorConditionGroupConditionComparison2(apiclient.ProjectMonitorConditionGroupConditionComparison2{
 				Seasonality:   "auto",
@@ -82,11 +88,11 @@ func (r *MetricMonitorResource) getCreateJSONRequestBody(ctx context.Context, da
 			}
 		}
 
-		outConditions = append(outConditions, apiclient.ProjectMonitorConditionGroupCondition{
+		outConditions[i] = apiclient.ProjectMonitorConditionGroupCondition{
 			Type:            inCondition.Type.Get(),
 			Comparison:      outComparison,
 			ConditionResult: inCondition.ConditionResult.Get(),
-		})
+		}
 	}
 
 	inConfig := tfutils.MergeDiagnostics(data.IssueDetection.Get(ctx))(&diags)
@@ -103,18 +109,15 @@ func (r *MetricMonitorResource) getCreateJSONRequestBody(ctx context.Context, da
 		return nil, diags
 	}
 
-	out := apiclient.ProjectMonitorRequestMetricIssue{
-		Name:      data.Name.Get(),
-		ProjectId: data.Project.Get(),
-		DataSources: []apiclient.ProjectMonitorDataSourceSnubaQuerySubscription{
-			outDs,
-		},
-		ConditionGroup: apiclient.ProjectMonitorConditionGroup{
-			LogicType:  apiclient.ProjectMonitorConditionGroupLogicType(inConditionGroup.LogicType.Get()),
-			Conditions: outConditions,
-		},
-		Config: &outConfig,
+	out := apiclient.ProjectMonitorRequestMetricIssue{}
+	out.Name = data.Name.Get()
+	out.ProjectId = data.Project.Get()
+	out.DataSources = []apiclient.ProjectMonitorDataSourceSnubaQuerySubscription{outDs}
+	out.ConditionGroup = apiclient.ProjectMonitorConditionGroup{
+		LogicType:  apiclient.ProjectMonitorConditionGroupLogicType(inConditionGroup.LogicType.Get()),
+		Conditions: outConditions,
 	}
+	out.Config = &outConfig
 
 	if data.Enabled.IsKnown() {
 		out.Enabled.Set(data.Enabled.Get())
@@ -134,12 +137,11 @@ func (r *MetricMonitorResource) getCreateJSONRequestBody(ctx context.Context, da
 			return nil, diags
 		}
 
-		switch {
-		case owner.TeamId.IsKnown():
+		if owner.TeamId.IsKnown() {
 			out.Owner.Set(fmt.Sprintf("team:%s", owner.TeamId.Get()))
-		case owner.UserId.IsKnown():
+		} else if owner.UserId.IsKnown() {
 			out.Owner.Set(fmt.Sprintf("user:%s", owner.UserId.Get()))
-		default:
+		} else {
 			out.Owner.SetNull()
 		}
 	} else {
