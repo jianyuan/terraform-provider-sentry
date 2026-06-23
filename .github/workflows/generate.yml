@@ -1,16 +1,18 @@
-name: Update Sentry data
+name: Generate
 
 on:
-  workflow_dispatch:
-  schedule:
-    - cron: "0 0 * * *"
+  pull_request:
+  push:
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
   generate:
+    name: Generate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -24,11 +26,7 @@ jobs:
         with:
           terraform_wrapper: false
       - run: make generate
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v8
-        with:
-          branch: update-sentry-data
-          commit-message: Update Sentry data
-          title: Update Sentry data
-          body: |
-            This PR updates Sentry data.
+      - name: git diff
+        run: |
+          git diff --exit-code || \
+            (echo; echo "Unexpected difference in directories after code generation. Run 'make generate' command and commit."; exit 1)

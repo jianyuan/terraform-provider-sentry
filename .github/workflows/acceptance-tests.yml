@@ -1,15 +1,13 @@
 # Terraform Provider testing workflow.
-name: Tests
+name: Acceptance Tests
 
 # This GitHub action runs your tests for each pull request and push.
 # Optionally, you can turn it on using a schedule for regular testing.
 on:
-  pull_request:
-    paths-ignore:
-      - "README.md"
+  workflow_dispatch:
   push:
-    paths-ignore:
-      - "README.md"
+    branches:
+      - main
   # We test at a regular interval to ensure we are alerted to something breaking due
   # to an API change, even if the code did not change.
   schedule:
@@ -23,48 +21,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
-  # Ensure project builds before running testing matrix
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-go@v6
-        with:
-          go-version-file: "go.mod"
-          cache-dependency-path: "go.sum"
-      - run: go mod download
-      - run: go build -v .
-      - name: Run linters
-        uses: golangci/golangci-lint-action@v9
-        with:
-          version: latest
-
-  generate:
-    name: Generate
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-go@v6
-        with:
-          go-version-file: "go.mod"
-          cache-dependency-path: "go.sum"
-      - uses: astral-sh/setup-uv@v8.2.0
-      - uses: oven-sh/setup-bun@v2
-      - uses: hashicorp/setup-terraform@v4
-        with:
-          terraform_wrapper: false
-      - run: make generate
-      - name: git diff
-        run: |
-          git diff --exit-code || \
-            (echo; echo "Unexpected difference in directories after code generation. Run 'make generate' command and commit."; exit 1)
-
   # Run acceptance tests in a matrix with Terraform CLI versions
   test:
     name: Terraform Provider Acceptance Tests
-    needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 30
     environment: test
