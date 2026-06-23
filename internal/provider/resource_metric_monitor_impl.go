@@ -271,8 +271,11 @@ func (m *MetricMonitorResourceModel) Fill(ctx context.Context, data apiclient.Pr
 	} else {
 		m.Query.SetNull()
 	}
+
 	if v, err := dataSource.QueryObj.SnubaQuery.QueryType.Get(); err == nil {
 		m.QueryType.Set(sentrydata.SnubaQueryTypeIdToName[v])
+	} else if m.QueryType.IsUnknown() {
+		m.QueryType.SetNull()
 	}
 	// If API returns null for queryType, preserve the existing state value.
 	// Do not override with a hardcoded default as different datasets require different query types.

@@ -145,6 +145,9 @@ func (r *MetricMonitorResource) Schema(ctx context.Context, req resource.SchemaR
 					Optional:            true,
 					Computed:            true,
 					CustomType:          supertypes.StringType{},
+					PlanModifiers: []planmodifier.String{
+						stringplanmodifier.UseStateForUnknown(),
+					},
 				},
 				sentrydata.SnubaQueryTypes,
 			),
