@@ -2435,7 +2435,7 @@ type ProjectMonitorDataSourceSnubaQuerySubscription struct {
 	EventTypes        []string                  `json:"eventTypes"`
 	ExtrapolationMode nullable.Nullable[string] `json:"extrapolationMode"`
 	Query             nullable.Nullable[string] `json:"query"`
-	QueryType         nullable.Nullable[int64]  `json:"queryType"`
+	QueryType         nullable.Nullable[int64]  `json:"queryType,omitempty"`
 	TimeWindow        nullable.Nullable[int64]  `json:"timeWindow"`
 }
 

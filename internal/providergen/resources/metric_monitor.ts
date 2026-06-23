@@ -139,6 +139,7 @@ export default {
         "The type of query. If no value is provided, `query_type` is set to the default for the specified `dataset.`",
       computedOptionalRequired: "computed_optional",
       enum: "sentrydata.SnubaQueryTypes",
+      planModifiers: ["stringplanmodifier.UseStateForUnknown()"],
     },
     {
       name: "time_window_seconds",

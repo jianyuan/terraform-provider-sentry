@@ -2778,7 +2778,6 @@ components:
         - environment
         - eventTypes
         - query
-        - queryType
         - timeWindow
         - extrapolationMode
       properties:

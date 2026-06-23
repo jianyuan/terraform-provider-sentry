@@ -256,7 +256,7 @@ func TestAccMetricMonitorResource_threshold(t *testing.T) {
 						knownvalue.StringExact("error"),
 					})),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query"), knownvalue.Null()),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query_type"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query_type"), knownvalue.StringExact("error")),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("time_window_seconds"), knownvalue.Int64Exact(0)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("condition_group"), knownvalue.ObjectExact(map[string]knownvalue.Check{
 						"logic_type": knownvalue.StringExact("any"),
@@ -311,7 +311,7 @@ func TestAccMetricMonitorResource_threshold(t *testing.T) {
 						knownvalue.StringExact("error"),
 					})),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query"), knownvalue.Null()),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query_type"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query_type"), knownvalue.StringExact("error")),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("time_window_seconds"), knownvalue.Int64Exact(0)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("condition_group"), knownvalue.ObjectExact(map[string]knownvalue.Check{
 						"logic_type": knownvalue.StringExact("any"),
@@ -368,7 +368,7 @@ func TestAccMetricMonitorResource_threshold(t *testing.T) {
 						knownvalue.StringExact("error"),
 					})),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query"), knownvalue.Null()),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query_type"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query_type"), knownvalue.StringExact("error")),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("time_window_seconds"), knownvalue.Int64Exact(0)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("condition_group"), knownvalue.ObjectExact(map[string]knownvalue.Check{
 						"logic_type": knownvalue.StringExact("any"),
@@ -388,10 +388,11 @@ func TestAccMetricMonitorResource_threshold(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      rn,
-				ImportState:       true,
-				ImportStateIdFunc: acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
-				ImportStateVerify: true,
+				ResourceName:            rn,
+				ImportState:             true,
+				ImportStateIdFunc:       acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"query_type"},
 			},
 		},
 	})
@@ -663,6 +664,99 @@ func TestAccMetricMonitorResource_fractionalComparison(t *testing.T) {
 						"type":             knownvalue.StringExact("static"),
 						"comparison_delta": knownvalue.Null(),
 					})),
+				),
+			},
+			{
+				ResourceName:            rn,
+				ImportState:             true,
+				ImportStateIdFunc:       acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"query_type"},
+			},
+		},
+	})
+}
+
+func TestAccMetricMonitorResource_eventsAnalyticsPlatform(t *testing.T) {
+	projectName := acctest.RandomWithPrefix("tf-project")
+	monitorName := acctest.RandomWithPrefix("tf-metric-monitor")
+	rn := "sentry_metric_monitor.test"
+
+	checks := []statecheck.StateCheck{
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("project"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("dataset"), knownvalue.StringExact("events_analytics_platform")),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("event_types"), knownvalue.SetExact([]knownvalue.Check{
+			knownvalue.StringExact("trace_item_span"),
+		})),
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccMetricMonitorResourceConfig(projectName, monitorName, `
+					aggregate = "p75(measurements.lcp)"
+					dataset = "events_analytics_platform"
+					event_types = ["trace_item_span"]
+					time_window_seconds = 3600
+
+					condition_group = {
+						conditions = [
+							{
+								type = "gt"
+								comparison = 2500
+								condition_result = 75
+							},
+							{
+								type = "lte"
+								comparison = 2250
+								condition_result = 0
+							},
+						]
+					}
+
+					issue_detection = {
+						type = "static"
+					}
+				`),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(monitorName)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("aggregate"), knownvalue.StringExact("p75(measurements.lcp)")),
+				),
+			},
+			{
+				Config: testAccMetricMonitorResourceConfig(projectName, monitorName+"-updated", `
+					aggregate = "p75(measurements.lcp)"
+					dataset = "events_analytics_platform"
+					event_types = ["trace_item_span"]
+					time_window_seconds = 3600
+
+					condition_group = {
+						conditions = [
+							{
+								type = "gt"
+								comparison = 2500
+								condition_result = 75
+							},
+							{
+								type = "lte"
+								comparison = 2250
+								condition_result = 0
+							},
+						]
+					}
+
+					issue_detection = {
+						type = "static"
+					}
+				`),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(monitorName+"-updated")),
 				),
 			},
 			{
