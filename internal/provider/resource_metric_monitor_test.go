@@ -256,7 +256,7 @@ func TestAccMetricMonitorResource_threshold(t *testing.T) {
 						knownvalue.StringExact("error"),
 					})),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query"), knownvalue.Null()),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query_type"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query_type"), knownvalue.StringExact("error")),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("time_window_seconds"), knownvalue.Int64Exact(0)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("condition_group"), knownvalue.ObjectExact(map[string]knownvalue.Check{
 						"logic_type": knownvalue.StringExact("any"),
@@ -311,7 +311,7 @@ func TestAccMetricMonitorResource_threshold(t *testing.T) {
 						knownvalue.StringExact("error"),
 					})),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query"), knownvalue.Null()),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query_type"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query_type"), knownvalue.StringExact("error")),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("time_window_seconds"), knownvalue.Int64Exact(0)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("condition_group"), knownvalue.ObjectExact(map[string]knownvalue.Check{
 						"logic_type": knownvalue.StringExact("any"),
@@ -368,7 +368,7 @@ func TestAccMetricMonitorResource_threshold(t *testing.T) {
 						knownvalue.StringExact("error"),
 					})),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query"), knownvalue.Null()),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query_type"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query_type"), knownvalue.StringExact("error")),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("time_window_seconds"), knownvalue.Int64Exact(0)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("condition_group"), knownvalue.ObjectExact(map[string]knownvalue.Check{
 						"logic_type": knownvalue.StringExact("any"),
@@ -388,10 +388,11 @@ func TestAccMetricMonitorResource_threshold(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      rn,
-				ImportState:       true,
-				ImportStateIdFunc: acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
-				ImportStateVerify: true,
+				ResourceName:            rn,
+				ImportState:             true,
+				ImportStateIdFunc:       acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"query_type"},
 			},
 		},
 	})
