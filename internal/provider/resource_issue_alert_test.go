@@ -711,7 +711,7 @@ func TestAccIssueAlertResource_importRoundTrip(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create the classic issue-alert rule.
 			{
-				Config: testAccIssueAlertConfig_importRoundTrip(team, project, alert, "server-health", 0),
+				Config: testAccIssueAlertConfig_importRoundTrip(team, project, alert, "server-health", 5),
 				ConfigStateChecks: []statecheck.StateCheck{
 					conditionsCheck,
 					taggedCheck("server-health"),
