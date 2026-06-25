@@ -664,6 +664,88 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 	})
 }
 
+// TestAccIssueAlertResource_importRoundTrip reproduces the adoption flow for a
+// classic issue-alert rule: import an existing rule and confirm the rule body is
+// read back into state (no follow-up drift), then update it without a 404.
+//
+// Before the import fix, ImportState only populated organization/project/id, so the
+// conditions_v2/filters_v2/actions_v2 lists stayed null. The import step below uses
+// ImportStateVerify, which compares the imported state to the applied state and would
+// fail because the rule body was missing -- the same null body that forced a doomed
+// "update" on the next apply.
+func TestAccIssueAlertResource_importRoundTrip(t *testing.T) {
+	rn := "sentry_issue_alert.test"
+	team := acctest.RandomWithPrefix("tf-team")
+	project := acctest.RandomWithPrefix("tf-project")
+	alert := acctest.RandomWithPrefix("tf-issue-alert")
+
+	conditionsCheck := statecheck.ExpectKnownValue(rn, tfjsonpath.New("conditions_v2"), knownvalue.ListExact([]knownvalue.Check{
+		knownvalue.ObjectPartial(map[string]knownvalue.Check{"first_seen_event": knownvalue.NotNull()}),
+		knownvalue.ObjectPartial(map[string]knownvalue.Check{"reappeared_event": knownvalue.NotNull()}),
+		knownvalue.ObjectPartial(map[string]knownvalue.Check{"regression_event": knownvalue.NotNull()}),
+	}))
+	taggedCheck := func(value string) statecheck.StateCheck {
+		return statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters_v2"), knownvalue.ListExact([]knownvalue.Check{
+			knownvalue.ObjectPartial(map[string]knownvalue.Check{
+				"tagged_event": knownvalue.ObjectPartial(map[string]knownvalue.Check{
+					"key":   knownvalue.StringExact("monitor"),
+					"match": knownvalue.StringExact("EQUAL"),
+					"value": knownvalue.StringExact(value),
+				}),
+			}),
+		}))
+	}
+	actionsCheck := statecheck.ExpectKnownValue(rn, tfjsonpath.New("actions_v2"), knownvalue.ListExact([]knownvalue.Check{
+		knownvalue.ObjectPartial(map[string]knownvalue.Check{
+			"notify_email": knownvalue.ObjectPartial(map[string]knownvalue.Check{
+				"target_type":      knownvalue.StringExact("IssueOwners"),
+				"fallthrough_type": knownvalue.StringExact("ActiveMembers"),
+			}),
+		}),
+	}))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckIssueAlertDestroy,
+		Steps: []resource.TestStep{
+			// Create the classic issue-alert rule.
+			{
+				Config: testAccIssueAlertConfig_importRoundTrip(team, project, alert, "server-health", 0),
+				ConfigStateChecks: []statecheck.StateCheck{
+					conditionsCheck,
+					taggedCheck("server-health"),
+					actionsCheck,
+				},
+			},
+			// Import must round-trip the full rule body. ImportStateVerify fails if the
+			// imported state differs from the applied state (i.e. if the body is null).
+			{
+				ResourceName:      rn,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
+			},
+			// Updating the (now in-state) rule must not 404.
+			{
+				Config: testAccIssueAlertConfig_importRoundTrip(team, project, alert, "db-health", 5),
+				ConfigStateChecks: []statecheck.StateCheck{
+					conditionsCheck,
+					taggedCheck("db-health"),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("frequency"), knownvalue.Int64Exact(5)),
+				},
+			},
+			// Re-import after the update to confirm the round-trip still holds.
+			{
+				ResourceName:      rn,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
+			},
+		},
+	})
+}
+
 func TestAccIssueAlertResource_emptyArray(t *testing.T) {
 	rn := "sentry_issue_alert.test"
 	team := acctest.RandomWithPrefix("tf-team")
@@ -1199,6 +1281,47 @@ resource "sentry_issue_alert" "test" {
 	%[4]s
 }
 `, team, project, alert, extras)
+}
+
+func testAccIssueAlertConfig_importRoundTrip(team string, project string, alert string, taggedValue string, frequency int) string {
+	return testAccOrganizationDataSourceConfig + fmt.Sprintf(`
+resource "sentry_team" "test" {
+	organization = data.sentry_organization.test.slug
+	name         = "%[1]s"
+	slug         = "%[1]s"
+}
+
+resource "sentry_project" "test" {
+	organization = sentry_team.test.organization
+	teams        = [sentry_team.test.slug]
+	name         = "%[2]s"
+	platform     = "go"
+}
+
+resource "sentry_issue_alert" "test" {
+	organization = sentry_project.test.organization
+	project      = sentry_project.test.id
+	name         = "%[3]s"
+
+	action_match = "any"
+	filter_match = "all"
+	frequency    = %[5]d
+
+	conditions_v2 = [
+		{ first_seen_event = {} },
+		{ reappeared_event = {} },
+		{ regression_event = {} },
+	]
+
+	filters_v2 = [
+		{ tagged_event = { key = "monitor", match = "EQUAL", value = "%[4]s" } },
+	]
+
+	actions_v2 = [
+		{ notify_email = { target_type = "IssueOwners", fallthrough_type = "ActiveMembers" } },
+	]
+}
+`, team, project, alert, taggedValue, frequency)
 }
 
 func testAccIssueAlertConfig_jsonValues(team string, project string, alert string) string {

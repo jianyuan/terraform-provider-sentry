@@ -1085,6 +1085,22 @@ func (r *IssueAlertResource) Delete(ctx context.Context, req resource.DeleteRequ
 
 func (r *IssueAlertResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	tfutils.ImportStateThreePartId(ctx, "organization", "project", req, resp)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// terraform import only provides the resource ID, never the configuration. Fill
+	// (used by the subsequent Read) only refreshes the conditions/filters/actions
+	// representation that is already present in state: it populates the legacy JSON
+	// attributes when they are non-null, or the typed *_v2 lists when those are
+	// non-null, and otherwise leaves the rule body untouched. After a bare import all
+	// of those attributes are null, so the rule body would never be read back into
+	// state, producing perpetual drift (and a doomed update that targets a rule the
+	// plan thinks must change). Seed the typed (*_v2) lists -- the non-deprecated
+	// representation -- so Read populates the rule body from the API.
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("conditions_v2"), supertypes.NewListNestedObjectValueOfValueSlice(ctx, []IssueAlertConditionModel{}))...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("filters_v2"), supertypes.NewListNestedObjectValueOfValueSlice(ctx, []IssueAlertFilterModel{}))...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("actions_v2"), supertypes.NewListNestedObjectValueOfValueSlice(ctx, []IssueAlertActionModel{}))...)
 }
 
 func (r *IssueAlertResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
