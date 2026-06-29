@@ -788,12 +788,13 @@ func (m *IssueAlertActionNotifyEmailModel) Fill(ctx context.Context, action apic
 		m.TargetIdentifier = types.StringValue(v.String())
 	}
 
-	// Only set FallthroughType for IssueOwners
-	if action.TargetType == "IssueOwners" {
-		m.FallthroughType = types.StringPointerValue(action.FallthroughType)
-	} else {
-		m.FallthroughType = types.StringNull()
-	}
+	// Echo FallthroughType back regardless of TargetType. The API now reliably
+	// returns a fallthroughType for email actions (defaulting to ActiveMembers),
+	// so previously gating this on TargetType == "IssueOwners" nulled out a value
+	// the user had configured for Team/Member targets, causing perpetual drift on
+	// fallthrough_type and breaking the actions_v2 reorder (the field is part of
+	// the reorder key). See getsentry/sentry#118404.
+	m.FallthroughType = types.StringPointerValue(action.FallthroughType)
 
 	return
 }
