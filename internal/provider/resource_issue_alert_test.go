@@ -500,7 +500,10 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 								"name":              knownvalue.NotNull(),
 								"target_type":       knownvalue.StringExact("Team"),
 								"target_identifier": knownvalue.NotNull(),
-								"fallthrough_type":  knownvalue.Null(),
+								// The API defaults fallthroughType to ActiveMembers for
+								// all email actions, not just IssueOwners. See
+								// getsentry/sentry#118404.
+								"fallthrough_type": knownvalue.StringExact("ActiveMembers"),
 							}),
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1126,7 +1129,10 @@ func TestAccIssueAlertResource_forExpression(t *testing.T) {
 								"name":              knownvalue.NotNull(),
 								"target_type":       knownvalue.StringExact("Team"),
 								"target_identifier": knownvalue.NotNull(),
-								"fallthrough_type":  knownvalue.Null(),
+								// The API defaults fallthroughType to ActiveMembers for
+								// all email actions, not just IssueOwners. See
+								// getsentry/sentry#118404.
+								"fallthrough_type": knownvalue.StringExact("ActiveMembers"),
 							}),
 						}),
 					})),

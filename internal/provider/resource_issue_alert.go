@@ -381,6 +381,13 @@ func (r *IssueAlertResource) Schema(ctx context.Context, req resource.SchemaRequ
 								"fallthrough_type": tfutils.WithEnumStringAttribute(schema.StringAttribute{
 									MarkdownDescription: "Who the notification should be sent to if there are no suggested assignees.",
 									Optional:            true,
+									// Computed because the API defaults a fallthroughType
+									// (ActiveMembers) for email actions even when one is not
+									// supplied — and for every target_type, not just
+									// IssueOwners (see getsentry/sentry#118404). Without this,
+									// omitting fallthrough_type plans null but the API returns
+									// a value, producing "inconsistent result after apply".
+									Computed: true,
 								}, []string{"AllMembers", "ActiveMembers", "NoOne"}),
 							},
 						},
