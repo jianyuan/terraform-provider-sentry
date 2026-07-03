@@ -769,6 +769,10 @@ export default {
                   description:
                     "The name of the Slack channel to send the notification to (e.g., #critical, Jane Schmidt).",
                   computedOptionalRequired: "required",
+                  customType: {
+                    type: "sentrytypes.SlackChannelType{}",
+                    value: "sentrytypes.SlackChannel",
+                  },
                 },
                 {
                   name: "channel_id",

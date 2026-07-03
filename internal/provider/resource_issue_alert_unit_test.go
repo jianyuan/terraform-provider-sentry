@@ -67,7 +67,7 @@ func TestIssueAlertActionSlackNotifyServiceModel_ToApi_withChannelId(t *testing.
 	channelId := "C1234567890"
 	model := IssueAlertActionSlackNotifyServiceModel{
 		Workspace: types.StringValue("ws123"),
-		Channel:   sentrytypes.SlackChannelValue("#general"),
+		Channel:   sentrytypes.NewSlackChannelValue("#general"),
 		ChannelId: types.StringValue(channelId),
 	}
 	result, diags := model.ToApi(context.Background())
@@ -86,7 +86,7 @@ func TestIssueAlertActionSlackNotifyServiceModel_ToApi_withChannelId(t *testing.
 func TestIssueAlertActionSlackNotifyServiceModel_ToApi_withoutChannelId(t *testing.T) {
 	model := IssueAlertActionSlackNotifyServiceModel{
 		Workspace: types.StringValue("ws123"),
-		Channel:   sentrytypes.SlackChannelValue("#general"),
+		Channel:   sentrytypes.NewSlackChannelValue("#general"),
 		ChannelId: types.StringNull(),
 	}
 	result, diags := model.ToApi(context.Background())
@@ -135,8 +135,8 @@ func TestSlackChannel_SemanticEquals_ignoresHashPrefix(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			a := sentrytypes.SlackChannelValue(tt.a)
-			b := sentrytypes.SlackChannelValue(tt.b)
+			a := sentrytypes.NewSlackChannelValue(tt.a)
+			b := sentrytypes.NewSlackChannelValue(tt.b)
 			result, diags := a.StringSemanticEquals(context.Background(), b)
 			if diags.HasError() {
 				t.Fatalf("unexpected error: %s", diags)

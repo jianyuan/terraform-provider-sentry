@@ -1035,7 +1035,7 @@ type IssueAlertActionSlackNotifyServiceModel struct {
 func (m *IssueAlertActionSlackNotifyServiceModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionSlackNotifyService) (diags diag.Diagnostics) {
 	m.Name = types.StringPointerValue(action.Name)
 	m.Workspace = types.StringValue(action.Workspace)
-	m.Channel = sentrytypes.SlackChannelValue(action.Channel)
+	m.Channel = sentrytypes.NewSlackChannelValue(action.Channel)
 	m.ChannelId = types.StringPointerValue(action.ChannelId)
 	m.Tags = tfutils.MergeDiagnostics(sentrytypes.StringSetPointerValue(action.Tags))(&diags)
 	m.Notes = types.StringPointerValue(action.Notes)

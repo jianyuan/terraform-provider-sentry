@@ -258,6 +258,9 @@ func TestAccAlertResource_basic(t *testing.T) {
 				ImportState:       true,
 				ImportStateIdFunc: acctest.TwoPartImportStateIdFunc(rn, "organization"),
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"action_filters.0.actions.4.slack.channel_name", // Sentry API returns the channel name with `#` prefix
+				},
 			},
 		},
 	})
@@ -489,14 +492,13 @@ func testAccAlertResourceConfig(projectName, monitorName, name, opsgenieTeamName
 								notes          = "Please <http://example.com|click here> for triage information"
 							}
 						},
-						// FIXME:
-						// {
-						// 	slack = {
-						// 		integration_id = data.sentry_organization_integration.slack.id
-						// 		channel_name   = "general"
-						// 		notes          = "Please <http://example.com|click here> for triage information"
-						// 	}
-						// },
+						{
+							slack = {
+								integration_id = data.sentry_organization_integration.slack.id
+								channel_name   = "general"
+								notes          = "Please <http://example.com|click here> for triage information"
+							}
+						},
 						{
 							pagerduty = {
 								integration_id = sentry_integration_pagerduty.pagerduty.integration_id
