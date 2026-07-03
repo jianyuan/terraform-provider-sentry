@@ -135,7 +135,7 @@ func issueAlertActionModelKey(ctx context.Context) func(m IssueAlertActionModel)
 		case m.NotifyEmail.IsKnown():
 			f := m.NotifyEmail.MustGet(ctx)
 			return fmt.Sprintf("notify_email\x00%s\x00%s\x00%s",
-				f.TargetType.ValueString(), f.TargetIdentifier.ValueString(), f.FallthroughType.ValueString())
+				f.TargetType.ValueString(), f.TargetType.ValueString(), f.TargetIdentifier.ValueString())
 		case m.NotifyEvent.IsKnown():
 			return "notify_event"
 		case m.NotifyEventService.IsKnown():
