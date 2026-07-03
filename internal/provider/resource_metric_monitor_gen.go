@@ -137,6 +137,7 @@ func (r *MetricMonitorResource) Schema(ctx context.Context, req resource.SchemaR
 			"query": schema.StringAttribute{
 				MarkdownDescription: "An event search query to subscribe to and monitor for alerts. For example, to filter transactions so that only those with status code 400 are included, you could use `http.status_code:400`.",
 				Optional:            true,
+				Computed:            true,
 				CustomType:          supertypes.StringType{},
 			},
 			"query_type": tfutils.WithEnumStringAttribute(

@@ -13,6 +13,7 @@ import (
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
+	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 )
 
 func (r *MetricMonitorResource) getCreateJSONRequestBody(ctx context.Context, data MetricMonitorResourceModel) (*apiclient.CreateProjectMonitorJSONRequestBody, diag.Diagnostics) {
@@ -267,7 +268,7 @@ func (m *MetricMonitorResourceModel) Fill(ctx context.Context, data apiclient.Pr
 	}
 
 	if v, err := dataSource.QueryObj.SnubaQuery.Query.Get(); err == nil {
-		m.Query.Set(v)
+		m.Query = supertypes.NewStringValue(v)
 	} else {
 		m.Query.SetNull()
 	}

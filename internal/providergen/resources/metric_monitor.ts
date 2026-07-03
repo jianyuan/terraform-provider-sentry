@@ -130,7 +130,7 @@ export default {
       type: "string",
       description:
         "An event search query to subscribe to and monitor for alerts. For example, to filter transactions so that only those with status code 400 are included, you could use `http.status_code:400`.",
-      computedOptionalRequired: "optional",
+      computedOptionalRequired: "computed_optional",
     },
     {
       name: "query_type",
