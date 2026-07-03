@@ -119,7 +119,7 @@ function generateTerraformToPrimitive({
   const srcVarName = `${srcVar}.${camelize(attribute.name)}`;
   return match(attribute)
     .with({ type: "string" }, () => `${srcVarName}.ValueString()`)
-    .with({ type: "int" }, () => `${srcVarName}.ValueInt64()`)
+    .with({ type: "int64" }, () => `${srcVarName}.ValueInt64()`)
     .with({ type: "float64" }, () => `${srcVarName}.ValueFloat64()`)
     .with({ type: "bool" }, () => `${srcVarName}.ValueBool()`)
     .exhaustive();
@@ -169,7 +169,7 @@ function generatePrimitiveToTerraform({
       () => `${destVarName} = supertypes.NewStringValue(${srcVarName})`,
     )
     .with(
-      { type: "int" },
+      { type: "int64" },
       () => `${destVarName} = supertypes.NewInt64Value(${srcVarName})`,
     )
     .with(

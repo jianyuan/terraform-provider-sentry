@@ -136,14 +136,14 @@ export default {
     },
     {
       name: "interval_seconds",
-      type: "int",
+      type: "int64",
       description: "The amount of time between each uptime check request.",
       computedOptionalRequired: "required",
       enum: "sentrydata.UptimeSubscriptionIntervalSeconds",
     },
     {
       name: "timeout_ms",
-      type: "int",
+      type: "int64",
       description: "The request timeout in milliseconds.",
       computedOptionalRequired: "required",
     },
@@ -155,7 +155,7 @@ export default {
     },
     {
       name: "recovery_threshold",
-      type: "int",
+      type: "int64",
       description:
         "Number of consecutive successful checks required to mark monitor as recovered. Defaults to `1`.",
       computedOptionalRequired: "computed_optional",
@@ -163,7 +163,7 @@ export default {
     },
     {
       name: "downtime_threshold",
-      type: "int",
+      type: "int64",
       description:
         "Number of consecutive failed checks required to mark monitor as down. Defaults to `3`.",
       computedOptionalRequired: "computed_optional",

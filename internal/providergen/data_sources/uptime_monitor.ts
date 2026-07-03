@@ -107,14 +107,14 @@ export default {
     },
     {
       name: "interval_seconds",
-      type: "int",
+      type: "int64",
       description: "The amount of time between each uptime check request.",
       computedOptionalRequired: "computed",
       skipFill: true,
     },
     {
       name: "timeout_ms",
-      type: "int",
+      type: "int64",
       description: "The request timeout in milliseconds.",
       computedOptionalRequired: "computed",
       skipFill: true,
@@ -128,7 +128,7 @@ export default {
     },
     {
       name: "recovery_threshold",
-      type: "int",
+      type: "int64",
       description:
         "Number of consecutive successful checks required to mark monitor as recovered.",
       computedOptionalRequired: "computed",
@@ -136,7 +136,7 @@ export default {
     },
     {
       name: "downtime_threshold",
-      type: "int",
+      type: "int64",
       description:
         "Number of consecutive failed checks required to mark monitor as down.",
       computedOptionalRequired: "computed",

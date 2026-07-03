@@ -96,28 +96,28 @@ export default {
     },
     {
       name: "checkin_margin_minutes",
-      type: "int",
+      type: "int64",
       description:
         "Grace period. The number of minutes before a check-in is considered missed.",
       computedOptionalRequired: "required",
     },
     {
       name: "failure_issue_threshold",
-      type: "int",
+      type: "int64",
       description:
         "Failure tolerance. Create a new issue when this many consecutive missed or error check-ins are processed.",
       computedOptionalRequired: "required",
     },
     {
       name: "max_runtime_minutes",
-      type: "int",
+      type: "int64",
       description:
         "Maximum runtime. The number of minutes before an in-progress check-in is marked timed out.",
       computedOptionalRequired: "required",
     },
     {
       name: "recovery_threshold",
-      type: "int",
+      type: "int64",
       description:
         "Recovery Tolerance. Resolve the issue when this many consecutive healthy check-ins are processed. Either `crontab` or `interval_value` and `interval_unit` must be provided.",
       computedOptionalRequired: "required",
@@ -142,7 +142,7 @@ export default {
         },
         {
           name: "interval_value",
-          type: "int",
+          type: "int64",
           description:
             "Interval value. Conflicts with `crontab`. Must be provided with `interval_unit`.",
           computedOptionalRequired: "optional",

@@ -56,7 +56,7 @@ export default {
     },
     {
       name: "frequency_minutes",
-      type: "int",
+      type: "int64",
       description: "How often the alert should fire in minutes.",
       computedOptionalRequired: "computed",
       sourceAttribute: ["Config", "Frequency"],

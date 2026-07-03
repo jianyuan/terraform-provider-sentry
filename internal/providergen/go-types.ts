@@ -34,7 +34,7 @@ export function tfAttributeType(attribute: Attribute, parent: string) {
         (attribute) => attribute.customType.type,
       )
       .with({ type: "string" }, () => "supertypes.StringType{}")
-      .with({ type: "int" }, () => "supertypes.Int64Type{}")
+      .with({ type: "int64" }, () => "supertypes.Int64Type{}")
       // Plain basetypes here, not supertypes.Float64Value: the supertypes wrapper inherits
       // basetypes' Float64SemanticEquals without overriding it, so its type assertion rejects
       // the wrapper on every plan (hashicorp/terraform-plugin-framework#786). Float64 is the
@@ -82,7 +82,7 @@ export function tfAttributeType(attribute: Attribute, parent: string) {
 export function tfEnumWrapperFunction(attribute: Attribute) {
   return match(attribute)
     .with({ type: "string" }, () => "tfutils.WithEnumStringAttribute")
-    .with({ type: "int" }, () => "tfutils.WithEnumInt64Attribute")
+    .with({ type: "int64" }, () => "tfutils.WithEnumInt64Attribute")
     .with(
       { type: "set", elementType: "string" },
       () => "tfutils.WithEnumSetAttributeStringElements",
@@ -97,7 +97,7 @@ export function tfAttributeValueType(attribute: Attribute, parent: string) {
       (attribute) => attribute.customType.value,
     )
     .with({ type: "string" }, () => "supertypes.StringValue")
-    .with({ type: "int" }, () => "supertypes.Int64Value")
+    .with({ type: "int64" }, () => "supertypes.Int64Value")
     .with({ type: "float64" }, () => "types.Float64")
     .with({ type: "bool" }, () => "supertypes.BoolValue")
     .with(
@@ -138,7 +138,7 @@ export function tfAttributeValueType(attribute: Attribute, parent: string) {
 export function tfSchemaAttributeType({ type }: { type: Attribute["type"] }) {
   return match(type)
     .with("string", () => "schema.StringAttribute")
-    .with("int", () => "schema.Int64Attribute")
+    .with("int64", () => "schema.Int64Attribute")
     .with("float64", () => "schema.Float64Attribute")
     .with("bool", () => "schema.BoolAttribute")
     .with("list", () => "schema.ListAttribute")
@@ -154,7 +154,7 @@ export function tfSchemaAttributeType({ type }: { type: Attribute["type"] }) {
 export function tfValidatorType({ type }: { type: Attribute["type"] }) {
   return match(type)
     .with("string", () => "validator.String")
-    .with("int", () => "validator.Int64")
+    .with("int64", () => "validator.Int64")
     .with("float64", () => "validator.Float64")
     .with("bool", () => "validator.Bool")
     .with("list", () => "validator.List")
@@ -170,7 +170,7 @@ export function tfValidatorType({ type }: { type: Attribute["type"] }) {
 export function tfPlanModifierType({ type }: { type: Attribute["type"] }) {
   return match(type)
     .with("string", () => "planmodifier.String")
-    .with("int", () => "planmodifier.Int64")
+    .with("int64", () => "planmodifier.Int64")
     .with("float64", () => "planmodifier.Float64")
     .with("bool", () => "planmodifier.Bool")
     .with("list", () => "planmodifier.List")
