@@ -188,8 +188,8 @@ function generatePrimitiveToTerraform({
     .with(
       { type: "list_nested" },
       (attribute) =>
-        `${destVarName} = supertypes.NewListNestedObjectValueOfValueSlice(ctx, lo.Map(${srcVarName}, func(item apiclient.${attribute.model}, _ int) ${name}${camelize(attribute.name)}Item {
-          var model ${name}${camelize(attribute.name)}Item
+        `${destVarName} = supertypes.NewListNestedObjectValueOfValueSlice(ctx, lo.Map(${srcVarName}, func(item apiclient.${attribute.model}, _ int) ${modelType(attribute, name)} {
+          var model ${modelType(attribute, name)}
           diags.Append(model.Fill(ctx, item)...)
           return model
         }))`,
@@ -202,8 +202,8 @@ function generatePrimitiveToTerraform({
     .with(
       { type: "set_nested" },
       (attribute) =>
-        `${destVarName} = supertypes.NewSetNestedObjectValueOfValueSlice(ctx, lo.Map(${srcVarName}, func(item apiclient.${attribute.model}, _ int) ${name}${camelize(attribute.name)}Item {
-          var model ${name}${camelize(attribute.name)}Item
+        `${destVarName} = supertypes.NewSetNestedObjectValueOfValueSlice(ctx, lo.Map(${srcVarName}, func(item apiclient.${attribute.model}, _ int) ${modelType(attribute, name)} {
+          var model ${modelType(attribute, name)}
           diags.Append(model.Fill(ctx, item)...)
           return model
         }))`,
@@ -248,22 +248,19 @@ function generateModel({
 
     extras.push(
       ...match(attribute)
-        .with({ type: "list_nested" }, { type: "set_nested" }, (attribute) => [
-          generateModel({
-            name: `${name}${camelize(attribute.name)}Item`,
-            attributes: attribute.attributes,
-            srcModel: `apiclient.${attribute.model}`,
-            generateFillers: generateFillers && !attribute.skipFill,
-          }),
-        ])
-        .with({ type: "single_nested" }, (attribute) => [
-          generateModel({
-            name: `${name}${camelize(attribute.name)}`,
-            attributes: attribute.attributes,
-            srcModel: `apiclient.${attribute.model}`, // TODO: attribute.model unused
-            generateFillers: generateFillers && !attribute.skipFill,
-          }),
-        ])
+        .with(
+          { type: "list_nested" },
+          { type: "set_nested" },
+          { type: "single_nested" },
+          (attribute) => [
+            generateModel({
+              name: modelType(attribute, name),
+              attributes: attribute.attributes,
+              srcModel: `apiclient.${attribute.model}`,
+              generateFillers: generateFillers && !attribute.skipFill,
+            }),
+          ],
+        )
         .otherwise(() => []),
     );
   }
