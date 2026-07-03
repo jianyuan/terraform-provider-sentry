@@ -96,8 +96,8 @@ def parse_constants() -> dict[str, ResultData[Any]]:
     out: dict[str, ResultData[Any]] = {}
     for node in ast.walk(data.tree):
         match node:
-            case ast.Assign(
-                targets=[ast.Name(id="LOG_LEVELS")],
+            case ast.AnnAssign(
+                target=ast.Name(id="LOG_LEVELS"),
                 value=ast.Dict(keys=keys, values=values),
             ):
                 out["LogLevels"] = ResultData(
