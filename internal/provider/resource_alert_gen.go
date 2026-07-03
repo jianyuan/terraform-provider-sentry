@@ -19,6 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 	fstringvalidator "github.com/orange-cloudavenue/terraform-plugin-framework-validators/stringvalidator"
@@ -797,7 +798,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 											"channel_name": schema.StringAttribute{
 												MarkdownDescription: "The name of the Slack channel to send the notification to (e.g., #critical, Jane Schmidt).",
 												Required:            true,
-												CustomType:          supertypes.StringType{},
+												CustomType:          sentrytypes.SlackChannelType{},
 											},
 											"channel_id": schema.StringAttribute{
 												MarkdownDescription: "The Slack channel ID to send the notification to. This is an optional field that can be used to avoid rate-limiting.",
@@ -1442,11 +1443,11 @@ type AlertResourceModelActionFiltersItemActionsItemPlugin struct {
 }
 
 type AlertResourceModelActionFiltersItemActionsItemSlack struct {
-	IntegrationId supertypes.StringValue `tfsdk:"integration_id"`
-	ChannelName   supertypes.StringValue `tfsdk:"channel_name"`
-	ChannelId     supertypes.StringValue `tfsdk:"channel_id"`
-	Tags          supertypes.StringValue `tfsdk:"tags"`
-	Notes         supertypes.StringValue `tfsdk:"notes"`
+	IntegrationId supertypes.StringValue   `tfsdk:"integration_id"`
+	ChannelName   sentrytypes.SlackChannel `tfsdk:"channel_name"`
+	ChannelId     supertypes.StringValue   `tfsdk:"channel_id"`
+	Tags          supertypes.StringValue   `tfsdk:"tags"`
+	Notes         supertypes.StringValue   `tfsdk:"notes"`
 }
 
 type AlertResourceModelActionFiltersItemActionsItemPagerduty struct {

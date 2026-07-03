@@ -50,18 +50,18 @@ func (v SlackChannel) StringSemanticEquals(_ context.Context, newValuable basety
 	return strings.TrimPrefix(v.ValueString(), "#") == strings.TrimPrefix(newValue.ValueString(), "#"), diags
 }
 
-func SlackChannelNull() SlackChannel {
+func NewSlackChannelNull() SlackChannel {
 	return SlackChannel{StringValue: basetypes.NewStringNull()}
 }
 
-func SlackChannelUnknown() SlackChannel {
+func NewSlackChannelUnknown() SlackChannel {
 	return SlackChannel{StringValue: basetypes.NewStringUnknown()}
 }
 
-func SlackChannelValue(value string) SlackChannel {
+func NewSlackChannelValue(value string) SlackChannel {
 	return SlackChannel{StringValue: basetypes.NewStringValue(value)}
 }
 
-func SlackChannelPointerValue(value *string) SlackChannel {
+func NewSlackChannelPointerValue(value *string) SlackChannel {
 	return SlackChannel{StringValue: basetypes.NewStringPointerValue(value)}
 }

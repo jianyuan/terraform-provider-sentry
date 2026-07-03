@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/jianyuan/go-utils/must"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 	"github.com/samber/lo"
@@ -414,7 +415,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				outSlack.IntegrationId = inSlack.IntegrationId.Get()
 				outSlack.Config.TargetType = "specific"
 				outSlack.Config.TargetIdentifier = inSlack.ChannelId.Get()
-				outSlack.Config.TargetDisplay = inSlack.ChannelName.Get()
+				outSlack.Config.TargetDisplay = inSlack.ChannelName.ValueString()
 				if inSlack.Tags.IsKnown() {
 					outSlack.Data.Tags = new(inSlack.Tags.Get())
 				}
@@ -1117,7 +1118,7 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 				var outSlack AlertResourceModelActionFiltersItemActionsItemSlack
 				outSlack.IntegrationId = supertypes.NewStringValue(actionValue.IntegrationId)
 				outSlack.ChannelId = supertypes.NewStringValue(actionValue.Config.TargetIdentifier)
-				outSlack.ChannelName = supertypes.NewStringValue(actionValue.Config.TargetDisplay)
+				outSlack.ChannelName = sentrytypes.NewSlackChannelValue(actionValue.Config.TargetDisplay)
 				if actionValue.Data.Tags != nil {
 					outSlack.Tags = supertypes.NewStringValue(*actionValue.Data.Tags)
 				}
