@@ -72,7 +72,7 @@ export default {
     },
     {
       name: "frequency_minutes",
-      type: "int",
+      type: "int64",
       description: "How often the alert should fire in minutes.",
       computedOptionalRequired: "required",
     },
@@ -149,7 +149,7 @@ export default {
                 },
                 {
                   name: "value",
-                  type: "int",
+                  type: "int64",
                   description: "The value of the age comparison.",
                   computedOptionalRequired: "required",
                   validators: ["int64validator.AtLeast(1)"],
@@ -197,7 +197,7 @@ export default {
               attributes: [
                 {
                   name: "value",
-                  type: "int",
+                  type: "int64",
                   description: "The issue category to filter to.",
                   computedOptionalRequired: "required",
                 },
@@ -218,7 +218,7 @@ export default {
               attributes: [
                 {
                   name: "value",
-                  type: "int",
+                  type: "int64",
                   description:
                     "A positive integer representing how many times the issue has to happen before the alert will fire.",
                   computedOptionalRequired: "required",
@@ -234,7 +234,7 @@ export default {
               attributes: [
                 {
                   name: "comparison",
-                  type: "int",
+                  type: "int64",
                   description:
                     "The minimum priority threshold required to trigger a de-escalation event. The rule triggers when the historical peak priority meets this threshold, and the current priority drops below it.",
                   computedOptionalRequired: "required",
@@ -249,7 +249,7 @@ export default {
               attributes: [
                 {
                   name: "comparison",
-                  type: "int",
+                  type: "int64",
                   description:
                     "The priority the issue must be for the alert to fire.",
                   computedOptionalRequired: "required",
@@ -264,7 +264,7 @@ export default {
               attributes: [
                 {
                   name: "value",
-                  type: "int",
+                  type: "int64",
                   description:
                     "A positive integer representing the number of users that must be affected before the alert will fire.",
                   computedOptionalRequired: "required",
@@ -329,7 +329,7 @@ export default {
               attributes: [
                 {
                   name: "value",
-                  type: "int",
+                  type: "int64",
                   description:
                     "A positive integer representing the number of events in an issue that must come in before the alert will fire.",
                   computedOptionalRequired: "required",
@@ -395,7 +395,7 @@ export default {
               attributes: [
                 {
                   name: "value",
-                  type: "int",
+                  type: "int64",
                   description:
                     "A positive integer representing the number of events in an issue that must come in before the alert will fire.",
                   computedOptionalRequired: "required",
@@ -468,7 +468,7 @@ export default {
               attributes: [
                 {
                   name: "value",
-                  type: "int",
+                  type: "int64",
                   description:
                     "A positive integer representing the number of events in an issue that must come in before the alert will fire.",
                   computedOptionalRequired: "required",
@@ -492,7 +492,7 @@ export default {
               attributes: [
                 {
                   name: "value",
-                  type: "int",
+                  type: "int64",
                   description:
                     "A positive integer representing the number of events in an issue that must come in before the alert will fire.",
                   computedOptionalRequired: "required",
@@ -668,7 +668,7 @@ export default {
                 },
                 {
                   name: "level",
-                  type: "int",
+                  type: "int64",
                   description: "The level to compare against.",
                   computedOptionalRequired: "required",
                 },
