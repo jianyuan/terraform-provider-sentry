@@ -4,6 +4,16 @@ import type { DataSource, Attribute, Resource } from "./schema";
 import { match, P } from "ts-pattern";
 import { parseArgs } from "util";
 import dedent from "dedent";
+import {
+  modelType,
+  tfAttributeType,
+  tfAttributeValueType,
+  tfEnumWrapperFunction,
+  tfPlanModifierType,
+  tfSchemaAttributeType,
+  tfValidatorType,
+} from "./go-types";
+import { tfAttributeDescription } from "./tf-utils";
 
 function generateTerraformAttribute({
   parent,
@@ -12,368 +22,91 @@ function generateTerraformAttribute({
   parent: string;
   attribute: Attribute;
 }) {
-  let description = attribute.description;
-  if (attribute.deprecationMessage) {
-    description += ` **Deprecated** ${attribute.deprecationMessage}`;
+  const parts: string[] = [];
+
+  if (attribute.enum) {
+    parts.push(`${tfEnumWrapperFunction(attribute)}(`);
   }
 
-  const commonParts: string[] = [];
-  commonParts.push(`MarkdownDescription: ${JSON.stringify(description)},`);
+  parts.push(`${tfSchemaAttributeType({ type: attribute.type })}{`);
+
+  parts.push(
+    `MarkdownDescription: ${JSON.stringify(tfAttributeDescription(attribute))},`,
+  );
+
   if (attribute.deprecationMessage) {
-    commonParts.push(
+    parts.push(
       `DeprecationMessage: ${JSON.stringify(attribute.deprecationMessage)},`,
     );
   }
-  commonParts.push(
-    match(attribute.computedOptionalRequired)
-      .with("required", () => "Required: true,")
-      .with("computed", () => "Computed: true,")
-      .with("computed_optional", () => "Optional: true,\nComputed: true,")
-      .with("optional", () => "Optional: true,")
+
+  parts.push(
+    ...match(attribute.computedOptionalRequired)
+      .with("required", () => ["Required: true,"])
+      .with("computed", () => ["Computed: true,"])
+      .with("computed_optional", () => ["Optional: true,", "Computed: true,"])
+      .with("optional", () => ["Optional: true,"])
       .exhaustive(),
   );
+
   if (attribute.sensitive) {
-    commonParts.push("Sensitive: true,");
+    parts.push("Sensitive: true,");
   }
+
   if (attribute.default) {
-    commonParts.push(`Default: ${attribute.default},`);
+    parts.push(`Default: ${attribute.default},`);
   }
 
-  function resolveCustomType(original: string) {
-    if (attribute.customType) {
-      return attribute.customType.type;
-    } else {
-      return original;
+  parts.push(`CustomType: ${tfAttributeType(attribute, parent)},`);
+
+  if (attribute.validators) {
+    parts.push(`Validators: []${tfValidatorType({ type: attribute.type })}{`);
+    parts.push(...attribute.validators.map((validator) => `${validator},`));
+    parts.push("},");
+  }
+
+  if (attribute.planModifiers) {
+    parts.push(
+      `PlanModifiers: []${tfPlanModifierType({ type: attribute.type })}{`,
+    );
+    parts.push(...attribute.planModifiers.map((modifier) => `${modifier},`));
+    parts.push("},");
+  }
+
+  if (attribute.type === "list_nested" || attribute.type === "set_nested") {
+    parts.push("NestedObject: schema.NestedAttributeObject{");
+  }
+
+  if (
+    attribute.type === "list_nested" ||
+    attribute.type === "set_nested" ||
+    attribute.type === "single_nested"
+  ) {
+    parts.push("Attributes: map[string]schema.Attribute{");
+    for (const nestedAttribute of attribute.attributes) {
+      parts.push(
+        `"${nestedAttribute.name}": ${generateTerraformAttribute({
+          parent: modelType(attribute, parent),
+          attribute: nestedAttribute,
+        })},`,
+      );
     }
+    parts.push("},");
   }
 
-  return match(attribute)
-    .with({ type: "string" }, () => {
-      const parts: string[] = [];
-      if (attribute.enum) {
-        parts.push("tfutils.WithEnumStringAttribute(");
-      }
-      parts.push("schema.StringAttribute{");
-      parts.push(...commonParts);
-      parts.push(
-        `CustomType: ${resolveCustomType("supertypes.StringType{}")},`,
-      );
-      if (attribute.validators) {
-        parts.push("Validators: []validator.String{");
-        parts.push(...attribute.validators.map((validator) => `${validator},`));
-        parts.push("},");
-      }
-      if (attribute.planModifiers) {
-        parts.push("PlanModifiers: []planmodifier.String{");
-        parts.push(
-          ...attribute.planModifiers.map((modifier) => `${modifier},`),
-        );
-        parts.push("},");
-      }
-      if (attribute.enum) {
-        parts.push("},");
-        parts.push(`${attribute.enum},`);
-        parts.push(")");
-      } else {
-        parts.push("}");
-      }
-      return parts.join("\n");
-    })
-    .with({ type: "int" }, (attribute) => {
-      const parts: string[] = [];
-      if (attribute.enum) {
-        parts.push("tfutils.WithEnumInt64Attribute(");
-      }
-      parts.push("schema.Int64Attribute{");
-      parts.push(...commonParts);
-      parts.push(`CustomType: ${resolveCustomType("supertypes.Int64Type{}")},`);
-      if (attribute.validators) {
-        parts.push("Validators: []validator.Int64{");
-        parts.push(...attribute.validators.map((validator) => `${validator},`));
-        parts.push("},");
-      }
-      if (attribute.planModifiers) {
-        parts.push("PlanModifiers: []planmodifier.Int64{");
-        parts.push(
-          ...attribute.planModifiers.map((modifier) => `${modifier},`),
-        );
-        parts.push("},");
-      }
-      if (attribute.enum) {
-        parts.push("},");
-        parts.push(`${attribute.enum},`);
-        parts.push(")");
-      } else {
-        parts.push("}");
-      }
-      return parts.join("\n");
-    })
-    .with({ type: "float64" }, (attribute) => {
-      const parts: string[] = [];
-      parts.push("schema.Float64Attribute{");
-      parts.push(...commonParts);
-      // Plain basetypes here, not supertypes.Float64Value: the supertypes wrapper inherits
-      // basetypes' Float64SemanticEquals without overriding it, so its type assertion rejects
-      // the wrapper on every plan (hashicorp/terraform-plugin-framework#786). Float64 is the
-      // only type this hits — Int64/String/Bool have no SemanticEquals to inherit.
-      if (attribute.customType) {
-        parts.push(`CustomType: ${attribute.customType.type},`);
-      }
-      if (attribute.validators) {
-        parts.push("Validators: []validator.Float64{");
-        parts.push(...attribute.validators.map((validator) => `${validator},`));
-        parts.push("},");
-      }
-      if (attribute.planModifiers) {
-        parts.push("PlanModifiers: []planmodifier.Float64{");
-        parts.push(
-          ...attribute.planModifiers.map((modifier) => `${modifier},`),
-        );
-        parts.push("},");
-      }
-      parts.push("}");
-      return parts.join("\n");
-    })
-    .with({ type: "bool" }, () => {
-      const parts: string[] = [];
-      parts.push("schema.BoolAttribute{");
-      parts.push(...commonParts);
-      parts.push(`CustomType: ${resolveCustomType("supertypes.BoolType{}")},`);
-      if (attribute.validators) {
-        parts.push("Validators: []validator.Bool{");
-        parts.push(...attribute.validators.map((validator) => `${validator},`));
-        parts.push("},");
-      }
-      if (attribute.planModifiers) {
-        parts.push("PlanModifiers: []planmodifier.Bool{");
-        parts.push(
-          ...attribute.planModifiers.map((modifier) => `${modifier},`),
-        );
-        parts.push("},");
-      }
-      parts.push("}");
-      return parts.join("\n");
-    })
-    .with({ type: "list", elementType: "string" }, (attribute) => {
-      const parts: string[] = [];
-      parts.push("schema.ListAttribute{");
-      parts.push(...commonParts);
-      parts.push(
-        `CustomType: ${resolveCustomType("supertypes.NewListTypeOf[string](ctx)")},`,
-      );
-      if (attribute.validators) {
-        parts.push("Validators: []validator.List{");
-        parts.push(...attribute.validators.map((validator) => `${validator},`));
-        parts.push("},");
-      }
-      if (attribute.planModifiers) {
-        parts.push("PlanModifiers: []planmodifier.List{");
-        parts.push(
-          ...attribute.planModifiers.map((modifier) => `${modifier},`),
-        );
-        parts.push("},");
-      }
-      parts.push("}");
-      return parts.join("\n");
-    })
-    .with({ type: "list_nested" }, (attribute) => {
-      const parts: string[] = [];
-      parts.push("schema.ListNestedAttribute{");
-      parts.push(...commonParts);
-      parts.push(
-        `CustomType: ${resolveCustomType(
-          `supertypes.NewListNestedObjectTypeOf[${parent}${camelize(
-            attribute.name,
-          )}Item](ctx)`,
-        )},`,
-      );
-      if (attribute.validators) {
-        parts.push("Validators: []validator.List{");
-        parts.push(...attribute.validators.map((validator) => `${validator},`));
-        parts.push("},");
-      }
-      parts.push("NestedObject: schema.NestedAttributeObject{");
-      parts.push("Attributes: map[string]schema.Attribute{");
-      for (const nestedAttribute of attribute.attributes) {
-        parts.push(
-          `"${nestedAttribute.name}": ${generateTerraformAttribute({
-            parent: `${parent}${camelize(attribute.name)}Item`,
-            attribute: nestedAttribute,
-          })},`,
-        );
-      }
-      parts.push("},");
-      parts.push("},");
-      parts.push("}");
-      return parts.join("\n");
-    })
-    .with({ type: "set", elementType: "string" }, (attribute) => {
-      const parts: string[] = [];
-      if (attribute.enum) {
-        parts.push("tfutils.WithEnumSetAttributeStringElements(");
-      }
-      parts.push("schema.SetAttribute{");
-      parts.push(...commonParts);
-      parts.push(
-        `CustomType: ${resolveCustomType(
-          "supertypes.NewSetTypeOf[string](ctx)",
-        )},`,
-      );
-      if (attribute.validators) {
-        parts.push("Validators: []validator.Set{");
-        parts.push(...attribute.validators.map((validator) => `${validator},`));
-        parts.push("},");
-      }
-      if (attribute.planModifiers) {
-        parts.push("PlanModifiers: []planmodifier.Set{");
-        parts.push(
-          ...attribute.planModifiers.map((modifier) => `${modifier},`),
-        );
-        parts.push("},");
-      }
-      if (attribute.enum) {
-        parts.push("},");
-        parts.push(`${attribute.enum},`);
-        parts.push(")");
-      } else {
-        parts.push("}");
-      }
-      return parts.join("\n");
-    })
-    .with({ type: "set_nested" }, (attribute) => {
-      const parts: string[] = [];
-      parts.push("schema.SetNestedAttribute{");
-      parts.push(...commonParts);
-      parts.push(
-        `CustomType: ${resolveCustomType(
-          `supertypes.NewSetNestedObjectTypeOf[${parent}${camelize(
-            attribute.name,
-          )}Item](ctx)`,
-        )},`,
-      );
-      if (attribute.validators) {
-        parts.push("Validators: []validator.Set{");
-        parts.push(...attribute.validators.map((validator) => `${validator},`));
-        parts.push("},");
-      }
-      parts.push("NestedObject: schema.NestedAttributeObject{");
-      parts.push("Attributes: map[string]schema.Attribute{");
-      for (const nestedAttribute of attribute.attributes) {
-        parts.push(
-          `"${nestedAttribute.name}": ${generateTerraformAttribute({
-            parent: `${parent}${camelize(attribute.name)}Item`,
-            attribute: nestedAttribute,
-          })},`,
-        );
-      }
-      parts.push("},");
-      parts.push("},");
-      parts.push("}");
-      return parts.join("\n");
-    })
-    .with({ type: "single_nested" }, (attribute) => {
-      const parts: string[] = [];
-      parts.push("schema.SingleNestedAttribute{");
-      parts.push(...commonParts);
-      parts.push(
-        `CustomType: ${resolveCustomType(
-          `supertypes.NewSingleNestedObjectTypeOf[${parent}${camelize(
-            attribute.name,
-          )}](ctx)`,
-        )},`,
-      );
-      if (attribute.validators) {
-        parts.push("Validators: []validator.Object{");
-        parts.push(...attribute.validators.map((validator) => `${validator},`));
-        parts.push("},");
-      }
-      parts.push("Attributes: map[string]schema.Attribute{");
-      for (const nestedAttribute of attribute.attributes) {
-        parts.push(
-          `"${nestedAttribute.name}": ${generateTerraformAttribute({
-            parent: `${parent}${camelize(attribute.name)}`,
-            attribute: nestedAttribute,
-          })},`,
-        );
-      }
-      parts.push("},");
-      parts.push("}");
-      return parts.join("\n");
-    })
-    .with({ type: "map" }, (attribute) => {
-      const parts: string[] = [];
-      parts.push("schema.MapAttribute{");
-      parts.push(...commonParts);
-      parts.push(
-        `CustomType: ${resolveCustomType(
-          "supertypes.NewMapTypeOf[string](ctx)",
-        )},`,
-      );
-      if (attribute.validators) {
-        parts.push("Validators: []validator.Map{");
-        parts.push(...attribute.validators.map((validator) => `${validator},`));
-        parts.push("},");
-      }
-      if (attribute.planModifiers) {
-        parts.push("PlanModifiers: []planmodifier.Map{");
-        parts.push(
-          ...attribute.planModifiers.map((modifier) => `${modifier},`),
-        );
-        parts.push("},");
-      }
-      parts.push("}");
-      return parts.join("\n");
-    })
-    .exhaustive();
-}
+  if (attribute.type === "list_nested" || attribute.type === "set_nested") {
+    parts.push("},");
+  }
 
-function generateTerraformValueType({
-  parent,
-  attribute,
-}: {
-  parent: string;
-  attribute: Attribute;
-}) {
-  return match(attribute)
-    .with(
-      { customType: { value: P.any } },
-      (attribute) => attribute.customType.value,
-    )
-    .with({ type: "string" }, () => "supertypes.StringValue")
-    .with({ type: "int" }, () => "supertypes.Int64Value")
-    .with({ type: "float64" }, () => "types.Float64")
-    .with({ type: "bool" }, () => "supertypes.BoolValue")
-    .with(
-      { type: "list", elementType: "string" },
-      () => "supertypes.ListValueOf[string]",
-    )
-    .with(
-      { type: "list_nested" },
-      () =>
-        `supertypes.ListNestedObjectValueOf[${parent}${camelize(
-          attribute.name,
-        )}Item]`,
-    )
-    .with(
-      { type: "set", elementType: "string" },
-      () => "supertypes.SetValueOf[string]",
-    )
-    .with(
-      { type: "set_nested" },
-      () =>
-        `supertypes.SetNestedObjectValueOf[${parent}${camelize(
-          attribute.name,
-        )}Item]`,
-    )
-    .with(
-      { type: "single_nested" },
-      () =>
-        `supertypes.SingleNestedObjectValueOf[${parent}${camelize(
-          attribute.name,
-        )}]`,
-    )
-    .with({ type: "map" }, () => "supertypes.MapValueOf[string]")
-    .exhaustive();
+  if (attribute.enum) {
+    parts.push("},");
+    parts.push(`${attribute.enum},`);
+    parts.push(")");
+  } else {
+    parts.push("}");
+  }
+
+  return parts.join("\n");
 }
 
 function generateTerraformToPrimitive({
@@ -448,7 +181,7 @@ function generatePrimitiveToTerraform({
       () => `${destVarName} = supertypes.NewBoolValue(${srcVarName})`,
     )
     .with(
-      { type: "list", elementType: "string" },
+      { type: "list" },
       () =>
         `${destVarName} = supertypes.NewListValueOfSlice(ctx, ${srcVarName})`,
     )
@@ -462,7 +195,7 @@ function generatePrimitiveToTerraform({
         }))`,
     )
     .with(
-      { type: "set", elementType: "string" },
+      { type: "set" },
       () =>
         `${destVarName} = supertypes.NewSetValueOfSlice(ctx, ${srcVarName})`,
     )
@@ -495,10 +228,7 @@ function generateModel({
 
   for (const attribute of attributes) {
     structLines.push(
-      `${camelize(attribute.name)} ${generateTerraformValueType({
-        parent: name,
-        attribute,
-      })} \`tfsdk:"${attribute.name}"\``,
+      `${camelize(attribute.name)} ${tfAttributeValueType(attribute, name)} \`tfsdk:"${attribute.name}"\``,
     );
 
     if (attribute.customFill) {
