@@ -491,6 +491,79 @@ func TestAccMetricMonitorResource_change(t *testing.T) {
 				),
 			},
 			{
+				Config: testAccMetricMonitorResourceConfig(projectName, monitorName, `
+					aggregate = "count()"
+					dataset = "events"
+					event_types = ["default", "error"]
+					query = ""
+					query_type = "error"
+					time_window_seconds = 3600
+
+					condition_group = {
+						conditions = [
+							{
+								type = "lt"
+								comparison = 50
+								condition_result = 75
+							},
+							{
+								type = "lt"
+								comparison = 100
+								condition_result = 50
+							},
+							{
+								type = "gte"
+								comparison = 100
+								condition_result = 0
+							},
+						]
+					}
+
+					issue_detection = {
+						type = "percent"
+						comparison_delta = 3600
+					}
+				`),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("enabled"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(monitorName)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("aggregate"), knownvalue.StringExact("count()")),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("dataset"), knownvalue.StringExact("events")),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("event_types"), knownvalue.SetExact([]knownvalue.Check{
+						knownvalue.StringExact("default"),
+						knownvalue.StringExact("error"),
+					})),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query"), knownvalue.StringExact("")),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query_type"), knownvalue.StringExact("error")),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("time_window_seconds"), knownvalue.Int64Exact(3600)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("condition_group"), knownvalue.ObjectExact(map[string]knownvalue.Check{
+						"logic_type": knownvalue.StringExact("any"),
+						"conditions": knownvalue.ListExact([]knownvalue.Check{
+							knownvalue.ObjectPartial(map[string]knownvalue.Check{
+								"type":             knownvalue.StringExact("lt"),
+								"comparison":       knownvalue.Float64Exact(50),
+								"condition_result": knownvalue.Int64Exact(75),
+							}),
+							knownvalue.ObjectPartial(map[string]knownvalue.Check{
+								"type":             knownvalue.StringExact("lt"),
+								"comparison":       knownvalue.Float64Exact(100),
+								"condition_result": knownvalue.Int64Exact(50),
+							}),
+							knownvalue.ObjectPartial(map[string]knownvalue.Check{
+								"type":             knownvalue.StringExact("gte"),
+								"comparison":       knownvalue.Float64Exact(100),
+								"condition_result": knownvalue.Int64Exact(0),
+							}),
+						}),
+					})),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("issue_detection"), knownvalue.ObjectExact(map[string]knownvalue.Check{
+						"type":             knownvalue.StringExact("percent"),
+						"comparison_delta": knownvalue.Int64Exact(3600),
+					})),
+				),
+			},
+			{
 				ResourceName:            rn,
 				ImportState:             true,
 				ImportStateIdFunc:       acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
