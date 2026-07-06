@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/float64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
@@ -18,6 +19,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
@@ -99,7 +102,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 							Optional:            true,
 							CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemFirstSeenEvent](ctx),
 							Validators: []validator.Object{
-								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event")),
+								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent")),
 							},
 							Attributes: map[string]schema.Attribute{},
 						},
@@ -108,7 +111,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 							Optional:            true,
 							CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemIssueResolvedTrigger](ctx),
 							Validators: []validator.Object{
-								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event")),
+								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent")),
 							},
 							Attributes: map[string]schema.Attribute{},
 						},
@@ -117,7 +120,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 							Optional:            true,
 							CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemReappearedEvent](ctx),
 							Validators: []validator.Object{
-								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("regression_event")),
+								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("regression_event"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent")),
 							},
 							Attributes: map[string]schema.Attribute{},
 						},
@@ -126,9 +129,424 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 							Optional:            true,
 							CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemRegressionEvent](ctx),
 							Validators: []validator.Object{
-								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event")),
+								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent")),
 							},
 							Attributes: map[string]schema.Attribute{},
+						},
+						"event_frequency_count": schema.SingleNestedAttribute{
+							MarkdownDescription: "Number of events seen by the workflow exceeds a threshold within an interval. Acts as a WHEN trigger; Sentry's processor evaluates it asynchronously via the delayed-workflow path.",
+							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemEventFrequencyCount](ctx),
+							Validators: []validator.Object{
+								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent")),
+							},
+							Attributes: map[string]schema.Attribute{
+								"value": schema.Int64Attribute{
+									MarkdownDescription: "A positive integer representing the number of events in an issue that must come in before the alert will fire.",
+									Required:            true,
+									CustomType:          supertypes.Int64Type{},
+									Validators: []validator.Int64{
+										int64validator.AtLeast(0),
+									},
+								},
+								"filters": schema.ListNestedAttribute{
+									MarkdownDescription: "A list of additional sub-filters to evaluate before the alert will fire.",
+									Optional:            true,
+									Computed:            true,
+									CustomType:          supertypes.NewListNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemEventFrequencyCountFiltersItem](ctx),
+									NestedObject: schema.NestedAttributeObject{
+										Attributes: map[string]schema.Attribute{
+											"key": schema.StringAttribute{
+												MarkdownDescription: "The key of the filter. Conflicts with `attribute`.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+												Validators: []validator.String{
+													stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("attribute")),
+												},
+											},
+											"attribute": schema.StringAttribute{
+												MarkdownDescription: "The attribute of the filter. Conflicts with `key`.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+												Validators: []validator.String{
+													stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("key")),
+												},
+											},
+											"match": tfutils.WithEnumStringAttribute(
+												schema.StringAttribute{
+													MarkdownDescription: "The match type of the filter.",
+													Optional:            true,
+													CustomType:          supertypes.StringType{},
+												},
+												sentrydata.MatchTypeIds,
+											),
+											"value": schema.StringAttribute{
+												MarkdownDescription: "The value of the filter.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+											},
+										},
+									},
+								},
+								"interval": tfutils.WithEnumStringAttribute(
+									schema.StringAttribute{
+										MarkdownDescription: "The time period in which to evaluate the value. e.g. Number of events in an issue is more than `value` in `interval`.",
+										Required:            true,
+										CustomType:          supertypes.StringType{},
+									},
+									sentrydata.EventFrequencyStandardIntervals,
+								),
+							},
+						},
+						"event_unique_user_frequency_count": schema.SingleNestedAttribute{
+							MarkdownDescription: "Number of unique users affected by an issue exceeds a threshold within an interval. Acts as a WHEN trigger.",
+							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemEventUniqueUserFrequencyCount](ctx),
+							Validators: []validator.Object{
+								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent")),
+							},
+							Attributes: map[string]schema.Attribute{
+								"value": schema.Int64Attribute{
+									MarkdownDescription: "A positive integer representing the number of users that must be affected before the alert will fire.",
+									Required:            true,
+									CustomType:          supertypes.Int64Type{},
+									Validators: []validator.Int64{
+										int64validator.AtLeast(0),
+									},
+								},
+								"filters": schema.ListNestedAttribute{
+									MarkdownDescription: "A list of additional sub-filters to evaluate before the alert will fire.",
+									Optional:            true,
+									Computed:            true,
+									CustomType:          supertypes.NewListNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemEventUniqueUserFrequencyCountFiltersItem](ctx),
+									NestedObject: schema.NestedAttributeObject{
+										Attributes: map[string]schema.Attribute{
+											"key": schema.StringAttribute{
+												MarkdownDescription: "The key of the filter. Conflicts with `attribute`.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+												Validators: []validator.String{
+													stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("attribute")),
+												},
+											},
+											"attribute": schema.StringAttribute{
+												MarkdownDescription: "The attribute of the filter. Conflicts with `key`.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+												Validators: []validator.String{
+													stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("key")),
+												},
+											},
+											"match": tfutils.WithEnumStringAttribute(
+												schema.StringAttribute{
+													MarkdownDescription: "The match type of the filter.",
+													Optional:            true,
+													CustomType:          supertypes.StringType{},
+												},
+												sentrydata.MatchTypeIds,
+											),
+											"value": schema.StringAttribute{
+												MarkdownDescription: "The value of the filter.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+											},
+										},
+									},
+								},
+								"interval": tfutils.WithEnumStringAttribute(
+									schema.StringAttribute{
+										MarkdownDescription: "The time period in which to evaluate the value. e.g. Number of users affected by an issue is more than `value` in `interval`.",
+										Required:            true,
+										CustomType:          supertypes.StringType{},
+									},
+									sentrydata.EventFrequencyStandardIntervals,
+								),
+							},
+						},
+						"event_frequency_percent": schema.SingleNestedAttribute{
+							MarkdownDescription: "Percent change in event count compared to a previous interval. Acts as a WHEN trigger.",
+							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemEventFrequencyPercent](ctx),
+							Validators: []validator.Object{
+								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent")),
+							},
+							Attributes: map[string]schema.Attribute{
+								"value": schema.Int64Attribute{
+									MarkdownDescription: "A positive integer representing the number of events in an issue that must come in before the alert will fire.",
+									Required:            true,
+									CustomType:          supertypes.Int64Type{},
+									Validators: []validator.Int64{
+										int64validator.AtLeast(0),
+									},
+								},
+								"filters": schema.ListNestedAttribute{
+									MarkdownDescription: "A list of additional sub-filters to evaluate before the alert will fire.",
+									Optional:            true,
+									Computed:            true,
+									CustomType:          supertypes.NewListNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemEventFrequencyPercentFiltersItem](ctx),
+									NestedObject: schema.NestedAttributeObject{
+										Attributes: map[string]schema.Attribute{
+											"key": schema.StringAttribute{
+												MarkdownDescription: "The key of the filter. Conflicts with `attribute`.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+												Validators: []validator.String{
+													stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("attribute")),
+												},
+											},
+											"attribute": schema.StringAttribute{
+												MarkdownDescription: "The attribute of the filter. Conflicts with `key`.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+												Validators: []validator.String{
+													stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("key")),
+												},
+											},
+											"match": tfutils.WithEnumStringAttribute(
+												schema.StringAttribute{
+													MarkdownDescription: "The match type of the filter.",
+													Optional:            true,
+													CustomType:          supertypes.StringType{},
+												},
+												sentrydata.MatchTypeIds,
+											),
+											"value": schema.StringAttribute{
+												MarkdownDescription: "The value of the filter.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+											},
+										},
+									},
+								},
+								"interval": tfutils.WithEnumStringAttribute(
+									schema.StringAttribute{
+										MarkdownDescription: "The time period in which to evaluate the value. e.g. Number of events in an issue is `comparisonInterval` percent higher `value` compared to `interval`.",
+										Required:            true,
+										CustomType:          supertypes.StringType{},
+									},
+									sentrydata.EventFrequencyStandardIntervals,
+								),
+								"comparison_interval": tfutils.WithEnumStringAttribute(
+									schema.StringAttribute{
+										MarkdownDescription: "The time period to compare against.",
+										Required:            true,
+										CustomType:          supertypes.StringType{},
+									},
+									sentrydata.EventFrequencyComparisonIntervals,
+								),
+							},
+						},
+						"event_unique_user_frequency_percent": schema.SingleNestedAttribute{
+							MarkdownDescription: "Percent change in unique users affected by an issue compared to a previous interval. Acts as a WHEN trigger.",
+							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemEventUniqueUserFrequencyPercent](ctx),
+							Validators: []validator.Object{
+								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent")),
+							},
+							Attributes: map[string]schema.Attribute{
+								"value": schema.Int64Attribute{
+									MarkdownDescription: "A positive integer representing the percent increase in unique users that must be affected before the alert will fire.",
+									Required:            true,
+									CustomType:          supertypes.Int64Type{},
+									Validators: []validator.Int64{
+										int64validator.AtLeast(0),
+									},
+								},
+								"filters": schema.ListNestedAttribute{
+									MarkdownDescription: "A list of additional sub-filters to evaluate before the alert will fire.",
+									Optional:            true,
+									Computed:            true,
+									CustomType:          supertypes.NewListNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemEventUniqueUserFrequencyPercentFiltersItem](ctx),
+									NestedObject: schema.NestedAttributeObject{
+										Attributes: map[string]schema.Attribute{
+											"key": schema.StringAttribute{
+												MarkdownDescription: "The key of the filter. Conflicts with `attribute`.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+												Validators: []validator.String{
+													stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("attribute")),
+												},
+											},
+											"attribute": schema.StringAttribute{
+												MarkdownDescription: "The attribute of the filter. Conflicts with `key`.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+												Validators: []validator.String{
+													stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("key")),
+												},
+											},
+											"match": tfutils.WithEnumStringAttribute(
+												schema.StringAttribute{
+													MarkdownDescription: "The match type of the filter.",
+													Optional:            true,
+													CustomType:          supertypes.StringType{},
+												},
+												sentrydata.MatchTypeIds,
+											),
+											"value": schema.StringAttribute{
+												MarkdownDescription: "The value of the filter.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+											},
+										},
+									},
+								},
+								"interval": tfutils.WithEnumStringAttribute(
+									schema.StringAttribute{
+										MarkdownDescription: "The time period in which to evaluate the value. e.g. Number of users affected by an issue is `comparison_interval` percent higher than `value` compared to `interval`.",
+										Required:            true,
+										CustomType:          supertypes.StringType{},
+									},
+									sentrydata.EventFrequencyStandardIntervals,
+								),
+								"comparison_interval": tfutils.WithEnumStringAttribute(
+									schema.StringAttribute{
+										MarkdownDescription: "The time period to compare against.",
+										Required:            true,
+										CustomType:          supertypes.StringType{},
+									},
+									sentrydata.EventFrequencyComparisonIntervals,
+								),
+							},
+						},
+						"percent_sessions_count": schema.SingleNestedAttribute{
+							MarkdownDescription: "Percentage of sessions affected by an issue exceeds a threshold within an interval. Acts as a WHEN trigger.",
+							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemPercentSessionsCount](ctx),
+							Validators: []validator.Object{
+								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_percent")),
+							},
+							Attributes: map[string]schema.Attribute{
+								"value": schema.Float64Attribute{
+									MarkdownDescription: "The percentage of sessions affected by an issue that must be exceeded before the alert will fire.",
+									Required:            true,
+									CustomType:          basetypes.Float64Type{},
+									Validators: []validator.Float64{
+										float64validator.AtLeast(0),
+										float64validator.AtMost(100),
+									},
+								},
+								"filters": schema.ListNestedAttribute{
+									MarkdownDescription: "A list of additional sub-filters to evaluate before the alert will fire.",
+									Optional:            true,
+									Computed:            true,
+									CustomType:          supertypes.NewListNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemPercentSessionsCountFiltersItem](ctx),
+									NestedObject: schema.NestedAttributeObject{
+										Attributes: map[string]schema.Attribute{
+											"key": schema.StringAttribute{
+												MarkdownDescription: "The key of the filter. Conflicts with `attribute`.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+												Validators: []validator.String{
+													stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("attribute")),
+												},
+											},
+											"attribute": schema.StringAttribute{
+												MarkdownDescription: "The attribute of the filter. Conflicts with `key`.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+												Validators: []validator.String{
+													stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("key")),
+												},
+											},
+											"match": tfutils.WithEnumStringAttribute(
+												schema.StringAttribute{
+													MarkdownDescription: "The match type of the filter.",
+													Optional:            true,
+													CustomType:          supertypes.StringType{},
+												},
+												sentrydata.MatchTypeIds,
+											),
+											"value": schema.StringAttribute{
+												MarkdownDescription: "The value of the filter.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+											},
+										},
+									},
+								},
+								"interval": tfutils.WithEnumStringAttribute(
+									schema.StringAttribute{
+										MarkdownDescription: "The time period in which to evaluate the value. e.g. Percentage of sessions affected by an issue is more than `value` in `interval`.",
+										Required:            true,
+										CustomType:          supertypes.StringType{},
+									},
+									sentrydata.EventFrequencyPercentIntervals,
+								),
+							},
+						},
+						"percent_sessions_percent": schema.SingleNestedAttribute{
+							MarkdownDescription: "Percent change in session-affected percentage compared to a previous interval. Acts as a WHEN trigger.",
+							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemPercentSessionsPercent](ctx),
+							Validators: []validator.Object{
+								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count")),
+							},
+							Attributes: map[string]schema.Attribute{
+								"value": schema.Float64Attribute{
+									MarkdownDescription: "The percent increase threshold for sessions affected by an issue.",
+									Required:            true,
+									CustomType:          basetypes.Float64Type{},
+									Validators: []validator.Float64{
+										float64validator.AtLeast(0),
+									},
+								},
+								"filters": schema.ListNestedAttribute{
+									MarkdownDescription: "A list of additional sub-filters to evaluate before the alert will fire.",
+									Optional:            true,
+									Computed:            true,
+									CustomType:          supertypes.NewListNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemPercentSessionsPercentFiltersItem](ctx),
+									NestedObject: schema.NestedAttributeObject{
+										Attributes: map[string]schema.Attribute{
+											"key": schema.StringAttribute{
+												MarkdownDescription: "The key of the filter. Conflicts with `attribute`.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+												Validators: []validator.String{
+													stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("attribute")),
+												},
+											},
+											"attribute": schema.StringAttribute{
+												MarkdownDescription: "The attribute of the filter. Conflicts with `key`.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+												Validators: []validator.String{
+													stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("key")),
+												},
+											},
+											"match": tfutils.WithEnumStringAttribute(
+												schema.StringAttribute{
+													MarkdownDescription: "The match type of the filter.",
+													Optional:            true,
+													CustomType:          supertypes.StringType{},
+												},
+												sentrydata.MatchTypeIds,
+											),
+											"value": schema.StringAttribute{
+												MarkdownDescription: "The value of the filter.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+											},
+										},
+									},
+								},
+								"interval": tfutils.WithEnumStringAttribute(
+									schema.StringAttribute{
+										MarkdownDescription: "The time period in which to evaluate the value. e.g. Percentage of sessions affected by an issue is `comparisonInterval` percent higher `value` compared to `interval`.",
+										Required:            true,
+										CustomType:          supertypes.StringType{},
+									},
+									sentrydata.EventFrequencyPercentIntervals,
+								),
+								"comparison_interval": tfutils.WithEnumStringAttribute(
+									schema.StringAttribute{
+										MarkdownDescription: "The time period to compare against.",
+										Required:            true,
+										CustomType:          supertypes.StringType{},
+									},
+									sentrydata.EventFrequencyComparisonIntervals,
+								),
+							},
 						},
 					},
 				},
@@ -300,7 +718,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 												Required:            true,
 												CustomType:          supertypes.Int64Type{},
 												Validators: []validator.Int64{
-													int64validator.AtLeast(1),
+													int64validator.AtLeast(0),
 												},
 											},
 											"filters": schema.ListNestedAttribute{
@@ -362,7 +780,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 												Required:            true,
 												CustomType:          supertypes.Int64Type{},
 												Validators: []validator.Int64{
-													int64validator.AtLeast(1),
+													int64validator.AtLeast(0),
 												},
 											},
 											"filters": schema.ListNestedAttribute{
@@ -427,7 +845,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 												Required:            true,
 												CustomType:          supertypes.Int64Type{},
 												Validators: []validator.Int64{
-													int64validator.AtLeast(1),
+													int64validator.AtLeast(0),
 												},
 											},
 											"filters": schema.ListNestedAttribute{
@@ -483,7 +901,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 													Required:            true,
 													CustomType:          supertypes.StringType{},
 												},
-												sentrydata.EventFrequencyStandardIntervals,
+												sentrydata.EventFrequencyComparisonIntervals,
 											),
 										},
 									},
@@ -500,7 +918,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 												Required:            true,
 												CustomType:          supertypes.Int64Type{},
 												Validators: []validator.Int64{
-													int64validator.AtLeast(1),
+													int64validator.AtLeast(0),
 												},
 											},
 											"interval": tfutils.WithEnumStringAttribute(
@@ -509,7 +927,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 													Required:            true,
 													CustomType:          supertypes.StringType{},
 												},
-												sentrydata.EventFrequencyStandardIntervals,
+												sentrydata.EventFrequencyPercentIntervals,
 											),
 										},
 									},
@@ -526,7 +944,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 												Required:            true,
 												CustomType:          supertypes.Int64Type{},
 												Validators: []validator.Int64{
-													int64validator.AtLeast(1),
+													int64validator.AtLeast(0),
 												},
 											},
 											"filters": schema.ListNestedAttribute{
@@ -574,7 +992,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 													Required:            true,
 													CustomType:          supertypes.StringType{},
 												},
-												sentrydata.EventFrequencyStandardIntervals,
+												sentrydata.EventFrequencyPercentIntervals,
 											),
 											"comparison_interval": tfutils.WithEnumStringAttribute(
 												schema.StringAttribute{
@@ -582,7 +1000,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 													Required:            true,
 													CustomType:          supertypes.StringType{},
 												},
-												sentrydata.EventFrequencyStandardIntervals,
+												sentrydata.EventFrequencyComparisonIntervals,
 											),
 										},
 									},
@@ -1255,10 +1673,16 @@ type AlertResourceModel struct {
 }
 
 type AlertResourceModelTriggerConditionsItem struct {
-	FirstSeenEvent       supertypes.SingleNestedObjectValueOf[AlertResourceModelTriggerConditionsItemFirstSeenEvent]       `tfsdk:"first_seen_event"`
-	IssueResolvedTrigger supertypes.SingleNestedObjectValueOf[AlertResourceModelTriggerConditionsItemIssueResolvedTrigger] `tfsdk:"issue_resolved_trigger"`
-	ReappearedEvent      supertypes.SingleNestedObjectValueOf[AlertResourceModelTriggerConditionsItemReappearedEvent]      `tfsdk:"reappeared_event"`
-	RegressionEvent      supertypes.SingleNestedObjectValueOf[AlertResourceModelTriggerConditionsItemRegressionEvent]      `tfsdk:"regression_event"`
+	FirstSeenEvent                  supertypes.SingleNestedObjectValueOf[AlertResourceModelTriggerConditionsItemFirstSeenEvent]                  `tfsdk:"first_seen_event"`
+	IssueResolvedTrigger            supertypes.SingleNestedObjectValueOf[AlertResourceModelTriggerConditionsItemIssueResolvedTrigger]            `tfsdk:"issue_resolved_trigger"`
+	ReappearedEvent                 supertypes.SingleNestedObjectValueOf[AlertResourceModelTriggerConditionsItemReappearedEvent]                 `tfsdk:"reappeared_event"`
+	RegressionEvent                 supertypes.SingleNestedObjectValueOf[AlertResourceModelTriggerConditionsItemRegressionEvent]                 `tfsdk:"regression_event"`
+	EventFrequencyCount             supertypes.SingleNestedObjectValueOf[AlertResourceModelTriggerConditionsItemEventFrequencyCount]             `tfsdk:"event_frequency_count"`
+	EventUniqueUserFrequencyCount   supertypes.SingleNestedObjectValueOf[AlertResourceModelTriggerConditionsItemEventUniqueUserFrequencyCount]   `tfsdk:"event_unique_user_frequency_count"`
+	EventFrequencyPercent           supertypes.SingleNestedObjectValueOf[AlertResourceModelTriggerConditionsItemEventFrequencyPercent]           `tfsdk:"event_frequency_percent"`
+	EventUniqueUserFrequencyPercent supertypes.SingleNestedObjectValueOf[AlertResourceModelTriggerConditionsItemEventUniqueUserFrequencyPercent] `tfsdk:"event_unique_user_frequency_percent"`
+	PercentSessionsCount            supertypes.SingleNestedObjectValueOf[AlertResourceModelTriggerConditionsItemPercentSessionsCount]            `tfsdk:"percent_sessions_count"`
+	PercentSessionsPercent          supertypes.SingleNestedObjectValueOf[AlertResourceModelTriggerConditionsItemPercentSessionsPercent]          `tfsdk:"percent_sessions_percent"`
 }
 
 type AlertResourceModelTriggerConditionsItemFirstSeenEvent struct {
@@ -1271,6 +1695,87 @@ type AlertResourceModelTriggerConditionsItemReappearedEvent struct {
 }
 
 type AlertResourceModelTriggerConditionsItemRegressionEvent struct {
+}
+
+type AlertResourceModelTriggerConditionsItemEventFrequencyCount struct {
+	Value    supertypes.Int64Value                                                                                     `tfsdk:"value"`
+	Filters  supertypes.ListNestedObjectValueOf[AlertResourceModelTriggerConditionsItemEventFrequencyCountFiltersItem] `tfsdk:"filters"`
+	Interval supertypes.StringValue                                                                                    `tfsdk:"interval"`
+}
+
+type AlertResourceModelTriggerConditionsItemEventFrequencyCountFiltersItem struct {
+	Key       supertypes.StringValue `tfsdk:"key"`
+	Attribute supertypes.StringValue `tfsdk:"attribute"`
+	Match     supertypes.StringValue `tfsdk:"match"`
+	Value     supertypes.StringValue `tfsdk:"value"`
+}
+
+type AlertResourceModelTriggerConditionsItemEventUniqueUserFrequencyCount struct {
+	Value    supertypes.Int64Value                                                                                               `tfsdk:"value"`
+	Filters  supertypes.ListNestedObjectValueOf[AlertResourceModelTriggerConditionsItemEventUniqueUserFrequencyCountFiltersItem] `tfsdk:"filters"`
+	Interval supertypes.StringValue                                                                                              `tfsdk:"interval"`
+}
+
+type AlertResourceModelTriggerConditionsItemEventUniqueUserFrequencyCountFiltersItem struct {
+	Key       supertypes.StringValue `tfsdk:"key"`
+	Attribute supertypes.StringValue `tfsdk:"attribute"`
+	Match     supertypes.StringValue `tfsdk:"match"`
+	Value     supertypes.StringValue `tfsdk:"value"`
+}
+
+type AlertResourceModelTriggerConditionsItemEventFrequencyPercent struct {
+	Value              supertypes.Int64Value                                                                                       `tfsdk:"value"`
+	Filters            supertypes.ListNestedObjectValueOf[AlertResourceModelTriggerConditionsItemEventFrequencyPercentFiltersItem] `tfsdk:"filters"`
+	Interval           supertypes.StringValue                                                                                      `tfsdk:"interval"`
+	ComparisonInterval supertypes.StringValue                                                                                      `tfsdk:"comparison_interval"`
+}
+
+type AlertResourceModelTriggerConditionsItemEventFrequencyPercentFiltersItem struct {
+	Key       supertypes.StringValue `tfsdk:"key"`
+	Attribute supertypes.StringValue `tfsdk:"attribute"`
+	Match     supertypes.StringValue `tfsdk:"match"`
+	Value     supertypes.StringValue `tfsdk:"value"`
+}
+
+type AlertResourceModelTriggerConditionsItemEventUniqueUserFrequencyPercent struct {
+	Value              supertypes.Int64Value                                                                                                 `tfsdk:"value"`
+	Filters            supertypes.ListNestedObjectValueOf[AlertResourceModelTriggerConditionsItemEventUniqueUserFrequencyPercentFiltersItem] `tfsdk:"filters"`
+	Interval           supertypes.StringValue                                                                                                `tfsdk:"interval"`
+	ComparisonInterval supertypes.StringValue                                                                                                `tfsdk:"comparison_interval"`
+}
+
+type AlertResourceModelTriggerConditionsItemEventUniqueUserFrequencyPercentFiltersItem struct {
+	Key       supertypes.StringValue `tfsdk:"key"`
+	Attribute supertypes.StringValue `tfsdk:"attribute"`
+	Match     supertypes.StringValue `tfsdk:"match"`
+	Value     supertypes.StringValue `tfsdk:"value"`
+}
+
+type AlertResourceModelTriggerConditionsItemPercentSessionsCount struct {
+	Value    types.Float64                                                                                              `tfsdk:"value"`
+	Filters  supertypes.ListNestedObjectValueOf[AlertResourceModelTriggerConditionsItemPercentSessionsCountFiltersItem] `tfsdk:"filters"`
+	Interval supertypes.StringValue                                                                                     `tfsdk:"interval"`
+}
+
+type AlertResourceModelTriggerConditionsItemPercentSessionsCountFiltersItem struct {
+	Key       supertypes.StringValue `tfsdk:"key"`
+	Attribute supertypes.StringValue `tfsdk:"attribute"`
+	Match     supertypes.StringValue `tfsdk:"match"`
+	Value     supertypes.StringValue `tfsdk:"value"`
+}
+
+type AlertResourceModelTriggerConditionsItemPercentSessionsPercent struct {
+	Value              types.Float64                                                                                                `tfsdk:"value"`
+	Filters            supertypes.ListNestedObjectValueOf[AlertResourceModelTriggerConditionsItemPercentSessionsPercentFiltersItem] `tfsdk:"filters"`
+	Interval           supertypes.StringValue                                                                                       `tfsdk:"interval"`
+	ComparisonInterval supertypes.StringValue                                                                                       `tfsdk:"comparison_interval"`
+}
+
+type AlertResourceModelTriggerConditionsItemPercentSessionsPercentFiltersItem struct {
+	Key       supertypes.StringValue `tfsdk:"key"`
+	Attribute supertypes.StringValue `tfsdk:"attribute"`
+	Match     supertypes.StringValue `tfsdk:"match"`
+	Value     supertypes.StringValue `tfsdk:"value"`
 }
 
 type AlertResourceModelActionFiltersItem struct {
