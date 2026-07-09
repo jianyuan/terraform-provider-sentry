@@ -23,6 +23,7 @@ jobs:
       - uses: hashicorp/setup-terraform@v4
         with:
           terraform_wrapper: false
+      - run: go mod download
       - run: make generate
       - name: Create Pull Request
         uses: stefanzweifel/git-auto-commit-action@v5
