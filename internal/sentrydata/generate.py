@@ -71,21 +71,28 @@ def get_jinja2_env() -> jinja2.Environment:
 
 def get_text(path: str) -> str:
     url = f"https://raw.githubusercontent.com/{REPO}/refs/heads/{BRANCH}/{path}"
-    max_attempts = 4
-    for attempt in range(max_attempts):
-        r = httpx.get(url)
-        if r.status_code == 429:
-            if attempt == max_attempts - 1:
-                r.raise_for_status()
-            retry_after = r.headers.get("Retry-After")
-            if retry_after and retry_after.isdigit():
-                delay = int(retry_after)
-            else:
-                delay = 2**attempt
-            time.sleep(delay)
-            continue
-        r.raise_for_status()
-        return r.text
+    max_attempts = 5
+    with httpx.Client(timeout=httpx.Timeout(60.0, connect=30.0)) as client:
+        for attempt in range(max_attempts):
+            try:
+                r = client.get(url)
+            except (httpx.ReadTimeout, httpx.ConnectTimeout, httpx.NetworkError):
+                if attempt == max_attempts - 1:
+                    raise
+                time.sleep(2**attempt)
+                continue
+            if r.status_code == 429 or r.status_code >= 500:
+                if attempt == max_attempts - 1:
+                    r.raise_for_status()
+                retry_after = r.headers.get("Retry-After")
+                if retry_after and retry_after.isdigit():
+                    delay = int(retry_after)
+                else:
+                    delay = 2**attempt
+                time.sleep(delay)
+                continue
+            r.raise_for_status()
+            return r.text
     raise RuntimeError(f"failed to fetch {url}")
 
 

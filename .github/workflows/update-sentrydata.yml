@@ -25,8 +25,7 @@ jobs:
           terraform_wrapper: false
       - run: go mod download
       - run: make generate
-      - name: Create Pull Request
+      - name: Commit generated changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: Update Sentry data
-          branch: main
