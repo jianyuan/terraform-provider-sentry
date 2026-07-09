@@ -896,7 +896,6 @@ var Timezones = []string{
 	"Mexico/BajaNorte",
 	"Mexico/BajaSur",
 	"Mexico/General",
-	"Msft/localtime",
 	"NZ",
 	"NZ-CHAT",
 	"Navajo",
