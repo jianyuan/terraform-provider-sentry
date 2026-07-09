@@ -14,7 +14,9 @@ import (
 
 func dataSourceSentryMetricAlert() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceSentryMetricAlertRead,
+		Description:        "⚠️ This resource is deprecated.",
+		DeprecationMessage: "This resource is deprecated.",
+		ReadContext:        dataSourceSentryMetricAlertRead,
 
 		Schema: map[string]*schema.Schema{
 			"organization": {

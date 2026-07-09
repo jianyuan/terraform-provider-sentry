@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
@@ -22,8 +23,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/jianyuan/go-utils/sliceutils"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
+	"github.com/samber/lo"
 
 	"github.com/mzglinski/terraform-provider-sentry/internal/apiclient"
 	"github.com/mzglinski/terraform-provider-sentry/internal/diagutils"
@@ -60,9 +61,9 @@ func (m *ProjectFilterResourceModel) Fill(ctx context.Context, project apiclient
 		if values == "" {
 			m.BlacklistedIps = types.SetValueMust(types.StringType, []attr.Value{})
 		} else {
-			m.BlacklistedIps = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
+			m.BlacklistedIps = types.SetValueMust(types.StringType, lo.Map(strings.Split(values, "\n"), func(v string, _ int) attr.Value {
 				return types.StringValue(v)
-			}, strings.Split(values, "\n")))
+			}))
 		}
 	} else {
 		diags.Append(diagutils.NewFillError(fmt.Errorf("invalid type for filters:blacklisted_ips: %T", project.Options["filters:blacklisted_ips"])))
@@ -72,9 +73,9 @@ func (m *ProjectFilterResourceModel) Fill(ctx context.Context, project apiclient
 		if values == "" {
 			m.Releases = types.SetValueMust(types.StringType, []attr.Value{})
 		} else {
-			m.Releases = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
+			m.Releases = types.SetValueMust(types.StringType, lo.Map(strings.Split(values, "\n"), func(v string, _ int) attr.Value {
 				return types.StringValue(v)
-			}, strings.Split(values, "\n")))
+			}))
 		}
 	} else {
 		diags.Append(diagutils.NewFillError(fmt.Errorf("invalid type for filters:releases: %T", project.Options["filters:releases"])))
@@ -84,9 +85,9 @@ func (m *ProjectFilterResourceModel) Fill(ctx context.Context, project apiclient
 		if values == "" {
 			m.ErrorMessages = types.SetValueMust(types.StringType, []attr.Value{})
 		} else {
-			m.ErrorMessages = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
+			m.ErrorMessages = types.SetValueMust(types.StringType, lo.Map(strings.Split(values, "\n"), func(v string, _ int) attr.Value {
 				return types.StringValue(v)
-			}, strings.Split(values, "\n")))
+			}))
 		}
 	} else {
 		diags.Append(diagutils.NewFillError(fmt.Errorf("invalid type for filters:error_messages: %T", project.Options["filters:error_messages"])))
@@ -114,9 +115,9 @@ func (m ProjectClientSecurityResourceModel) AttributeTypes() map[string]attr.Typ
 }
 
 func (m *ProjectClientSecurityResourceModel) Fill(ctx context.Context, project apiclient.Project) (diags diag.Diagnostics) {
-	m.AllowedDomains = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
+	m.AllowedDomains = types.SetValueMust(types.StringType, lo.Map(project.AllowedDomains, func(v string, _ int) attr.Value {
 		return types.StringValue(v)
-	}, project.AllowedDomains))
+	}))
 	m.ScrapeJavascript = types.BoolValue(project.ScrapeJavaScript)
 	m.SecurityToken = types.StringValue(project.SecurityToken)
 
@@ -155,9 +156,9 @@ type ProjectResourceModel struct {
 func (m *ProjectResourceModel) Fill(ctx context.Context, project apiclient.Project) (diags diag.Diagnostics) {
 	m.Id = types.StringValue(project.Slug)
 	m.Organization = types.StringValue(project.Organization.Slug)
-	m.Teams = supertypes.NewSetValueOfSlice(ctx, sliceutils.Map(func(item apiclient.Team) string {
+	m.Teams = supertypes.NewSetValueOfSlice(ctx, lo.Map(project.Teams, func(item apiclient.Team, _ int) string {
 		return item.Slug
-	}, project.Teams))
+	}))
 	m.Name = types.StringValue(project.Name)
 	m.Slug = types.StringValue(project.Slug)
 
@@ -214,7 +215,7 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 		MarkdownDescription: "Sentry Project resource.",
 
 		Attributes: map[string]schema.Attribute{
-			"id":           ResourceIdAttribute(),
+			"id":           ProjectResourceIdAttribute(),
 			"organization": ResourceOrganizationAttribute(),
 			"teams": schema.SetAttribute{
 				Description: "The slugs of the teams to create the project for.",
@@ -424,6 +425,54 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 			},
 		},
 	}
+}
+
+func ProjectResourceIdAttribute() schema.Attribute {
+	return schema.StringAttribute{
+		MarkdownDescription: "The ID of this resource.",
+		Computed:            true,
+		PlanModifiers: []planmodifier.String{
+			projectResourceIdUseStateUnlessSlugChangesModifier{},
+		},
+	}
+}
+
+type projectResourceIdUseStateUnlessSlugChangesModifier struct{}
+
+func (m projectResourceIdUseStateUnlessSlugChangesModifier) Description(_ context.Context) string {
+	return "Use the prior project ID unless the project slug is changing."
+}
+
+func (m projectResourceIdUseStateUnlessSlugChangesModifier) MarkdownDescription(_ context.Context) string {
+	return "Use the prior project ID unless the project slug is changing."
+}
+
+func (m projectResourceIdUseStateUnlessSlugChangesModifier) PlanModifyString(ctx context.Context, req planmodifier.StringRequest, resp *planmodifier.StringResponse) {
+	if req.State.Raw.IsNull() {
+		return
+	}
+
+	if !req.PlanValue.IsUnknown() {
+		return
+	}
+
+	if req.ConfigValue.IsUnknown() {
+		return
+	}
+
+	var planSlug, stateSlug types.String
+
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("slug"), &planSlug)...)
+	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("slug"), &stateSlug)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if planSlug.IsUnknown() || stateSlug.IsUnknown() || !planSlug.Equal(stateSlug) {
+		return
+	}
+
+	resp.PlanValue = req.StateValue
 }
 
 func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -799,8 +848,8 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	httpRespUpdate, err := r.apiClient.UpdateOrganizationProjectWithResponse(
 		ctx,
-		plan.Organization.ValueString(),
-		plan.Id.ValueString(),
+		state.Organization.ValueString(),
+		state.Id.ValueString(),
 		updateBody,
 	)
 	if err != nil {
@@ -865,7 +914,7 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 	httpRespRead, err := r.apiClient.GetOrganizationProjectWithResponse(
 		ctx,
 		plan.Organization.ValueString(),
-		plan.Id.ValueString(),
+		httpRespUpdate.JSON200.Slug,
 	)
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("read", err))

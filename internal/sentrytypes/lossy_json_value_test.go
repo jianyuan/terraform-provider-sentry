@@ -150,6 +150,37 @@ func TestLossyJsonStringSemanticEquals(t *testing.T) {
 			givenJson:     NewLossyJsonValue(`[{"hello": "world"}, {"nums":[1, 2, 3]}, {"nested": {"test-bool": true, "new-field": null}}]`),
 			expectedMatch: false,
 		},
+		"semantically equal - ignored key present only in given value": {
+			currentJson:   LossyJson{StringValue: basetypes.NewStringValue(`{"name": "n", "value": "v"}`), IgnoreKeys: []string{"label"}},
+			givenJson:     LossyJson{StringValue: basetypes.NewStringValue(`{"label": "L", "name": "n", "value": "v"}`), IgnoreKeys: []string{"label"}},
+			expectedMatch: true,
+		},
+		"semantically equal - ignored key present only in current value": {
+			currentJson:   LossyJson{StringValue: basetypes.NewStringValue(`{"label": "L", "name": "n", "value": "v"}`), IgnoreKeys: []string{"label"}},
+			givenJson:     LossyJson{StringValue: basetypes.NewStringValue(`{"name": "n", "value": "v"}`), IgnoreKeys: []string{"label"}},
+			expectedMatch: true,
+		},
+		"semantically equal - ignored key present on both sides with different values": {
+			currentJson:   LossyJson{StringValue: basetypes.NewStringValue(`{"label": "old", "name": "n", "value": "v"}`), IgnoreKeys: []string{"label"}},
+			givenJson:     LossyJson{StringValue: basetypes.NewStringValue(`{"label": "new", "name": "n", "value": "v"}`), IgnoreKeys: []string{"label"}},
+			expectedMatch: true,
+		},
+		"not equal - non-ignored key differs even when ignored key matches": {
+			currentJson:   LossyJson{StringValue: basetypes.NewStringValue(`{"label": "L", "name": "n", "value": "old"}`), IgnoreKeys: []string{"label"}},
+			givenJson:     LossyJson{StringValue: basetypes.NewStringValue(`{"label": "L", "name": "n", "value": "new"}`), IgnoreKeys: []string{"label"}},
+			expectedMatch: false,
+		},
+		"semantically equal - ignored key nested inside array of objects": {
+			currentJson: LossyJson{
+				StringValue: basetypes.NewStringValue(`{"id":"x","settings":[{"name":"n","value":"v"}]}`),
+				IgnoreKeys:  []string{"label"},
+			},
+			givenJson: LossyJson{
+				StringValue: basetypes.NewStringValue(`{"id":"x","settings":[{"label":"L","name":"n","value":"v"}]}`),
+				IgnoreKeys:  []string{"label"},
+			},
+			expectedMatch: true,
+		},
 	}
 	for name, testCase := range testCases {
 		name, testCase := name, testCase

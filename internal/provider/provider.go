@@ -7,16 +7,19 @@ import (
 	"os"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/function"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
+	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/mzglinski/go-sentry/v2/sentry"
 	"github.com/mzglinski/terraform-provider-sentry/internal/apiclient"
-	"github.com/mzglinski/terraform-provider-sentry/internal/provider/provider_sentry"
 	"github.com/mzglinski/terraform-provider-sentry/internal/providerdata"
 	"github.com/mzglinski/terraform-provider-sentry/internal/sentryclient"
 )
 
 var _ provider.Provider = &SentryProvider{}
+var _ provider.ProviderWithFunctions = &SentryProvider{}
 
 // SentryProvider defines the provider implementation.
 type SentryProvider struct {
@@ -26,17 +29,35 @@ type SentryProvider struct {
 	version string
 }
 
+// SentryProviderModel describes the provider data model.
+type SentryProviderModel struct {
+	Token   types.String `tfsdk:"token"`
+	BaseUrl types.String `tfsdk:"base_url"`
+}
+
 func (p *SentryProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
 	resp.TypeName = "sentry"
 	resp.Version = p.version
 }
 
 func (p *SentryProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
-	resp.Schema = provider_sentry.SentryProviderSchema(ctx)
+	resp.Schema = schema.Schema{
+		Attributes: map[string]schema.Attribute{
+			"token": schema.StringAttribute{
+				MarkdownDescription: "The authentication token used to connect to Sentry. The value can be sourced from the `SENTRY_AUTH_TOKEN` environment variable.",
+				Optional:            true,
+				Sensitive:           true,
+			},
+			"base_url": schema.StringAttribute{
+				MarkdownDescription: "The target Sentry Base API URL in the format `https://[hostname]/api/`. The default value is `https://sentry.io/api/`. The value must be provided when working with Sentry On-Premise. The value can be sourced from the `SENTRY_BASE_URL` environment variable.",
+				Optional:            true,
+			},
+		},
+	}
 }
 
 func (p *SentryProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
-	var data provider_sentry.SentryModel
+	var data SentryProviderModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -146,8 +167,25 @@ func (p *SentryProvider) DataSources(ctx context.Context) []func() datasource.Da
 		NewIssueAlertDataSource,
 		NewOrganizationIntegrationDataSource,
 		NewOrganizationMemberDataSource,
+		NewSentryAppInstallationDataSource,
 		NewTeamDataSource,
 	)
+}
+
+func (p *SentryProvider) Functions(ctx context.Context) []func() function.Function {
+	return []func() function.Function{
+		NewAssertionFunction,
+		NewOpAndFunction,
+		NewOpHeaderCheckFunction,
+		NewOpHeaderOperandGlobFunction,
+		NewOpHeaderOperandLiteralFunction,
+		NewOpJsonpathFunction,
+		NewOpJsonpathOperandGlobFunction,
+		NewOpJsonpathOperandLiteralFunction,
+		NewOpNotFunction,
+		NewOpOrFunction,
+		NewOpStatusCodeCheckFunction,
+	}
 }
 
 func New(version string) func() provider.Provider {

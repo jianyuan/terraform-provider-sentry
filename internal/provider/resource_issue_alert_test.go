@@ -79,8 +79,7 @@ func TestAccIssueAlertResource_validation(t *testing.T) {
 					actions_v2 = [{ }]
 				`),
 				ExpectError: acctest.ExpectLiteralError(
-					`Failed to convert action: [{Exactly one action must be set Exactly one action`,
-					`must be set}]`,
+					`Failed to convert action: [{Exactly one action must be set Exactly one action must be set}]`,
 				),
 			},
 			{
@@ -90,8 +89,7 @@ func TestAccIssueAlertResource_validation(t *testing.T) {
 					filters_v2 = [{ }]
 				`),
 				ExpectError: acctest.ExpectLiteralError(
-					`Failed to convert filter: [{Exactly one filter must be set Exactly one filter`,
-					`must be set}]`,
+					`Failed to convert filter: [{Exactly one filter must be set Exactly one filter must be set}]`,
 				),
 			},
 			{
@@ -101,8 +99,7 @@ func TestAccIssueAlertResource_validation(t *testing.T) {
 					conditions_v2 = [{ }]
 				`),
 				ExpectError: acctest.ExpectLiteralError(
-					`Failed to convert condition: [{Exactly one condition must be set Exactly one`,
-					`condition must be set}]`,
+					`Failed to convert condition: [{Exactly one condition must be set Exactly one condition must be set}]`,
 				),
 			},
 			{
@@ -114,8 +111,7 @@ func TestAccIssueAlertResource_validation(t *testing.T) {
 					]
 				`),
 				ExpectError: acctest.ExpectLiteralError(
-					`Attribute "conditions_v2[0].first_seen_event" cannot be specified when`,
-					`"conditions_v2[0].regression_event" is specified`,
+					`Attribute "conditions_v2[0].first_seen_event" cannot be specified when "conditions_v2[0].regression_event" is specified`,
 				),
 			},
 		},
@@ -504,7 +500,10 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 								"name":              knownvalue.NotNull(),
 								"target_type":       knownvalue.StringExact("Team"),
 								"target_identifier": knownvalue.NotNull(),
-								"fallthrough_type":  knownvalue.Null(),
+								// The API defaults fallthroughType to ActiveMembers for
+								// all email actions, not just IssueOwners. See
+								// getsentry/sentry#118404.
+								"fallthrough_type": knownvalue.StringExact("ActiveMembers"),
 							}),
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -530,6 +529,7 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 									"stateId":    knownvalue.StringExact("23e412bc-5abc-4812-916c-f91b4e21a060"),
 									"priority":   knownvalue.StringExact("0"),
 								}),
+								"settings_labels": knownvalue.MapExact(map[string]knownvalue.Check{}),
 							}),
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -661,6 +661,88 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 			{
 				ResourceName:      rn,
 				ImportState:       true,
+				ImportStateIdFunc: acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
+			},
+		},
+	})
+}
+
+// TestAccIssueAlertResource_importRoundTrip reproduces the adoption flow for a
+// classic issue-alert rule: import an existing rule and confirm the rule body is
+// read back into state (no follow-up drift), then update it without a 404.
+//
+// Before the import fix, ImportState only populated organization/project/id, so the
+// conditions_v2/filters_v2/actions_v2 lists stayed null. The import step below uses
+// ImportStateVerify, which compares the imported state to the applied state and would
+// fail because the rule body was missing -- the same null body that forced a doomed
+// "update" on the next apply.
+func TestAccIssueAlertResource_importRoundTrip(t *testing.T) {
+	rn := "sentry_issue_alert.test"
+	team := acctest.RandomWithPrefix("tf-team")
+	project := acctest.RandomWithPrefix("tf-project")
+	alert := acctest.RandomWithPrefix("tf-issue-alert")
+
+	conditionsCheck := statecheck.ExpectKnownValue(rn, tfjsonpath.New("conditions_v2"), knownvalue.ListExact([]knownvalue.Check{
+		knownvalue.ObjectPartial(map[string]knownvalue.Check{"first_seen_event": knownvalue.NotNull()}),
+		knownvalue.ObjectPartial(map[string]knownvalue.Check{"reappeared_event": knownvalue.NotNull()}),
+		knownvalue.ObjectPartial(map[string]knownvalue.Check{"regression_event": knownvalue.NotNull()}),
+	}))
+	taggedCheck := func(value string) statecheck.StateCheck {
+		return statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters_v2"), knownvalue.ListExact([]knownvalue.Check{
+			knownvalue.ObjectPartial(map[string]knownvalue.Check{
+				"tagged_event": knownvalue.ObjectPartial(map[string]knownvalue.Check{
+					"key":   knownvalue.StringExact("monitor"),
+					"match": knownvalue.StringExact("EQUAL"),
+					"value": knownvalue.StringExact(value),
+				}),
+			}),
+		}))
+	}
+	actionsCheck := statecheck.ExpectKnownValue(rn, tfjsonpath.New("actions_v2"), knownvalue.ListExact([]knownvalue.Check{
+		knownvalue.ObjectPartial(map[string]knownvalue.Check{
+			"notify_email": knownvalue.ObjectPartial(map[string]knownvalue.Check{
+				"target_type":      knownvalue.StringExact("IssueOwners"),
+				"fallthrough_type": knownvalue.StringExact("ActiveMembers"),
+			}),
+		}),
+	}))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckIssueAlertDestroy,
+		Steps: []resource.TestStep{
+			// Create the classic issue-alert rule.
+			{
+				Config: testAccIssueAlertConfig_importRoundTrip(team, project, alert, "server-health", 5),
+				ConfigStateChecks: []statecheck.StateCheck{
+					conditionsCheck,
+					taggedCheck("server-health"),
+					actionsCheck,
+				},
+			},
+			// Import must round-trip the full rule body. ImportStateVerify fails if the
+			// imported state differs from the applied state (i.e. if the body is null).
+			{
+				ResourceName:      rn,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
+			},
+			// Updating the (now in-state) rule must not 404.
+			{
+				Config: testAccIssueAlertConfig_importRoundTrip(team, project, alert, "db-health", 5),
+				ConfigStateChecks: []statecheck.StateCheck{
+					conditionsCheck,
+					taggedCheck("db-health"),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("frequency"), knownvalue.Int64Exact(5)),
+				},
+			},
+			// Re-import after the update to confirm the round-trip still holds.
+			{
+				ResourceName:      rn,
+				ImportState:       true,
+				ImportStateVerify: true,
 				ImportStateIdFunc: acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
 			},
 		},
@@ -904,135 +986,227 @@ func TestAccIssueAlertResource_jsonValues_emptyArray(t *testing.T) {
 	})
 }
 
-func TestAccIssueAlertResource_upgradeFromVersion(t *testing.T) {
+func TestAccIssueAlertResource_slackChannelNormalization(t *testing.T) {
 	rn := "sentry_issue_alert.test"
 	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")
 	alert := acctest.RandomWithPrefix("tf-issue-alert")
-	var alertId string
+
+	slackConfig := `
+		data "sentry_organization_integration" "slack" {
+			organization = sentry_project.test.organization
+			provider_key = "slack"
+			name         = "A2 Marketing"
+		}
+	`
+
+	makeConfig := func(channel string, channelId string) string {
+		channelIdLine := ""
+		if channelId != "" {
+			channelIdLine = fmt.Sprintf(`channel_id = "%s"`, channelId)
+		}
+		return testAccIssueAlertConfig(team, project, alert, fmt.Sprintf(`
+			conditions_v2 = [
+				{ first_seen_event = {} },
+			]
+			filters_v2 = []
+			actions_v2 = [
+				{
+					slack_notify_service = {
+						workspace = data.sentry_organization_integration.slack.id
+						channel   = "%s"
+						%s
+					}
+				},
+			]
+		`, channel, channelIdLine)) + slackConfig
+	}
+
+	slackChecks := func(expectedChannel string, expectedChannelId knownvalue.Check) []statecheck.StateCheck {
+		return []statecheck.StateCheck{
+			statecheck.ExpectKnownValue(rn, tfjsonpath.New("actions_v2"), knownvalue.ListExact([]knownvalue.Check{
+				knownvalue.ObjectPartial(map[string]knownvalue.Check{
+					"slack_notify_service": knownvalue.ObjectExact(map[string]knownvalue.Check{
+						"name":       knownvalue.NotNull(),
+						"workspace":  knownvalue.NotNull(),
+						"channel":    knownvalue.StringExact(expectedChannel),
+						"channel_id": expectedChannelId,
+						"tags":       knownvalue.Null(),
+						"notes":      knownvalue.Null(),
+					}),
+				}),
+			})),
+		}
+	}
+
+	channelIdCheck := knownvalue.StringRegexp(regexp.MustCompile(`^[CGD][A-Z0-9]+$`))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { acctest.PreCheck(t) },
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckIssueAlertDestroy,
 		Steps: []resource.TestStep{
+			// Step 1: Create with "#general", no explicit channel_id
 			{
-				ExternalProviders: map[string]resource.ExternalProvider{
-					acctest.ProviderName: {
-						Source:            "jianyuan/sentry",
-						VersionConstraint: "0.11.2",
-					},
-				},
-				Config: testAccOrganizationDataSourceConfig + fmt.Sprintf(`
-resource "sentry_team" "test" {
-	organization = data.sentry_organization.test.slug
-	name         = "%[1]s"
-	slug         = "%[1]s"
-}
-
-resource "sentry_project" "test" {
-	organization = sentry_team.test.organization
-	teams        = [sentry_team.test.slug]
-	name         = "%[2]s"
-	platform     = "go"
-}
-
-resource "sentry_issue_alert" "test" {
-	organization = sentry_project.test.organization
-	project      = sentry_project.test.id
-	name         = "%[3]s"
-
-	action_match = "any"
-	filter_match = "any"
-	frequency    = 30
-
-	conditions = [
-		{
-			id = "sentry.rules.conditions.first_seen_event.FirstSeenEventCondition"
-		},
-		{
-			id = "sentry.rules.conditions.regression_event.RegressionEventCondition"
-		}
-	]
-
-	actions = [
-		{
-			id = "sentry.rules.actions.notify_event.NotifyEventAction"
-		}
-	]
-}
-`, team, project, alert),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(rn, "id"),
-					resource.TestCheckResourceAttrSet(rn, "internal_id"),
-					resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
-					resource.TestCheckResourceAttr(rn, "project", project),
-					resource.TestCheckResourceAttr(rn, "name", alert),
-				),
+				Config:            makeConfig("#general", ""),
+				ConfigStateChecks: slackChecks("#general", channelIdCheck),
 			},
+			// Step 2: Switch to "general" (without #), no explicit channel_id — should not cause drift
 			{
-				ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-				Config: testAccOrganizationDataSourceConfig + fmt.Sprintf(`
-resource "sentry_team" "test" {
-	organization = data.sentry_organization.test.slug
-	name         = "%[1]s"
-	slug         = "%[1]s"
-}
-
-resource "sentry_project" "test" {
-	organization = sentry_team.test.organization
-	teams        = [sentry_team.test.slug]
-	name         = "%[2]s"
-	platform     = "go"
-}
-
-resource "sentry_issue_alert" "test" {
-	organization = sentry_project.test.organization
-	project      = sentry_project.test.id
-	name         = "%[3]s"
-
-	action_match = "any"
-	filter_match = "any"
-	frequency    = 30
-
-	conditions = jsonencode(
-		[
-			{
-				id = "sentry.rules.conditions.first_seen_event.FirstSeenEventCondition"
+				Config:            makeConfig("general", ""),
+				ConfigStateChecks: slackChecks("general", channelIdCheck),
 			},
+			// Step 3: Add explicit channel_id with "#general" — should not cause drift
 			{
-				id = "sentry.rules.conditions.regression_event.RegressionEventCondition"
-			}
-		]
-	)
-
-	actions = jsonencode(
-		[
+				Config:            makeConfig("#general", "C04AKSURGVB"),
+				ConfigStateChecks: slackChecks("#general", channelIdCheck),
+			},
+			// Step 4: Keep explicit channel_id, switch to "general" (without #) — should not cause drift
 			{
-				"id": "sentry.rules.actions.notify_event.NotifyEventAction"
-			}
-		]
-	)
-}
-`, team, project, alert),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIssueAlertExists(rn, &alertId),
-					resource.TestCheckResourceAttrWith(rn, "id", func(value string) error {
-						if alertId != value {
-							return fmt.Errorf("expected %s, got %s", alertId, value)
-						}
-						return nil
-					}),
-					resource.TestCheckResourceAttr(rn, "organization", acctest.TestOrganization),
-					resource.TestCheckResourceAttr(rn, "project", project),
-					resource.TestCheckResourceAttr(rn, "name", alert),
-					resource.TestCheckResourceAttr(rn, "action_match", "any"),
-					resource.TestCheckResourceAttr(rn, "filter_match", "any"),
-					resource.TestCheckResourceAttr(rn, "frequency", "30"),
-					resource.TestCheckResourceAttrSet(rn, "conditions"),
-					resource.TestCheckResourceAttrSet(rn, "actions"),
-				),
+				Config:            makeConfig("general", "C04AKSURGVB"),
+				ConfigStateChecks: slackChecks("general", channelIdCheck),
+			},
+			// Step 5: Remove channel_id, back to "#general" — should not cause drift
+			{
+				Config:            makeConfig("#general", ""),
+				ConfigStateChecks: slackChecks("#general", channelIdCheck),
 			},
 		},
 	})
+}
+
+func TestAccIssueAlertResource_forExpression(t *testing.T) {
+	rn := "sentry_issue_alert.test"
+	team := acctest.RandomWithPrefix("tf-team")
+	project := acctest.RandomWithPrefix("tf-project")
+	alert := acctest.RandomWithPrefix("tf-issue-alert")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckIssueAlertDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccIssueAlertConfig_forExpression(team, project, alert),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("project"), knownvalue.StringExact(project)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(alert)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("conditions_v2"), knownvalue.ListExact([]knownvalue.Check{
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"first_seen_event": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"name": knownvalue.NotNull(),
+							}),
+						}),
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"regression_event": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"name": knownvalue.NotNull(),
+							}),
+						}),
+					})),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters_v2"), knownvalue.ListExact([]knownvalue.Check{
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"tagged_event": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"name":  knownvalue.NotNull(),
+								"key":   knownvalue.StringExact("key"),
+								"match": knownvalue.StringExact("CONTAINS"),
+								"value": knownvalue.StringExact("value"),
+							}),
+						}),
+					})),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("actions_v2"), knownvalue.ListExact([]knownvalue.Check{
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"notify_email": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"name":              knownvalue.NotNull(),
+								"target_type":       knownvalue.StringExact("IssueOwners"),
+								"target_identifier": knownvalue.Null(),
+								"fallthrough_type":  knownvalue.StringExact("ActiveMembers"),
+							}),
+						}),
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"notify_email": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"name":              knownvalue.NotNull(),
+								"target_type":       knownvalue.StringExact("Team"),
+								"target_identifier": knownvalue.NotNull(),
+								// The API defaults fallthroughType to ActiveMembers for
+								// all email actions, not just IssueOwners. See
+								// getsentry/sentry#118404.
+								"fallthrough_type": knownvalue.StringExact("ActiveMembers"),
+							}),
+						}),
+					})),
+				},
+			},
+		},
+	})
+}
+
+func testAccIssueAlertConfig_forExpression(team string, project string, alert string) string {
+	return testAccOrganizationDataSourceConfig + fmt.Sprintf(`
+locals {
+	conditions = [
+		{ type = "first_seen" },
+		{ type = "regression" },
+	]
+
+	filters = [
+		{ key = "key", match = "CONTAINS", value = "value" },
+	]
+
+	action_types = ["issue_owners", "team"]
+}
+
+resource "sentry_team" "test" {
+	organization = data.sentry_organization.test.slug
+	name         = "%[1]s"
+	slug         = "%[1]s"
+}
+
+resource "sentry_project" "test" {
+	organization = sentry_team.test.organization
+	teams        = [sentry_team.test.slug]
+	name         = "%[2]s"
+	platform     = "go"
+}
+
+resource "sentry_issue_alert" "test" {
+	organization = sentry_project.test.organization
+	project      = sentry_project.test.id
+	name         = "%[3]s"
+
+	action_match = "any"
+	filter_match = "any"
+	frequency    = 30
+
+	conditions_v2 = [
+		for c in local.conditions : {
+			first_seen_event  = c.type == "first_seen" ? {} : null
+			regression_event  = c.type == "regression" ? {} : null
+		}
+	]
+
+	filters_v2 = [
+		for f in local.filters : {
+			tagged_event = {
+				key   = f.key
+				match = f.match
+				value = f.value
+			}
+		}
+	]
+
+	actions_v2 = [
+		for a in local.action_types : {
+			notify_email = {
+				target_type       = a == "issue_owners" ? "IssueOwners" : "Team"
+				target_identifier = a == "team" ? sentry_team.test.internal_id : null
+				fallthrough_type  = a == "issue_owners" ? "ActiveMembers" : null
+			}
+		}
+	]
+}
+`, team, project, alert)
 }
 
 func testAccCheckIssueAlertDestroy(s *terraform.State) error {
@@ -1113,6 +1287,47 @@ resource "sentry_issue_alert" "test" {
 	%[4]s
 }
 `, team, project, alert, extras)
+}
+
+func testAccIssueAlertConfig_importRoundTrip(team string, project string, alert string, taggedValue string, frequency int) string {
+	return testAccOrganizationDataSourceConfig + fmt.Sprintf(`
+resource "sentry_team" "test" {
+	organization = data.sentry_organization.test.slug
+	name         = "%[1]s"
+	slug         = "%[1]s"
+}
+
+resource "sentry_project" "test" {
+	organization = sentry_team.test.organization
+	teams        = [sentry_team.test.slug]
+	name         = "%[2]s"
+	platform     = "go"
+}
+
+resource "sentry_issue_alert" "test" {
+	organization = sentry_project.test.organization
+	project      = sentry_project.test.id
+	name         = "%[3]s"
+
+	action_match = "any"
+	filter_match = "all"
+	frequency    = %[5]d
+
+	conditions_v2 = [
+		{ first_seen_event = {} },
+		{ reappeared_event = {} },
+		{ regression_event = {} },
+	]
+
+	filters_v2 = [
+		{ tagged_event = { key = "monitor", match = "EQUAL", value = "%[4]s" } },
+	]
+
+	actions_v2 = [
+		{ notify_email = { target_type = "IssueOwners", fallthrough_type = "ActiveMembers" } },
+	]
+}
+`, team, project, alert, taggedValue, frequency)
 }
 
 func testAccIssueAlertConfig_jsonValues(team string, project string, alert string) string {

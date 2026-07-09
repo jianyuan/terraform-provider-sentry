@@ -13,7 +13,6 @@ import (
 
 func TestAccProjectSpikeProtectionResource(t *testing.T) {
 	rn := "sentry_project_spike_protection.test"
-	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 
 	resource.Test(t, resource.TestCase{
@@ -21,7 +20,7 @@ func TestAccProjectSpikeProtectionResource(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccProjectSpikeProtectionResourceConfig(teamName, projectName, true),
+				Config: testAccProjectSpikeProtectionResourceConfig(projectName, true),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("project"), knownvalue.StringExact(projectName)),
@@ -29,7 +28,7 @@ func TestAccProjectSpikeProtectionResource(t *testing.T) {
 				},
 			},
 			{
-				Config: testAccProjectSpikeProtectionResourceConfig(teamName, projectName, false),
+				Config: testAccProjectSpikeProtectionResourceConfig(projectName, false),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("project"), knownvalue.StringExact(projectName)),
@@ -45,25 +44,19 @@ func TestAccProjectSpikeProtectionResource(t *testing.T) {
 	})
 }
 
-func testAccProjectSpikeProtectionResourceConfig(teamName, projectName string, enabled bool) string {
-	return testAccOrganizationDataSourceConfig + fmt.Sprintf(`
-resource "sentry_team" "test" {
-	organization = data.sentry_organization.test.slug
-	name         = "%[1]s"
-	slug         = "%[1]s"
-}
-
+func testAccProjectSpikeProtectionResourceConfig(projectName string, enabled bool) string {
+	return fmt.Sprintf(`
 resource "sentry_project" "test" {
-	organization = sentry_team.test.organization
-	teams        = [sentry_team.test.slug]
-	name         = "%[2]s"
+	organization = "%[1]s"
+	teams        = ["%[2]s"]
+	name         = "%[3]s"
 	platform     = "go"
 }
 
 resource "sentry_project_spike_protection" "test" {
 	organization = sentry_project.test.organization
 	project      = sentry_project.test.id
-	enabled      = %[3]t
+	enabled      = %[4]t
 }
-`, teamName, projectName, enabled)
+`, acctest.TestOrganization, acctest.TestTeam.Slug, projectName, enabled)
 }

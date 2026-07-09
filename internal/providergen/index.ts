@@ -4,6 +4,16 @@ import type { DataSource, Attribute, Resource } from "./schema";
 import { match, P } from "ts-pattern";
 import { parseArgs } from "util";
 import dedent from "dedent";
+import {
+  modelType,
+  tfAttributeType,
+  tfAttributeValueType,
+  tfEnumWrapperFunction,
+  tfPlanModifierType,
+  tfSchemaAttributeType,
+  tfValidatorType,
+} from "./go-types";
+import { tfAttributeDescription } from "./tf-utils";
 
 function generateTerraformAttribute({
   parent,
@@ -12,185 +22,91 @@ function generateTerraformAttribute({
   parent: string;
   attribute: Attribute;
 }) {
-  let description = attribute.description;
-  if (attribute.deprecationMessage) {
-    description += ` **Deprecated** ${attribute.deprecationMessage}`;
+  const parts: string[] = [];
+
+  if (attribute.enum) {
+    parts.push(`${tfEnumWrapperFunction(attribute)}(`);
   }
 
-  const commonParts: string[] = [];
-  commonParts.push(`MarkdownDescription: ${JSON.stringify(description)},`);
+  parts.push(`${tfSchemaAttributeType({ type: attribute.type })}{`);
+
+  parts.push(
+    `MarkdownDescription: ${JSON.stringify(tfAttributeDescription(attribute))},`,
+  );
+
   if (attribute.deprecationMessage) {
-    commonParts.push(
+    parts.push(
       `DeprecationMessage: ${JSON.stringify(attribute.deprecationMessage)},`,
     );
   }
-  commonParts.push(
-    match(attribute.computedOptionalRequired)
-      .with("required", () => "Required: true,")
-      .with("computed", () => "Computed: true,")
-      .with("computed_optional", () => "Optional: true,\nComputed: true,")
-      .with("optional", () => "Optional: true,")
+
+  parts.push(
+    ...match(attribute.computedOptionalRequired)
+      .with("required", () => ["Required: true,"])
+      .with("computed", () => ["Computed: true,"])
+      .with("computed_optional", () => ["Optional: true,", "Computed: true,"])
+      .with("optional", () => ["Optional: true,"])
       .exhaustive(),
   );
+
   if (attribute.sensitive) {
-    commonParts.push("Sensitive: true,");
+    parts.push("Sensitive: true,");
   }
 
-  return match(attribute)
-    .with({ type: "string" }, () => {
-      const parts: string[] = [];
-      parts.push("schema.StringAttribute{");
-      parts.push(...commonParts);
-      parts.push("CustomType: supertypes.StringType{},");
-      if (attribute.validators) {
-        parts.push("Validators: []validator.String{");
-        parts.push(...attribute.validators.map((validator) => `${validator},`));
-        parts.push("},");
-      }
-      if (attribute.planModifiers) {
-        parts.push("PlanModifiers: []planmodifier.String{");
-        parts.push(
-          ...attribute.planModifiers.map((modifier) => `${modifier},`),
-        );
-        parts.push("},");
-      }
-      parts.push("}");
-      return parts.join("\n");
-    })
-    .with({ type: "int" }, (attribute) => {
-      const parts: string[] = [];
-      parts.push("schema.Int64Attribute{");
-      parts.push(...commonParts);
-      parts.push("CustomType: supertypes.Int64Type{},");
-      if (attribute.validators) {
-        parts.push("Validators: []validator.Int64{");
-        parts.push(...attribute.validators.map((validator) => `${validator},`));
-        parts.push("},");
-      }
-      if (attribute.planModifiers) {
-        parts.push("PlanModifiers: []planmodifier.Int64{");
-        parts.push(
-          ...attribute.planModifiers.map((modifier) => `${modifier},`),
-        );
-        parts.push("},");
-      }
-      parts.push("}");
-      return parts.join("\n");
-    })
-    .with({ type: "bool" }, () => {
-      const parts: string[] = [];
-      parts.push("schema.BoolAttribute{");
-      parts.push(...commonParts);
-      parts.push("CustomType: supertypes.BoolType{},");
-      if (attribute.validators) {
-        parts.push("Validators: []validator.Bool{");
-        parts.push(...attribute.validators.map((validator) => `${validator},`));
-        parts.push("},");
-      }
-      if (attribute.planModifiers) {
-        parts.push("PlanModifiers: []planmodifier.Bool{");
-        parts.push(
-          ...attribute.planModifiers.map((modifier) => `${modifier},`),
-        );
-        parts.push("},");
-      }
-      parts.push("}");
-      return parts.join("\n");
-    })
-    .with({ type: "list", elementType: "string" }, (attribute) => {
-      const parts: string[] = [];
-      parts.push("schema.ListAttribute{");
-      parts.push(...commonParts);
-      parts.push("CustomType: supertypes.NewListTypeOf[string](ctx),");
-      if (attribute.validators) {
-        parts.push("Validators: []validator.List{");
-        parts.push(...attribute.validators.map((validator) => `${validator},`));
-        parts.push("},");
-      }
-      if (attribute.planModifiers) {
-        parts.push("PlanModifiers: []planmodifier.List{");
-        parts.push(
-          ...attribute.planModifiers.map((modifier) => `${modifier},`),
-        );
-        parts.push("},");
-      }
-      parts.push("}");
-      return parts.join("\n");
-    })
-    .with({ type: "set", elementType: "string" }, (attribute) => {
-      const parts: string[] = [];
-      parts.push("schema.SetAttribute{");
-      parts.push(...commonParts);
-      parts.push("CustomType: supertypes.NewSetTypeOf[string](ctx),");
-      if (attribute.validators) {
-        parts.push("Validators: []validator.Set{");
-        parts.push(...attribute.validators.map((validator) => `${validator},`));
-        parts.push("},");
-      }
-      if (attribute.planModifiers) {
-        parts.push("PlanModifiers: []planmodifier.Set{");
-        parts.push(
-          ...attribute.planModifiers.map((modifier) => `${modifier},`),
-        );
-        parts.push("},");
-      }
-      parts.push("}");
-      return parts.join("\n");
-    })
-    .with({ type: "set_nested" }, (attribute) => {
-      const parts: string[] = [];
-      parts.push("schema.SetNestedAttribute{");
-      parts.push(...commonParts);
-      parts.push(
-        `CustomType: supertypes.NewSetNestedObjectTypeOf[${parent}${camelize(
-          attribute.name,
-        )}Item](ctx),`,
-      );
-      parts.push("NestedObject: schema.NestedAttributeObject{");
-      parts.push("Attributes: map[string]schema.Attribute{");
-      for (const nestedAttribute of attribute.attributes) {
-        parts.push(
-          `"${nestedAttribute.name}": ${generateTerraformAttribute({
-            parent: `${parent}${camelize(attribute.name)}Item`,
-            attribute: nestedAttribute,
-          })},`,
-        );
-      }
-      parts.push("},");
-      parts.push("},");
-      parts.push("}");
-      return parts.join("\n");
-    })
-    .exhaustive();
-}
+  if (attribute.default) {
+    parts.push(`Default: ${attribute.default},`);
+  }
 
-function generateTerraformValueType({
-  parent,
-  attribute,
-}: {
-  parent: string;
-  attribute: Attribute;
-}) {
-  return match(attribute)
-    .with({ type: "string" }, () => "supertypes.StringValue")
-    .with({ type: "int" }, () => "supertypes.Int64Value")
-    .with({ type: "bool" }, () => "supertypes.BoolValue")
-    .with(
-      { type: "list", elementType: "string" },
-      () => "supertypes.ListValueOf[string]",
-    )
-    .with(
-      { type: "set", elementType: "string" },
-      () => "supertypes.SetValueOf[string]",
-    )
-    .with(
-      { type: "set_nested" },
-      () =>
-        `supertypes.SetNestedObjectValueOf[${parent}${camelize(
-          attribute.name,
-        )}Item]`,
-    )
-    .exhaustive();
+  parts.push(`CustomType: ${tfAttributeType(attribute, parent)},`);
+
+  if (attribute.validators) {
+    parts.push(`Validators: []${tfValidatorType({ type: attribute.type })}{`);
+    parts.push(...attribute.validators.map((validator) => `${validator},`));
+    parts.push("},");
+  }
+
+  if (attribute.planModifiers) {
+    parts.push(
+      `PlanModifiers: []${tfPlanModifierType({ type: attribute.type })}{`,
+    );
+    parts.push(...attribute.planModifiers.map((modifier) => `${modifier},`));
+    parts.push("},");
+  }
+
+  if (attribute.type === "list_nested" || attribute.type === "set_nested") {
+    parts.push("NestedObject: schema.NestedAttributeObject{");
+  }
+
+  if (
+    attribute.type === "list_nested" ||
+    attribute.type === "set_nested" ||
+    attribute.type === "single_nested"
+  ) {
+    parts.push("Attributes: map[string]schema.Attribute{");
+    for (const nestedAttribute of attribute.attributes) {
+      parts.push(
+        `"${nestedAttribute.name}": ${generateTerraformAttribute({
+          parent: modelType(attribute, parent),
+          attribute: nestedAttribute,
+        })},`,
+      );
+    }
+    parts.push("},");
+  }
+
+  if (attribute.type === "list_nested" || attribute.type === "set_nested") {
+    parts.push("},");
+  }
+
+  if (attribute.enum) {
+    parts.push("},");
+    parts.push(`${attribute.enum},`);
+    parts.push(")");
+  } else {
+    parts.push("}");
+  }
+
+  return parts.join("\n");
 }
 
 function generateTerraformToPrimitive({
@@ -203,7 +119,8 @@ function generateTerraformToPrimitive({
   const srcVarName = `${srcVar}.${camelize(attribute.name)}`;
   return match(attribute)
     .with({ type: "string" }, () => `${srcVarName}.ValueString()`)
-    .with({ type: "int" }, () => `${srcVarName}.ValueInt64()`)
+    .with({ type: "int64" }, () => `${srcVarName}.ValueInt64()`)
+    .with({ type: "float64" }, () => `${srcVarName}.ValueFloat64()`)
     .with({ type: "bool" }, () => `${srcVarName}.ValueBool()`)
     .exhaustive();
 }
@@ -252,33 +169,46 @@ function generatePrimitiveToTerraform({
       () => `${destVarName} = supertypes.NewStringValue(${srcVarName})`,
     )
     .with(
-      { type: "int" },
+      { type: "int64" },
       () => `${destVarName} = supertypes.NewInt64Value(${srcVarName})`,
+    )
+    .with(
+      { type: "float64" },
+      () => `${destVarName} = types.Float64Value(${srcVarName})`,
     )
     .with(
       { type: "bool" },
       () => `${destVarName} = supertypes.NewBoolValue(${srcVarName})`,
     )
     .with(
-      { type: "list", elementType: "string" },
+      { type: "list" },
       () =>
         `${destVarName} = supertypes.NewListValueOfSlice(ctx, ${srcVarName})`,
     )
     .with(
-      { type: "set", elementType: "string" },
+      { type: "list_nested" },
+      (attribute) =>
+        `${destVarName} = supertypes.NewListNestedObjectValueOfValueSlice(ctx, lo.Map(${srcVarName}, func(item apiclient.${attribute.model}, _ int) ${modelType(attribute, name)} {
+          var model ${modelType(attribute, name)}
+          diags.Append(model.Fill(ctx, item)...)
+          return model
+        }))`,
+    )
+    .with(
+      { type: "set" },
       () =>
         `${destVarName} = supertypes.NewSetValueOfSlice(ctx, ${srcVarName})`,
     )
     .with(
       { type: "set_nested" },
       (attribute) =>
-        `${destVarName} = supertypes.NewSetNestedObjectValueOfValueSlice(ctx, sliceutils.Map(func(item apiclient.${attribute.model}) ${name}${camelize(attribute.name)}Item {
-          var model ${name}${camelize(attribute.name)}Item
+        `${destVarName} = supertypes.NewSetNestedObjectValueOfValueSlice(ctx, lo.Map(${srcVarName}, func(item apiclient.${attribute.model}, _ int) ${modelType(attribute, name)} {
+          var model ${modelType(attribute, name)}
           diags.Append(model.Fill(ctx, item)...)
           return model
-        }, ${srcVarName}))`,
+        }))`,
     )
-    .exhaustive();
+    .otherwise(({ type }) => `// TODO: generate ${type}`);
 }
 
 function generateModel({
@@ -298,10 +228,7 @@ function generateModel({
 
   for (const attribute of attributes) {
     structLines.push(
-      `${camelize(attribute.name)} ${generateTerraformValueType({
-        parent: name,
-        attribute,
-      })} \`tfsdk:"${attribute.name}"\``,
+      `${camelize(attribute.name)} ${tfAttributeValueType(attribute, name)} \`tfsdk:"${attribute.name}"\``,
     );
 
     if (attribute.customFill) {
@@ -321,14 +248,19 @@ function generateModel({
 
     extras.push(
       ...match(attribute)
-        .with({ type: "set_nested" }, (attribute) => [
-          generateModel({
-            name: `${name}${camelize(attribute.name)}Item`,
-            attributes: attribute.attributes,
-            srcModel: `apiclient.${attribute.model}`,
-            generateFillers,
-          }),
-        ])
+        .with(
+          { type: "list_nested" },
+          { type: "set_nested" },
+          { type: "single_nested" },
+          (attribute) => [
+            generateModel({
+              name: modelType(attribute, name),
+              attributes: attribute.attributes,
+              srcModel: `apiclient.${attribute.model}`,
+              generateFillers: generateFillers && !attribute.skipFill,
+            }),
+          ],
+        )
         .otherwise(() => []),
     );
   }
@@ -343,6 +275,10 @@ ${
     ? dedent`
       func (m *${name}) Fill(ctx context.Context, data ${srcModel}) (diags diag.Diagnostics) {
         ${fillerLines.join("\n")}
+
+        if m, ok := any(m).(customFiller[${srcModel}]); ok {
+          diags.Append(m.fill(ctx, data)...)
+        }
         return
       }
     `
@@ -357,7 +293,11 @@ function generateDataSourceModel({ dataSource }: { dataSource: DataSource }) {
   const modelName = `${camelize(dataSource.name)}DataSourceModel`;
   const srcModel = match(dataSource.api)
     .with({ readStrategy: "paginate" }, (api) => `[]apiclient.${api.model}`)
-    .with({ readStrategy: "simple" }, (api) => `apiclient.${api.model}`)
+    .with(
+      { readStrategy: "simple" },
+      { readStrategy: "custom" },
+      (api) => `apiclient.${api.model}`,
+    )
     .exhaustive();
   return generateModel({
     name: modelName,
@@ -440,6 +380,7 @@ function generateDataSource({ dataSource }: { dataSource: DataSource }) {
         }
         return parts;
       })
+      .with({ readStrategy: "custom" }, () => [])
       .exhaustive(),
   );
 
@@ -504,6 +445,15 @@ function generateDataSource({ dataSource }: { dataSource: DataSource }) {
     }
     `,
     )
+    .with(
+      { readStrategy: "custom" },
+      () => `
+    resp.Diagnostics.Append(d.read(ctx, &data)...)
+    if resp.Diagnostics.HasError() {
+      return
+    }
+    `,
+    )
     .exhaustive();
 
   return `
@@ -512,6 +462,9 @@ package provider
 
 import (
   "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+  supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
+  fint64validator "github.com/orange-cloudavenue/terraform-plugin-framework-validators/int64validator"
+  fstringvalidator "github.com/orange-cloudavenue/terraform-plugin-framework-validators/stringvalidator"
 )
 
 var _ = supertypes.StringType{}
@@ -560,6 +513,8 @@ function generateResourceModel({ resource }: { resource: Resource }) {
   return generateModel({
     name: modelName,
     attributes: resource.attributes,
+    srcModel: `apiclient.${resource.api.model}`,
+    generateFillers: resource.generate?.modelFillers ?? false,
   });
 }
 
@@ -607,7 +562,7 @@ function generateResource({ resource }: { resource: Resource }) {
       }),
     );
   }
-  createRequestParams.push("body");
+  createRequestParams.push("*body");
 
   const readRequestParams = ["ctx"];
   if (resource.api.readRequestAttributes) {
@@ -651,7 +606,7 @@ function generateResource({ resource }: { resource: Resource }) {
       }),
     );
   }
-  updateRequestParams.push("body");
+  updateRequestParams.push("*body");
 
   const deleteRequestParams = ["ctx"];
   if (resource.api.deleteRequestAttributes) {
@@ -679,6 +634,9 @@ package provider
 
 import (
   "github.com/hashicorp/terraform-plugin-framework/resource/schema"
+  supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
+  fint64validator "github.com/orange-cloudavenue/terraform-plugin-framework-validators/int64validator"
+  fstringvalidator "github.com/orange-cloudavenue/terraform-plugin-framework-validators/stringvalidator"
 )
 
 var _ resource.Resource = &${resourceName}{}
@@ -721,23 +679,26 @@ func (r *${resourceName}) Create(ctx context.Context, req resource.CreateRequest
   resp.Diagnostics.Append(diags...)
   if resp.Diagnostics.HasError() {
     return
+  } else if body == nil {
+    resp.Diagnostics.AddError("Provider Error", "getCreateJSONRequestBody returned a nil body")
+    return
   }
 
-  httpResp, err := r.client.${
+  httpResp, err := r.apiClient.${
     resource.api.createMethod
   }WithResponse(${createRequestParams.join(",")})
   if err != nil {
     resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create, got error: %s", err))
     return
-  } else if httpResp.StatusCode() != http.StatusOK {
+  } else if httpResp.StatusCode() != http.StatusCreated {
     resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create, got status code %d: %s", httpResp.StatusCode(), string(httpResp.Body)))
     return
-  } else if httpResp.JSON200 == nil {
+  } else if httpResp.JSON201 == nil {
     resp.Diagnostics.AddError("Client Error", "Unable to create, got empty response body")
     return
   }
 
-  resp.Diagnostics.Append(data.Fill(ctx, *httpResp.JSON200)...)
+  resp.Diagnostics.Append(data.Fill(ctx, *httpResp.JSON201)...)
   if resp.Diagnostics.HasError() {
     return
   }
@@ -766,7 +727,7 @@ func (r *${resourceName}) Read(ctx context.Context, req resource.ReadRequest, re
             }
 
             for {
-              httpResp, err := r.client.${
+              httpResp, err := r.apiClient.${
                 api.readMethod
               }WithResponse(${readRequestParams.join(",")})
               if err != nil {
@@ -812,7 +773,7 @@ func (r *${resourceName}) Read(ctx context.Context, req resource.ReadRequest, re
     )
     .otherwise(
       (api) => dedent`
-        httpResp, err := r.client.${
+        httpResp, err := r.apiClient.${
           api.readMethod
         }WithResponse(${readRequestParams.join(",")})
         if err != nil {
@@ -860,7 +821,7 @@ func (r *${resourceName}) Update(ctx context.Context, req resource.UpdateRequest
         return
       }
 
-      httpResp, err := r.client.${
+      httpResp, err := r.apiClient.${
         resource.api.updateMethod
       }WithResponse(${updateRequestParams.join(",")})
       if err != nil {
@@ -898,7 +859,7 @@ func (r *${resourceName}) Delete(ctx context.Context, req resource.DeleteRequest
         return
       }
 
-      httpResp, err := r.client.${
+      httpResp, err := r.apiClient.${
         resource.api.deleteMethod
       }WithResponse(${deleteRequestParams.join(",")})
       if err != nil {
@@ -906,7 +867,7 @@ func (r *${resourceName}) Delete(ctx context.Context, req resource.DeleteRequest
         return
       } else if httpResp.StatusCode() == http.StatusNotFound {
         return
-      } else if httpResp.StatusCode() != http.StatusOK {
+      } else if httpResp.StatusCode() != http.StatusNoContent {
         resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete, got status code %d: %s", httpResp.StatusCode(), string(httpResp.Body)))
         return
       }
@@ -928,39 +889,29 @@ ${match(resource.importStateAttributes)
   .with([P.any, P.any], (attributes) => {
     return `
         func (r *${resourceName}) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-          first, second, err := tfutils.SplitTwoPartId(req.ID, "${attributes[0]}", "${attributes[1]}")
+          ${camelize(attributes[0], true)}, ${camelize(attributes[1], true)}, err := tfutils.SplitTwoPartId(req.ID, "${attributes[0]}", "${attributes[1]}")
           if err != nil {
             resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Error parsing ID: %s", err.Error()))
             return
           }
 
-          resp.Diagnostics.Append(resp.State.SetAttribute(
-            ctx, path.Root("${attributes[0]}"), first,
-          )...)
-          resp.Diagnostics.Append(resp.State.SetAttribute(
-            ctx, path.Root("${attributes[1]}"), second,
-          )...)
+          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${attributes[0]}"), ${camelize(attributes[0], true)})...)
+          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${attributes[1]}"), ${camelize(attributes[1], true)})...)
         }
       `;
   })
   .with([P.any, P.any, P.any], (attributes) => {
     return `
         func (r *${resourceName}) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-          first, second, third, err := tfutils.SplitThreePartId(req.ID, "${attributes[0]}", "${attributes[1]}", "${attributes[2]}")
+          ${camelize(attributes[0], true)}, ${camelize(attributes[1], true)}, ${camelize(attributes[2], true)}, err := tfutils.SplitThreePartId(req.ID, "${attributes[0]}", "${attributes[1]}", "${attributes[2]}")
           if err != nil {
             resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Error parsing ID: %s", err.Error()))
             return
           }
 
-          resp.Diagnostics.Append(resp.State.SetAttribute(
-            ctx, path.Root("${attributes[0]}"), first,
-          )...)
-          resp.Diagnostics.Append(resp.State.SetAttribute(
-            ctx, path.Root("${attributes[1]}"), second,
-          )...)
-          resp.Diagnostics.Append(resp.State.SetAttribute(
-            ctx, path.Root("${attributes[2]}"), third,
-          )...)
+          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${attributes[0]}"), ${camelize(attributes[0], true)})...)
+          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${attributes[1]}"), ${camelize(attributes[1], true)})...)
+          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${attributes[2]}"), ${camelize(attributes[2], true)})...)
         }
       `;
   })
@@ -1026,7 +977,7 @@ async function main() {
       const code = generateDataSource({ dataSource });
       return writeAndFormatGoFile(
         new URL(
-          `../provider/data_source_${dataSource.name}.go`,
+          `../provider/data_source_${dataSource.name}_gen.go`,
           import.meta.url,
         ),
         code,
@@ -1039,20 +990,23 @@ async function main() {
 
       const code = generateResource({ resource });
       return writeAndFormatGoFile(
-        new URL(`../provider/resource_${resource.name}.go`, import.meta.url),
+        new URL(
+          `../provider/resource_${resource.name}_gen.go`,
+          import.meta.url,
+        ),
         code,
       );
     }),
-    async () => {
+    (() => {
       const code = generateProvider({
         resources: RESOURCES,
         dataSources: DATASOURCES,
       });
-      await writeAndFormatGoFile(
+      return writeAndFormatGoFile(
         new URL(`../provider/provider_gen.go`, import.meta.url),
         code,
       );
-    },
+    })(),
   ]);
 }
 

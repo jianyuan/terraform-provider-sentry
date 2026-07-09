@@ -1,19 +1,19 @@
 package provider
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/jianyuan/go-utils/ptr"
-	"github.com/jianyuan/go-utils/sliceutils"
 	"github.com/mzglinski/terraform-provider-sentry/internal/apiclient"
 	"github.com/mzglinski/terraform-provider-sentry/internal/sentrydata"
 	"github.com/mzglinski/terraform-provider-sentry/internal/sentrytypes"
 	"github.com/mzglinski/terraform-provider-sentry/internal/tfutils"
+	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
+	"github.com/samber/lo"
 )
 
 // Conditions
@@ -231,33 +231,33 @@ func (m IssueAlertConditionEventFrequencyPercentModel) ToApi(ctx context.Context
 }
 
 type IssueAlertConditionModel struct {
-	FirstSeenEvent            *IssueAlertConditionFirstSeenEventModel            `tfsdk:"first_seen_event"`
-	RegressionEvent           *IssueAlertConditionRegressionEventModel           `tfsdk:"regression_event"`
-	ReappearedEvent           *IssueAlertConditionReappearedEventModel           `tfsdk:"reappeared_event"`
-	NewHighPriorityIssue      *IssueAlertConditionNewHighPriorityIssueModel      `tfsdk:"new_high_priority_issue"`
-	ExistingHighPriorityIssue *IssueAlertConditionExistingHighPriorityIssueModel `tfsdk:"existing_high_priority_issue"`
-	EventFrequency            *IssueAlertConditionEventFrequencyModel            `tfsdk:"event_frequency"`
-	EventUniqueUserFrequency  *IssueAlertConditionEventUniqueUserFrequencyModel  `tfsdk:"event_unique_user_frequency"`
-	EventFrequencyPercent     *IssueAlertConditionEventFrequencyPercentModel     `tfsdk:"event_frequency_percent"`
+	FirstSeenEvent            supertypes.SingleNestedObjectValueOf[IssueAlertConditionFirstSeenEventModel]            `tfsdk:"first_seen_event"`
+	RegressionEvent           supertypes.SingleNestedObjectValueOf[IssueAlertConditionRegressionEventModel]           `tfsdk:"regression_event"`
+	ReappearedEvent           supertypes.SingleNestedObjectValueOf[IssueAlertConditionReappearedEventModel]           `tfsdk:"reappeared_event"`
+	NewHighPriorityIssue      supertypes.SingleNestedObjectValueOf[IssueAlertConditionNewHighPriorityIssueModel]      `tfsdk:"new_high_priority_issue"`
+	ExistingHighPriorityIssue supertypes.SingleNestedObjectValueOf[IssueAlertConditionExistingHighPriorityIssueModel] `tfsdk:"existing_high_priority_issue"`
+	EventFrequency            supertypes.SingleNestedObjectValueOf[IssueAlertConditionEventFrequencyModel]            `tfsdk:"event_frequency"`
+	EventUniqueUserFrequency  supertypes.SingleNestedObjectValueOf[IssueAlertConditionEventUniqueUserFrequencyModel]  `tfsdk:"event_unique_user_frequency"`
+	EventFrequencyPercent     supertypes.SingleNestedObjectValueOf[IssueAlertConditionEventFrequencyPercentModel]     `tfsdk:"event_frequency_percent"`
 }
 
 func (m IssueAlertConditionModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleCondition, diag.Diagnostics) {
-	if m.FirstSeenEvent != nil {
-		return m.FirstSeenEvent.ToApi(ctx)
-	} else if m.RegressionEvent != nil {
-		return m.RegressionEvent.ToApi(ctx)
-	} else if m.ReappearedEvent != nil {
-		return m.ReappearedEvent.ToApi(ctx)
-	} else if m.NewHighPriorityIssue != nil {
-		return m.NewHighPriorityIssue.ToApi(ctx)
-	} else if m.ExistingHighPriorityIssue != nil {
-		return m.ExistingHighPriorityIssue.ToApi(ctx)
-	} else if m.EventFrequency != nil {
-		return m.EventFrequency.ToApi(ctx)
-	} else if m.EventUniqueUserFrequency != nil {
-		return m.EventUniqueUserFrequency.ToApi(ctx)
-	} else if m.EventFrequencyPercent != nil {
-		return m.EventFrequencyPercent.ToApi(ctx)
+	if m.FirstSeenEvent.IsKnown() {
+		return m.FirstSeenEvent.MustGet(ctx).ToApi(ctx)
+	} else if m.RegressionEvent.IsKnown() {
+		return m.RegressionEvent.MustGet(ctx).ToApi(ctx)
+	} else if m.ReappearedEvent.IsKnown() {
+		return m.ReappearedEvent.MustGet(ctx).ToApi(ctx)
+	} else if m.NewHighPriorityIssue.IsKnown() {
+		return m.NewHighPriorityIssue.MustGet(ctx).ToApi(ctx)
+	} else if m.ExistingHighPriorityIssue.IsKnown() {
+		return m.ExistingHighPriorityIssue.MustGet(ctx).ToApi(ctx)
+	} else if m.EventFrequency.IsKnown() {
+		return m.EventFrequency.MustGet(ctx).ToApi(ctx)
+	} else if m.EventUniqueUserFrequency.IsKnown() {
+		return m.EventUniqueUserFrequency.MustGet(ctx).ToApi(ctx)
+	} else if m.EventFrequencyPercent.IsKnown() {
+		return m.EventFrequencyPercent.MustGet(ctx).ToApi(ctx)
 	} else {
 		var diags diag.Diagnostics
 		diags.AddError("Exactly one condition must be set", "Exactly one condition must be set")
@@ -272,40 +272,48 @@ func (m *IssueAlertConditionModel) Fill(ctx context.Context, condition apiclient
 		return
 	}
 
-	m.FirstSeenEvent = nil
-	m.RegressionEvent = nil
-	m.ReappearedEvent = nil
-	m.NewHighPriorityIssue = nil
-	m.ExistingHighPriorityIssue = nil
-	m.EventFrequency = nil
-	m.EventUniqueUserFrequency = nil
-	m.EventFrequencyPercent = nil
+	m.FirstSeenEvent = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertConditionFirstSeenEventModel](ctx)
+	m.RegressionEvent = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertConditionRegressionEventModel](ctx)
+	m.ReappearedEvent = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertConditionReappearedEventModel](ctx)
+	m.NewHighPriorityIssue = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertConditionNewHighPriorityIssueModel](ctx)
+	m.ExistingHighPriorityIssue = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertConditionExistingHighPriorityIssueModel](ctx)
+	m.EventFrequency = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertConditionEventFrequencyModel](ctx)
+	m.EventUniqueUserFrequency = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertConditionEventUniqueUserFrequencyModel](ctx)
+	m.EventFrequencyPercent = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertConditionEventFrequencyPercentModel](ctx)
 
 	switch conditionValue := conditionValue.(type) {
 	case apiclient.ProjectRuleConditionFirstSeenEvent:
-		m.FirstSeenEvent = &IssueAlertConditionFirstSeenEventModel{}
-		diags.Append(m.FirstSeenEvent.Fill(ctx, conditionValue)...)
+		var out IssueAlertConditionFirstSeenEventModel
+		diags.Append(out.Fill(ctx, conditionValue)...)
+		m.FirstSeenEvent = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleConditionRegressionEvent:
-		m.RegressionEvent = &IssueAlertConditionRegressionEventModel{}
-		diags.Append(m.RegressionEvent.Fill(ctx, conditionValue)...)
+		var out IssueAlertConditionRegressionEventModel
+		diags.Append(out.Fill(ctx, conditionValue)...)
+		m.RegressionEvent = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleConditionReappearedEvent:
-		m.ReappearedEvent = &IssueAlertConditionReappearedEventModel{}
-		diags.Append(m.ReappearedEvent.Fill(ctx, conditionValue)...)
+		var out IssueAlertConditionReappearedEventModel
+		diags.Append(out.Fill(ctx, conditionValue)...)
+		m.ReappearedEvent = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleConditionNewHighPriorityIssue:
-		m.NewHighPriorityIssue = &IssueAlertConditionNewHighPriorityIssueModel{}
-		diags.Append(m.NewHighPriorityIssue.Fill(ctx, conditionValue)...)
+		var out IssueAlertConditionNewHighPriorityIssueModel
+		diags.Append(out.Fill(ctx, conditionValue)...)
+		m.NewHighPriorityIssue = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleConditionExistingHighPriorityIssue:
-		m.ExistingHighPriorityIssue = &IssueAlertConditionExistingHighPriorityIssueModel{}
-		diags.Append(m.ExistingHighPriorityIssue.Fill(ctx, conditionValue)...)
+		var out IssueAlertConditionExistingHighPriorityIssueModel
+		diags.Append(out.Fill(ctx, conditionValue)...)
+		m.ExistingHighPriorityIssue = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleConditionEventFrequency:
-		m.EventFrequency = &IssueAlertConditionEventFrequencyModel{}
-		diags.Append(m.EventFrequency.Fill(ctx, conditionValue)...)
+		var out IssueAlertConditionEventFrequencyModel
+		diags.Append(out.Fill(ctx, conditionValue)...)
+		m.EventFrequency = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleConditionEventUniqueUserFrequency:
-		m.EventUniqueUserFrequency = &IssueAlertConditionEventUniqueUserFrequencyModel{}
-		diags.Append(m.EventUniqueUserFrequency.Fill(ctx, conditionValue)...)
+		var out IssueAlertConditionEventUniqueUserFrequencyModel
+		diags.Append(out.Fill(ctx, conditionValue)...)
+		m.EventUniqueUserFrequency = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleConditionEventFrequencyPercent:
-		m.EventFrequencyPercent = &IssueAlertConditionEventFrequencyPercentModel{}
-		diags.Append(m.EventFrequencyPercent.Fill(ctx, conditionValue)...)
+		var out IssueAlertConditionEventFrequencyPercentModel
+		diags.Append(out.Fill(ctx, conditionValue)...)
+		m.EventFrequencyPercent = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	default:
 		diags.AddError("Unsupported condition", fmt.Sprintf("Unsupported condition type %T", conditionValue))
 	}
@@ -526,22 +534,46 @@ func (m *IssueAlertFilterEventAttributeModel) Fill(ctx context.Context, filter a
 	}
 	m.Match = types.StringValue(match)
 
-	if filter.Value == nil || *filter.Value == "" {
+	if filter.Value == nil {
 		m.Value = types.StringNull()
+	} else if v, err := filter.Value.AsProjectRuleFilterEventAttributeValue0(); err == nil {
+		if v == "" {
+			m.Value = types.StringNull()
+		} else {
+			m.Value = types.StringValue(v)
+		}
+	} else if v, err := filter.Value.AsProjectRuleFilterEventAttributeValue1(); err == nil {
+		if v.String() == "" {
+			m.Value = types.StringNull()
+		} else {
+			m.Value = types.StringValue(v.String())
+		}
 	} else {
-		m.Value = types.StringValue(*filter.Value)
+		diags.AddError("Invalid event attribute value", fmt.Sprintf("Invalid event attribute value %q. Please report this to the provider developers.", filter.Value))
 	}
+
 	return
 }
 
 func (m IssueAlertFilterEventAttributeModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleFilter, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	var v apiclient.ProjectRuleFilter
+
+	var value *apiclient.ProjectRuleFilterEventAttribute_Value
+	if !m.Value.IsNull() && !m.Value.IsUnknown() {
+		value = &apiclient.ProjectRuleFilterEventAttribute_Value{}
+		err := value.FromProjectRuleFilterEventAttributeValue0(m.Value.ValueString())
+		if err != nil {
+			diags.AddError("Failed to convert to API model", err.Error())
+			return nil, diags
+		}
+	}
+
 	err := v.FromProjectRuleFilterEventAttribute(apiclient.ProjectRuleFilterEventAttribute{
 		Name:      m.Name.ValueStringPointer(),
 		Attribute: m.Attribute.ValueString(),
 		Match:     sentrydata.MatchTypeNameToId[m.Match.ValueString()],
-		Value:     m.Value.ValueStringPointer(),
+		Value:     value,
 	})
 	if err != nil {
 		diags.AddError("Failed to convert to API model", err.Error())
@@ -633,36 +665,36 @@ func (m IssueAlertFilterLevelModel) ToApi(ctx context.Context) (*apiclient.Proje
 }
 
 type IssueAlertFilterModel struct {
-	AgeComparison        *IssueAlertFilterAgeComparisonModel        `tfsdk:"age_comparison"`
-	IssueOccurrences     *IssueAlertFilterIssueOccurrencesModel     `tfsdk:"issue_occurrences"`
-	AssignedTo           *IssueAlertFilterAssignedToModel           `tfsdk:"assigned_to"`
-	LatestAdoptedRelease *IssueAlertFilterLatestAdoptedReleaseModel `tfsdk:"latest_adopted_release"`
-	LatestRelease        *IssueAlertFilterLatestReleaseModel        `tfsdk:"latest_release"`
-	IssueCategory        *IssueAlertFilterIssueCategoryModel        `tfsdk:"issue_category"`
-	EventAttribute       *IssueAlertFilterEventAttributeModel       `tfsdk:"event_attribute"`
-	TaggedEvent          *IssueAlertFilterTaggedEventModel          `tfsdk:"tagged_event"`
-	Level                *IssueAlertFilterLevelModel                `tfsdk:"level"`
+	AgeComparison        supertypes.SingleNestedObjectValueOf[IssueAlertFilterAgeComparisonModel]        `tfsdk:"age_comparison"`
+	IssueOccurrences     supertypes.SingleNestedObjectValueOf[IssueAlertFilterIssueOccurrencesModel]     `tfsdk:"issue_occurrences"`
+	AssignedTo           supertypes.SingleNestedObjectValueOf[IssueAlertFilterAssignedToModel]           `tfsdk:"assigned_to"`
+	LatestAdoptedRelease supertypes.SingleNestedObjectValueOf[IssueAlertFilterLatestAdoptedReleaseModel] `tfsdk:"latest_adopted_release"`
+	LatestRelease        supertypes.SingleNestedObjectValueOf[IssueAlertFilterLatestReleaseModel]        `tfsdk:"latest_release"`
+	IssueCategory        supertypes.SingleNestedObjectValueOf[IssueAlertFilterIssueCategoryModel]        `tfsdk:"issue_category"`
+	EventAttribute       supertypes.SingleNestedObjectValueOf[IssueAlertFilterEventAttributeModel]       `tfsdk:"event_attribute"`
+	TaggedEvent          supertypes.SingleNestedObjectValueOf[IssueAlertFilterTaggedEventModel]          `tfsdk:"tagged_event"`
+	Level                supertypes.SingleNestedObjectValueOf[IssueAlertFilterLevelModel]                `tfsdk:"level"`
 }
 
 func (m IssueAlertFilterModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleFilter, diag.Diagnostics) {
-	if m.AgeComparison != nil {
-		return m.AgeComparison.ToApi(ctx)
-	} else if m.IssueOccurrences != nil {
-		return m.IssueOccurrences.ToApi(ctx)
-	} else if m.AssignedTo != nil {
-		return m.AssignedTo.ToApi(ctx)
-	} else if m.LatestAdoptedRelease != nil {
-		return m.LatestAdoptedRelease.ToApi(ctx)
-	} else if m.LatestRelease != nil {
-		return m.LatestRelease.ToApi(ctx)
-	} else if m.IssueCategory != nil {
-		return m.IssueCategory.ToApi(ctx)
-	} else if m.EventAttribute != nil {
-		return m.EventAttribute.ToApi(ctx)
-	} else if m.TaggedEvent != nil {
-		return m.TaggedEvent.ToApi(ctx)
-	} else if m.Level != nil {
-		return m.Level.ToApi(ctx)
+	if m.AgeComparison.IsKnown() {
+		return m.AgeComparison.MustGet(ctx).ToApi(ctx)
+	} else if m.IssueOccurrences.IsKnown() {
+		return m.IssueOccurrences.MustGet(ctx).ToApi(ctx)
+	} else if m.AssignedTo.IsKnown() {
+		return m.AssignedTo.MustGet(ctx).ToApi(ctx)
+	} else if m.LatestAdoptedRelease.IsKnown() {
+		return m.LatestAdoptedRelease.MustGet(ctx).ToApi(ctx)
+	} else if m.LatestRelease.IsKnown() {
+		return m.LatestRelease.MustGet(ctx).ToApi(ctx)
+	} else if m.IssueCategory.IsKnown() {
+		return m.IssueCategory.MustGet(ctx).ToApi(ctx)
+	} else if m.EventAttribute.IsKnown() {
+		return m.EventAttribute.MustGet(ctx).ToApi(ctx)
+	} else if m.TaggedEvent.IsKnown() {
+		return m.TaggedEvent.MustGet(ctx).ToApi(ctx)
+	} else if m.Level.IsKnown() {
+		return m.Level.MustGet(ctx).ToApi(ctx)
 	} else {
 		var diags diag.Diagnostics
 		diags.AddError("Exactly one filter must be set", "Exactly one filter must be set")
@@ -677,44 +709,53 @@ func (m *IssueAlertFilterModel) Fill(ctx context.Context, filter apiclient.Proje
 		return
 	}
 
-	m.AgeComparison = nil
-	m.IssueOccurrences = nil
-	m.AssignedTo = nil
-	m.LatestAdoptedRelease = nil
-	m.LatestRelease = nil
-	m.IssueCategory = nil
-	m.EventAttribute = nil
-	m.TaggedEvent = nil
-	m.Level = nil
+	m.AgeComparison = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertFilterAgeComparisonModel](ctx)
+	m.IssueOccurrences = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertFilterIssueOccurrencesModel](ctx)
+	m.AssignedTo = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertFilterAssignedToModel](ctx)
+	m.LatestAdoptedRelease = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertFilterLatestAdoptedReleaseModel](ctx)
+	m.LatestRelease = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertFilterLatestReleaseModel](ctx)
+	m.IssueCategory = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertFilterIssueCategoryModel](ctx)
+	m.EventAttribute = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertFilterEventAttributeModel](ctx)
+	m.TaggedEvent = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertFilterTaggedEventModel](ctx)
+	m.Level = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertFilterLevelModel](ctx)
 
 	switch filterValue := filterValue.(type) {
 	case apiclient.ProjectRuleFilterAgeComparison:
-		m.AgeComparison = &IssueAlertFilterAgeComparisonModel{}
-		diags.Append(m.AgeComparison.Fill(ctx, filterValue)...)
+		var out IssueAlertFilterAgeComparisonModel
+		diags.Append(out.Fill(ctx, filterValue)...)
+		m.AgeComparison = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleFilterIssueOccurrences:
-		m.IssueOccurrences = &IssueAlertFilterIssueOccurrencesModel{}
-		diags.Append(m.IssueOccurrences.Fill(ctx, filterValue)...)
+		var out IssueAlertFilterIssueOccurrencesModel
+		diags.Append(out.Fill(ctx, filterValue)...)
+		m.IssueOccurrences = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleFilterAssignedTo:
-		m.AssignedTo = &IssueAlertFilterAssignedToModel{}
-		diags.Append(m.AssignedTo.Fill(ctx, filterValue)...)
+		var out IssueAlertFilterAssignedToModel
+		diags.Append(out.Fill(ctx, filterValue)...)
+		m.AssignedTo = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleFilterLatestAdoptedRelease:
-		m.LatestAdoptedRelease = &IssueAlertFilterLatestAdoptedReleaseModel{}
-		diags.Append(m.LatestAdoptedRelease.Fill(ctx, filterValue)...)
+		var out IssueAlertFilterLatestAdoptedReleaseModel
+		diags.Append(out.Fill(ctx, filterValue)...)
+		m.LatestAdoptedRelease = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleFilterLatestRelease:
-		m.LatestRelease = &IssueAlertFilterLatestReleaseModel{}
-		diags.Append(m.LatestRelease.Fill(ctx, filterValue)...)
+		var out IssueAlertFilterLatestReleaseModel
+		diags.Append(out.Fill(ctx, filterValue)...)
+		m.LatestRelease = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleFilterIssueCategory:
-		m.IssueCategory = &IssueAlertFilterIssueCategoryModel{}
-		diags.Append(m.IssueCategory.Fill(ctx, filterValue)...)
+		var out IssueAlertFilterIssueCategoryModel
+		diags.Append(out.Fill(ctx, filterValue)...)
+		m.IssueCategory = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleFilterEventAttribute:
-		m.EventAttribute = &IssueAlertFilterEventAttributeModel{}
-		diags.Append(m.EventAttribute.Fill(ctx, filterValue)...)
+		var out IssueAlertFilterEventAttributeModel
+		diags.Append(out.Fill(ctx, filterValue)...)
+		m.EventAttribute = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleFilterTaggedEvent:
-		m.TaggedEvent = &IssueAlertFilterTaggedEventModel{}
-		diags.Append(m.TaggedEvent.Fill(ctx, filterValue)...)
+		var out IssueAlertFilterTaggedEventModel
+		diags.Append(out.Fill(ctx, filterValue)...)
+		m.TaggedEvent = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleFilterLevel:
-		m.Level = &IssueAlertFilterLevelModel{}
-		diags.Append(m.Level.Fill(ctx, filterValue)...)
+		var out IssueAlertFilterLevelModel
+		diags.Append(out.Fill(ctx, filterValue)...)
+		m.Level = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	default:
 		diags.AddError("Unsupported filter", fmt.Sprintf("Unsupported filter type %T", filterValue))
 	}
@@ -747,12 +788,13 @@ func (m *IssueAlertActionNotifyEmailModel) Fill(ctx context.Context, action apic
 		m.TargetIdentifier = types.StringValue(v.String())
 	}
 
-	// Only set FallthroughType for IssueOwners
-	if action.TargetType == "IssueOwners" {
-		m.FallthroughType = types.StringPointerValue(action.FallthroughType)
-	} else {
-		m.FallthroughType = types.StringNull()
-	}
+	// Echo FallthroughType back regardless of TargetType. The API now reliably
+	// returns a fallthroughType for email actions (defaulting to ActiveMembers),
+	// so previously gating this on TargetType == "IssueOwners" nulled out a value
+	// the user had configured for Team/Member targets, causing perpetual drift on
+	// fallthrough_type and breaking the actions_v2 reorder (the field is part of
+	// the reorder key). See getsentry/sentry#118404.
+	m.FallthroughType = types.StringPointerValue(action.FallthroughType)
 
 	return
 }
@@ -832,9 +874,10 @@ func (m IssueAlertActionNotifyEventServiceModel) ToApi(ctx context.Context) (*ap
 }
 
 type IssueAlertActionNotifyEventSentryAppModel struct {
-	Name                      types.String `tfsdk:"name"`
-	SentryAppInstallationUuid types.String `tfsdk:"sentry_app_installation_uuid"`
-	Settings                  types.Map    `tfsdk:"settings"`
+	Name                      types.String                  `tfsdk:"name"`
+	SentryAppInstallationUuid types.String                  `tfsdk:"sentry_app_installation_uuid"`
+	Settings                  supertypes.MapValueOf[string] `tfsdk:"settings"`
+	SettingsLabels            supertypes.MapValueOf[string] `tfsdk:"settings_labels"`
 }
 
 func (m *IssueAlertActionNotifyEventSentryAppModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionNotifyEventSentryApp) (diags diag.Diagnostics) {
@@ -842,13 +885,19 @@ func (m *IssueAlertActionNotifyEventSentryAppModel) Fill(ctx context.Context, ac
 	m.SentryAppInstallationUuid = types.StringValue(action.SentryAppInstallationUuid)
 
 	if action.Settings == nil {
-		m.Settings = types.MapNull(types.StringType)
+		m.Settings = supertypes.NewMapValueOfNull[string](ctx)
+		m.SettingsLabels = supertypes.NewMapValueOfNull[string](ctx)
 	} else {
-		var settingsMap = make(map[string]attr.Value)
+		var settingsMap = make(map[string]string, len(*action.Settings))
+		var labelsMap = make(map[string]string, len(*action.Settings))
 		for _, setting := range *action.Settings {
-			settingsMap[setting.Name] = types.StringValue(setting.Value)
+			settingsMap[setting.Name] = setting.Value
+			if setting.Label != nil {
+				labelsMap[setting.Name] = *setting.Label
+			}
 		}
-		m.Settings = types.MapValueMust(types.StringType, settingsMap)
+		m.Settings = tfutils.MergeDiagnostics(supertypes.NewMapValueOfMap(ctx, settingsMap))(&diags)
+		m.SettingsLabels = tfutils.MergeDiagnostics(supertypes.NewMapValueOfMap(ctx, labelsMap))(&diags)
 	}
 	return
 }
@@ -858,30 +907,44 @@ func (m IssueAlertActionNotifyEventSentryAppModel) ToApi(ctx context.Context) (*
 	var v apiclient.ProjectRuleAction
 
 	var settings *[]struct {
-		Name  string `json:"name"`
-		Value string `json:"value"`
+		Label *string `json:"label,omitempty"`
+		Name  string  `json:"name"`
+		Value string  `json:"value"`
 	}
 
-	if !m.Settings.IsNull() {
-		elements := make(map[string]string, len(m.Settings.Elements()))
-		diags.Append(m.Settings.ElementsAs(ctx, &elements, false)...)
+	if m.Settings.IsKnown() {
+		elements := tfutils.MergeDiagnostics(m.Settings.Get(ctx))(&diags)
 		if diags.HasError() {
 			return nil, diags
 		}
 
+		var labels map[string]string
+		if m.SettingsLabels.IsKnown() {
+			labels = tfutils.MergeDiagnostics(m.SettingsLabels.Get(ctx))(&diags)
+			if diags.HasError() {
+				return nil, diags
+			}
+		}
+
 		settings = &[]struct {
-			Name  string `json:"name"`
-			Value string `json:"value"`
+			Label *string `json:"label,omitempty"`
+			Name  string  `json:"name"`
+			Value string  `json:"value"`
 		}{}
 
-		for k, v := range elements {
-			*settings = append(*settings, struct {
-				Name  string `json:"name"`
-				Value string `json:"value"`
+		for k, val := range elements {
+			entry := struct {
+				Label *string `json:"label,omitempty"`
+				Name  string  `json:"name"`
+				Value string  `json:"value"`
 			}{
 				Name:  k,
-				Value: v,
-			})
+				Value: val,
+			}
+			if lbl, ok := labels[k]; ok {
+				entry.Label = &lbl
+			}
+			*settings = append(*settings, entry)
 		}
 	}
 
@@ -907,7 +970,7 @@ type IssueAlertActionOpsgenieNotifyTeam struct {
 
 func (m *IssueAlertActionOpsgenieNotifyTeam) Fill(ctx context.Context, action apiclient.ProjectRuleActionOpsgenieNotifyTeam) (diags diag.Diagnostics) {
 	m.Name = types.StringPointerValue(action.Name)
-	m.Account = types.StringValue(action.Account)
+	m.Account = types.StringValue(action.Account.String())
 	m.Team = types.StringValue(action.Team)
 	m.Priority = types.StringValue(action.Priority)
 	return
@@ -918,7 +981,7 @@ func (m IssueAlertActionOpsgenieNotifyTeam) ToApi(ctx context.Context) (*apiclie
 	var v apiclient.ProjectRuleAction
 	err := v.FromProjectRuleActionOpsgenieNotifyTeam(apiclient.ProjectRuleActionOpsgenieNotifyTeam{
 		Name:     m.Name.ValueStringPointer(),
-		Account:  m.Account.ValueString(),
+		Account:  json.Number(m.Account.ValueString()),
 		Team:     m.Team.ValueString(),
 		Priority: m.Priority.ValueString(),
 	})
@@ -938,7 +1001,7 @@ type IssueAlertActionPagerDutyNotifyServiceModel struct {
 
 func (m *IssueAlertActionPagerDutyNotifyServiceModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionPagerDutyNotifyService) (diags diag.Diagnostics) {
 	m.Name = types.StringPointerValue(action.Name)
-	m.Account = types.StringValue(action.Account)
+	m.Account = types.StringValue(action.Account.String())
 	m.Service = types.StringValue(action.Service)
 	m.Severity = types.StringValue(action.Severity)
 	return
@@ -949,7 +1012,7 @@ func (m IssueAlertActionPagerDutyNotifyServiceModel) ToApi(ctx context.Context) 
 	var v apiclient.ProjectRuleAction
 	err := v.FromProjectRuleActionPagerDutyNotifyService(apiclient.ProjectRuleActionPagerDutyNotifyService{
 		Name:     m.Name.ValueStringPointer(),
-		Account:  m.Account.ValueString(),
+		Account:  json.Number(m.Account.ValueString()),
 		Service:  m.Service.ValueString(),
 		Severity: m.Severity.ValueString(),
 	})
@@ -961,18 +1024,18 @@ func (m IssueAlertActionPagerDutyNotifyServiceModel) ToApi(ctx context.Context) 
 }
 
 type IssueAlertActionSlackNotifyServiceModel struct {
-	Name      types.String          `tfsdk:"name"`
-	Workspace types.String          `tfsdk:"workspace"`
-	Channel   types.String          `tfsdk:"channel"`
-	ChannelId types.String          `tfsdk:"channel_id"`
-	Tags      sentrytypes.StringSet `tfsdk:"tags"`
-	Notes     types.String          `tfsdk:"notes"`
+	Name      types.String             `tfsdk:"name"`
+	Workspace types.String             `tfsdk:"workspace"`
+	Channel   sentrytypes.SlackChannel `tfsdk:"channel"`
+	ChannelId types.String             `tfsdk:"channel_id"`
+	Tags      sentrytypes.StringSet    `tfsdk:"tags"`
+	Notes     types.String             `tfsdk:"notes"`
 }
 
 func (m *IssueAlertActionSlackNotifyServiceModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionSlackNotifyService) (diags diag.Diagnostics) {
 	m.Name = types.StringPointerValue(action.Name)
 	m.Workspace = types.StringValue(action.Workspace)
-	m.Channel = types.StringValue(action.Channel)
+	m.Channel = sentrytypes.NewSlackChannelValue(action.Channel)
 	m.ChannelId = types.StringPointerValue(action.ChannelId)
 	m.Tags = tfutils.MergeDiagnostics(sentrytypes.StringSetPointerValue(action.Tags))(&diags)
 	m.Notes = types.StringPointerValue(action.Notes)
@@ -1006,7 +1069,7 @@ type IssueAlertActionMsTeamsNotifyServiceModel struct {
 
 func (m *IssueAlertActionMsTeamsNotifyServiceModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionMsTeamsNotifyService) (diags diag.Diagnostics) {
 	m.Name = types.StringPointerValue(action.Name)
-	m.Team = types.StringValue(action.Team)
+	m.Team = types.StringValue(action.Team.String())
 	m.Channel = types.StringValue(action.Channel)
 	m.ChannelId = types.StringPointerValue(action.ChannelId)
 	return
@@ -1017,7 +1080,7 @@ func (m IssueAlertActionMsTeamsNotifyServiceModel) ToApi(ctx context.Context) (*
 	var v apiclient.ProjectRuleAction
 	err := v.FromProjectRuleActionMsTeamsNotifyService(apiclient.ProjectRuleActionMsTeamsNotifyService{
 		Name:      m.Name.ValueStringPointer(),
-		Team:      m.Team.ValueString(),
+		Team:      json.Number(m.Team.ValueString()),
 		Channel:   m.Channel.ValueString(),
 		ChannelId: m.ChannelId.ValueStringPointer(),
 	})
@@ -1037,7 +1100,7 @@ type IssueAlertActionDiscordNotifyServiceModel struct {
 
 func (m *IssueAlertActionDiscordNotifyServiceModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionDiscordNotifyService) (diags diag.Diagnostics) {
 	m.Name = types.StringPointerValue(action.Name)
-	m.Server = types.StringValue(action.Server)
+	m.Server = types.StringValue(action.Server.String())
 	m.ChannelId = types.StringValue(action.ChannelId)
 	m.Tags = tfutils.MergeDiagnostics(sentrytypes.StringSetPointerValue(action.Tags))(&diags)
 	return
@@ -1048,7 +1111,7 @@ func (m IssueAlertActionDiscordNotifyServiceModel) ToApi(ctx context.Context) (*
 	var v apiclient.ProjectRuleAction
 	err := v.FromProjectRuleActionDiscordNotifyService(apiclient.ProjectRuleActionDiscordNotifyService{
 		Name:      m.Name.ValueStringPointer(),
-		Server:    m.Server.ValueString(),
+		Server:    json.Number(m.Server.ValueString()),
 		ChannelId: m.ChannelId.ValueString(),
 		Tags:      tfutils.MergeDiagnostics(m.Tags.ValueStringPointer(ctx))(&diags),
 	})
@@ -1068,7 +1131,7 @@ type IssueAlertActionJiraCreateTicketModel struct {
 
 func (m *IssueAlertActionJiraCreateTicketModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionJiraCreateTicket) (diags diag.Diagnostics) {
 	m.Name = types.StringPointerValue(action.Name)
-	m.Integration = types.StringValue(action.Integration)
+	m.Integration = types.StringValue(action.Integration.String())
 	m.Project = types.StringValue(action.Project)
 	m.IssueType = types.StringValue(action.IssueType)
 	return
@@ -1079,7 +1142,7 @@ func (m IssueAlertActionJiraCreateTicketModel) ToApi(ctx context.Context) (*apic
 	var v apiclient.ProjectRuleAction
 	err := v.FromProjectRuleActionJiraCreateTicket(apiclient.ProjectRuleActionJiraCreateTicket{
 		Name:              m.Name.ValueStringPointer(),
-		Integration:       m.Integration.ValueString(),
+		Integration:       json.Number(m.Integration.ValueString()),
 		Project:           m.Project.ValueString(),
 		IssueType:         m.IssueType.ValueString(),
 		DynamicFormFields: []map[string]interface{}{{"dummy": "dummy"}},
@@ -1124,25 +1187,23 @@ func (m IssueAlertActionJiraServerCreateTicketModel) ToApi(ctx context.Context) 
 }
 
 type IssueAlertActionGitHubCreateTicketModel struct {
-	Name        types.String `tfsdk:"name"`
-	Integration types.String `tfsdk:"integration"`
-	Repo        types.String `tfsdk:"repo"`
-	Assignee    types.String `tfsdk:"assignee"`
-	Labels      types.Set    `tfsdk:"labels"`
+	Name        types.String                  `tfsdk:"name"`
+	Integration types.String                  `tfsdk:"integration"`
+	Repo        types.String                  `tfsdk:"repo"`
+	Assignee    types.String                  `tfsdk:"assignee"`
+	Labels      supertypes.SetValueOf[string] `tfsdk:"labels"`
 }
 
 func (m *IssueAlertActionGitHubCreateTicketModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionGitHubCreateTicket) (diags diag.Diagnostics) {
 	m.Name = types.StringPointerValue(action.Name)
-	m.Integration = types.StringValue(action.Integration)
+	m.Integration = types.StringValue(action.Integration.String())
 	m.Repo = types.StringValue(action.Repo)
 	m.Assignee = types.StringPointerValue(action.Assignee)
 
 	if action.Labels == nil {
-		m.Labels = types.SetNull(types.StringType)
+		m.Labels = supertypes.NewSetValueOfNull[string](ctx)
 	} else {
-		m.Labels = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
-			return types.StringValue(v)
-		}, *action.Labels))
+		m.Labels = supertypes.NewSetValueOfSlice(ctx, *action.Labels)
 	}
 	return
 }
@@ -1152,7 +1213,7 @@ func (m IssueAlertActionGitHubCreateTicketModel) ToApi(ctx context.Context) (*ap
 
 	body := apiclient.ProjectRuleActionGitHubCreateTicket{
 		Name:              m.Name.ValueStringPointer(),
-		Integration:       m.Integration.ValueString(),
+		Integration:       json.Number(m.Integration.ValueString()),
 		Repo:              m.Repo.ValueString(),
 		Assignee:          m.Assignee.ValueStringPointer(),
 		DynamicFormFields: []map[string]interface{}{{"dummy": "dummy"}},
@@ -1178,25 +1239,23 @@ func (m IssueAlertActionGitHubCreateTicketModel) ToApi(ctx context.Context) (*ap
 }
 
 type IssueAlertActionGitHubEnterpriseCreateTicketModel struct {
-	Name        types.String `tfsdk:"name"`
-	Integration types.String `tfsdk:"integration"`
-	Repo        types.String `tfsdk:"repo"`
-	Assignee    types.String `tfsdk:"assignee"`
-	Labels      types.Set    `tfsdk:"labels"`
+	Name        types.String                  `tfsdk:"name"`
+	Integration types.String                  `tfsdk:"integration"`
+	Repo        types.String                  `tfsdk:"repo"`
+	Assignee    types.String                  `tfsdk:"assignee"`
+	Labels      supertypes.SetValueOf[string] `tfsdk:"labels"`
 }
 
 func (m *IssueAlertActionGitHubEnterpriseCreateTicketModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionGitHubEnterpriseCreateTicket) (diags diag.Diagnostics) {
 	m.Name = types.StringPointerValue(action.Name)
-	m.Integration = types.StringValue(action.Integration)
+	m.Integration = types.StringValue(action.Integration.String())
 	m.Repo = types.StringValue(action.Repo)
 	m.Assignee = types.StringPointerValue(action.Assignee)
 
 	if action.Labels == nil {
-		m.Labels = types.SetNull(types.StringType)
+		m.Labels = supertypes.NewSetValueOfNull[string](ctx)
 	} else {
-		m.Labels = types.SetValueMust(types.StringType, sliceutils.Map(func(v string) attr.Value {
-			return types.StringValue(v)
-		}, *action.Labels))
+		m.Labels = supertypes.NewSetValueOfSlice(ctx, *action.Labels)
 	}
 	return
 }
@@ -1206,7 +1265,7 @@ func (m IssueAlertActionGitHubEnterpriseCreateTicketModel) ToApi(ctx context.Con
 
 	body := apiclient.ProjectRuleActionGitHubEnterpriseCreateTicket{
 		Name:              m.Name.ValueStringPointer(),
-		Integration:       m.Integration.ValueString(),
+		Integration:       json.Number(m.Integration.ValueString()),
 		Repo:              m.Repo.ValueString(),
 		Assignee:          m.Assignee.ValueStringPointer(),
 		DynamicFormFields: []map[string]interface{}{{"dummy": "dummy"}},
@@ -1240,7 +1299,7 @@ type IssueAlertActionAzureDevopsCreateTicketModel struct {
 
 func (m *IssueAlertActionAzureDevopsCreateTicketModel) Fill(ctx context.Context, action apiclient.ProjectRuleActionAzureDevopsCreateTicket) (diags diag.Diagnostics) {
 	m.Name = types.StringPointerValue(action.Name)
-	m.Integration = types.StringValue(action.Integration)
+	m.Integration = types.StringValue(action.Integration.String())
 	m.Project = types.StringValue(action.Project)
 	m.WorkItemType = types.StringValue(action.WorkItemType)
 	return
@@ -1251,7 +1310,7 @@ func (m IssueAlertActionAzureDevopsCreateTicketModel) ToApi(ctx context.Context)
 	var v apiclient.ProjectRuleAction
 	err := v.FromProjectRuleActionAzureDevopsCreateTicket(apiclient.ProjectRuleActionAzureDevopsCreateTicket{
 		Name:              m.Name.ValueStringPointer(),
-		Integration:       m.Integration.ValueString(),
+		Integration:       json.Number(m.Integration.ValueString()),
 		Project:           m.Project.ValueString(),
 		WorkItemType:      m.WorkItemType.ValueString(),
 		DynamicFormFields: []map[string]interface{}{{"dummy": "dummy"}},
@@ -1264,51 +1323,51 @@ func (m IssueAlertActionAzureDevopsCreateTicketModel) ToApi(ctx context.Context)
 }
 
 type IssueAlertActionModel struct {
-	NotifyEmail                  *IssueAlertActionNotifyEmailModel                  `tfsdk:"notify_email"`
-	NotifyEvent                  *IssueAlertActionNotifyEventModel                  `tfsdk:"notify_event"`
-	NotifyEventService           *IssueAlertActionNotifyEventServiceModel           `tfsdk:"notify_event_service"`
-	NotifyEventSentryApp         *IssueAlertActionNotifyEventSentryAppModel         `tfsdk:"notify_event_sentry_app"`
-	OpsgenieNotifyTeam           *IssueAlertActionOpsgenieNotifyTeam                `tfsdk:"opsgenie_notify_team"`
-	PagerDutyNotifyService       *IssueAlertActionPagerDutyNotifyServiceModel       `tfsdk:"pagerduty_notify_service"`
-	SlackNotifyService           *IssueAlertActionSlackNotifyServiceModel           `tfsdk:"slack_notify_service"`
-	MsTeamsNotifyService         *IssueAlertActionMsTeamsNotifyServiceModel         `tfsdk:"msteams_notify_service"`
-	DiscordNotifyService         *IssueAlertActionDiscordNotifyServiceModel         `tfsdk:"discord_notify_service"`
-	JiraCreateTicket             *IssueAlertActionJiraCreateTicketModel             `tfsdk:"jira_create_ticket"`
-	JiraServerCreateTicket       *IssueAlertActionJiraServerCreateTicketModel       `tfsdk:"jira_server_create_ticket"`
-	GitHubCreateTicket           *IssueAlertActionGitHubCreateTicketModel           `tfsdk:"github_create_ticket"`
-	GitHubEnterpriseCreateTicket *IssueAlertActionGitHubEnterpriseCreateTicketModel `tfsdk:"github_enterprise_create_ticket"`
-	AzureDevopsCreateTicket      *IssueAlertActionAzureDevopsCreateTicketModel      `tfsdk:"azure_devops_create_ticket"`
+	NotifyEmail                  supertypes.SingleNestedObjectValueOf[IssueAlertActionNotifyEmailModel]                  `tfsdk:"notify_email"`
+	NotifyEvent                  supertypes.SingleNestedObjectValueOf[IssueAlertActionNotifyEventModel]                  `tfsdk:"notify_event"`
+	NotifyEventService           supertypes.SingleNestedObjectValueOf[IssueAlertActionNotifyEventServiceModel]           `tfsdk:"notify_event_service"`
+	NotifyEventSentryApp         supertypes.SingleNestedObjectValueOf[IssueAlertActionNotifyEventSentryAppModel]         `tfsdk:"notify_event_sentry_app"`
+	OpsgenieNotifyTeam           supertypes.SingleNestedObjectValueOf[IssueAlertActionOpsgenieNotifyTeam]                `tfsdk:"opsgenie_notify_team"`
+	PagerDutyNotifyService       supertypes.SingleNestedObjectValueOf[IssueAlertActionPagerDutyNotifyServiceModel]       `tfsdk:"pagerduty_notify_service"`
+	SlackNotifyService           supertypes.SingleNestedObjectValueOf[IssueAlertActionSlackNotifyServiceModel]           `tfsdk:"slack_notify_service"`
+	MsTeamsNotifyService         supertypes.SingleNestedObjectValueOf[IssueAlertActionMsTeamsNotifyServiceModel]         `tfsdk:"msteams_notify_service"`
+	DiscordNotifyService         supertypes.SingleNestedObjectValueOf[IssueAlertActionDiscordNotifyServiceModel]         `tfsdk:"discord_notify_service"`
+	JiraCreateTicket             supertypes.SingleNestedObjectValueOf[IssueAlertActionJiraCreateTicketModel]             `tfsdk:"jira_create_ticket"`
+	JiraServerCreateTicket       supertypes.SingleNestedObjectValueOf[IssueAlertActionJiraServerCreateTicketModel]       `tfsdk:"jira_server_create_ticket"`
+	GitHubCreateTicket           supertypes.SingleNestedObjectValueOf[IssueAlertActionGitHubCreateTicketModel]           `tfsdk:"github_create_ticket"`
+	GitHubEnterpriseCreateTicket supertypes.SingleNestedObjectValueOf[IssueAlertActionGitHubEnterpriseCreateTicketModel] `tfsdk:"github_enterprise_create_ticket"`
+	AzureDevopsCreateTicket      supertypes.SingleNestedObjectValueOf[IssueAlertActionAzureDevopsCreateTicketModel]      `tfsdk:"azure_devops_create_ticket"`
 }
 
 func (m IssueAlertActionModel) ToApi(ctx context.Context) (*apiclient.ProjectRuleAction, diag.Diagnostics) {
-	if m.NotifyEmail != nil {
-		return m.NotifyEmail.ToApi(ctx)
-	} else if m.NotifyEvent != nil {
-		return m.NotifyEvent.ToApi(ctx)
-	} else if m.NotifyEventService != nil {
-		return m.NotifyEventService.ToApi(ctx)
-	} else if m.NotifyEventSentryApp != nil {
-		return m.NotifyEventSentryApp.ToApi(ctx)
-	} else if m.OpsgenieNotifyTeam != nil {
-		return m.OpsgenieNotifyTeam.ToApi(ctx)
-	} else if m.PagerDutyNotifyService != nil {
-		return m.PagerDutyNotifyService.ToApi(ctx)
-	} else if m.SlackNotifyService != nil {
-		return m.SlackNotifyService.ToApi(ctx)
-	} else if m.MsTeamsNotifyService != nil {
-		return m.MsTeamsNotifyService.ToApi(ctx)
-	} else if m.DiscordNotifyService != nil {
-		return m.DiscordNotifyService.ToApi(ctx)
-	} else if m.JiraCreateTicket != nil {
-		return m.JiraCreateTicket.ToApi(ctx)
-	} else if m.JiraServerCreateTicket != nil {
-		return m.JiraServerCreateTicket.ToApi(ctx)
-	} else if m.GitHubCreateTicket != nil {
-		return m.GitHubCreateTicket.ToApi(ctx)
-	} else if m.GitHubEnterpriseCreateTicket != nil {
-		return m.GitHubEnterpriseCreateTicket.ToApi(ctx)
-	} else if m.AzureDevopsCreateTicket != nil {
-		return m.AzureDevopsCreateTicket.ToApi(ctx)
+	if m.NotifyEmail.IsKnown() {
+		return m.NotifyEmail.MustGet(ctx).ToApi(ctx)
+	} else if m.NotifyEvent.IsKnown() {
+		return m.NotifyEvent.MustGet(ctx).ToApi(ctx)
+	} else if m.NotifyEventService.IsKnown() {
+		return m.NotifyEventService.MustGet(ctx).ToApi(ctx)
+	} else if m.NotifyEventSentryApp.IsKnown() {
+		return m.NotifyEventSentryApp.MustGet(ctx).ToApi(ctx)
+	} else if m.OpsgenieNotifyTeam.IsKnown() {
+		return m.OpsgenieNotifyTeam.MustGet(ctx).ToApi(ctx)
+	} else if m.PagerDutyNotifyService.IsKnown() {
+		return m.PagerDutyNotifyService.MustGet(ctx).ToApi(ctx)
+	} else if m.SlackNotifyService.IsKnown() {
+		return m.SlackNotifyService.MustGet(ctx).ToApi(ctx)
+	} else if m.MsTeamsNotifyService.IsKnown() {
+		return m.MsTeamsNotifyService.MustGet(ctx).ToApi(ctx)
+	} else if m.DiscordNotifyService.IsKnown() {
+		return m.DiscordNotifyService.MustGet(ctx).ToApi(ctx)
+	} else if m.JiraCreateTicket.IsKnown() {
+		return m.JiraCreateTicket.MustGet(ctx).ToApi(ctx)
+	} else if m.JiraServerCreateTicket.IsKnown() {
+		return m.JiraServerCreateTicket.MustGet(ctx).ToApi(ctx)
+	} else if m.GitHubCreateTicket.IsKnown() {
+		return m.GitHubCreateTicket.MustGet(ctx).ToApi(ctx)
+	} else if m.GitHubEnterpriseCreateTicket.IsKnown() {
+		return m.GitHubEnterpriseCreateTicket.MustGet(ctx).ToApi(ctx)
+	} else if m.AzureDevopsCreateTicket.IsKnown() {
+		return m.AzureDevopsCreateTicket.MustGet(ctx).ToApi(ctx)
 	} else {
 		var diags diag.Diagnostics
 		diags.AddError("Exactly one action must be set", "Exactly one action must be set")
@@ -1323,64 +1382,78 @@ func (m *IssueAlertActionModel) Fill(ctx context.Context, action apiclient.Proje
 		return
 	}
 
-	m.NotifyEmail = nil
-	m.NotifyEvent = nil
-	m.NotifyEventService = nil
-	m.NotifyEventSentryApp = nil
-	m.OpsgenieNotifyTeam = nil
-	m.PagerDutyNotifyService = nil
-	m.SlackNotifyService = nil
-	m.MsTeamsNotifyService = nil
-	m.DiscordNotifyService = nil
-	m.JiraCreateTicket = nil
-	m.JiraServerCreateTicket = nil
-	m.GitHubCreateTicket = nil
-	m.GitHubEnterpriseCreateTicket = nil
-	m.AzureDevopsCreateTicket = nil
+	m.NotifyEmail = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionNotifyEmailModel](ctx)
+	m.NotifyEvent = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionNotifyEventModel](ctx)
+	m.NotifyEventService = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionNotifyEventServiceModel](ctx)
+	m.NotifyEventSentryApp = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionNotifyEventSentryAppModel](ctx)
+	m.OpsgenieNotifyTeam = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionOpsgenieNotifyTeam](ctx)
+	m.PagerDutyNotifyService = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionPagerDutyNotifyServiceModel](ctx)
+	m.SlackNotifyService = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionSlackNotifyServiceModel](ctx)
+	m.MsTeamsNotifyService = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionMsTeamsNotifyServiceModel](ctx)
+	m.DiscordNotifyService = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionDiscordNotifyServiceModel](ctx)
+	m.JiraCreateTicket = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionJiraCreateTicketModel](ctx)
+	m.JiraServerCreateTicket = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionJiraServerCreateTicketModel](ctx)
+	m.GitHubCreateTicket = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionGitHubCreateTicketModel](ctx)
+	m.GitHubEnterpriseCreateTicket = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionGitHubEnterpriseCreateTicketModel](ctx)
+	m.AzureDevopsCreateTicket = supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionAzureDevopsCreateTicketModel](ctx)
 
 	switch actionValue := actionValue.(type) {
 	case apiclient.ProjectRuleActionNotifyEmail:
-		m.NotifyEmail = &IssueAlertActionNotifyEmailModel{}
-		diags.Append(m.NotifyEmail.Fill(ctx, actionValue)...)
+		var out IssueAlertActionNotifyEmailModel
+		diags.Append(out.Fill(ctx, actionValue)...)
+		m.NotifyEmail = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleActionNotifyEvent:
-		m.NotifyEvent = &IssueAlertActionNotifyEventModel{}
-		diags.Append(m.NotifyEvent.Fill(ctx, actionValue)...)
+		var out IssueAlertActionNotifyEventModel
+		diags.Append(out.Fill(ctx, actionValue)...)
+		m.NotifyEvent = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleActionNotifyEventService:
-		m.NotifyEventService = &IssueAlertActionNotifyEventServiceModel{}
-		diags.Append(m.NotifyEventService.Fill(ctx, actionValue)...)
+		var out IssueAlertActionNotifyEventServiceModel
+		diags.Append(out.Fill(ctx, actionValue)...)
+		m.NotifyEventService = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleActionNotifyEventSentryApp:
-		m.NotifyEventSentryApp = &IssueAlertActionNotifyEventSentryAppModel{}
-		diags.Append(m.NotifyEventSentryApp.Fill(ctx, actionValue)...)
+		var out IssueAlertActionNotifyEventSentryAppModel
+		diags.Append(out.Fill(ctx, actionValue)...)
+		m.NotifyEventSentryApp = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleActionOpsgenieNotifyTeam:
-		m.OpsgenieNotifyTeam = &IssueAlertActionOpsgenieNotifyTeam{}
-		diags.Append(m.OpsgenieNotifyTeam.Fill(ctx, actionValue)...)
+		var out IssueAlertActionOpsgenieNotifyTeam
+		diags.Append(out.Fill(ctx, actionValue)...)
+		m.OpsgenieNotifyTeam = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleActionPagerDutyNotifyService:
-		m.PagerDutyNotifyService = &IssueAlertActionPagerDutyNotifyServiceModel{}
-		diags.Append(m.PagerDutyNotifyService.Fill(ctx, actionValue)...)
+		var out IssueAlertActionPagerDutyNotifyServiceModel
+		diags.Append(out.Fill(ctx, actionValue)...)
+		m.PagerDutyNotifyService = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleActionSlackNotifyService:
-		m.SlackNotifyService = &IssueAlertActionSlackNotifyServiceModel{}
-		diags.Append(m.SlackNotifyService.Fill(ctx, actionValue)...)
+		var out IssueAlertActionSlackNotifyServiceModel
+		diags.Append(out.Fill(ctx, actionValue)...)
+		m.SlackNotifyService = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleActionMsTeamsNotifyService:
-		m.MsTeamsNotifyService = &IssueAlertActionMsTeamsNotifyServiceModel{}
-		diags.Append(m.MsTeamsNotifyService.Fill(ctx, actionValue)...)
+		var out IssueAlertActionMsTeamsNotifyServiceModel
+		diags.Append(out.Fill(ctx, actionValue)...)
+		m.MsTeamsNotifyService = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleActionDiscordNotifyService:
-		m.DiscordNotifyService = &IssueAlertActionDiscordNotifyServiceModel{}
-		diags.Append(m.DiscordNotifyService.Fill(ctx, actionValue)...)
+		var out IssueAlertActionDiscordNotifyServiceModel
+		diags.Append(out.Fill(ctx, actionValue)...)
+		m.DiscordNotifyService = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleActionJiraCreateTicket:
-		m.JiraCreateTicket = &IssueAlertActionJiraCreateTicketModel{}
-		diags.Append(m.JiraCreateTicket.Fill(ctx, actionValue)...)
+		var out IssueAlertActionJiraCreateTicketModel
+		diags.Append(out.Fill(ctx, actionValue)...)
+		m.JiraCreateTicket = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleActionJiraServerCreateTicket:
-		m.JiraServerCreateTicket = &IssueAlertActionJiraServerCreateTicketModel{}
-		diags.Append(m.JiraServerCreateTicket.Fill(ctx, actionValue)...)
+		var out IssueAlertActionJiraServerCreateTicketModel
+		diags.Append(out.Fill(ctx, actionValue)...)
+		m.JiraServerCreateTicket = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleActionGitHubCreateTicket:
-		m.GitHubCreateTicket = &IssueAlertActionGitHubCreateTicketModel{}
-		diags.Append(m.GitHubCreateTicket.Fill(ctx, actionValue)...)
+		var out IssueAlertActionGitHubCreateTicketModel
+		diags.Append(out.Fill(ctx, actionValue)...)
+		m.GitHubCreateTicket = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleActionGitHubEnterpriseCreateTicket:
-		m.GitHubEnterpriseCreateTicket = &IssueAlertActionGitHubEnterpriseCreateTicketModel{}
-		diags.Append(m.GitHubEnterpriseCreateTicket.Fill(ctx, actionValue)...)
+		var out IssueAlertActionGitHubEnterpriseCreateTicketModel
+		diags.Append(out.Fill(ctx, actionValue)...)
+		m.GitHubEnterpriseCreateTicket = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	case apiclient.ProjectRuleActionAzureDevopsCreateTicket:
-		m.AzureDevopsCreateTicket = &IssueAlertActionAzureDevopsCreateTicketModel{}
-		diags.Append(m.AzureDevopsCreateTicket.Fill(ctx, actionValue)...)
+		var out IssueAlertActionAzureDevopsCreateTicketModel
+		diags.Append(out.Fill(ctx, actionValue)...)
+		m.AzureDevopsCreateTicket = supertypes.NewSingleNestedObjectValueOf(ctx, &out)
 	default:
 		diags.AddError("Unsupported action", fmt.Sprintf("Unsupported action type %T", actionValue))
 	}
@@ -1391,21 +1464,21 @@ func (m *IssueAlertActionModel) Fill(ctx context.Context, action apiclient.Proje
 // Model
 
 type IssueAlertModel struct {
-	Id           types.String                `tfsdk:"id"`
-	Organization types.String                `tfsdk:"organization"`
-	Project      types.String                `tfsdk:"project"`
-	Name         types.String                `tfsdk:"name"`
-	Conditions   sentrytypes.LossyJson       `tfsdk:"conditions"`
-	Filters      sentrytypes.LossyJson       `tfsdk:"filters"`
-	Actions      sentrytypes.LossyJson       `tfsdk:"actions"`
-	ActionMatch  types.String                `tfsdk:"action_match"`
-	FilterMatch  types.String                `tfsdk:"filter_match"`
-	Frequency    types.Int64                 `tfsdk:"frequency"`
-	Environment  types.String                `tfsdk:"environment"`
-	Owner        types.String                `tfsdk:"owner"`
-	ConditionsV2 *[]IssueAlertConditionModel `tfsdk:"conditions_v2"`
-	FiltersV2    *[]IssueAlertFilterModel    `tfsdk:"filters_v2"`
-	ActionsV2    *[]IssueAlertActionModel    `tfsdk:"actions_v2"`
+	Id           types.String                                                 `tfsdk:"id"`
+	Organization types.String                                                 `tfsdk:"organization"`
+	Project      types.String                                                 `tfsdk:"project"`
+	Name         types.String                                                 `tfsdk:"name"`
+	Conditions   sentrytypes.LossyJson                                        `tfsdk:"conditions"`
+	Filters      sentrytypes.LossyJson                                        `tfsdk:"filters"`
+	Actions      sentrytypes.LossyJson                                        `tfsdk:"actions"`
+	ActionMatch  types.String                                                 `tfsdk:"action_match"`
+	FilterMatch  types.String                                                 `tfsdk:"filter_match"`
+	Frequency    types.Int64                                                  `tfsdk:"frequency"`
+	Environment  types.String                                                 `tfsdk:"environment"`
+	Owner        types.String                                                 `tfsdk:"owner"`
+	ConditionsV2 supertypes.ListNestedObjectValueOf[IssueAlertConditionModel] `tfsdk:"conditions_v2"`
+	FiltersV2    supertypes.ListNestedObjectValueOf[IssueAlertFilterModel]    `tfsdk:"filters_v2"`
+	ActionsV2    supertypes.ListNestedObjectValueOf[IssueAlertActionModel]    `tfsdk:"actions_v2"`
 }
 
 func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule) (diags diag.Diagnostics) {
@@ -1434,59 +1507,174 @@ func (m *IssueAlertModel) Fill(ctx context.Context, alert apiclient.ProjectRule)
 	}
 
 	if !m.Conditions.IsNull() {
-		if conditions, err := json.Marshal(alert.Conditions); err == nil {
-			m.Conditions = sentrytypes.NewLossyJsonValue(string(conditions))
+		apiConditions := lo.Map(alert.Conditions, func(c apiclient.ProjectRuleCondition, _ int) json.RawMessage {
+			b, _ := json.Marshal(c)
+			return b
+		})
+		var priorConditions []json.RawMessage
+		if !m.Conditions.IsUnknown() {
+			_ = json.Unmarshal([]byte(m.Conditions.ValueString()), &priorConditions)
+		}
+		apiConditions = reorderToMatchPrior(priorConditions, apiConditions, legacyJsonItemKey)
+		if b, err := json.Marshal(apiConditions); err == nil {
+			m.Conditions = sentrytypes.NewLossyJsonValue(string(b))
 		} else {
 			diags.AddError("Invalid conditions", err.Error())
 			return
 		}
-	} else if m.ConditionsV2 != nil {
-		m.ConditionsV2 = ptr.Ptr(sliceutils.Map(func(condition apiclient.ProjectRuleCondition) IssueAlertConditionModel {
+	} else if !m.ConditionsV2.IsNull() {
+		var priorConditions []IssueAlertConditionModel
+		if !m.ConditionsV2.IsUnknown() {
+			diags.Append(m.ConditionsV2.ElementsAs(ctx, &priorConditions, false)...)
+			if diags.HasError() {
+				return
+			}
+		}
+
+		conditions := lo.FlatMap(alert.Conditions, func(condition apiclient.ProjectRuleCondition, _ int) []IssueAlertConditionModel {
 			var conditionModel IssueAlertConditionModel
-			diags.Append(conditionModel.Fill(ctx, condition)...)
-			return conditionModel
-		}, alert.Conditions))
+			innerDiags := conditionModel.Fill(ctx, condition)
+			// The issue alert may return non-backward-compatible conditions. We'll just log a warning and skip it.
+			if innerDiags.HasError() {
+				for _, d := range innerDiags {
+					diags.AddWarning(fmt.Sprintf("Failed to convert condition %s", d.Summary()), d.Detail())
+				}
+				return nil
+			}
+			return []IssueAlertConditionModel{conditionModel}
+		})
 
 		if diags.HasError() {
 			return
 		}
+
+		conditions = reorderToMatchPrior(priorConditions, conditions, issueAlertConditionModelKey(ctx))
+
+		m.ConditionsV2 = supertypes.NewListNestedObjectValueOfValueSlice(ctx, conditions)
 	}
 
 	if !m.Filters.IsNull() {
-		if filters, err := json.Marshal(alert.Filters); err == nil {
-			m.Filters = sentrytypes.NewLossyJsonValue(string(filters))
+		apiFilters := lo.Map(alert.Filters, func(f apiclient.ProjectRuleFilter, _ int) json.RawMessage {
+			b, _ := json.Marshal(f)
+			return b
+		})
+		var priorFilters []json.RawMessage
+		if !m.Filters.IsUnknown() {
+			_ = json.Unmarshal([]byte(m.Filters.ValueString()), &priorFilters)
+		}
+		apiFilters = reorderToMatchPrior(priorFilters, apiFilters, legacyJsonItemKey)
+		if b, err := json.Marshal(apiFilters); err == nil {
+			m.Filters = sentrytypes.NewLossyJsonValue(string(b))
 		} else {
 			diags.AddError("Invalid filters", err.Error())
 		}
-	} else if m.FiltersV2 != nil {
-		m.FiltersV2 = ptr.Ptr(sliceutils.Map(func(filter apiclient.ProjectRuleFilter) IssueAlertFilterModel {
+	} else if !m.FiltersV2.IsNull() {
+		var priorFilters []IssueAlertFilterModel
+		if !m.FiltersV2.IsUnknown() {
+			diags.Append(m.FiltersV2.ElementsAs(ctx, &priorFilters, false)...)
+			if diags.HasError() {
+				return
+			}
+		}
+
+		filters := lo.FlatMap(alert.Filters, func(filter apiclient.ProjectRuleFilter, _ int) []IssueAlertFilterModel {
 			var filterModel IssueAlertFilterModel
-			diags.Append(filterModel.Fill(ctx, filter)...)
-			return filterModel
-		}, alert.Filters))
+			innerDiags := filterModel.Fill(ctx, filter)
+			// The issue alert may return non-backward-compatible filters. We'll just log a warning and skip it.
+			if innerDiags.HasError() {
+				for _, d := range innerDiags {
+					diags.AddWarning(fmt.Sprintf("Failed to convert filter %s", d.Summary()), d.Detail())
+				}
+				return nil
+			}
+			return []IssueAlertFilterModel{filterModel}
+		})
 
 		if diags.HasError() {
 			return
 		}
+
+		filters = reorderToMatchPrior(priorFilters, filters, issueAlertFilterModelKey(ctx))
+
+		m.FiltersV2 = supertypes.NewListNestedObjectValueOfValueSlice(ctx, filters)
 	}
 
 	if !m.Actions.IsNull() {
-		if actions, err := json.Marshal(alert.Actions); err == nil && len(actions) > 0 {
-			m.Actions = sentrytypes.NewLossyJsonValue(string(actions))
-		} else {
-			diags.AddError("Invalid actions", err.Error())
+		apiActions := lo.Map(alert.Actions, func(a apiclient.ProjectRuleAction, _ int) json.RawMessage {
+			b, _ := json.Marshal(a)
+			b, _ = stripLegacyActionDisplayFields(b)
+			return b
+		})
+		var priorActions []json.RawMessage
+		if !m.Actions.IsUnknown() {
+			_ = json.Unmarshal([]byte(m.Actions.ValueString()), &priorActions)
 		}
-	} else if m.ActionsV2 != nil {
-		m.ActionsV2 = ptr.Ptr(sliceutils.Map(func(action apiclient.ProjectRuleAction) IssueAlertActionModel {
+		apiActions = reorderToMatchPrior(priorActions, apiActions, legacyJsonItemKey)
+		if b, err := json.Marshal(apiActions); err != nil {
+			diags.AddError("Invalid actions", err.Error())
+		} else {
+			m.Actions = sentrytypes.NewLossyJsonValue(string(b))
+		}
+	} else if !m.ActionsV2.IsNull() {
+		var priorActions []IssueAlertActionModel
+		if !m.ActionsV2.IsUnknown() {
+			diags.Append(m.ActionsV2.ElementsAs(ctx, &priorActions, false)...)
+			if diags.HasError() {
+				return
+			}
+		}
+
+		actions := lo.FlatMap(alert.Actions, func(action apiclient.ProjectRuleAction, _ int) []IssueAlertActionModel {
 			var actionModel IssueAlertActionModel
-			diags.Append(actionModel.Fill(ctx, action)...)
-			return actionModel
-		}, alert.Actions))
+			innerDiags := actionModel.Fill(ctx, action)
+			// The issue alert may return non-backward-compatible actions. We'll just log a warning and skip it.
+			if innerDiags.HasError() {
+				for _, d := range innerDiags {
+					diags.AddWarning(fmt.Sprintf("Failed to convert action %s", d.Summary()), d.Detail())
+				}
+				return nil
+			}
+			return []IssueAlertActionModel{actionModel}
+		})
 
 		if diags.HasError() {
 			return
 		}
+
+		actions = reorderToMatchPrior(priorActions, actions, issueAlertActionModelKey(ctx))
+
+		m.ActionsV2 = supertypes.NewListNestedObjectValueOfValueSlice(ctx, actions)
 	}
 
 	return
+}
+
+// stripLegacyActionDisplayFields removes API-injected display-only keys from the legacy
+// action JSON before storing in state. The Sentry GET endpoint unconditionally adds
+// "formFields" (live webhook schema) and "name" (generated label) to every action dict.
+// These fields are never stored server-side and cannot be stabilized in config. The
+// nested "settings" array on sentry-app actions has the same problem with per-entry
+// "label" values, which the API returns on PUT but omits on GET.
+func stripLegacyActionDisplayFields(actionJSON []byte) ([]byte, error) {
+	dec := json.NewDecoder(bytes.NewReader(actionJSON))
+	dec.UseNumber()
+
+	var action map[string]interface{}
+	if err := dec.Decode(&action); err != nil {
+		return nil, err
+	}
+
+	delete(action, "formFields")
+	delete(action, "name")
+	delete(action, "hasSchemaFormConfig")
+
+	if settings, ok := action["settings"].([]interface{}); ok {
+		for _, s := range settings {
+			if entry, ok := s.(map[string]interface{}); ok {
+				delete(entry, "label")
+			}
+		}
+	}
+
+	return json.Marshal(action)
 }

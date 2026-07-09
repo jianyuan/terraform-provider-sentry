@@ -2,10 +2,10 @@ package provider
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"slices"
-	"strings"
 	"sync"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -17,11 +17,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/mzglinski/go-sentry/v2/sentry"
-	"github.com/jianyuan/go-utils/sliceutils"
 	"github.com/mzglinski/terraform-provider-sentry/internal/apiclient"
 	"github.com/mzglinski/terraform-provider-sentry/internal/diagutils"
 	"github.com/mzglinski/terraform-provider-sentry/internal/tfutils"
+	"github.com/samber/lo"
 )
+
+var errNotFound = errors.New("not found")
 
 type TeamMemberResourceModel struct {
 	Id            types.String `tfsdk:"id"`
@@ -117,6 +119,8 @@ func (r *TeamMemberResource) getEffectiveTeamRole(ctx context.Context, organizat
 	orgHttpResp, err := r.apiClient.GetOrganizationWithResponse(ctx, organization)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read organization %q, got error: %s", organization, err)
+	} else if orgHttpResp.StatusCode() == http.StatusNotFound {
+		return nil, fmt.Errorf("unable to read organization %q: %w", organization, errNotFound)
 	} else if orgHttpResp.StatusCode() != http.StatusOK || orgHttpResp.JSON200 == nil {
 		return nil, fmt.Errorf("unable to read organization %q, got status code: %d", organization, orgHttpResp.StatusCode())
 	}
@@ -125,32 +129,29 @@ func (r *TeamMemberResource) getEffectiveTeamRole(ctx context.Context, organizat
 	memberHttpResp, err := r.apiClient.GetOrganizationMemberWithResponse(ctx, organization, memberId)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read organization member (organization=%s, member_id=%s), got error: %s", organization, memberId, err)
+	} else if memberHttpResp.StatusCode() == http.StatusNotFound {
+		return nil, fmt.Errorf("unable to read organization member (organization=%s, member_id=%s): %w", organization, memberId, errNotFound)
 	} else if memberHttpResp.StatusCode() != http.StatusOK || memberHttpResp.JSON200 == nil {
 		return nil, fmt.Errorf("unable to read organization member (organization=%s, member_id=%s), got status code: %d", organization, memberId, memberHttpResp.StatusCode())
 	}
 	member := memberHttpResp.JSON200
 
-	memberOrgRole := sliceutils.Find(func(orgRole apiclient.OrganizationRoleListItem) bool {
+	if memberOrgRole, ok := lo.Find(org.OrgRoleList, func(orgRole apiclient.OrganizationRoleListItem) bool {
 		return orgRole.Id == member.OrgRole
-	}, org.OrgRoleList)
-
-	if hasOrgRoleOverwrite(memberOrgRole, org.OrgRoleList, org.TeamRoleList) {
-		effectiveTeamRole := sliceutils.Find(func(teamRole apiclient.TeamRoleListItem) bool {
+	}); ok && hasOrgRoleOverwrite(&memberOrgRole, org.OrgRoleList, org.TeamRoleList) {
+		if effectiveTeamRole, ok := lo.Find(org.TeamRoleList, func(teamRole apiclient.TeamRoleListItem) bool {
 			return teamRole.Id == memberOrgRole.MinimumTeamRole
-		}, org.TeamRoleList)
-		if effectiveTeamRole != nil {
+		}); ok {
 			return &effectiveTeamRole.Id, nil
 		}
 	}
 
-	teamRoleId := sliceutils.Find(func(teamRole apiclient.TeamRole) bool {
+	if teamRoleId, ok := lo.Find(member.TeamRoles, func(teamRole apiclient.TeamRole) bool {
 		return teamRole.TeamSlug == teamSlug
-	}, member.TeamRoles)
-	if teamRoleId != nil && teamRoleId.Role != nil {
-		teamRole := sliceutils.Find(func(teamRole apiclient.TeamRoleListItem) bool {
-			return teamRole.Id == *teamRoleId.Role
-		}, org.TeamRoleList)
-		if teamRole != nil {
+	}); ok && teamRoleId.Role.IsSpecified() && !teamRoleId.Role.IsNull() {
+		if teamRole, ok := lo.Find(org.TeamRoleList, func(teamRole apiclient.TeamRoleListItem) bool {
+			return teamRole.Id == teamRoleId.Role.MustGet()
+		}); ok {
 			return &teamRole.Id, nil
 		}
 	}
@@ -239,9 +240,7 @@ func (r *TeamMemberResource) Read(ctx context.Context, req resource.ReadRequest,
 
 	effectiveRole, err := r.getEffectiveTeamRole(ctx, data.Organization.ValueString(), data.MemberId.ValueString(), data.Team.ValueString())
 	if err != nil {
-
-		if strings.Contains(err.Error(), "404 The requested resource does not exist") ||
-			strings.Contains(err.Error(), "unable to read organization member, got status code: 404") {
+		if errors.Is(err, errNotFound) {
 			resp.State.RemoveResource(ctx)
 		} else {
 			resp.Diagnostics.Append(diagutils.NewClientError("read", err))

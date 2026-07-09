@@ -3,14 +3,32 @@
 page_title: "sentry_issue_alert Resource - terraform-provider-sentry"
 subcategory: ""
 description: |-
+  ⚠️ This resource is deprecated in favor of sentry_alert alert.md.
   Create an Issue Alert Rule for a Project. See the Sentry Documentation https://docs.sentry.io/api/alerts/create-an-issue-alert-rule-for-a-project/ for more information.
+  Migrating to sentry_alert
+  A classic issue alert maps onto sentry_alert alert.md as follows:
+  Issue-state conditions (first_seen_event, regression_event, reappeared_event) become trigger_conditions. Frequency conditions (e.g. event_frequency) move to action_filters[].conditions (e.g. event_frequency_count).filters become action_filters[].conditions (e.g. tagged_event, age_comparison, level), and filter_match becomes action_filters[].logic_type.actions become action_filters[].actions (e.g. email, slack), and frequency becomes frequency_minutes.sentry_alert requires monitor_ids. For a classic alert that is not tied to a monitor, reference a project default monitor with the sentry_project_error_monitor ../data-sources/project_error_monitor.md or sentry_project_issue_stream_monitor ../data-sources/project_issue_stream_monitor.md data source — no monitor resource needs to be created.
+  A few legacy trigger types (e.g. new_high_priority_issue, existing_high_priority_issue) are currently only available through sentry_alert's legacy_trigger_conditions passthrough.
   NOTE: The conditions, filters, and actions attributes, which are JSON strings, have been deprecated in favor of conditions_v2, filters_v2, and actions_v2, which are lists of objects.
   The *_v2 attributes are available starting from v0.14.2.
 ---
 
 # sentry_issue_alert (Resource)
 
+⚠️ This resource is deprecated in favor of [`sentry_alert`](alert.md).
+
 Create an Issue Alert Rule for a Project. See the [Sentry Documentation](https://docs.sentry.io/api/alerts/create-an-issue-alert-rule-for-a-project/) for more information.
+
+### Migrating to `sentry_alert`
+
+A classic issue alert maps onto [`sentry_alert`](alert.md) as follows:
+
+- Issue-state `conditions` (`first_seen_event`, `regression_event`, `reappeared_event`) become `trigger_conditions`. Frequency conditions (e.g. `event_frequency`) move to `action_filters[].conditions` (e.g. `event_frequency_count`).
+- `filters` become `action_filters[].conditions` (e.g. `tagged_event`, `age_comparison`, `level`), and `filter_match` becomes `action_filters[].logic_type`.
+- `actions` become `action_filters[].actions` (e.g. `email`, `slack`), and `frequency` becomes `frequency_minutes`.
+- `sentry_alert` requires `monitor_ids`. For a classic alert that is not tied to a monitor, reference a project default monitor with the [`sentry_project_error_monitor`](../data-sources/project_error_monitor.md) or [`sentry_project_issue_stream_monitor`](../data-sources/project_issue_stream_monitor.md) data source — no monitor resource needs to be created.
+
+A few legacy trigger types (e.g. `new_high_priority_issue`, `existing_high_priority_issue`) are currently only available through `sentry_alert`'s `legacy_trigger_conditions` passthrough.
 
 **NOTE:** The `conditions`, `filters`, and `actions` attributes, which are JSON strings, have been deprecated in favor of `conditions_v2`, `filters_v2`, and `actions_v2`, which are lists of objects.
 
@@ -687,6 +705,7 @@ Required:
 Optional:
 
 - `settings` (Map of String)
+- `settings_labels` (Map of String) Optional mapping of setting keys to human-readable display labels. This is primarily used for `async-select` fields in the Sentry UI.
 
 Read-Only:
 
@@ -743,12 +762,12 @@ Required:
 
 Optional:
 
+- `channel_id` (String) The ID of the channel to send the notification to.
 - `notes` (String) Text to show alongside the notification. To @ a user, include their user id like `@<USER_ID>`. To include a clickable link, format the link and title like `<http://example.com|Click Here>`.
 - `tags` (Set of String) A string of tags to show in the notification.
 
 Read-Only:
 
-- `channel_id` (String) The ID of the channel to send the notification to.
 - `name` (String)
 
 

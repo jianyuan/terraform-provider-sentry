@@ -23,7 +23,7 @@ data "sentry_organization_integration" "github" {
 resource "sentry_organization_repository" "github" {
   organization     = "my-organization"
   integration_type = "github"
-  integration_id   = data.sentry_organization_integration.github.internal_id
+  integration_id   = data.sentry_organization_integration.github.id
   identifier       = "my-github-organization/my-github-repo"
 }
 
@@ -37,7 +37,7 @@ data "sentry_organization_repository" "vsts" {
 resource "sentry_organization_repository" "vsts" {
   organization     = "my-organization"
   integration_type = "vsts"
-  integration_id   = data.sentry_organization_integration.vsts.internal_id
+  integration_id   = data.sentry_organization_integration.vsts.id
   identifier       = "5febef5a-833d-4e14-b9c0-14cb638f91e6"
 }
 ```
