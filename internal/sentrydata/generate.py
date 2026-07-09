@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ast
+import os
 import pathlib
 import subprocess
 import time
@@ -9,6 +10,12 @@ from typing import Any, Generic, NamedTuple, OrderedDict, TypeGuard, TypeVar
 
 import httpx
 import jinja2
+import tzdata
+
+os.environ.setdefault(
+    "PYTHONTZPATH",
+    os.path.join(os.path.dirname(tzdata.__file__), "zoneinfo"),
+)
 
 REPO = "getsentry/sentry"
 BRANCH = "master"
