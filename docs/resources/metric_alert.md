@@ -3,10 +3,13 @@
 page_title: "sentry_metric_alert Resource - terraform-provider-sentry"
 subcategory: ""
 description: |-
+  ⚠️ This resource is deprecated. Please migrate to sentry_metric_monitor metric_monitor.md and sentry_alert alert.md resources instead.
   Sentry Metric Alert resource.
 ---
 
 # sentry_metric_alert (Resource)
+
+⚠️ This resource is deprecated. Please migrate to [`sentry_metric_monitor`](metric_monitor.md) and [`sentry_alert`](alert.md) resources instead.
 
 Sentry Metric Alert resource.
 
@@ -57,6 +60,38 @@ resource "sentry_metric_alert" "main" {
   trigger {
     alert_threshold = 100
     label           = "warning"
+    threshold_type  = 0
+  }
+}
+
+# Example: Metric Alert with Sentry App Action
+
+data "sentry_app_installation" "my_app" {
+  organization = "my-organization"
+  slug         = "my-sentry-app"
+}
+
+resource "sentry_metric_alert" "main" {
+  organization   = "my-organization"
+  project        = "my-project"
+  name           = "My Alert with Sentry App"
+  dataset        = "events"
+  event_types    = ["error"]
+  query          = ""
+  aggregate      = "count()"
+  time_window    = 60
+  threshold_type = 0
+
+  trigger {
+    action {
+      type              = "sentry_app"
+      target_type       = "sentry_app"
+      target_identifier = tostring(data.sentry_app_installation.my_app.sentry_app_id)
+      sentry_app_id     = data.sentry_app_installation.my_app.sentry_app_id
+      integration_id    = 0
+    }
+    alert_threshold = 100
+    label           = "critical"
     threshold_type  = 0
   }
 }
@@ -121,6 +156,7 @@ Optional:
 - `input_channel_id` (String) Slack channel ID to avoid rate-limiting, see [here](https://docs.sentry.io/product/integrations/notification-incidents/slack/#rate-limiting-error)
 - `integration_id` (Number)
 - `priority` (String)
+- `sentry_app_id` (Number) The ID of the Sentry App (required when type is sentry_app)
 - `target_identifier` (String)
 
 Read-Only:

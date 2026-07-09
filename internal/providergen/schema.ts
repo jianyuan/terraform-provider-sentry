@@ -6,20 +6,30 @@ export type ComputedOptionalRequired =
 
 export type Attribute =
   | StringAttribute
-  | IntAttribute
+  | Int64Attribute
+  | Float64Attribute
   | BoolAttribute
   | ListAttribute
+  | ListNestedAttribute
   | SetAttribute
   | SetNestedAttribute
-  | ObjectAttribute;
+  | MapAttribute
+  | ObjectAttribute
+  | SingleNestedAttribute;
 
 export interface BaseAttribute {
   name: string;
+  customType?: {
+    type: string;
+    value: string;
+  };
   description: string;
   deprecationMessage?: string;
   computedOptionalRequired: ComputedOptionalRequired;
   sensitive?: boolean;
+  default?: string;
   planModifiers?: Array<string>;
+  enum?: string;
   validators?: Array<string>;
   nullable?: boolean;
   sourceAttribute?: Array<string>;
@@ -33,8 +43,12 @@ export interface StringAttribute extends BaseAttribute {
   type: "string";
 }
 
-export interface IntAttribute extends BaseAttribute {
-  type: "int";
+export interface Int64Attribute extends BaseAttribute {
+  type: "int64";
+}
+
+export interface Float64Attribute extends BaseAttribute {
+  type: "float64";
 }
 
 export interface BoolAttribute extends BaseAttribute {
@@ -46,6 +60,12 @@ export interface ListAttribute extends BaseAttribute {
   elementType: "string";
 }
 
+export interface ListNestedAttribute extends BaseAttribute {
+  type: "list_nested";
+  attributes: Array<Attribute>;
+  model?: string;
+}
+
 export interface SetAttribute extends BaseAttribute {
   type: "set";
   elementType: "string";
@@ -54,7 +74,12 @@ export interface SetAttribute extends BaseAttribute {
 export interface SetNestedAttribute extends BaseAttribute {
   type: "set_nested";
   attributes: Array<Attribute>;
-  model: string;
+  model?: string;
+}
+
+export interface MapAttribute extends BaseAttribute {
+  type: "map";
+  elementType: "string";
 }
 
 export interface ObjectAttribute extends BaseAttribute {
@@ -62,27 +87,40 @@ export interface ObjectAttribute extends BaseAttribute {
   attributes: Array<Attribute>;
 }
 
+export interface SingleNestedAttribute extends BaseAttribute {
+  type: "single_nested";
+  attributes: Array<Attribute>;
+  model?: string;
+}
+
 export interface BaseDataSourceApiStrategy {
   model: string;
-  readMethod: string;
-  readRequestAttributes?: Array<string>;
 }
 
 export type DataSourceApiStrategy =
   | SimpleDataSourceApiStrategy
-  | PaginateDataSourceApiStrategy;
+  | PaginateDataSourceApiStrategy
+  | CustomDataSourceApiStrategy;
 
 export interface SimpleDataSourceApiStrategy extends BaseDataSourceApiStrategy {
   readStrategy: "simple";
+  readMethod: string;
+  readRequestAttributes?: Array<string>;
 }
 
 export interface PaginateDataSourceApiStrategy extends BaseDataSourceApiStrategy {
   readStrategy: "paginate";
+  readMethod: string;
+  readRequestAttributes?: Array<string>;
   readModel?: string;
   readCursorParam?: string;
   readInitLoop?: string;
   readPreIterate?: string;
   readPostIterate?: string;
+}
+
+export interface CustomDataSourceApiStrategy extends BaseDataSourceApiStrategy {
+  readStrategy: "custom";
 }
 
 export interface DataSource {
@@ -114,6 +152,9 @@ export interface Resource {
   name: string;
   description: string;
   api: ResourceApiStrategy;
+  generate?: {
+    modelFillers?: boolean;
+  };
   importStateAttributes?: Array<string>;
   attributes: Array<Attribute>;
 }

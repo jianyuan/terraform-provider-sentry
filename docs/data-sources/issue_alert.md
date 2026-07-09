@@ -3,10 +3,13 @@
 page_title: "sentry_issue_alert Data Source - terraform-provider-sentry"
 subcategory: ""
 description: |-
+  ⚠️ This resource is deprecated.
   Sentry Issue Alert data source. See the Sentry documentation https://docs.sentry.io/api/alerts/retrieve-an-issue-alert-rule-for-a-project/ for more information.
 ---
 
 # sentry_issue_alert (Data Source)
+
+⚠️ This resource is deprecated.
 
 Sentry Issue Alert data source. See the [Sentry documentation](https://docs.sentry.io/api/alerts/retrieve-an-issue-alert-rule-for-a-project/) for more information.
 
@@ -170,6 +173,7 @@ Read-Only:
 - `name` (String)
 - `sentry_app_installation_uuid` (String)
 - `settings` (Map of String)
+- `settings_labels` (Map of String)
 
 
 <a id="nestedatt--actions_v2--notify_event_service"></a>

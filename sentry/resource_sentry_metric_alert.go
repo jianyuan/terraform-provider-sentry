@@ -17,7 +17,8 @@ import (
 
 func resourceSentryMetricAlert() *schema.Resource {
 	return &schema.Resource{
-		Description: "Sentry Metric Alert resource.",
+		Description:        "⚠️ This resource is deprecated. Please migrate to [`sentry_metric_monitor`](metric_monitor.md) and [`sentry_alert`](alert.md) resources instead.\n\nSentry Metric Alert resource.",
+		DeprecationMessage: "This resource is deprecated. Please migrate to `sentry_metric_monitor` and `sentry_alert` resources instead.",
 
 		CreateContext: resourceSentryMetricAlertCreate,
 		ReadContext:   resourceSentryMetricAlertRead,
@@ -137,6 +138,11 @@ func resourceSentryMetricAlert() *schema.Resource {
 									"integration_id": {
 										Type:     schema.TypeInt,
 										Optional: true,
+									},
+									"sentry_app_id": {
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Description: "The ID of the Sentry App (required when type is sentry_app)",
 									},
 									"priority": {
 										Type:     schema.TypeString,
@@ -387,6 +393,11 @@ func expandMetricAlertTriggerActions(actionList []interface{}) []*sentry.MetricA
 				action.IntegrationID = sentry.Int(v)
 			}
 		}
+		if v, ok := actionMap["sentry_app_id"].(int); ok {
+			if v != 0 {
+				action.SentryAppID = sentry.Int(v)
+			}
+		}
 		actions = append(actions, action)
 	}
 	return actions
@@ -431,6 +442,7 @@ func flattenMetricAlertTriggerActions(actions []*sentry.MetricAlertTriggerAction
 		}
 		actionMap["input_channel_id"] = action.InputChannelID
 		actionMap["integration_id"] = action.IntegrationID
+		actionMap["sentry_app_id"] = action.SentryAppID
 
 		actionList = append(actionList, actionMap)
 	}

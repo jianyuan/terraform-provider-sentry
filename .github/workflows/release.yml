@@ -9,7 +9,7 @@
 # You will need to pass the `--batch` flag to `gpg` in your signing step
 # in `goreleaser` to indicate this is being used in a non-interactive mode.
 #
-name: release
+name: Release
 on:
   push:
     tags:
@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Unshallow
         run: git fetch --prune --unshallow
@@ -29,17 +29,17 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version-file: "go.mod"
-          cache: true
+          cache-dependency-path: "go.sum"
 
       - name: Import GPG key
-        uses: crazy-max/ghaction-import-gpg@v6
+        uses: crazy-max/ghaction-import-gpg@v7
         id: import_gpg
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
 
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v6.4.0
+        uses: goreleaser/goreleaser-action@v7.2.3
         with:
           version: latest
           args: release --clean

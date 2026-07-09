@@ -104,7 +104,12 @@ func deepLossyEqual(v1, v2 interface{}, ignoreKeys []string) bool {
 	case json.Number:
 		switch v2 := v2.(type) {
 		case json.Number:
-			return v1.String() == v2.String()
+			v1Float, err1 := v1.Float64()
+			v2Float, err2 := v2.Float64()
+			if err1 != nil || err2 != nil {
+				return false
+			}
+			return v1Float == v2Float
 		case string:
 			return v1.String() == v2
 		default:
@@ -142,7 +147,23 @@ func deepLossyEqual(v1, v2 interface{}, ignoreKeys []string) bool {
 			return false
 		}
 
-		if len(v1) > len(v2) {
+		// Count keys on each side excluding ignored keys. Ignored keys are allowed to
+		// appear on either side without affecting equality, so they must not contribute
+		// to the lossy length gate below.
+		v1Count := 0
+		for k := range v1 {
+			if !slices.Contains(ignoreKeys, k) {
+				v1Count++
+			}
+		}
+		v2Count := 0
+		for k := range v2 {
+			if !slices.Contains(ignoreKeys, k) {
+				v2Count++
+			}
+		}
+
+		if v1Count > v2Count {
 			return false
 		}
 
