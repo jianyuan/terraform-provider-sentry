@@ -24,7 +24,7 @@ require (
 	github.com/orange-cloudavenue/terraform-plugin-framework-validators v1.16.0
 	github.com/peterhellberg/link v1.2.0
 	github.com/samber/lo v1.53.0
-	golang.org/x/sync v0.21.0
+	golang.org/x/sync v0.22.0
 )
 
 require (
