@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/jianyuan/go-utils/ptr"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
@@ -25,7 +24,7 @@ func init() {
 			ctx := context.Background()
 
 			params := &apiclient.ListOrganizationMonitorsParams{
-				Query: ptr.Ptr("!type:issue_stream type:monitor_check_in_failure"),
+				Query: new("!type:issue_stream type:monitor_check_in_failure"),
 			}
 
 			for {

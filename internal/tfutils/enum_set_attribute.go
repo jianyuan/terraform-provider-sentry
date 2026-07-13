@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/jianyuan/go-utils/sliceutils"
+	"github.com/samber/lo"
 )
 
 func WithEnumSetAttributeStringElements(base schema.SetAttribute, choices []string) schema.SetAttribute {
@@ -14,9 +14,9 @@ func WithEnumSetAttributeStringElements(base schema.SetAttribute, choices []stri
 	if base.MarkdownDescription != "" {
 		base.MarkdownDescription += " "
 	}
-	validValues := sliceutils.Map(func(v string) string {
+	validValues := lo.Map(choices, func(v string, _ int) string {
 		return "`" + v + "`"
-	}, choices)
+	})
 	if len(validValues) > 1 {
 		base.MarkdownDescription += "Valid values are: " + strings.Join(validValues[:len(validValues)-1], ", ") + ", and " + validValues[len(validValues)-1] + "."
 	} else {

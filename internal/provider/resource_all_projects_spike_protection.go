@@ -14,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/jianyuan/go-utils/ptr"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
@@ -80,7 +79,7 @@ func (r *AllProjectsSpikeProtectionResource) readProjects(ctx context.Context, o
 
 	var allProjects []apiclient.Project
 	params := &apiclient.ListOrganizationProjectsParams{
-		Options: ptr.Ptr([]string{"quotas:spike-protection-disabled"}),
+		Options: new([]string{"quotas:spike-protection-disabled"}),
 	}
 	for {
 		httpResp, err := r.apiClient.ListOrganizationProjectsWithResponse(

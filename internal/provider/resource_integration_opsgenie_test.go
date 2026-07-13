@@ -15,7 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/jianyuan/go-utils/ptr"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
@@ -78,7 +77,7 @@ func init() {
 			ctx := context.Background()
 
 			params := &apiclient.ListOrganizationIntegrationsParams{
-				ProviderKey: ptr.Ptr("opsgenie"),
+				ProviderKey: new("opsgenie"),
 			}
 
 			for {

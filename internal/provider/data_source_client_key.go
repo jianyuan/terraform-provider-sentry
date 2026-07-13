@@ -11,12 +11,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/jianyuan/go-utils/maputils"
-	"github.com/jianyuan/go-utils/ptr"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
+	"github.com/samber/lo"
 )
 
 type ClientKeyDataSourceModel struct {
@@ -65,7 +64,7 @@ func (m *ClientKeyDataSourceModel) Fill(ctx context.Context, key apiclient.Proje
 	m.Public = types.StringValue(key.Public)
 	m.Secret = types.StringValue(key.Secret)
 
-	m.Dsn = types.MapValueMust(types.StringType, maputils.MapValues(key.Dsn, func(v string) attr.Value {
+	m.Dsn = types.MapValueMust(types.StringType, lo.MapValues(key.Dsn, func(v string, _ string) attr.Value {
 		return types.StringValue(v)
 	}))
 
@@ -159,7 +158,7 @@ func (d *ClientKeyDataSource) Read(ctx context.Context, req datasource.ReadReque
 
 		if data.Name.IsNull() {
 			if len(allKeys) == 1 {
-				foundKey = ptr.Ptr(allKeys[0])
+				foundKey = new(allKeys[0])
 			} else if !data.First.IsNull() && data.First.ValueBool() {
 				// Find the first key
 
@@ -168,7 +167,7 @@ func (d *ClientKeyDataSource) Read(ctx context.Context, req datasource.ReadReque
 					return allKeys[i].DateCreated.Before(allKeys[j].DateCreated)
 				})
 
-				foundKey = ptr.Ptr(allKeys[0])
+				foundKey = new(allKeys[0])
 			} else {
 				resp.Diagnostics.AddError("Client error", "Multiple keys found, please specify the key by `name`, `id`, or set the `first` flag to `true`.")
 				return
@@ -177,7 +176,7 @@ func (d *ClientKeyDataSource) Read(ctx context.Context, req datasource.ReadReque
 			// Find the key by name
 			for _, key := range allKeys {
 				if key.Name == data.Name.ValueString() {
-					foundKey = ptr.Ptr(key)
+					foundKey = new(key)
 					break
 				}
 			}

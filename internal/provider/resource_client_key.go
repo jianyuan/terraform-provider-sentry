@@ -10,11 +10,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/jianyuan/go-utils/maputils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
+	"github.com/samber/lo"
 )
 
 type ClientKeyResourceModel struct {
@@ -63,7 +63,7 @@ func (m *ClientKeyResourceModel) Fill(ctx context.Context, key apiclient.Project
 	m.Public = types.StringValue(key.Public)
 	m.Secret = types.StringValue(key.Secret)
 
-	m.Dsn = types.MapValueMust(types.StringType, maputils.MapValues(key.Dsn, func(v string) attr.Value {
+	m.Dsn = types.MapValueMust(types.StringType, lo.MapValues(key.Dsn, func(v string, _ string) attr.Value {
 		return types.StringValue(v)
 	}))
 

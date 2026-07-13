@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/jianyuan/go-utils/ptr"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
@@ -181,7 +180,7 @@ func resourceSentryOrganizationMemberUpdate(ctx context.Context, d *schema.Resou
 		}
 	}
 	params := apiclient.UpdateOrganizationMemberJSONRequestBody{
-		OrgRole:   ptr.Ptr(d.Get("role").(string)),
+		OrgRole:   new(d.Get("role").(string)),
 		TeamRoles: &teamRoles,
 	}
 

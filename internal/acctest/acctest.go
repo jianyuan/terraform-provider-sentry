@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/jianyuan/go-sentry/v2/sentry"
-	"github.com/jianyuan/go-utils/must"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/must"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
 )
 

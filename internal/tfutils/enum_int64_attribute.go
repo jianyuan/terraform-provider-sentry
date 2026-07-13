@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/jianyuan/go-utils/sliceutils"
+	"github.com/samber/lo"
 )
 
 func WithEnumInt64Attribute(base schema.Int64Attribute, choices []int64) schema.Int64Attribute {
@@ -14,9 +14,9 @@ func WithEnumInt64Attribute(base schema.Int64Attribute, choices []int64) schema.
 	if base.MarkdownDescription != "" {
 		base.MarkdownDescription += " "
 	}
-	validValues := sliceutils.Map(func(v int64) string {
+	validValues := lo.Map(choices, func(v int64, _ int) string {
 		return fmt.Sprintf("`%d`", v)
-	}, choices)
+	})
 	if len(validValues) > 1 {
 		base.MarkdownDescription += "Valid values are: " + strings.Join(validValues[:len(validValues)-1], ", ") + ", and " + validValues[len(validValues)-1] + "."
 	} else {
