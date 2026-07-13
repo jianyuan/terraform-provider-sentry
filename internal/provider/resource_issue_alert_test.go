@@ -179,7 +179,6 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 					actions_v2 = [
 						{ notify_email = { target_type = "IssueOwners", fallthrough_type = "ActiveMembers" } },
 						{ notify_email = { target_type = "Team", target_identifier = sentry_team.test.internal_id } },
-						{ notify_event = { } },
 						{
 							notify_event_service = {
 								service = "terraform-provider-sentry-ea4fdd"
@@ -504,11 +503,6 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 								// all email actions, not just IssueOwners. See
 								// getsentry/sentry#118404.
 								"fallthrough_type": knownvalue.StringExact("ActiveMembers"),
-							}),
-						}),
-						knownvalue.ObjectPartial(map[string]knownvalue.Check{
-							"notify_event": knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"name": knownvalue.NotNull(),
 							}),
 						}),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1413,9 +1407,6 @@ EOT
 		"id": "sentry.mail.actions.NotifyEmailAction",
 		"targetType": "Team",
 		"targetIdentifier": ${parseint(sentry_team.test.internal_id, 10)}
-	},
-	{
-		"id": "sentry.rules.actions.notify_event.NotifyEventAction"
 	}
 ]
 EOT

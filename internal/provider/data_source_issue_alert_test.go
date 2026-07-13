@@ -140,9 +140,6 @@ EOT
 		"id": "sentry.mail.actions.NotifyEmailAction",
 		"targetType": "Team",
 		"targetIdentifier": %[2]s
-	},
-	{
-		"id": "sentry.rules.actions.notify_event.NotifyEventAction"
 	}
 ]
 EOT

@@ -774,7 +774,8 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										},
 									},
 									"plugin": schema.SingleNestedAttribute{
-										MarkdownDescription: "Send a notification to all legacy integrations (plugins).",
+										MarkdownDescription: "Send a notification to all legacy integrations (plugins). **Deprecated** Action type plugin is deprecated and cannot be created.",
+										DeprecationMessage:  "Action type plugin is deprecated and cannot be created.",
 										Optional:            true,
 										CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelActionFiltersItemActionsItemPlugin](ctx),
 										Validators: []validator.Object{
