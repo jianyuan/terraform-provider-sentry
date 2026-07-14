@@ -39,7 +39,7 @@ export function tfAttributeType(attribute: Attribute, parent: string) {
       // basetypes' Float64SemanticEquals without overriding it, so its type assertion rejects
       // the wrapper on every plan (hashicorp/terraform-plugin-framework#786). Float64 is the
       // only type this hits — Int64/String/Bool have no SemanticEquals to inherit.
-      .with({ type: "float64" }, () => "basetypes.Float64Type{}")
+      .with({ type: "float64" }, () => "types.Float64Type")
       .with({ type: "bool" }, () => "supertypes.BoolType{}")
       .with(
         { type: "list" },

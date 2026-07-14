@@ -3,12 +3,12 @@
 page_title: "sentry_team Data Source - terraform-provider-sentry"
 subcategory: ""
 description: |-
-  Sentry Team data source.
+  Retrieves a Team
 ---
 
 # sentry_team (Data Source)
 
-Sentry Team data source.
+Retrieves a Team
 
 ## Example Usage
 
@@ -26,14 +26,14 @@ data "sentry_team" "default" {
 
 ### Required
 
-- `organization` (String) The unique URL slug or internal ID of the organization.
-- `slug` (String) The unique URL slug for the team.
+- `organization` (String) The organization slug or internal ID of the organization.
+- `slug` (String) The team slug.
 
 ### Read-Only
 
-- `has_access` (Boolean, Deprecated)
+- `has_access` (Boolean, Deprecated) Whether the API key user has access to this team. **Deprecated** This field is deprecated and will be removed in a future version.
 - `id` (String, Deprecated) The unique URL slug for this team. **Deprecated** Use `slug` instead.
 - `internal_id` (String) The internal ID for this team.
-- `is_member` (Boolean, Deprecated)
-- `is_pending` (Boolean, Deprecated)
+- `is_member` (Boolean, Deprecated) Whether the API key user is a member of this team. **Deprecated** This field is deprecated and will be removed in a future version.
+- `is_pending` (Boolean, Deprecated) Whether the API key user is pending on this team. **Deprecated** This field is deprecated and will be removed in a future version.
 - `name` (String) The human readable name for this team.
