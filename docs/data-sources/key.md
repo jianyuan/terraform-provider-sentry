@@ -43,8 +43,8 @@ data "sentry_key" "first" {
 
 ### Required
 
-- `organization` (String) The organization of this resource.
-- `project` (String) The project of this resource.
+- `organization` (String) The organization the resource belongs to.
+- `project` (String) The project the resource belongs to.
 
 ### Optional
 
@@ -55,9 +55,9 @@ data "sentry_key" "first" {
 ### Read-Only
 
 - `dsn` (Map of String, Sensitive) This is a map of DSN values. The keys include `public`, `secret`, `csp`, `security`, `minidump`, `nel`, `unreal`, `cdn`, and `crons`.
-- `dsn_csp` (String, Deprecated) Security header endpoint for features like CSP and Expect-CT reports.
-- `dsn_public` (String, Deprecated) The DSN tells the SDK where to send the events to.
-- `dsn_secret` (String, Sensitive, Deprecated) Deprecated DSN includes a secret which is no longer required by newer SDK versions. If you are unsure which to use, follow installation instructions for your language.
+- `dsn_csp` (String, Deprecated) Security header endpoint for features like CSP and Expect-CT reports. **Deprecated** Use `dsn["csp"]` instead.
+- `dsn_public` (String, Deprecated) The DSN tells the SDK where to send the events to. **Deprecated** Use `dsn["public"]` instead.
+- `dsn_secret` (String, Sensitive, Deprecated) Deprecated DSN includes a secret which is no longer required by newer SDK versions. If you are unsure which to use, follow installation instructions for your language. **Deprecated** Use `dsn["secret"]` instead.
 - `javascript_loader_script` (Attributes) The JavaScript loader script configuration. (see [below for nested schema](#nestedatt--javascript_loader_script))
 - `project_id` (String) The ID of the project that the key belongs to.
 - `public` (String) The public key.

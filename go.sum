@@ -150,8 +150,6 @@ github.com/hashicorp/terraform-plugin-framework v1.19.0 h1:q0bwyhxAOR3vfdgbk9ipl
 github.com/hashicorp/terraform-plugin-framework v1.19.0/go.mod h1:YRXOBu0jvs7xp4AThBbX4mAzYaMJ1JgtFH//oGKxwLc=
 github.com/hashicorp/terraform-plugin-framework-jsontypes v0.2.0 h1:SJXL5FfJJm17554Kpt9jFXngdM6fXbnUnZ6iT2IeiYA=
 github.com/hashicorp/terraform-plugin-framework-jsontypes v0.2.0/go.mod h1:p0phD0IYhsu9bR4+6OetVvvH59I6LwjXGnTVEr8ox6E=
-github.com/hashicorp/terraform-plugin-framework-timeouts v0.7.0 h1:jblRy1PkLfPm5hb5XeMa3tezusnMRziUGqtT5epSYoI=
-github.com/hashicorp/terraform-plugin-framework-timeouts v0.7.0/go.mod h1:5jm2XK8uqrdiSRfD5O47OoxyGMCnwTcl8eoiDgSa+tc=
 github.com/hashicorp/terraform-plugin-framework-timetypes v0.5.0 h1:v3DapR8gsp3EM8fKMh6up9cJUFQ2iRaFsYLP8UJnCco=
 github.com/hashicorp/terraform-plugin-framework-timetypes v0.5.0/go.mod h1:c3PnGE9pHBDfdEVG9t1S1C9ia5LW+gkFR0CygXlM8ak=
 github.com/hashicorp/terraform-plugin-framework-validators v0.19.0 h1:Zz3iGgzxe/1XBkooZCewS0nJAaCFPFPHdNJd8FgE4Ow=
@@ -253,8 +251,6 @@ github.com/onsi/gomega v1.10.1/go.mod h1:iN09h71vgCQne3DLsj+A5owkum+a2tYe+TOCB1y
 github.com/onsi/gomega v1.17.0/go.mod h1:HnhC7FXeEQY45zxNK3PPoIUhzk/80Xly9PcubAlGdZY=
 github.com/onsi/gomega v1.19.0 h1:4ieX6qQjPP/BfC3mpsAtIGGlxTWPeA3Inl/7DtXw1tw=
 github.com/onsi/gomega v1.19.0/go.mod h1:LY+I3pBVzYsTBU1AnDwOSxaYi9WoWiqgwooUqq9yPro=
-github.com/orange-cloudavenue/terraform-plugin-framework-superschema v1.11.0 h1:uezhiY+wp4khq2i9z2jbr26e816BQYKFolCjsZlLIzU=
-github.com/orange-cloudavenue/terraform-plugin-framework-superschema v1.11.0/go.mod h1:2R4+FiimXRb6we3IP4Jy4XwkmPG17isxcjUfYEWLJ44=
 github.com/orange-cloudavenue/terraform-plugin-framework-supertypes v1.2.0 h1:tvDLBfqkKQdlcPyb3dZsZMM52mpzVpys2a9ar/38ulE=
 github.com/orange-cloudavenue/terraform-plugin-framework-supertypes v1.2.0/go.mod h1:5SJrMDAHcQopy+p9Oq3anoaqclPZgTs27b0WQ3J97E0=
 github.com/orange-cloudavenue/terraform-plugin-framework-validators v1.16.0 h1:e3mTXKilFC1kYZWIMrMfgRHlKxYEplmC0DTwKx9C/C4=
