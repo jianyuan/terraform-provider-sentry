@@ -2,11 +2,11 @@ package sentry
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -279,7 +279,7 @@ func resourceSentryMetricAlertRead(ctx context.Context, d *schema.ResourceData, 
 	})
 
 	d.SetId(tfutils.BuildThreePartId(org, project, sentry.StringValue(alert.ID)))
-	retError := multierror.Append(
+	errs := []error{
 		d.Set("organization", org),
 		d.Set("name", alert.Name),
 		d.Set("environment", alert.Environment),
@@ -294,14 +294,14 @@ func resourceSentryMetricAlertRead(ctx context.Context, d *schema.ResourceData, 
 		d.Set("trigger", flattenMetricAlertTriggers(alert.Triggers)),
 		d.Set("owner", alert.Owner),
 		d.Set("internal_id", alert.ID),
-	)
+	}
 	if len(alert.Projects) == 1 {
-		retError = multierror.Append(
-			retError,
+		errs = append(
+			errs,
 			d.Set("project", alert.Projects[0]),
 		)
 	}
-	return diag.FromErr(retError.ErrorOrNil())
+	return diag.FromErr(errors.Join(errs...))
 }
 
 func resourceSentryMetricAlertUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

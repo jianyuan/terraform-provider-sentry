@@ -2,9 +2,9 @@ package sentry
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -88,13 +88,13 @@ func resourceSentryOrganizationRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	retErr := multierror.Append(
+	err = errors.Join(
 		d.Set("name", organization.Name),
 		d.Set("slug", organization.Slug),
 		d.Set("agree_terms", true),
 		d.Set("internal_id", organization.ID),
 	)
-	return diag.FromErr(retErr.ErrorOrNil())
+	return diag.FromErr(err)
 }
 
 func resourceSentryOrganizationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

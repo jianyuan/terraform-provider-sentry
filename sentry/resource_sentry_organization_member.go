@@ -2,10 +2,10 @@ package sentry
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -139,7 +139,7 @@ func resourceSentryOrganizationMemberRead(ctx context.Context, d *schema.Resourc
 	member := httpResp.JSON200
 
 	d.SetId(tfutils.BuildTwoPartId(org, member.Id))
-	retErr := multierror.Append(
+	err = errors.Join(
 		d.Set("organization", org),
 		d.Set("internal_id", member.Id),
 		d.Set("email", member.Email),
@@ -147,7 +147,7 @@ func resourceSentryOrganizationMemberRead(ctx context.Context, d *schema.Resourc
 		d.Set("expired", member.Expired),
 		d.Set("pending", member.Pending),
 	)
-	return diag.FromErr(retErr.ErrorOrNil())
+	return diag.FromErr(err)
 }
 
 func resourceSentryOrganizationMemberUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
