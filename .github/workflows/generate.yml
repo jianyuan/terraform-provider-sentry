@@ -25,6 +25,7 @@ jobs:
       - uses: hashicorp/setup-terraform@v4
         with:
           terraform_wrapper: false
+      - run: go mod download
       - run: make generate
       - name: git diff
         run: |
