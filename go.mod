@@ -18,7 +18,7 @@ require (
 	github.com/oapi-codegen/nullable v1.2.0
 	github.com/oapi-codegen/runtime v1.5.0
 	github.com/orange-cloudavenue/terraform-plugin-framework-supertypes v1.2.0
-	github.com/orange-cloudavenue/terraform-plugin-framework-validators v1.16.0
+	github.com/orange-cloudavenue/terraform-plugin-framework-validators v1.17.0
 	github.com/peterhellberg/link v1.2.0
 	github.com/samber/lo v1.53.0
 	golang.org/x/sync v0.22.0
