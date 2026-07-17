@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/mzglinski/terraform-provider-sentry/internal/acctest"
+	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 )
 
 func TestAccOrganizationMemberDataSource(t *testing.T) {

@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/function"
-	"github.com/mzglinski/terraform-provider-sentry/internal/sentrydata"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 )
 
 var _ function.Function = &OpStatusCodeCheckFunction{}

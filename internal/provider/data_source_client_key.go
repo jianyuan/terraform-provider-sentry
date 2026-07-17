@@ -12,9 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/mzglinski/terraform-provider-sentry/internal/apiclient"
-	"github.com/mzglinski/terraform-provider-sentry/internal/diagutils"
-	"github.com/mzglinski/terraform-provider-sentry/internal/sentryclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 	"github.com/samber/lo"
 )

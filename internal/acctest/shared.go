@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/mzglinski/terraform-provider-sentry/internal/apiclient"
-	"github.com/mzglinski/terraform-provider-sentry/internal/must"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/must"
 )
 
 var (

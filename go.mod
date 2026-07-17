@@ -1,4 +1,4 @@
-module github.com/mzglinski/terraform-provider-sentry
+module github.com/jianyuan/terraform-provider-sentry
 
 go 1.26.1
 

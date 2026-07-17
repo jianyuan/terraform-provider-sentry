@@ -11,8 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/mzglinski/terraform-provider-sentry/internal/acctest"
-	"github.com/mzglinski/terraform-provider-sentry/internal/tfutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
+	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
 
 func TestAccIntegrationPagerDutyResource(t *testing.T) {

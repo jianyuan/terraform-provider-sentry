@@ -14,10 +14,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/mzglinski/terraform-provider-sentry/internal/apiclient"
-	"github.com/mzglinski/terraform-provider-sentry/internal/diagutils"
-	"github.com/mzglinski/terraform-provider-sentry/internal/sentryclient"
-	"github.com/mzglinski/terraform-provider-sentry/internal/tfutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 	"github.com/samber/lo"
 )
 

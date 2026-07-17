@@ -15,8 +15,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
-	"github.com/mzglinski/terraform-provider-sentry/internal/diagutils"
-	"github.com/mzglinski/terraform-provider-sentry/internal/tfutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
 
 type ProjectInboundDataFilterResourceModel struct {

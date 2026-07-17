@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/mzglinski/terraform-provider-sentry/internal/sentrytypes"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
 )
 
 // reorderToMatchPrior reorders incoming items to match the order of prior items by key.

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/mzglinski/terraform-provider-sentry/internal/apiclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 )
 
 func (m *TeamDataSourceModel) Fill(ctx context.Context, data apiclient.Team) (diags diag.Diagnostics) {

@@ -1,6 +1,6 @@
 # Terraform Provider Sentry
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/mzglinski/terraform-provider-sentry)](https://goreportcard.com/report/github.com/mzglinski/terraform-provider-sentry)
+[![Go Report Card](https://goreportcard.com/badge/github.com/jianyuan/terraform-provider-sentry)](https://goreportcard.com/report/github.com/jianyuan/terraform-provider-sentry)
 
 <a href="https://sentry.io/?utm_source=terraform&utm_medium=docs" target="_blank">
     <img src="sentry.svg" alt="Sentry" width="280">

@@ -7,10 +7,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/mzglinski/terraform-provider-sentry/internal/apiclient"
-	"github.com/mzglinski/terraform-provider-sentry/internal/sentrydata"
-	"github.com/mzglinski/terraform-provider-sentry/internal/sentrytypes"
-	"github.com/mzglinski/terraform-provider-sentry/internal/tfutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
+	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
 
 func (r *UptimeMonitorResource) getCreateJSONRequestBody(ctx context.Context, data UptimeMonitorResourceModel) (*apiclient.CreateProjectMonitorJSONRequestBody, diag.Diagnostics) {

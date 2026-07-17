@@ -8,9 +8,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
-	"github.com/mzglinski/terraform-provider-sentry/internal/acctest"
-	"github.com/mzglinski/terraform-provider-sentry/internal/must"
-	"github.com/mzglinski/terraform-provider-sentry/internal/provider"
+	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
+	"github.com/jianyuan/terraform-provider-sentry/internal/must"
+	"github.com/jianyuan/terraform-provider-sentry/internal/provider"
 )
 
 var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){

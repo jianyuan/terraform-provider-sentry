@@ -6,9 +6,9 @@ import (
 	"testing"
 
 	"github.com/jianyuan/go-sentry/v2/sentry"
-	"github.com/mzglinski/terraform-provider-sentry/internal/apiclient"
-	"github.com/mzglinski/terraform-provider-sentry/internal/must"
-	"github.com/mzglinski/terraform-provider-sentry/internal/sentryclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/must"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
 )
 
 const (

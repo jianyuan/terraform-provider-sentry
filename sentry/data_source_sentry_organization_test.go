@@ -3,7 +3,7 @@ package sentry
 import (
 	"fmt"
 
-	"github.com/mzglinski/terraform-provider-sentry/internal/acctest"
+	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 )
 
 var testAccSentryOrganizationDataSourceConfig = fmt.Sprintf(`

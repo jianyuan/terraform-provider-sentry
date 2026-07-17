@@ -6,8 +6,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
-	"github.com/mzglinski/terraform-provider-sentry/internal/acctest"
-	"github.com/mzglinski/terraform-provider-sentry/internal/sentrydata"
+	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 )
 
 func TestOpJsonpathOperandGlobFunction_known(t *testing.T) {

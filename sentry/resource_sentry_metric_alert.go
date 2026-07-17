@@ -11,8 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/v2/sentry"
-	"github.com/mzglinski/terraform-provider-sentry/internal/providerdata"
-	"github.com/mzglinski/terraform-provider-sentry/internal/tfutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
+	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
 
 func resourceSentryMetricAlert() *schema.Resource {

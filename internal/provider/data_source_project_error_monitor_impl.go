@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/mzglinski/terraform-provider-sentry/internal/apiclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 )
 
 func (d *ProjectErrorMonitorDataSource) read(ctx context.Context, data *ProjectErrorMonitorDataSourceModel) (diags diag.Diagnostics) {

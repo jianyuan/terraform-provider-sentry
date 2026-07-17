@@ -10,9 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6/tf6server"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
-	"github.com/mzglinski/terraform-provider-sentry/internal/must"
-	"github.com/mzglinski/terraform-provider-sentry/internal/provider"
-	"github.com/mzglinski/terraform-provider-sentry/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/must"
+	"github.com/jianyuan/terraform-provider-sentry/internal/provider"
+	"github.com/jianyuan/terraform-provider-sentry/sentry"
 )
 
 // Run "go generate" to format example terraform files and generate the docs for the registry/website
@@ -60,7 +60,7 @@ func main() {
 	}
 
 	err = tf6server.Serve(
-		"registry.terraform.io/mzglinski/sentry",
+		"registry.terraform.io/jianyuan/sentry",
 		muxServer.ProviderServer,
 		serveOpts...,
 	)

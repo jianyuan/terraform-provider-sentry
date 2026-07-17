@@ -2,7 +2,7 @@ package providerdata
 
 import (
 	"github.com/jianyuan/go-sentry/v2/sentry"
-	"github.com/mzglinski/terraform-provider-sentry/internal/apiclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 )
 
 type ProviderData struct {
