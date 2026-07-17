@@ -37,7 +37,6 @@ resource "sentry_organization_member" "john_doe" {
 - `id` (String) The ID of this resource.
 - `internal_id` (String) The internal ID for this organization membership.
 - `pending` (Boolean) The invite is pending.
-- `user_id` (String) The Sentry User ID of the organization member.
 
 ## Import
 

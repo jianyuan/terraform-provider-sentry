@@ -2,29 +2,25 @@ package provider
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
 )
 
 type AllOrganizationMembersDataSourceMemberModel struct {
-	Id     types.String `tfsdk:"id"`
-	UserId types.String `tfsdk:"user_id"`
-	Email  types.String `tfsdk:"email"`
-	Role   types.String `tfsdk:"role"`
+	Id    types.String `tfsdk:"id"`
+	Email types.String `tfsdk:"email"`
+	Role  types.String `tfsdk:"role"`
 }
 
-func (m *AllOrganizationMembersDataSourceMemberModel) Fill(ctx context.Context, member *sentry.OrganizationMember) (diags diag.Diagnostics) {
-	m.Id = types.StringValue(member.ID)
-	if member.User.ID != "" {
-		m.UserId = types.StringValue(member.User.ID)
-	} else {
-		m.UserId = types.StringNull()
-	}
+func (m *AllOrganizationMembersDataSourceMemberModel) Fill(ctx context.Context, member apiclient.OrganizationMember) (diags diag.Diagnostics) {
+	m.Id = types.StringValue(member.Id)
 	m.Email = types.StringValue(member.Email)
 	m.Role = types.StringValue(member.OrgRole)
 	return nil
@@ -35,7 +31,7 @@ type AllOrganizationMembersDataSourceModel struct {
 	Members      []AllOrganizationMembersDataSourceMemberModel `tfsdk:"members"`
 }
 
-func (m *AllOrganizationMembersDataSourceModel) Fill(ctx context.Context, members []*sentry.OrganizationMember) (diags diag.Diagnostics) {
+func (m *AllOrganizationMembersDataSourceModel) Fill(ctx context.Context, members []apiclient.OrganizationMember) (diags diag.Diagnostics) {
 	m.Members = make([]AllOrganizationMembersDataSourceMemberModel, len(members))
 	for i, member := range members {
 		diags.Append(m.Members[i].Fill(ctx, member)...)
@@ -73,10 +69,6 @@ func (d *AllOrganizationMembersDataSource) Schema(ctx context.Context, req datas
 							MarkdownDescription: "The ID of of the organization member.",
 							Computed:            true,
 						},
-						"user_id": schema.StringAttribute{
-							MarkdownDescription: "The user ID of the organization member.",
-							Computed:            true,
-						},
 						"email": schema.StringAttribute{
 							MarkdownDescription: "The email of the organization member.",
 							Computed:            true,
@@ -100,22 +92,25 @@ func (d *AllOrganizationMembersDataSource) Read(ctx context.Context, req datasou
 		return
 	}
 
-	var allMembers []*sentry.OrganizationMember
-	params := &sentry.ListCursorParams{}
+	var allMembers []apiclient.OrganizationMember
+	params := &apiclient.ListOrganizationMembersParams{}
 
 	for {
-		members, sentryResp, err := d.client.OrganizationMembers.List(ctx, data.Organization.ValueString(), params)
+		httpResp, err := d.apiClient.ListOrganizationMembersWithResponse(ctx, data.Organization.ValueString(), params)
 		if err != nil {
 			resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 			return
+		} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
+			resp.Diagnostics.Append(diagutils.NewClientStatusError("read", httpResp.StatusCode(), httpResp.Body))
+			return
 		}
 
-		allMembers = append(allMembers, members...)
+		allMembers = append(allMembers, *httpResp.JSON200...)
 
-		if sentryResp.Cursor == "" {
+		params.Cursor = sentryclient.ParseNextPaginationCursor(httpResp.HTTPResponse)
+		if params.Cursor == nil {
 			break
 		}
-		params.Cursor = sentryResp.Cursor
 	}
 
 	resp.Diagnostics.Append(data.Fill(ctx, allMembers)...)

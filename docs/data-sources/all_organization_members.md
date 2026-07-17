@@ -31,4 +31,3 @@ Read-Only:
 - `email` (String) The email of the organization member.
 - `id` (String) The ID of of the organization member.
 - `role` (String) This is the role of the organization member.
-- `user_id` (String) The user ID of the organization member.

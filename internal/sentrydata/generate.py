@@ -1,21 +1,13 @@
 from __future__ import annotations
 
 import ast
-import os
 import pathlib
 import subprocess
-import time
 import zoneinfo
 from typing import Any, Generic, NamedTuple, OrderedDict, TypeGuard, TypeVar
 
 import httpx
 import jinja2
-import tzdata
-
-os.environ.setdefault(
-    "PYTHONTZPATH",
-    os.path.join(os.path.dirname(tzdata.__file__), "zoneinfo"),
-)
 
 REPO = "getsentry/sentry"
 BRANCH = "master"
@@ -70,30 +62,11 @@ def get_jinja2_env() -> jinja2.Environment:
 
 
 def get_text(path: str) -> str:
-    url = f"https://raw.githubusercontent.com/{REPO}/refs/heads/{BRANCH}/{path}"
-    max_attempts = 5
-    with httpx.Client(timeout=httpx.Timeout(60.0, connect=30.0)) as client:
-        for attempt in range(max_attempts):
-            try:
-                r = client.get(url)
-            except (httpx.ReadTimeout, httpx.ConnectTimeout, httpx.NetworkError):
-                if attempt == max_attempts - 1:
-                    raise
-                time.sleep(2**attempt)
-                continue
-            if r.status_code == 429 or r.status_code >= 500:
-                if attempt == max_attempts - 1:
-                    r.raise_for_status()
-                retry_after = r.headers.get("Retry-After")
-                if retry_after and retry_after.isdigit():
-                    delay = int(retry_after)
-                else:
-                    delay = 2**attempt
-                time.sleep(delay)
-                continue
-            r.raise_for_status()
-            return r.text
-    raise RuntimeError(f"failed to fetch {url}")
+    r = httpx.get(
+        f"https://raw.githubusercontent.com/{REPO}/refs/heads/{BRANCH}/{path}"
+    )
+    r.raise_for_status()
+    return r.text
 
 
 class FileData(NamedTuple):
@@ -338,10 +311,7 @@ def parse_intervals() -> dict[str, ResultData[Any]]:
 
 
 def get_timezones() -> dict[str, ResultData[Any]]:
-    timezones = frozenset(
-        zoneinfo.available_timezones()
-        - {"Factory", "localtime", "Msft/localtime"}
-    )
+    timezones = frozenset(zoneinfo.available_timezones() - {"Factory", "localtime"})
     return {
         "Timezones": ResultData(
             github_url=None,
