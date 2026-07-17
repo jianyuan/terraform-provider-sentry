@@ -180,46 +180,6 @@ func TestAccAlertResource_validation(t *testing.T) {
 				`,
 				ExpectError: acctest.ExpectLiteralError(`Attribute "action_filters[0].conditions[0].assigned_to" cannot be specified when "action_filters[0].conditions[0].age_comparison" is specified`),
 			},
-			{
-				PlanOnly: true,
-				Config: `
-					resource "sentry_alert" "test" {
-						organization = "1"
-						name         = "alert name"
-
-						frequency_minutes = 1440
-						environment       = "production"
-						monitor_ids       = ["1"]
-
-						trigger_conditions = []
-
-						action_filters = [
-							{
-								logic_type = "all"
-								conditions = [
-									{
-										age_comparison = {
-											value = 1
-											time = "minute"
-											comparison_type = "older"
-										}
-									}
-								]
-								actions = [
-									{
-										email = {
-											target_type = "issue_owners"
-											fallthrough_type = "AllMembers"
-										}
-										plugin = {}
-									},
-								]
-							}
-						]
-					}
-				`,
-				ExpectError: acctest.ExpectLiteralError(`Attribute "action_filters[0].actions[0].plugin" cannot be specified when "action_filters[0].actions[0].email" is specified`),
-			},
 		},
 	})
 }
@@ -259,7 +219,7 @@ func TestAccAlertResource_basic(t *testing.T) {
 				ImportStateIdFunc: acctest.TwoPartImportStateIdFunc(rn, "organization"),
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"action_filters.0.actions.4.slack.channel_name", // Sentry API returns the channel name with `#` prefix
+					"action_filters.0.actions.3.slack.channel_name", // Sentry API returns the channel name with `#` prefix
 				},
 			},
 		},
@@ -480,9 +440,6 @@ func testAccAlertResourceConfig(projectName, monitorName, name, opsgenieTeamName
 								target_type = "team"
 								target_id = "%[3]s"
 							}
-						},
-						{
-							plugin = {}
 						},
 						{
 							slack = {

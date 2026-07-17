@@ -22,6 +22,7 @@ var (
 		NewProjectDataSource,
 		NewProjectErrorMonitorDataSource,
 		NewProjectIssueStreamMonitorDataSource,
+		NewTeamDataSource,
 		NewUptimeMonitorDataSource,
 	}
 )
