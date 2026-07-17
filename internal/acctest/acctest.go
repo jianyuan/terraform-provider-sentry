@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/mzglinski/go-sentry/v2/sentry"
+	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/mzglinski/terraform-provider-sentry/internal/apiclient"
 	"github.com/mzglinski/terraform-provider-sentry/internal/must"
 	"github.com/mzglinski/terraform-provider-sentry/internal/sentryclient"

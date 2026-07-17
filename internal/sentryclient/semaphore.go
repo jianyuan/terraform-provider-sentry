@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/mzglinski/go-sentry/v2/sentry"
+	"github.com/jianyuan/go-sentry/v2/sentry"
 	"golang.org/x/sync/semaphore"
 )
 

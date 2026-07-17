@@ -1475,14 +1475,74 @@ func (e ListProjectClientKeysParamsStatus) Valid() bool {
 	}
 }
 
+// CreateExternalUser defines model for CreateExternalUser.
+type CreateExternalUser struct {
+	ExternalId    *string `json:"external_id,omitempty"`
+	ExternalName  string  `json:"external_name"`
+	Id            int     `json:"id"`
+	IntegrationId int     `json:"integration_id"`
+	Provider      string  `json:"provider"`
+	UserId        int     `json:"user_id"`
+}
+
+// CreateOrganization defines model for CreateOrganization.
+type CreateOrganization struct {
+	AgreeTerms bool    `json:"agreeTerms"`
+	Name       string  `json:"name"`
+	Slug       *string `json:"slug,omitempty"`
+}
+
+// ExternalUser defines model for ExternalUser.
+type ExternalUser struct {
+	ExternalName  string `json:"externalName"`
+	Id            string `json:"id"`
+	IntegrationId string `json:"integrationId"`
+	Provider      string `json:"provider"`
+	UserId        string `json:"userId"`
+}
+
 // Organization defines model for Organization.
 type Organization struct {
-	Features     *[]string                  `json:"features,omitempty"`
-	Id           string                     `json:"id"`
-	Name         string                     `json:"name"`
-	OrgRoleList  []OrganizationRoleListItem `json:"orgRoleList"`
-	Slug         string                     `json:"slug"`
-	TeamRoleList []TeamRoleListItem         `json:"teamRoleList"`
+	AlertsMemberWrite          *bool                      `json:"alertsMemberWrite,omitempty"`
+	AllowJoinRequests          *bool                      `json:"allowJoinRequests,omitempty"`
+	AllowMemberProjectCreation *bool                      `json:"allowMemberProjectCreation,omitempty"`
+	AllowSharedIssues          *bool                      `json:"allowSharedIssues,omitempty"`
+	AttachmentsRole            *string                    `json:"attachmentsRole,omitempty"`
+	Avatar                     *OrganizationAvatar        `json:"avatar,omitempty"`
+	CodecovAccess              *bool                      `json:"codecovAccess,omitempty"`
+	DataScrubber               *bool                      `json:"dataScrubber,omitempty"`
+	DataScrubberDefaults       *bool                      `json:"dataScrubberDefaults,omitempty"`
+	DebugFilesRole             *string                    `json:"debugFilesRole,omitempty"`
+	DefaultRole                *string                    `json:"defaultRole,omitempty"`
+	EnhancedPrivacy            *bool                      `json:"enhancedPrivacy,omitempty"`
+	EventsMemberAdmin          *bool                      `json:"eventsMemberAdmin,omitempty"`
+	Features                   *[]string                  `json:"features,omitempty"`
+	GithubNudgeInvite          *bool                      `json:"githubNudgeInvite,omitempty"`
+	GithubOpenPRBot            *bool                      `json:"githubOpenPRBot,omitempty"`
+	GithubPRBot                *bool                      `json:"githubPRBot,omitempty"`
+	GitlabPRBot                *bool                      `json:"gitlabPRBot,omitempty"`
+	HideAiFeatures             *bool                      `json:"hideAiFeatures,omitempty"`
+	Id                         string                     `json:"id"`
+	IsEarlyAdopter             *bool                      `json:"isEarlyAdopter,omitempty"`
+	Name                       string                     `json:"name"`
+	OpenMembership             *bool                      `json:"openMembership,omitempty"`
+	OrgRoleList                []OrganizationRoleListItem `json:"orgRoleList"`
+	RelayPiiConfig             nullable.Nullable[string]  `json:"relayPiiConfig,omitempty"`
+	Require2FA                 *bool                      `json:"require2FA,omitempty"`
+	SafeFields                 *[]string                  `json:"safeFields,omitempty"`
+	ScrapeJavaScript           *bool                      `json:"scrapeJavaScript,omitempty"`
+	ScrubIPAddresses           *bool                      `json:"scrubIPAddresses,omitempty"`
+	SensitiveFields            *[]string                  `json:"sensitiveFields,omitempty"`
+	Slug                       string                     `json:"slug"`
+	StoreCrashReports          *int                       `json:"storeCrashReports,omitempty"`
+	TeamRoleList               []TeamRoleListItem         `json:"teamRoleList"`
+	TrustedRelays              *[]TrustedRelay            `json:"trustedRelays,omitempty"`
+}
+
+// OrganizationAvatar defines model for OrganizationAvatar.
+type OrganizationAvatar struct {
+	AvatarType *string                   `json:"avatarType,omitempty"`
+	AvatarUuid nullable.Nullable[string] `json:"avatarUuid,omitempty"`
 }
 
 // OrganizationIntegration defines model for OrganizationIntegration.
@@ -2998,6 +3058,66 @@ type TeamRoleListItem struct {
 	Scopes           []string `json:"scopes"`
 }
 
+// TrustedRelay defines model for TrustedRelay.
+type TrustedRelay struct {
+	Description nullable.Nullable[string] `json:"description,omitempty"`
+	Id          *string                   `json:"id,omitempty"`
+	Name        *string                   `json:"name,omitempty"`
+	PublicKey   *string                   `json:"publicKey,omitempty"`
+}
+
+// TrustedRelayUpdate defines model for TrustedRelayUpdate.
+type TrustedRelayUpdate struct {
+	Description *string `json:"description,omitempty"`
+	Name        *string `json:"name,omitempty"`
+	PublicKey   *string `json:"publicKey,omitempty"`
+}
+
+// UpdateExternalUser defines model for UpdateExternalUser.
+type UpdateExternalUser struct {
+	ExternalId    *string `json:"external_id,omitempty"`
+	ExternalName  string  `json:"external_name"`
+	Id            int     `json:"id"`
+	IntegrationId int     `json:"integration_id"`
+	Provider      string  `json:"provider"`
+	UserId        int     `json:"user_id"`
+}
+
+// UpdateOrganization defines model for UpdateOrganization.
+type UpdateOrganization struct {
+	AlertsMemberWrite          *bool                     `json:"alertsMemberWrite,omitempty"`
+	AllowJoinRequests          *bool                     `json:"allowJoinRequests,omitempty"`
+	AllowMemberProjectCreation *bool                     `json:"allowMemberProjectCreation,omitempty"`
+	AllowSharedIssues          *bool                     `json:"allowSharedIssues,omitempty"`
+	AttachmentsRole            *string                   `json:"attachmentsRole,omitempty"`
+	Avatar                     *string                   `json:"avatar,omitempty"`
+	AvatarType                 *string                   `json:"avatarType,omitempty"`
+	CodecovAccess              *bool                     `json:"codecovAccess,omitempty"`
+	DataScrubber               *bool                     `json:"dataScrubber,omitempty"`
+	DataScrubberDefaults       *bool                     `json:"dataScrubberDefaults,omitempty"`
+	DebugFilesRole             *string                   `json:"debugFilesRole,omitempty"`
+	DefaultRole                *string                   `json:"defaultRole,omitempty"`
+	EnhancedPrivacy            *bool                     `json:"enhancedPrivacy,omitempty"`
+	EventsMemberAdmin          *bool                     `json:"eventsMemberAdmin,omitempty"`
+	GithubNudgeInvite          *bool                     `json:"githubNudgeInvite,omitempty"`
+	GithubOpenPRBot            *bool                     `json:"githubOpenPRBot,omitempty"`
+	GithubPRBot                *bool                     `json:"githubPRBot,omitempty"`
+	GitlabPRBot                *bool                     `json:"gitlabPRBot,omitempty"`
+	HideAiFeatures             *bool                     `json:"hideAiFeatures,omitempty"`
+	IsEarlyAdopter             *bool                     `json:"isEarlyAdopter,omitempty"`
+	Name                       *string                   `json:"name,omitempty"`
+	OpenMembership             *bool                     `json:"openMembership,omitempty"`
+	RelayPiiConfig             nullable.Nullable[string] `json:"relayPiiConfig,omitempty"`
+	Require2FA                 *bool                     `json:"require2FA,omitempty"`
+	SafeFields                 *[]string                 `json:"safeFields,omitempty"`
+	ScrapeJavaScript           *bool                     `json:"scrapeJavaScript,omitempty"`
+	ScrubIPAddresses           *bool                     `json:"scrubIPAddresses,omitempty"`
+	SensitiveFields            *[]string                 `json:"sensitiveFields,omitempty"`
+	Slug                       *string                   `json:"slug,omitempty"`
+	StoreCrashReports          *int                      `json:"storeCrashReports,omitempty"`
+	TrustedRelays              *[]TrustedRelayUpdate     `json:"trustedRelays,omitempty"`
+}
+
 // UpdateOrganizationWorkflowRequest defines model for UpdateOrganizationWorkflowRequest.
 type UpdateOrganizationWorkflowRequest struct {
 	ActionFilters []OrganizationWorkflowActionFilter `json:"actionFilters"`
@@ -3204,8 +3324,20 @@ type CreateOrganizationTeamProjectJSONBody struct {
 	Slug         *string `json:"slug,omitempty"`
 }
 
+// CreateOrganizationJSONRequestBody defines body for CreateOrganization for application/json ContentType.
+type CreateOrganizationJSONRequestBody = CreateOrganization
+
+// UpdateOrganizationJSONRequestBody defines body for UpdateOrganization for application/json ContentType.
+type UpdateOrganizationJSONRequestBody = UpdateOrganization
+
 // UpdateProjectMonitorJSONRequestBody defines body for UpdateProjectMonitor for application/json ContentType.
 type UpdateProjectMonitorJSONRequestBody = ProjectMonitorRequest
+
+// CreateOrganizationExternalUserJSONRequestBody defines body for CreateOrganizationExternalUser for application/json ContentType.
+type CreateOrganizationExternalUserJSONRequestBody = CreateExternalUser
+
+// UpdateOrganizationExternalUserJSONRequestBody defines body for UpdateOrganizationExternalUser for application/json ContentType.
+type UpdateOrganizationExternalUserJSONRequestBody = UpdateExternalUser
 
 // UpdateOrganizationIntegrationJSONRequestBody defines body for UpdateOrganizationIntegration for application/json ContentType.
 type UpdateOrganizationIntegrationJSONRequestBody UpdateOrganizationIntegrationJSONBody
@@ -6671,8 +6803,21 @@ type ClientInterface interface {
 	// HealthCheck request
 	HealthCheck(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreateOrganizationWithBody request with any body
+	CreateOrganizationWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateOrganization(ctx context.Context, body CreateOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteOrganization request
+	DeleteOrganization(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetOrganization request
 	GetOrganization(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateOrganizationWithBody request with any body
+	UpdateOrganizationWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateOrganization(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body UpdateOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListOrganizationMonitors request
 	ListOrganizationMonitors(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationMonitorsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -6687,6 +6832,19 @@ type ClientInterface interface {
 	UpdateProjectMonitorWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateProjectMonitor(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, body UpdateProjectMonitorJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateOrganizationExternalUserWithBody request with any body
+	CreateOrganizationExternalUserWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateOrganizationExternalUser(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationExternalUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteOrganizationExternalUser request
+	DeleteOrganizationExternalUser(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, externalUserId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateOrganizationExternalUserWithBody request with any body
+	UpdateOrganizationExternalUserWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, externalUserId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateOrganizationExternalUser(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, externalUserId string, body UpdateOrganizationExternalUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListOrganizationIntegrations request
 	ListOrganizationIntegrations(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationIntegrationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -6850,8 +7008,68 @@ func (c *Client) HealthCheck(ctx context.Context, reqEditors ...RequestEditorFn)
 	return c.Client.Do(req)
 }
 
+func (c *Client) CreateOrganizationWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateOrganizationRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateOrganization(ctx context.Context, body CreateOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateOrganizationRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteOrganization(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteOrganizationRequest(c.Server, organizationIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) GetOrganization(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetOrganizationRequest(c.Server, organizationIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateOrganizationWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateOrganizationRequestWithBody(c.Server, organizationIdOrSlug, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateOrganization(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body UpdateOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateOrganizationRequest(c.Server, organizationIdOrSlug, body)
 	if err != nil {
 		return nil, err
 	}
@@ -6912,6 +7130,66 @@ func (c *Client) UpdateProjectMonitorWithBody(ctx context.Context, organizationI
 
 func (c *Client) UpdateProjectMonitor(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, body UpdateProjectMonitorJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateProjectMonitorRequest(c.Server, organizationIdOrSlug, detectorId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateOrganizationExternalUserWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateOrganizationExternalUserRequestWithBody(c.Server, organizationIdOrSlug, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateOrganizationExternalUser(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationExternalUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateOrganizationExternalUserRequest(c.Server, organizationIdOrSlug, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteOrganizationExternalUser(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, externalUserId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteOrganizationExternalUserRequest(c.Server, organizationIdOrSlug, externalUserId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateOrganizationExternalUserWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, externalUserId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateOrganizationExternalUserRequestWithBody(c.Server, organizationIdOrSlug, externalUserId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateOrganizationExternalUser(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, externalUserId string, body UpdateOrganizationExternalUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateOrganizationExternalUserRequest(c.Server, organizationIdOrSlug, externalUserId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -7609,6 +7887,80 @@ func NewHealthCheckRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
+// NewCreateOrganizationRequest calls the generic CreateOrganization builder with application/json body
+func NewCreateOrganizationRequest(server string, body CreateOrganizationJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateOrganizationRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateOrganizationRequestWithBody generates requests for CreateOrganization with any type of body
+func NewCreateOrganizationRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteOrganizationRequest generates requests for DeleteOrganization
+func NewDeleteOrganizationRequest(server string, organizationIdOrSlug OrganizationIdOrSlug) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetOrganizationRequest generates requests for GetOrganization
 func NewGetOrganizationRequest(server string, organizationIdOrSlug OrganizationIdOrSlug) (*http.Request, error) {
 	var err error
@@ -7639,6 +7991,53 @@ func NewGetOrganizationRequest(server string, organizationIdOrSlug OrganizationI
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewUpdateOrganizationRequest calls the generic UpdateOrganization builder with application/json body
+func NewUpdateOrganizationRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, body UpdateOrganizationJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateOrganizationRequestWithBody(server, organizationIdOrSlug, "application/json", bodyReader)
+}
+
+// NewUpdateOrganizationRequestWithBody generates requests for UpdateOrganization with any type of body
+func NewUpdateOrganizationRequestWithBody(server string, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -7845,6 +8244,148 @@ func NewUpdateProjectMonitorRequestWithBody(server string, organizationIdOrSlug 
 	}
 
 	operationPath := fmt.Sprintf("/0/organizations/%s/detectors/%s/", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewCreateOrganizationExternalUserRequest calls the generic CreateOrganizationExternalUser builder with application/json body
+func NewCreateOrganizationExternalUserRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationExternalUserJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateOrganizationExternalUserRequestWithBody(server, organizationIdOrSlug, "application/json", bodyReader)
+}
+
+// NewCreateOrganizationExternalUserRequestWithBody generates requests for CreateOrganizationExternalUser with any type of body
+func NewCreateOrganizationExternalUserRequestWithBody(server string, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/external-users/", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteOrganizationExternalUserRequest generates requests for DeleteOrganizationExternalUser
+func NewDeleteOrganizationExternalUserRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, externalUserId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "external_user_id", externalUserId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/external-users/%s/", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateOrganizationExternalUserRequest calls the generic UpdateOrganizationExternalUser builder with application/json body
+func NewUpdateOrganizationExternalUserRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, externalUserId string, body UpdateOrganizationExternalUserJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateOrganizationExternalUserRequestWithBody(server, organizationIdOrSlug, externalUserId, "application/json", bodyReader)
+}
+
+// NewUpdateOrganizationExternalUserRequestWithBody generates requests for UpdateOrganizationExternalUser with any type of body
+func NewUpdateOrganizationExternalUserRequestWithBody(server string, organizationIdOrSlug OrganizationIdOrSlug, externalUserId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "external_user_id", externalUserId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/external-users/%s/", pathParam0, pathParam1)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -9894,8 +10435,21 @@ type ClientWithResponsesInterface interface {
 	// HealthCheckWithResponse request
 	HealthCheckWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*HealthCheckResponse, error)
 
+	// CreateOrganizationWithBodyWithResponse request with any body
+	CreateOrganizationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOrganizationResponse, error)
+
+	CreateOrganizationWithResponse(ctx context.Context, body CreateOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateOrganizationResponse, error)
+
+	// DeleteOrganizationWithResponse request
+	DeleteOrganizationWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*DeleteOrganizationResponse, error)
+
 	// GetOrganizationWithResponse request
 	GetOrganizationWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*GetOrganizationResponse, error)
+
+	// UpdateOrganizationWithBodyWithResponse request with any body
+	UpdateOrganizationWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateOrganizationResponse, error)
+
+	UpdateOrganizationWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body UpdateOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateOrganizationResponse, error)
 
 	// ListOrganizationMonitorsWithResponse request
 	ListOrganizationMonitorsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationMonitorsParams, reqEditors ...RequestEditorFn) (*ListOrganizationMonitorsResponse, error)
@@ -9910,6 +10464,19 @@ type ClientWithResponsesInterface interface {
 	UpdateProjectMonitorWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProjectMonitorResponse, error)
 
 	UpdateProjectMonitorWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, detectorId DetectorId, body UpdateProjectMonitorJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectMonitorResponse, error)
+
+	// CreateOrganizationExternalUserWithBodyWithResponse request with any body
+	CreateOrganizationExternalUserWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOrganizationExternalUserResponse, error)
+
+	CreateOrganizationExternalUserWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationExternalUserJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateOrganizationExternalUserResponse, error)
+
+	// DeleteOrganizationExternalUserWithResponse request
+	DeleteOrganizationExternalUserWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, externalUserId string, reqEditors ...RequestEditorFn) (*DeleteOrganizationExternalUserResponse, error)
+
+	// UpdateOrganizationExternalUserWithBodyWithResponse request with any body
+	UpdateOrganizationExternalUserWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, externalUserId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateOrganizationExternalUserResponse, error)
+
+	UpdateOrganizationExternalUserWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, externalUserId string, body UpdateOrganizationExternalUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateOrganizationExternalUserResponse, error)
 
 	// ListOrganizationIntegrationsWithResponse request
 	ListOrganizationIntegrationsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationIntegrationsParams, reqEditors ...RequestEditorFn) (*ListOrganizationIntegrationsResponse, error)
@@ -10090,6 +10657,65 @@ func (r HealthCheckResponse) ContentType() string {
 	return ""
 }
 
+type CreateOrganizationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *Organization
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateOrganizationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateOrganizationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateOrganizationResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DeleteOrganizationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteOrganizationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteOrganizationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeleteOrganizationResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type GetOrganizationResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -10114,6 +10740,36 @@ func (r GetOrganizationResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r GetOrganizationResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type UpdateOrganizationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Organization
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateOrganizationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateOrganizationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r UpdateOrganizationResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -10233,6 +10889,95 @@ func (r UpdateProjectMonitorResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r UpdateProjectMonitorResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type CreateOrganizationExternalUserResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *ExternalUser
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateOrganizationExternalUserResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateOrganizationExternalUserResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateOrganizationExternalUserResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DeleteOrganizationExternalUserResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteOrganizationExternalUserResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteOrganizationExternalUserResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeleteOrganizationExternalUserResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type UpdateOrganizationExternalUserResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ExternalUser
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateOrganizationExternalUserResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateOrganizationExternalUserResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r UpdateOrganizationExternalUserResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -11413,6 +12158,32 @@ func (c *ClientWithResponses) HealthCheckWithResponse(ctx context.Context, reqEd
 	return ParseHealthCheckResponse(rsp)
 }
 
+// CreateOrganizationWithBodyWithResponse request with arbitrary body returning *CreateOrganizationResponse
+func (c *ClientWithResponses) CreateOrganizationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOrganizationResponse, error) {
+	rsp, err := c.CreateOrganizationWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateOrganizationResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateOrganizationWithResponse(ctx context.Context, body CreateOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateOrganizationResponse, error) {
+	rsp, err := c.CreateOrganization(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateOrganizationResponse(rsp)
+}
+
+// DeleteOrganizationWithResponse request returning *DeleteOrganizationResponse
+func (c *ClientWithResponses) DeleteOrganizationWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*DeleteOrganizationResponse, error) {
+	rsp, err := c.DeleteOrganization(ctx, organizationIdOrSlug, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteOrganizationResponse(rsp)
+}
+
 // GetOrganizationWithResponse request returning *GetOrganizationResponse
 func (c *ClientWithResponses) GetOrganizationWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*GetOrganizationResponse, error) {
 	rsp, err := c.GetOrganization(ctx, organizationIdOrSlug, reqEditors...)
@@ -11420,6 +12191,23 @@ func (c *ClientWithResponses) GetOrganizationWithResponse(ctx context.Context, o
 		return nil, err
 	}
 	return ParseGetOrganizationResponse(rsp)
+}
+
+// UpdateOrganizationWithBodyWithResponse request with arbitrary body returning *UpdateOrganizationResponse
+func (c *ClientWithResponses) UpdateOrganizationWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateOrganizationResponse, error) {
+	rsp, err := c.UpdateOrganizationWithBody(ctx, organizationIdOrSlug, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateOrganizationResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateOrganizationWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body UpdateOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateOrganizationResponse, error) {
+	rsp, err := c.UpdateOrganization(ctx, organizationIdOrSlug, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateOrganizationResponse(rsp)
 }
 
 // ListOrganizationMonitorsWithResponse request returning *ListOrganizationMonitorsResponse
@@ -11464,6 +12252,49 @@ func (c *ClientWithResponses) UpdateProjectMonitorWithResponse(ctx context.Conte
 		return nil, err
 	}
 	return ParseUpdateProjectMonitorResponse(rsp)
+}
+
+// CreateOrganizationExternalUserWithBodyWithResponse request with arbitrary body returning *CreateOrganizationExternalUserResponse
+func (c *ClientWithResponses) CreateOrganizationExternalUserWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOrganizationExternalUserResponse, error) {
+	rsp, err := c.CreateOrganizationExternalUserWithBody(ctx, organizationIdOrSlug, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateOrganizationExternalUserResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateOrganizationExternalUserWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationExternalUserJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateOrganizationExternalUserResponse, error) {
+	rsp, err := c.CreateOrganizationExternalUser(ctx, organizationIdOrSlug, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateOrganizationExternalUserResponse(rsp)
+}
+
+// DeleteOrganizationExternalUserWithResponse request returning *DeleteOrganizationExternalUserResponse
+func (c *ClientWithResponses) DeleteOrganizationExternalUserWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, externalUserId string, reqEditors ...RequestEditorFn) (*DeleteOrganizationExternalUserResponse, error) {
+	rsp, err := c.DeleteOrganizationExternalUser(ctx, organizationIdOrSlug, externalUserId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteOrganizationExternalUserResponse(rsp)
+}
+
+// UpdateOrganizationExternalUserWithBodyWithResponse request with arbitrary body returning *UpdateOrganizationExternalUserResponse
+func (c *ClientWithResponses) UpdateOrganizationExternalUserWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, externalUserId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateOrganizationExternalUserResponse, error) {
+	rsp, err := c.UpdateOrganizationExternalUserWithBody(ctx, organizationIdOrSlug, externalUserId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateOrganizationExternalUserResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateOrganizationExternalUserWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, externalUserId string, body UpdateOrganizationExternalUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateOrganizationExternalUserResponse, error) {
+	rsp, err := c.UpdateOrganizationExternalUser(ctx, organizationIdOrSlug, externalUserId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateOrganizationExternalUserResponse(rsp)
 }
 
 // ListOrganizationIntegrationsWithResponse request returning *ListOrganizationIntegrationsResponse
@@ -11961,6 +12792,48 @@ func ParseHealthCheckResponse(rsp *http.Response) (*HealthCheckResponse, error) 
 	return response, nil
 }
 
+// ParseCreateOrganizationResponse parses an HTTP response from a CreateOrganizationWithResponse call
+func ParseCreateOrganizationResponse(rsp *http.Response) (*CreateOrganizationResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateOrganizationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest Organization
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteOrganizationResponse parses an HTTP response from a DeleteOrganizationWithResponse call
+func ParseDeleteOrganizationResponse(rsp *http.Response) (*DeleteOrganizationResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteOrganizationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
 // ParseGetOrganizationResponse parses an HTTP response from a GetOrganizationWithResponse call
 func ParseGetOrganizationResponse(rsp *http.Response) (*GetOrganizationResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -11970,6 +12843,32 @@ func ParseGetOrganizationResponse(rsp *http.Response) (*GetOrganizationResponse,
 	}
 
 	response := &GetOrganizationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Organization
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateOrganizationResponse parses an HTTP response from a UpdateOrganizationWithResponse call
+func ParseUpdateOrganizationResponse(rsp *http.Response) (*UpdateOrganizationResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateOrganizationResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -12071,6 +12970,74 @@ func ParseUpdateProjectMonitorResponse(rsp *http.Response) (*UpdateProjectMonito
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest ProjectMonitor
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateOrganizationExternalUserResponse parses an HTTP response from a CreateOrganizationExternalUserWithResponse call
+func ParseCreateOrganizationExternalUserResponse(rsp *http.Response) (*CreateOrganizationExternalUserResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateOrganizationExternalUserResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest ExternalUser
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteOrganizationExternalUserResponse parses an HTTP response from a DeleteOrganizationExternalUserWithResponse call
+func ParseDeleteOrganizationExternalUserResponse(rsp *http.Response) (*DeleteOrganizationExternalUserResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteOrganizationExternalUserResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseUpdateOrganizationExternalUserResponse parses an HTTP response from a UpdateOrganizationExternalUserWithResponse call
+func ParseUpdateOrganizationExternalUserResponse(rsp *http.Response) (*UpdateOrganizationExternalUserResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateOrganizationExternalUserResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ExternalUser
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/mzglinski/go-sentry/v2/sentry"
+	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/mzglinski/terraform-provider-sentry/internal/apiclient"
 	"github.com/mzglinski/terraform-provider-sentry/internal/providerdata"
 	"github.com/mzglinski/terraform-provider-sentry/internal/sentryclient"
@@ -45,10 +45,8 @@ func NewProvider(version string) func() *schema.Provider {
 				"sentry_metric_alert":              resourceSentryMetricAlert(),
 				"sentry_organization_code_mapping": resourceSentryOrganizationCodeMapping(),
 				"sentry_organization_member":       resourceSentryOrganizationMember(),
-				"sentry_organization":              resourceSentryOrganization(),
 				"sentry_plugin":                    resourceSentryPlugin(),
 				"sentry_team":                      resourceSentryTeam(),
-				"sentry_external_user":             resourceSentryExternalUser(),
 			},
 
 			DataSourcesMap: map[string]*schema.Resource{

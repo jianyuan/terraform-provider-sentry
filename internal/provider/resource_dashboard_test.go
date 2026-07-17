@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/mzglinski/go-sentry/v2/sentry"
+	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/mzglinski/terraform-provider-sentry/internal/acctest"
 )
 

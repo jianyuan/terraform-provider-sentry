@@ -235,11 +235,6 @@ func (r *UptimeMonitorResource) Read(ctx context.Context, req resource.ReadReque
 
 	responseData := httpResp.JSON200
 
-	if responseData == nil {
-		resp.Diagnostics.AddError("Client Error", "Unable to read, could not find resource in the list")
-		return
-	}
-
 	resp.Diagnostics.Append(data.Fill(ctx, *responseData)...)
 	if resp.Diagnostics.HasError() {
 		return

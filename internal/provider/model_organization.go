@@ -2,7 +2,7 @@ package provider
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/mzglinski/go-sentry/v2/sentry"
+	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
 type OrganizationModel struct {

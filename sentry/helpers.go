@@ -6,7 +6,7 @@ import (
 	"reflect"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/mzglinski/go-sentry/v2/sentry"
+	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
 func SuppressEquivalentJSONDiffs(k, old, new string, d *schema.ResourceData) bool {

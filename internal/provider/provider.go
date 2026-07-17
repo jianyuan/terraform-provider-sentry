@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/mzglinski/go-sentry/v2/sentry"
+	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/mzglinski/terraform-provider-sentry/internal/apiclient"
 	"github.com/mzglinski/terraform-provider-sentry/internal/providerdata"
 	"github.com/mzglinski/terraform-provider-sentry/internal/sentryclient"

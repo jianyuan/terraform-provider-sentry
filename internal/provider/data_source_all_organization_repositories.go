@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/mzglinski/go-sentry/v2/sentry"
+	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/mzglinski/terraform-provider-sentry/internal/diagutils"
 	"github.com/mzglinski/terraform-provider-sentry/internal/tfutils"
 )

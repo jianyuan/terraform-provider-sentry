@@ -565,26 +565,33 @@ function generateResource({ resource }: { resource: Resource }) {
   createRequestParams.push("*body");
 
   const readRequestParams = ["ctx"];
-  if (resource.api.readRequestAttributes) {
-    readRequestParams.push(
-      ...resource.api.readRequestAttributes.map((param) => {
-        const attribute = resource.attributes.find(
-          (attribute) => attribute.name === param,
-        );
-        if (!attribute) {
-          throw new Error(
-            `Attribute ${param} not found in resource ${resource.name}`,
+  if (resource.api.readStrategy !== "custom") {
+    if (!resource.api.readMethod) {
+      throw new Error(
+        `readMethod is required for resource ${resource.name} unless readStrategy is "custom"`,
+      );
+    }
+    if (resource.api.readRequestAttributes) {
+      readRequestParams.push(
+        ...resource.api.readRequestAttributes.map((param) => {
+          const attribute = resource.attributes.find(
+            (attribute) => attribute.name === param,
           );
-        }
-        return generateTerraformToPrimitive({
-          attribute,
-          srcVar: "data",
-        });
-      }),
-    );
-  }
-  if (resource.api.readStrategy === "paginate") {
-    readRequestParams.push("params");
+          if (!attribute) {
+            throw new Error(
+              `Attribute ${param} not found in resource ${resource.name}`,
+            );
+          }
+          return generateTerraformToPrimitive({
+            attribute,
+            srcVar: "data",
+          });
+        }),
+      );
+    }
+    if (resource.api.readStrategy === "paginate") {
+      readRequestParams.push("params");
+    }
   }
 
   const updateRequestParams = ["ctx"];
@@ -716,6 +723,17 @@ func (r *${resourceName}) Read(ctx context.Context, req resource.ReadRequest, re
 
   ${match(resource.api)
     .with(
+      { readStrategy: "custom" },
+      () => dedent`
+        resp.Diagnostics.Append(r.read(ctx, &data)...)
+        if resp.Diagnostics.HasError() {
+          return
+        }
+
+        resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+      `,
+    )
+    .with(
       { readStrategy: "paginate" },
       (api) => dedent`
         var responseData *apiclient.${api.readModel ?? api.model}
@@ -769,6 +787,18 @@ func (r *${resourceName}) Read(ctx context.Context, req resource.ReadRequest, re
           resp.Diagnostics.AddError("Client Error", err.Error())
           return
         }
+
+        if responseData == nil {
+          resp.Diagnostics.AddError("Client Error", "Unable to read, could not find resource in the list")
+          return
+        }
+
+        resp.Diagnostics.Append(data.Fill(ctx, *responseData)...)
+        if resp.Diagnostics.HasError() {
+          return
+        }
+
+        resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
       `,
     )
     .otherwise(
@@ -788,20 +818,15 @@ func (r *${resourceName}) Read(ctx context.Context, req resource.ReadRequest, re
         }
 
         responseData := httpResp.JSON200
+
+        resp.Diagnostics.Append(data.Fill(ctx, *responseData)...)
+        if resp.Diagnostics.HasError() {
+          return
+        }
+
+        resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
       `,
     )}
-
-  if responseData == nil {
-    resp.Diagnostics.AddError("Client Error", "Unable to read, could not find resource in the list")
-    return
-  }
-
-  resp.Diagnostics.Append(data.Fill(ctx, *responseData)...)
-  if resp.Diagnostics.HasError() {
-    return
-  }
-
-  resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *${resourceName}) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {

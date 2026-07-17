@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
-	"github.com/mzglinski/go-sentry/v2/sentry"
+	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
 func NewRateLimiterRoundTripper(delegate http.RoundTripper) http.RoundTripper {

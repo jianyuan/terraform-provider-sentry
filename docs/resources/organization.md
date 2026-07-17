@@ -61,14 +61,14 @@ resource "sentry_organization" "default" {
 - `sensitive_fields` (List of String) A list of additional global field names to match against when scrubbing data for all projects.
 - `slug` (String) The unique URL slug for this organization.
 - `store_crash_reports` (Number) How many native crash reports to store per issue. Valid values are `0`, `1`, `5`, `10`, `20`, `50`, `100`, `-1` (unlimited).
-- `trusted_relays` (Block List) A list of local Relays registered for the organization. (see [below for nested schema](#nestedblock--trusted_relays))
+- `trusted_relays` (Attributes List) A list of local Relays registered for the organization. (see [below for nested schema](#nestedatt--trusted_relays))
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) The unique URL slug for this organization.
 - `internal_id` (String) The internal ID for this organization.
 
-<a id="nestedblock--trusted_relays"></a>
+<a id="nestedatt--trusted_relays"></a>
 ### Nested Schema for `trusted_relays`
 
 Required:

@@ -14,7 +14,7 @@ require (
 	github.com/hashicorp/terraform-plugin-mux v0.23.1
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.40.1
 	github.com/hashicorp/terraform-plugin-testing v1.16.0
-	github.com/mzglinski/go-sentry/v2 v2.10.1
+	github.com/jianyuan/go-sentry/v2 v2.8.5-0.20260212151526-49ef3a5c44c6
 	github.com/oapi-codegen/nullable v1.2.0
 	github.com/oapi-codegen/runtime v1.5.0
 	github.com/orange-cloudavenue/terraform-plugin-framework-supertypes v1.2.0
