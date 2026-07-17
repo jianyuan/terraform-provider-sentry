@@ -15,7 +15,6 @@ import (
 	"github.com/samber/lo"
 )
 
-var _ = supertypes.StringType{}
 var _ datasource.DataSource = &AllProjectsDataSource{}
 
 func NewAllProjectsDataSource() datasource.DataSource {
