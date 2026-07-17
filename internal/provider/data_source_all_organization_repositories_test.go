@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/jianyuan/go-utils/must"
+	"github.com/mzglinski/terraform-provider-sentry/internal/must"
 	"github.com/mzglinski/terraform-provider-sentry/internal/acctest"
 )
 

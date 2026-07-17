@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6/tf6server"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
-	"github.com/jianyuan/go-utils/must"
+	"github.com/mzglinski/terraform-provider-sentry/internal/must"
 	"github.com/mzglinski/terraform-provider-sentry/internal/provider"
 	"github.com/mzglinski/terraform-provider-sentry/sentry"
 )

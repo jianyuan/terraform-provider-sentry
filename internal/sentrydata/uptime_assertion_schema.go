@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	"github.com/google/jsonschema-go/jsonschema"
-	"github.com/jianyuan/go-utils/must"
+	"github.com/mzglinski/terraform-provider-sentry/internal/must"
 )
 
 var uptimeAssertionSchema = &jsonschema.Schema{

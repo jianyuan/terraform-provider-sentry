@@ -15,8 +15,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/mzglinski/go-sentry/v2/sentry"
-	"github.com/jianyuan/go-utils/must"
 	"github.com/mzglinski/terraform-provider-sentry/internal/acctest"
+	"github.com/mzglinski/terraform-provider-sentry/internal/must"
 	"github.com/mzglinski/terraform-provider-sentry/internal/tfutils"
 )
 

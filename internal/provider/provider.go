@@ -168,7 +168,6 @@ func (p *SentryProvider) DataSources(ctx context.Context) []func() datasource.Da
 		NewOrganizationIntegrationDataSource,
 		NewOrganizationMemberDataSource,
 		NewSentryAppInstallationDataSource,
-		NewTeamDataSource,
 	)
 }
 

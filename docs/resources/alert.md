@@ -915,7 +915,7 @@ Optional:
 - `msteams` (Attributes) Notify on Microsoft Teams. (see [below for nested schema](#nestedatt--action_filters--actions--msteams))
 - `opsgenie` (Attributes) Notify on OpsGenie. (see [below for nested schema](#nestedatt--action_filters--actions--opsgenie))
 - `pagerduty` (Attributes) Notify on PagerDuty. (see [below for nested schema](#nestedatt--action_filters--actions--pagerduty))
-- `plugin` (Attributes) Send a notification to all legacy integrations (plugins). (see [below for nested schema](#nestedatt--action_filters--actions--plugin))
+- `plugin` (Attributes, Deprecated) Send a notification to all legacy integrations (plugins). **Deprecated** Action type plugin is deprecated and cannot be created. (see [below for nested schema](#nestedatt--action_filters--actions--plugin))
 - `sentry_app` (Attributes) Trigger an action in a Sentry App (e.g. Rootly). (see [below for nested schema](#nestedatt--action_filters--actions--sentry_app))
 - `slack` (Attributes) Notify on Slack. (see [below for nested schema](#nestedatt--action_filters--actions--slack))
 - `vsts` (Attributes) Notify on Azure DevOps. (see [below for nested schema](#nestedatt--action_filters--actions--vsts))

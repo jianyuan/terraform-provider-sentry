@@ -11,9 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/jianyuan/go-utils/must"
-	"github.com/jianyuan/go-utils/ptr"
 	"github.com/mzglinski/terraform-provider-sentry/internal/acctest"
+	"github.com/mzglinski/terraform-provider-sentry/internal/must"
 )
 
 func TestAccClientKeyResource_validation(t *testing.T) {
@@ -164,8 +163,8 @@ func TestAccClientKeyResource(t *testing.T) {
 					TeamName:        teamName,
 					ProjectName:     projectName,
 					KeyName:         keyName + "-renamed",
-					RateLimitWindow: ptr.Ptr(1),
-					RateLimitCount:  ptr.Ptr(2),
+					RateLimitWindow: new(1),
+					RateLimitCount:  new(2),
 					Extras: `
 						javascript_loader_script = {
 							browser_sdk_version = "7.x"
@@ -192,8 +191,8 @@ func TestAccClientKeyResource(t *testing.T) {
 					TeamName:        teamName,
 					ProjectName:     projectName,
 					KeyName:         keyName + "-renamed",
-					RateLimitWindow: ptr.Ptr(3),
-					RateLimitCount:  ptr.Ptr(4),
+					RateLimitWindow: new(3),
+					RateLimitCount:  new(4),
 					Extras: `
 						javascript_loader_script = {
 							performance_monitoring_enabled = false
@@ -220,8 +219,8 @@ func TestAccClientKeyResource(t *testing.T) {
 					TeamName:        teamName,
 					ProjectName:     projectName,
 					KeyName:         keyName + "-renamed",
-					RateLimitWindow: ptr.Ptr(3),
-					RateLimitCount:  ptr.Ptr(4),
+					RateLimitWindow: new(3),
+					RateLimitCount:  new(4),
 					Extras: `
 						javascript_loader_script = {
 							performance_monitoring_enabled = false

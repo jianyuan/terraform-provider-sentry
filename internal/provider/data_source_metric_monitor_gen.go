@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/mzglinski/terraform-provider-sentry/internal/apiclient"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 )
@@ -162,7 +161,7 @@ func (d *MetricMonitorDataSource) Schema(ctx context.Context, req datasource.Sch
 								"comparison": schema.Float64Attribute{
 									MarkdownDescription: "The value to compare against. Only available for types other than `anomaly_detection`.",
 									Computed:            true,
-									CustomType:          basetypes.Float64Type{},
+									CustomType:          types.Float64Type,
 								},
 								"comparison_sensitivity": schema.StringAttribute{
 									MarkdownDescription: "Level of anomaly responsiveness. Higher thresholds means alerts for most anomalies. Lower thresholds means alerts only for larger ones. Only available for `anomaly_detection` type.",

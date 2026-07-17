@@ -16,11 +16,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: "go.mod"
           cache-dependency-path: "go.sum"
-      - uses: astral-sh/setup-uv@v8.2.0
+      - uses: astral-sh/setup-uv@v8.3.2
       - uses: oven-sh/setup-bun@v2
       - uses: hashicorp/setup-terraform@v4
         with:

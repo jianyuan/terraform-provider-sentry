@@ -7,8 +7,8 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/jianyuan/go-utils/must"
 	"github.com/mzglinski/terraform-provider-sentry/internal/apiclient"
+	"github.com/mzglinski/terraform-provider-sentry/internal/must"
 	"github.com/mzglinski/terraform-provider-sentry/internal/sentrytypes"
 	"github.com/mzglinski/terraform-provider-sentry/internal/tfutils"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"

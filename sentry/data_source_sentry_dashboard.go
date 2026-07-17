@@ -2,8 +2,8 @@ package sentry
 
 import (
 	"context"
+	"errors"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -165,11 +165,11 @@ func dataSourceSentryDashboardRead(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	d.SetId(tfutils.BuildTwoPartId(org, sentry.StringValue(dashboard.ID)))
-	retErr := multierror.Append(
+	err = errors.Join(
 		d.Set("organization", org),
 		d.Set("internal_id", dashboard.ID),
 		d.Set("title", dashboard.Title),
 		d.Set("widget", flattenDashboardWidgets(dashboard.Widgets)),
 	)
-	return diag.FromErr(retErr.ErrorOrNil())
+	return diag.FromErr(err)
 }

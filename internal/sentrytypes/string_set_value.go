@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/jianyuan/go-utils/ptr"
 	"github.com/samber/lo"
 )
 
@@ -89,7 +88,7 @@ func (v StringSet) ValueStringPointer(ctx context.Context) (*string, diag.Diagno
 		}
 	}
 
-	return ptr.Ptr(strings.Join(parsedItems, ",")), diags
+	return new(strings.Join(parsedItems, ",")), diags
 }
 
 func StringSetNull() StringSet {

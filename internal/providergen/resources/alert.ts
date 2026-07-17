@@ -748,6 +748,8 @@ export default {
               type: "single_nested",
               description:
                 "Send a notification to all legacy integrations (plugins).",
+              deprecationMessage:
+                "Action type plugin is deprecated and cannot be created.",
               computedOptionalRequired: "optional",
               attributes: [],
             },

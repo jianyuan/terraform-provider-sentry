@@ -17,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/mzglinski/terraform-provider-sentry/internal/sentrydata"
 	"github.com/mzglinski/terraform-provider-sentry/internal/tfutils"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
@@ -224,7 +223,7 @@ func (r *MetricMonitorResource) Schema(ctx context.Context, req resource.SchemaR
 								"comparison": schema.Float64Attribute{
 									MarkdownDescription: "The value to compare against. Only required for types other than `anomaly_detection`.",
 									Optional:            true,
-									CustomType:          basetypes.Float64Type{},
+									CustomType:          types.Float64Type,
 									Validators: []validator.Float64{
 										tfutils.NullIfAttributeIsOneOfFloat64(path.MatchRelative().AtParent().AtName("type"), []attr.Value{supertypes.NewStringValue("anomaly_detection")}),
 										tfutils.RequireIfAttributeIsOneOfFloat64(path.MatchRelative().AtParent().AtName("type"), []attr.Value{supertypes.NewStringValue("eq"), supertypes.NewStringValue("gte"), supertypes.NewStringValue("gt"), supertypes.NewStringValue("lte"), supertypes.NewStringValue("lt"), supertypes.NewStringValue("ne")}),
