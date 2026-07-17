@@ -467,7 +467,6 @@ import (
   fstringvalidator "github.com/orange-cloudavenue/terraform-plugin-framework-validators/stringvalidator"
 )
 
-var _ = supertypes.StringType{}
 var _ datasource.DataSource = &${dataSourceName}{}
 
 func New${dataSourceName}() datasource.DataSource {
@@ -731,6 +730,7 @@ func (r *${resourceName}) Read(ctx context.Context, req resource.ReadRequest, re
         }
 
         resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+        return
       `,
     )
     .with(
@@ -787,18 +787,6 @@ func (r *${resourceName}) Read(ctx context.Context, req resource.ReadRequest, re
           resp.Diagnostics.AddError("Client Error", err.Error())
           return
         }
-
-        if responseData == nil {
-          resp.Diagnostics.AddError("Client Error", "Unable to read, could not find resource in the list")
-          return
-        }
-
-        resp.Diagnostics.Append(data.Fill(ctx, *responseData)...)
-        if resp.Diagnostics.HasError() {
-          return
-        }
-
-        resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
       `,
     )
     .otherwise(
@@ -818,6 +806,17 @@ func (r *${resourceName}) Read(ctx context.Context, req resource.ReadRequest, re
         }
 
         responseData := httpResp.JSON200
+      `,
+    )}
+
+  ${match(resource.api)
+    .with({ readStrategy: "custom" }, () => ``)
+    .otherwise(
+      () => dedent`
+        if responseData == nil {
+          resp.Diagnostics.AddError("Client Error", "Unable to read, could not find resource in the list")
+          return
+        }
 
         resp.Diagnostics.Append(data.Fill(ctx, *responseData)...)
         if resp.Diagnostics.HasError() {

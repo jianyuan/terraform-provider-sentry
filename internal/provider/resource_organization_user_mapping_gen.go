@@ -143,6 +143,8 @@ func (r *OrganizationUserMappingResource) Read(ctx context.Context, req resource
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	return
+
 }
 
 func (r *OrganizationUserMappingResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
