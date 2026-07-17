@@ -11,7 +11,7 @@ import (
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 )
 
-func (r *ExternalUserResource) getCreateJSONRequestBody(ctx context.Context, data ExternalUserResourceModel) (*apiclient.CreateOrganizationExternalUserJSONRequestBody, diag.Diagnostics) {
+func (r *OrganizationUserMappingResource) getCreateJSONRequestBody(ctx context.Context, data OrganizationUserMappingResourceModel) (*apiclient.CreateOrganizationExternalUserJSONRequestBody, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	externalActorID, err := strconv.Atoi(data.ExternalId.ValueString())
@@ -31,7 +31,7 @@ func (r *ExternalUserResource) getCreateJSONRequestBody(ctx context.Context, dat
 	return &body, diags
 }
 
-func (r *ExternalUserResource) getUpdateJSONRequestBody(ctx context.Context, data ExternalUserResourceModel) (*apiclient.UpdateOrganizationExternalUserJSONRequestBody, diag.Diagnostics) {
+func (r *OrganizationUserMappingResource) getUpdateJSONRequestBody(ctx context.Context, data OrganizationUserMappingResourceModel) (*apiclient.UpdateOrganizationExternalUserJSONRequestBody, diag.Diagnostics) {
 	createBody, diags := r.getCreateJSONRequestBody(ctx, data)
 	if diags.HasError() || createBody == nil {
 		return nil, diags
@@ -40,8 +40,8 @@ func (r *ExternalUserResource) getUpdateJSONRequestBody(ctx context.Context, dat
 	return &body, diags
 }
 
-func (r *ExternalUserResource) read(ctx context.Context, data *ExternalUserResourceModel) diag.Diagnostics {
-	// No GET API for external users; keep prior state (matching previous SDKv2 behavior).
+func (r *OrganizationUserMappingResource) read(ctx context.Context, data *OrganizationUserMappingResourceModel) diag.Diagnostics {
+	// No GET API for external user mappings; keep prior state.
 	if data.Id.IsNull() || data.Id.ValueString() == "" {
 		if !data.Organization.IsNull() && !data.InternalId.IsNull() {
 			data.Id = supertypes.NewStringValue(tfutils.BuildTwoPartId(data.Organization.ValueString(), data.InternalId.ValueString()))
@@ -50,7 +50,7 @@ func (r *ExternalUserResource) read(ctx context.Context, data *ExternalUserResou
 	return nil
 }
 
-func (m *ExternalUserResourceModel) Fill(ctx context.Context, data apiclient.ExternalUser) (diags diag.Diagnostics) {
+func (m *OrganizationUserMappingResourceModel) Fill(ctx context.Context, data apiclient.ExternalUser) (diags diag.Diagnostics) {
 	m.InternalId = supertypes.NewStringValue(data.Id)
 	if !m.Organization.IsNull() && !m.Organization.IsUnknown() {
 		m.Id = supertypes.NewStringValue(tfutils.BuildTwoPartId(m.Organization.ValueString(), data.Id))
