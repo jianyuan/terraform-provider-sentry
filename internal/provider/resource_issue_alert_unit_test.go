@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
+	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 )
 
 func TestIssueAlertConditionModel_ToApi_emptyElement(t *testing.T) {
@@ -197,6 +198,82 @@ func TestReorderToMatchPrior_handlesDuplicateTypes(t *testing.T) {
 		if got[i] != want[i] {
 			t.Errorf("index %d: got %q, want %q", i, got[i], want[i])
 		}
+	}
+}
+
+// nullActionModel returns an IssueAlertActionModel with every action variant
+// set to null, so a caller can populate exactly one variant.
+func nullActionModel(ctx context.Context) IssueAlertActionModel {
+	return IssueAlertActionModel{
+		NotifyEmail:                  supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionNotifyEmailModel](ctx),
+		NotifyEvent:                  supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionNotifyEventModel](ctx),
+		NotifyEventService:           supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionNotifyEventServiceModel](ctx),
+		NotifyEventSentryApp:         supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionNotifyEventSentryAppModel](ctx),
+		OpsgenieNotifyTeam:           supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionOpsgenieNotifyTeam](ctx),
+		PagerDutyNotifyService:       supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionPagerDutyNotifyServiceModel](ctx),
+		SlackNotifyService:           supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionSlackNotifyServiceModel](ctx),
+		MsTeamsNotifyService:         supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionMsTeamsNotifyServiceModel](ctx),
+		DiscordNotifyService:         supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionDiscordNotifyServiceModel](ctx),
+		JiraCreateTicket:             supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionJiraCreateTicketModel](ctx),
+		JiraServerCreateTicket:       supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionJiraServerCreateTicketModel](ctx),
+		GitHubCreateTicket:           supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionGitHubCreateTicketModel](ctx),
+		GitHubEnterpriseCreateTicket: supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionGitHubEnterpriseCreateTicketModel](ctx),
+		AzureDevopsCreateTicket:      supertypes.NewSingleNestedObjectValueOfNull[IssueAlertActionAzureDevopsCreateTicketModel](ctx),
+	}
+}
+
+func slackAction(ctx context.Context, workspace, channel string) IssueAlertActionModel {
+	m := nullActionModel(ctx)
+	m.SlackNotifyService = supertypes.NewSingleNestedObjectValueOf(ctx, &IssueAlertActionSlackNotifyServiceModel{
+		Workspace: types.StringValue(workspace),
+		Channel:   sentrytypes.NewSlackChannelValue(channel),
+		ChannelId: types.StringValue("C123"),
+		Tags:      sentrytypes.StringSet{},
+	})
+	return m
+}
+
+// A slack_notify_service action key must ignore a leading "#" on the channel,
+// matching sentrytypes.SlackChannel's StringSemanticEquals. Sentry returns the
+// channel without the "#", so without this the prior and incoming keys diverge
+// and reorderToMatchPrior cannot pair them.
+func TestIssueAlertActionModelKey_slackChannelIgnoresHashPrefix(t *testing.T) {
+	ctx := context.Background()
+	key := issueAlertActionModelKey(ctx)
+
+	withHash := key(slackAction(ctx, "ws123", "#errors-prod"))
+	withoutHash := key(slackAction(ctx, "ws123", "errors-prod"))
+
+	if withHash != withoutHash {
+		t.Errorf("slack action key should ignore leading '#': %q != %q", withHash, withoutHash)
+	}
+}
+
+// End-to-end: when Sentry reorders actions AND returns channels without the
+// "#", reorderToMatchPrior must still restore the prior order.
+func TestReorderToMatchPrior_slackActionsWithNormalizedChannel(t *testing.T) {
+	ctx := context.Background()
+	keyFn := issueAlertActionModelKey(ctx)
+
+	prior := []IssueAlertActionModel{
+		slackAction(ctx, "A", "#errors-prod"),
+		slackAction(ctx, "B", "#errors-staging"),
+	}
+	// Sentry: reordered, and "#" stripped.
+	incoming := []IssueAlertActionModel{
+		slackAction(ctx, "B", "errors-staging"),
+		slackAction(ctx, "A", "errors-prod"),
+	}
+
+	got := reorderToMatchPrior(prior, incoming, keyFn)
+	if len(got) != 2 {
+		t.Fatalf("len mismatch: got %d, want 2", len(got))
+	}
+	if ws := got[0].SlackNotifyService.MustGet(ctx).Workspace.ValueString(); ws != "A" {
+		t.Errorf("index 0: got workspace %q, want A", ws)
+	}
+	if ws := got[1].SlackNotifyService.MustGet(ctx).Workspace.ValueString(); ws != "B" {
+		t.Errorf("index 1: got workspace %q, want B", ws)
 	}
 }
 
