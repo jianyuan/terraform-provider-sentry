@@ -1,0 +1,60 @@
+# Terraform Provider testing workflow.
+name: Acceptance Tests
+
+# This GitHub action runs your tests for each pull request and push.
+# Optionally, you can turn it on using a schedule for regular testing.
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  # We test at a regular interval to ensure we are alerted to something breaking due
+  # to an API change, even if the code did not change.
+  schedule:
+    - cron: "0 0 * * *"
+
+# Testing only needs permissions to read the repository contents.
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  # Run acceptance tests in a matrix with Terraform CLI versions
+  test:
+    name: Terraform Provider Acceptance Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: test
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        terraform:
+          - "1.15.*"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: "go.mod"
+          cache-dependency-path: "go.sum"
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: ${{ matrix.terraform }}
+          terraform_wrapper: false
+      - run: go mod download
+      - env:
+          TF_ACC: "1"
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_TEST_GITHUB_INSTALLATION_ID: ${{ secrets.SENTRY_TEST_GITHUB_INSTALLATION_ID }}
+          SENTRY_TEST_GITHUB_REPOSITORY_IDENTIFIER: ${{ secrets.SENTRY_TEST_GITHUB_REPOSITORY_IDENTIFIER }}
+          SENTRY_TEST_GITLAB_INSTALLATION_ID: ${{ secrets.SENTRY_TEST_GITLAB_INSTALLATION_ID }}
+          SENTRY_TEST_GITLAB_REPOSITORY_IDENTIFIER: ${{ secrets.SENTRY_TEST_GITLAB_REPOSITORY_IDENTIFIER }}
+          SENTRY_TEST_OPSGENIE_INTEGRATION_KEY: ${{ secrets.SENTRY_TEST_OPSGENIE_INTEGRATION_KEY }}
+          SENTRY_TEST_OPSGENIE_ORGANIZATION: ${{ secrets.SENTRY_TEST_OPSGENIE_ORGANIZATION }}
+          SENTRY_TEST_ORGANIZATION: ${{ secrets.SENTRY_TEST_ORGANIZATION }}
+          SENTRY_TEST_PAGERDUTY_ORGANIZATION: ${{ secrets.SENTRY_TEST_PAGERDUTY_ORGANIZATION }}
+          SENTRY_TEST_VSTS_INSTALLATION_ID: ${{ secrets.SENTRY_TEST_VSTS_INSTALLATION_ID }}
+          SENTRY_TEST_VSTS_REPOSITORY_IDENTIFIER: ${{ secrets.SENTRY_TEST_VSTS_REPOSITORY_IDENTIFIER }}
+        run: go test -v -cover -timeout 60m ./internal/provider/
