@@ -225,10 +225,12 @@ func nullActionModel(ctx context.Context) IssueAlertActionModel {
 func slackAction(ctx context.Context, workspace, channel string) IssueAlertActionModel {
 	m := nullActionModel(ctx)
 	m.SlackNotifyService = supertypes.NewSingleNestedObjectValueOf(ctx, &IssueAlertActionSlackNotifyServiceModel{
+		Name:      types.StringNull(),
 		Workspace: types.StringValue(workspace),
 		Channel:   sentrytypes.NewSlackChannelValue(channel),
 		ChannelId: types.StringValue("C123"),
-		Tags:      sentrytypes.StringSet{},
+		Tags:      sentrytypes.StringSetNull(),
+		Notes:     types.StringNull(),
 	})
 	return m
 }
