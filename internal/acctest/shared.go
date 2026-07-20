@@ -75,6 +75,8 @@ func teardownSharedTeam(ctx context.Context) error {
 	httpResp, err := SharedApiClient.DeleteOrganizationTeamWithResponse(ctx, TestOrganization, TestTeam.Id)
 	if err != nil {
 		return err
+	} else if httpResp.StatusCode() == http.StatusNotFound {
+		return nil
 	} else if httpResp.StatusCode() != http.StatusNoContent && httpResp.StatusCode() != http.StatusOK {
 		return fmt.Errorf("failed to delete shared team: status code=%d, body=%s", httpResp.StatusCode(), httpResp.Body)
 	}
@@ -85,6 +87,8 @@ func teardownSharedProject(ctx context.Context) error {
 	httpResp, err := SharedApiClient.DeleteOrganizationProjectWithResponse(ctx, TestOrganization, TestProject.Slug)
 	if err != nil {
 		return err
+	} else if httpResp.StatusCode() == http.StatusNotFound {
+		return nil
 	} else if httpResp.StatusCode() != http.StatusNoContent && httpResp.StatusCode() != http.StatusOK {
 		return fmt.Errorf("failed to delete shared project: status code=%d, body=%s", httpResp.StatusCode(), httpResp.Body)
 	}
