@@ -110,6 +110,426 @@ export default {
           computedOptionalRequired: "optional",
           attributes: [],
         },
+        {
+          name: "event_frequency_count",
+          type: "single_nested",
+          description:
+            "Number of events seen by the workflow exceeds a threshold within an interval. Acts as a WHEN trigger; Sentry's processor evaluates it asynchronously via the delayed-workflow path.",
+          computedOptionalRequired: "optional",
+          attributes: [
+            {
+              name: "value",
+              type: "int64",
+              description:
+                "A positive integer representing the number of events in an issue that must come in before the alert will fire.",
+              computedOptionalRequired: "required",
+              validators: ["int64validator.AtLeast(0)"],
+            },
+            {
+              name: "filters",
+              type: "list_nested",
+              description:
+                "A list of additional sub-filters to evaluate before the alert will fire.",
+              computedOptionalRequired: "computed_optional",
+              attributes: [
+                {
+                  name: "key",
+                  type: "string",
+                  description: "The key of the filter. Conflicts with `attribute`.",
+                  computedOptionalRequired: "optional",
+                  validators: [
+                    `stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("attribute"))`,
+                  ],
+                },
+                {
+                  name: "attribute",
+                  type: "string",
+                  description:
+                    "The attribute of the filter. Conflicts with `key`.",
+                  computedOptionalRequired: "optional",
+                  validators: [
+                    `stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("key"))`,
+                  ],
+                },
+                {
+                  name: "match",
+                  type: "string",
+                  description: "The match type of the filter.",
+                  computedOptionalRequired: "optional",
+                  enum: "sentrydata.MatchTypeIds",
+                },
+                {
+                  name: "value",
+                  type: "string",
+                  description: "The value of the filter.",
+                  computedOptionalRequired: "optional",
+                },
+              ],
+            },
+            {
+              name: "interval",
+              type: "string",
+              description:
+                "The time period in which to evaluate the value. e.g. Number of events in an issue is more than `value` in `interval`.",
+              computedOptionalRequired: "required",
+              enum: `sentrydata.EventFrequencyStandardIntervals`,
+            },
+          ],
+        },
+        {
+          name: "event_unique_user_frequency_count",
+          type: "single_nested",
+          description:
+            "Number of unique users affected by an issue exceeds a threshold within an interval. Acts as a WHEN trigger.",
+          computedOptionalRequired: "optional",
+          attributes: [
+            {
+              name: "value",
+              type: "int64",
+              description:
+                "A positive integer representing the number of users that must be affected before the alert will fire.",
+              computedOptionalRequired: "required",
+              validators: ["int64validator.AtLeast(0)"],
+            },
+            {
+              name: "filters",
+              type: "list_nested",
+              description:
+                "A list of additional sub-filters to evaluate before the alert will fire.",
+              computedOptionalRequired: "computed_optional",
+              attributes: [
+                {
+                  name: "key",
+                  type: "string",
+                  description: "The key of the filter. Conflicts with `attribute`.",
+                  computedOptionalRequired: "optional",
+                  validators: [
+                    `stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("attribute"))`,
+                  ],
+                },
+                {
+                  name: "attribute",
+                  type: "string",
+                  description:
+                    "The attribute of the filter. Conflicts with `key`.",
+                  computedOptionalRequired: "optional",
+                  validators: [
+                    `stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("key"))`,
+                  ],
+                },
+                {
+                  name: "match",
+                  type: "string",
+                  description: "The match type of the filter.",
+                  computedOptionalRequired: "optional",
+                  enum: "sentrydata.MatchTypeIds",
+                },
+                {
+                  name: "value",
+                  type: "string",
+                  description: "The value of the filter.",
+                  computedOptionalRequired: "optional",
+                },
+              ],
+            },
+            {
+              name: "interval",
+              type: "string",
+              description:
+                "The time period in which to evaluate the value. e.g. Number of users affected by an issue is more than `value` in `interval`.",
+              computedOptionalRequired: "required",
+              enum: `sentrydata.EventFrequencyStandardIntervals`,
+            },
+          ],
+        },
+        {
+          name: "event_frequency_percent",
+          type: "single_nested",
+          description:
+            "Percent change in event count compared to a previous interval. Acts as a WHEN trigger.",
+          computedOptionalRequired: "optional",
+          attributes: [
+            {
+              name: "value",
+              type: "int64",
+              description:
+                "A positive integer representing the number of events in an issue that must come in before the alert will fire.",
+              computedOptionalRequired: "required",
+              validators: ["int64validator.AtLeast(0)"],
+            },
+            {
+              name: "filters",
+              type: "list_nested",
+              description:
+                "A list of additional sub-filters to evaluate before the alert will fire.",
+              computedOptionalRequired: "computed_optional",
+              attributes: [
+                {
+                  name: "key",
+                  type: "string",
+                  description: "The key of the filter. Conflicts with `attribute`.",
+                  computedOptionalRequired: "optional",
+                  validators: [
+                    `stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("attribute"))`,
+                  ],
+                },
+                {
+                  name: "attribute",
+                  type: "string",
+                  description:
+                    "The attribute of the filter. Conflicts with `key`.",
+                  computedOptionalRequired: "optional",
+                  validators: [
+                    `stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("key"))`,
+                  ],
+                },
+                {
+                  name: "match",
+                  type: "string",
+                  description: "The match type of the filter.",
+                  computedOptionalRequired: "optional",
+                  enum: "sentrydata.MatchTypeIds",
+                },
+                {
+                  name: "value",
+                  type: "string",
+                  description: "The value of the filter.",
+                  computedOptionalRequired: "optional",
+                },
+              ],
+            },
+            {
+              name: "interval",
+              type: "string",
+              description:
+                "The time period in which to evaluate the value. e.g. Number of events in an issue is `comparisonInterval` percent higher `value` compared to `interval`.",
+              computedOptionalRequired: "required",
+              enum: `sentrydata.EventFrequencyStandardIntervals`,
+            },
+            {
+              name: "comparison_interval",
+              type: "string",
+              description: "The time period to compare against.",
+              computedOptionalRequired: "required",
+              enum: `sentrydata.EventFrequencyComparisonIntervals`,
+            },
+          ],
+        },
+        {
+          name: "event_unique_user_frequency_percent",
+          type: "single_nested",
+          description:
+            "Percent change in unique users affected by an issue compared to a previous interval. Acts as a WHEN trigger.",
+          computedOptionalRequired: "optional",
+          attributes: [
+            {
+              name: "value",
+              type: "int64",
+              description:
+                "A positive integer representing the percent increase in unique users that must be affected before the alert will fire.",
+              computedOptionalRequired: "required",
+              validators: ["int64validator.AtLeast(0)"],
+            },
+            {
+              name: "filters",
+              type: "list_nested",
+              description:
+                "A list of additional sub-filters to evaluate before the alert will fire.",
+              computedOptionalRequired: "computed_optional",
+              attributes: [
+                {
+                  name: "key",
+                  type: "string",
+                  description: "The key of the filter. Conflicts with `attribute`.",
+                  computedOptionalRequired: "optional",
+                  validators: [
+                    `stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("attribute"))`,
+                  ],
+                },
+                {
+                  name: "attribute",
+                  type: "string",
+                  description:
+                    "The attribute of the filter. Conflicts with `key`.",
+                  computedOptionalRequired: "optional",
+                  validators: [
+                    `stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("key"))`,
+                  ],
+                },
+                {
+                  name: "match",
+                  type: "string",
+                  description: "The match type of the filter.",
+                  computedOptionalRequired: "optional",
+                  enum: "sentrydata.MatchTypeIds",
+                },
+                {
+                  name: "value",
+                  type: "string",
+                  description: "The value of the filter.",
+                  computedOptionalRequired: "optional",
+                },
+              ],
+            },
+            {
+              name: "interval",
+              type: "string",
+              description:
+                "The time period in which to evaluate the value. e.g. Number of users affected by an issue is `comparison_interval` percent higher than `value` compared to `interval`.",
+              computedOptionalRequired: "required",
+              enum: `sentrydata.EventFrequencyStandardIntervals`,
+            },
+            {
+              name: "comparison_interval",
+              type: "string",
+              description: "The time period to compare against.",
+              computedOptionalRequired: "required",
+              enum: `sentrydata.EventFrequencyComparisonIntervals`,
+            },
+          ],
+        },
+        {
+          name: "percent_sessions_count",
+          type: "single_nested",
+          description:
+            "Percentage of sessions affected by an issue exceeds a threshold within an interval. Acts as a WHEN trigger.",
+          computedOptionalRequired: "optional",
+          attributes: [
+            {
+              name: "value",
+              type: "float64",
+              description:
+                "The percentage of sessions affected by an issue that must be exceeded before the alert will fire.",
+              computedOptionalRequired: "required",
+              validators: [
+                "float64validator.AtLeast(0)",
+                "float64validator.AtMost(100)",
+              ],
+            },
+            {
+              name: "filters",
+              type: "list_nested",
+              description:
+                "A list of additional sub-filters to evaluate before the alert will fire.",
+              computedOptionalRequired: "computed_optional",
+              attributes: [
+                {
+                  name: "key",
+                  type: "string",
+                  description: "The key of the filter. Conflicts with `attribute`.",
+                  computedOptionalRequired: "optional",
+                  validators: [
+                    `stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("attribute"))`,
+                  ],
+                },
+                {
+                  name: "attribute",
+                  type: "string",
+                  description:
+                    "The attribute of the filter. Conflicts with `key`.",
+                  computedOptionalRequired: "optional",
+                  validators: [
+                    `stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("key"))`,
+                  ],
+                },
+                {
+                  name: "match",
+                  type: "string",
+                  description: "The match type of the filter.",
+                  computedOptionalRequired: "optional",
+                  enum: "sentrydata.MatchTypeIds",
+                },
+                {
+                  name: "value",
+                  type: "string",
+                  description: "The value of the filter.",
+                  computedOptionalRequired: "optional",
+                },
+              ],
+            },
+            {
+              name: "interval",
+              type: "string",
+              description:
+                "The time period in which to evaluate the value. e.g. Percentage of sessions affected by an issue is more than `value` in `interval`.",
+              computedOptionalRequired: "required",
+              enum: `sentrydata.EventFrequencyPercentIntervals`,
+            },
+          ],
+        },
+        {
+          name: "percent_sessions_percent",
+          type: "single_nested",
+          description:
+            "Percent change in session-affected percentage compared to a previous interval. Acts as a WHEN trigger.",
+          computedOptionalRequired: "optional",
+          attributes: [
+            {
+              name: "value",
+              type: "float64",
+              description:
+                "The percent increase threshold for sessions affected by an issue.",
+              computedOptionalRequired: "required",
+              validators: ["float64validator.AtLeast(0)"],
+            },
+            {
+              name: "filters",
+              type: "list_nested",
+              description:
+                "A list of additional sub-filters to evaluate before the alert will fire.",
+              computedOptionalRequired: "computed_optional",
+              attributes: [
+                {
+                  name: "key",
+                  type: "string",
+                  description: "The key of the filter. Conflicts with `attribute`.",
+                  computedOptionalRequired: "optional",
+                  validators: [
+                    `stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("attribute"))`,
+                  ],
+                },
+                {
+                  name: "attribute",
+                  type: "string",
+                  description:
+                    "The attribute of the filter. Conflicts with `key`.",
+                  computedOptionalRequired: "optional",
+                  validators: [
+                    `stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("key"))`,
+                  ],
+                },
+                {
+                  name: "match",
+                  type: "string",
+                  description: "The match type of the filter.",
+                  computedOptionalRequired: "optional",
+                  enum: "sentrydata.MatchTypeIds",
+                },
+                {
+                  name: "value",
+                  type: "string",
+                  description: "The value of the filter.",
+                  computedOptionalRequired: "optional",
+                },
+              ],
+            },
+            {
+              name: "interval",
+              type: "string",
+              description:
+                "The time period in which to evaluate the value. e.g. Percentage of sessions affected by an issue is `comparisonInterval` percent higher `value` compared to `interval`.",
+              computedOptionalRequired: "required",
+              enum: `sentrydata.EventFrequencyPercentIntervals`,
+            },
+            {
+              name: "comparison_interval",
+              type: "string",
+              description: "The time period to compare against.",
+              computedOptionalRequired: "required",
+              enum: `sentrydata.EventFrequencyComparisonIntervals`,
+            },
+          ],
+        },
       ]),
     },
     {
@@ -268,7 +688,7 @@ export default {
                   description:
                     "A positive integer representing the number of users that must be affected before the alert will fire.",
                   computedOptionalRequired: "required",
-                  validators: ["int64validator.AtLeast(1)"],
+                  validators: ["int64validator.AtLeast(0)"],
                 },
                 {
                   name: "filters",
@@ -333,7 +753,7 @@ export default {
                   description:
                     "A positive integer representing the number of events in an issue that must come in before the alert will fire.",
                   computedOptionalRequired: "required",
-                  validators: ["int64validator.AtLeast(1)"],
+                  validators: ["int64validator.AtLeast(0)"],
                 },
                 {
                   name: "filters",
@@ -399,7 +819,7 @@ export default {
                   description:
                     "A positive integer representing the number of events in an issue that must come in before the alert will fire.",
                   computedOptionalRequired: "required",
-                  validators: ["int64validator.AtLeast(1)"],
+                  validators: ["int64validator.AtLeast(0)"],
                 },
                 {
                   name: "filters",
@@ -456,7 +876,7 @@ export default {
                   type: "string",
                   description: "The time period to compare against.",
                   computedOptionalRequired: "required",
-                  enum: `sentrydata.EventFrequencyStandardIntervals`,
+                  enum: `sentrydata.EventFrequencyComparisonIntervals`,
                 },
               ],
             },
@@ -472,7 +892,7 @@ export default {
                   description:
                     "A positive integer representing the number of events in an issue that must come in before the alert will fire.",
                   computedOptionalRequired: "required",
-                  validators: ["int64validator.AtLeast(1)"],
+                  validators: ["int64validator.AtLeast(0)"],
                 },
                 {
                   name: "interval",
@@ -480,7 +900,7 @@ export default {
                   description:
                     "The time period in which to evaluate the value. e.g. Percentage of sessions affected by an issue is more than `value` in `interval`.",
                   computedOptionalRequired: "required",
-                  enum: `sentrydata.EventFrequencyStandardIntervals`,
+                  enum: `sentrydata.EventFrequencyPercentIntervals`,
                 },
               ],
             },
@@ -496,7 +916,7 @@ export default {
                   description:
                     "A positive integer representing the number of events in an issue that must come in before the alert will fire.",
                   computedOptionalRequired: "required",
-                  validators: ["int64validator.AtLeast(1)"],
+                  validators: ["int64validator.AtLeast(0)"],
                 },
                 {
                   name: "filters",
@@ -546,14 +966,14 @@ export default {
                   description:
                     "The time period in which to evaluate the value. e.g. Percentage of sessions affected by an issue is `comparisonInterval` percent higher `value` compared to `interval`.",
                   computedOptionalRequired: "required",
-                  enum: `sentrydata.EventFrequencyStandardIntervals`,
+                  enum: `sentrydata.EventFrequencyPercentIntervals`,
                 },
                 {
                   name: "comparison_interval",
                   type: "string",
                   description: "The time period to compare against.",
                   computedOptionalRequired: "required",
-                  enum: `sentrydata.EventFrequencyStandardIntervals`,
+                  enum: `sentrydata.EventFrequencyComparisonIntervals`,
                 },
               ],
             },
