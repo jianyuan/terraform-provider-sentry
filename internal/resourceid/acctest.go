@@ -55,6 +55,23 @@ func ImportState3PartIDFunc(resourceAddress, attributeKey1, attributeKey2, attri
 	}
 }
 
+// ImportState4PartIDFunc constructs a 4-part state ID ("part1/part2/part3/part4") from resource attributes or Primary.ID.
+func ImportState4PartIDFunc(resourceAddress, attributeKey1, attributeKey2, attributeKey3, attributeKey4 string) func(s *terraform.State) (string, error) {
+	return func(s *terraform.State) (string, error) {
+		attrMap, err := getResourceAttributes(s, resourceAddress)
+		if err != nil {
+			return "", err
+		}
+
+		val1 := getAttributeOrID(attrMap, attributeKey1)
+		val2 := getAttributeOrID(attrMap, attributeKey2)
+		val3 := getAttributeOrID(attrMap, attributeKey3)
+		val4 := getAttributeOrID(attrMap, attributeKey4)
+
+		return BuildPath(val1, val2, val3, val4)
+	}
+}
+
 // ImportStateURL1PartIDFunc constructs a 1-part URL state ID by replacing placeholderA in urlTemplate.
 func ImportStateURL1PartIDFunc(resourceAddress, urlTemplate, placeholderA, attributeKeyA string) func(s *terraform.State) (string, error) {
 	return func(s *terraform.State) (string, error) {
@@ -101,6 +118,29 @@ func ImportStateURL3PartIDFunc(
 		valC := getAttributeOrID(attrMap, attributeKeyC)
 
 		return Build3(urlTemplate, placeholderA, valA, placeholderB, valB, placeholderC, valC)
+	}
+}
+
+// ImportStateURL4PartIDFunc constructs a 4-part URL state ID by replacing 4 placeholders in urlTemplate.
+func ImportStateURL4PartIDFunc(
+	resourceAddress, urlTemplate string,
+	placeholderA, attributeKeyA string,
+	placeholderB, attributeKeyB string,
+	placeholderC, attributeKeyC string,
+	placeholderD, attributeKeyD string,
+) func(s *terraform.State) (string, error) {
+	return func(s *terraform.State) (string, error) {
+		attrMap, err := getResourceAttributes(s, resourceAddress)
+		if err != nil {
+			return "", err
+		}
+
+		valA := getAttributeOrID(attrMap, attributeKeyA)
+		valB := getAttributeOrID(attrMap, attributeKeyB)
+		valC := getAttributeOrID(attrMap, attributeKeyC)
+		valD := getAttributeOrID(attrMap, attributeKeyD)
+
+		return Build4(urlTemplate, placeholderA, valA, placeholderB, valB, placeholderC, valC, placeholderD, valD)
 	}
 }
 

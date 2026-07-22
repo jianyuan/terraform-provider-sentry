@@ -6,13 +6,33 @@ import (
 	"strings"
 )
 
-// BuildPath constructs a short slash-separated ID string ("partA/partB").
+// BuildPath1 constructs a 1-part ID string ("partA").
+func BuildPath1(partA string) (string, error) {
+	return BuildPath(partA)
+}
+
+// BuildPath2 constructs a 2-part ID string ("partA/partB").
+func BuildPath2(partA, partB string) (string, error) {
+	return BuildPath(partA, partB)
+}
+
+// BuildPath3 constructs a 3-part ID string ("partA/partB/partC").
+func BuildPath3(partA, partB, partC string) (string, error) {
+	return BuildPath(partA, partB, partC)
+}
+
+// BuildPath joins any number of parts into a slash-separated string ("partA/partB/...").
 func BuildPath(parts ...string) (string, error) {
+	if len(parts) == 0 {
+		return "", fmt.Errorf("at least one part must be provided")
+	}
+
 	for i, p := range parts {
 		if strings.TrimSpace(p) == "" {
 			return "", fmt.Errorf("part at index %d cannot be empty", i)
 		}
 	}
+
 	return strings.Join(parts, "/"), nil
 }
 
@@ -35,6 +55,16 @@ func Build3(rawURLTemplate, labelA, valueA, labelB, valueB, labelC, valueC strin
 		labelA: valueA,
 		labelB: valueB,
 		labelC: valueC,
+	})
+}
+
+// Build4 generates a URL replacing labelA, labelB, labelC, and labelD in rawURLTemplate.
+func Build4(rawURLTemplate, labelA, valueA, labelB, valueB, labelC, valueC, labelD, valueD string) (string, error) {
+	return Build(rawURLTemplate, map[string]string{
+		labelA: valueA,
+		labelB: valueB,
+		labelC: valueC,
+		labelD: valueD,
 	})
 }
 

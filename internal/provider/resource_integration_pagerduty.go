@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
-	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
+	intresource "github.com/jianyuan/terraform-provider-sentry/internal/resource"
 )
 
 type IntegrationPagerDutyModel struct {
@@ -411,5 +411,5 @@ func (r *IntegrationPagerDuty) Delete(ctx context.Context, req resource.DeleteRe
 }
 
 func (r *IntegrationPagerDuty) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	tfutils.ImportStateThreePartId(ctx, "organization", "integration_id", req, resp)
+	intresource.ImportState3PartPath("organization", "integration_id", "id")(ctx, req, resp)
 }

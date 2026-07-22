@@ -7,8 +7,65 @@ import (
 	"strings"
 )
 
-// Regex to find {placeholder} inside URLs
-var placeholderRegex = regexp.MustCompile(`\{([a-zA-Z0-9_-]+)\}`)
+// ParsePath extracts 1 identifier part from a short key ("partA").
+func ParsePath(rawInput, labelA string) (string, error) {
+	parts, err := SplitPath(rawInput, labelA)
+	if err != nil {
+		return "", err
+	}
+	return parts[0], nil
+}
+
+// Split2Path extracts 2 identifier parts from a short key ("partA/partB").
+func Split2Path(rawInput, labelA, labelB string) (string, string, error) {
+	parts, err := SplitPath(rawInput, labelA, labelB)
+	if err != nil {
+		return "", "", err
+	}
+	return parts[0], parts[1], nil
+}
+
+// Split3Path extracts 3 identifier parts from a short key ("partA/partB/partC").
+func Split3Path(rawInput, labelA, labelB, labelC string) (string, string, string, error) {
+	parts, err := SplitPath(rawInput, labelA, labelB, labelC)
+	if err != nil {
+		return "", "", "", err
+	}
+	return parts[0], parts[1], parts[2], nil
+}
+
+// Split4Path extracts 4 identifier parts from a short key ("partA/partB/partC/partD").
+func Split4Path(rawInput, labelA, labelB, labelC, labelD string) (string, string, string, string, error) {
+	parts, err := SplitPath(rawInput, labelA, labelB, labelC, labelD)
+	if err != nil {
+		return "", "", "", "", err
+	}
+	return parts[0], parts[1], parts[2], parts[3], nil
+}
+
+// SplitPath extracts N slash-separated parts given expected label names.
+func SplitPath(rawInput string, labels ...string) ([]string, error) {
+	expectedCount := len(labels)
+	input := strings.TrimSpace(rawInput)
+	expectedFormat := strings.Join(labels, "/")
+
+	if input == "" {
+		return nil, fmt.Errorf("import ID cannot be empty, expected format %s", expectedFormat)
+	}
+
+	parts := strings.Split(input, "/")
+	if len(parts) != expectedCount {
+		return nil, fmt.Errorf("unexpected ID format (%s), expected %s", rawInput, expectedFormat)
+	}
+
+	for i, part := range parts {
+		if strings.TrimSpace(part) == "" {
+			return nil, fmt.Errorf("unexpected ID format (%s), segment for %s cannot be empty", rawInput, labels[i])
+		}
+	}
+
+	return parts, nil
+}
 
 // Parse extracts 1 identifier part matching the specified label token in rawURLTemplate.
 func Parse(rawInput, rawURLTemplate, labelA string) (string, error) {
@@ -35,6 +92,15 @@ func Split3(rawInput, rawURLTemplate, labelA, labelB, labelC string) (string, st
 		return "", "", "", err
 	}
 	return parts[0], parts[1], parts[2], nil
+}
+
+// Split4 extracts 4 identifier parts matching labelA, labelB, labelC, and labelD in rawURLTemplate.
+func Split4(rawInput, rawURLTemplate, labelA, labelB, labelC, labelD string) (string, string, string, string, error) {
+	parts, err := Split(rawInput, rawURLTemplate, labelA, labelB, labelC, labelD)
+	if err != nil {
+		return "", "", "", "", err
+	}
+	return parts[0], parts[1], parts[2], parts[3], nil
 }
 
 // Split extracts N identifier parts matching the requested labels in order.
@@ -130,6 +196,9 @@ func Split(rawInput, rawURLTemplate string, labels ...string) ([]string, error) 
 
 	return parts, nil
 }
+
+// Regex to find {placeholder} inside URLs
+var placeholderRegex = regexp.MustCompile(`\{([a-zA-Z0-9_-]+)\}`)
 
 // Replaces `{label}` with `tmpl-placeholder-label` so url.Parse accepts the host component
 func sanitizeTemplateForParsing(tmpl string) string {

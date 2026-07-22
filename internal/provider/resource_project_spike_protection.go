@@ -10,7 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
-	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
+	intresource "github.com/jianyuan/terraform-provider-sentry/internal/resource"
+	"github.com/jianyuan/terraform-provider-sentry/internal/resourceid"
 )
 
 type ProjectSpikeProtectionResourceModel struct {
@@ -21,7 +22,12 @@ type ProjectSpikeProtectionResourceModel struct {
 }
 
 func (data *ProjectSpikeProtectionResourceModel) Fill(project apiclient.Project) error {
-	data.Id = types.StringValue(tfutils.BuildTwoPartId(project.Organization.Slug, project.Slug))
+	if id, err := resourceid.BuildPath2(project.Organization.Slug, project.Slug); err != nil {
+		return err
+	} else {
+		data.Id = types.StringValue(id)
+	}
+
 	data.Organization = types.StringValue(project.Organization.Slug)
 	data.Project = types.StringValue(project.Slug)
 	if disabled, ok := project.Options["quotas:spike-protection-disabled"].(bool); ok {
@@ -105,7 +111,12 @@ func (r *ProjectSpikeProtectionResource) Create(ctx context.Context, req resourc
 		}
 	}
 
-	data.Id = types.StringValue(tfutils.BuildTwoPartId(data.Organization.ValueString(), data.Project.ValueString()))
+	id, err := resourceid.BuildPath2(data.Organization.ValueString(), data.Project.ValueString())
+	if err != nil {
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
+		return
+	}
+	data.Id = types.StringValue(id)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -217,18 +228,6 @@ func (r *ProjectSpikeProtectionResource) Delete(ctx context.Context, req resourc
 }
 
 func (r *ProjectSpikeProtectionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	organization, project, err := tfutils.SplitTwoPartId(req.ID, "organization", "project-slug")
-	if err != nil {
-		resp.Diagnostics.Append(diagutils.NewFillError(err))
-		return
-	}
-	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("organization"), organization,
-	)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("project"), project,
-	)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("id"), req.ID,
-	)...)
+	intresource.ImportState2PartPath("organization", "project")(ctx, req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

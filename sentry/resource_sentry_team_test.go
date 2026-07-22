@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
-	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/resourceid"
 )
 
 func TestAccSentryTeam_basic(t *testing.T) {
@@ -113,7 +113,7 @@ func testAccSentryTeamImportStateIdFunc(n string) resource.ImportStateIdFunc {
 		}
 		org := rs.Primary.Attributes["organization"]
 		teamSlug := rs.Primary.ID
-		return tfutils.BuildTwoPartId(org, teamSlug), nil
+		return resourceid.BuildPath2(org, teamSlug)
 	}
 }
 

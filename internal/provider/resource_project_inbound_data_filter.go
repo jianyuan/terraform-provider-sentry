@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
-	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/resourceid"
 )
 
 type ProjectInboundDataFilterResourceModel struct {
@@ -29,7 +29,11 @@ type ProjectInboundDataFilterResourceModel struct {
 }
 
 func (m *ProjectInboundDataFilterResourceModel) Fill(organization string, project string, filterId string, filter sentry.ProjectInboundDataFilter) error {
-	m.Id = types.StringValue(tfutils.BuildThreePartId(organization, project, filterId))
+	if id, err := resourceid.BuildPath3(organization, project, filterId); err != nil {
+		return err
+	} else {
+		m.Id = types.StringValue(id)
+	}
 	m.Organization = types.StringValue(organization)
 	m.Project = types.StringValue(project)
 	m.FilterId = types.StringValue(filterId)
@@ -126,7 +130,12 @@ func (r *ProjectInboundDataFilterResource) Create(ctx context.Context, req resou
 		return
 	}
 
-	data.Id = types.StringValue(tfutils.BuildThreePartId(data.Organization.ValueString(), data.Project.ValueString(), data.FilterId.ValueString()))
+	if id, err := resourceid.BuildPath3(data.Organization.ValueString(), data.Project.ValueString(), data.FilterId.ValueString()); err != nil {
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
+		return
+	} else {
+		data.Id = types.StringValue(id)
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -205,7 +214,12 @@ func (r *ProjectInboundDataFilterResource) Update(ctx context.Context, req resou
 		return
 	}
 
-	plan.Id = types.StringValue(tfutils.BuildThreePartId(plan.Organization.ValueString(), plan.Project.ValueString(), plan.FilterId.ValueString()))
+	if id, err := resourceid.BuildPath3(plan.Organization.ValueString(), plan.Project.ValueString(), plan.FilterId.ValueString()); err != nil {
+		resp.Diagnostics.Append(diagutils.NewFillError(err))
+		return
+	} else {
+		plan.Id = types.StringValue(id)
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -237,7 +251,7 @@ func (r *ProjectInboundDataFilterResource) Delete(ctx context.Context, req resou
 }
 
 func (r *ProjectInboundDataFilterResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	organization, project, filterID, err := tfutils.SplitThreePartId(req.ID, "organization", "project-slug", "filter-id")
+	organization, project, filterID, err := resourceid.Split3Path(req.ID, "organization", "project-slug", "filter-id")
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewImportError(err))
 		return

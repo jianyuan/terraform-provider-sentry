@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"strings"
 	"testing"
@@ -12,12 +11,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 	"github.com/jianyuan/terraform-provider-sentry/internal/must"
-	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/resourceid"
 )
 
 func init() {
@@ -118,19 +116,9 @@ func TestAccOrganizationRepositoryResource_GitHub(t *testing.T) {
 				},
 			},
 			{
-				ResourceName: rn,
-				ImportState:  true,
-				ImportStateIdFunc: func(s *terraform.State) (string, error) {
-					rs, ok := s.RootModule().Resources[rn]
-					if !ok {
-						return "", fmt.Errorf("not found: %s", rn)
-					}
-					organization := rs.Primary.Attributes["organization"]
-					integrationType := rs.Primary.Attributes["integration_type"]
-					integrationId := rs.Primary.Attributes["integration_id"]
-					id := rs.Primary.ID
-					return tfutils.BuildFourPartId(organization, integrationType, integrationId, id), nil
-				},
+				ResourceName:      rn,
+				ImportState:       true,
+				ImportStateIdFunc: resourceid.ImportState4PartIDFunc(rn, "organization", "integration_type", "integration_id", "id"),
 				ImportStateVerify: true,
 			},
 		},
@@ -170,19 +158,9 @@ func TestAccOrganizationRepositoryResource_GitLab(t *testing.T) {
 				},
 			},
 			{
-				ResourceName: rn,
-				ImportState:  true,
-				ImportStateIdFunc: func(s *terraform.State) (string, error) {
-					rs, ok := s.RootModule().Resources[rn]
-					if !ok {
-						return "", fmt.Errorf("not found: %s", rn)
-					}
-					organization := rs.Primary.Attributes["organization"]
-					integrationType := rs.Primary.Attributes["integration_type"]
-					integrationId := rs.Primary.Attributes["integration_id"]
-					id := rs.Primary.ID
-					return tfutils.BuildFourPartId(organization, integrationType, integrationId, id), nil
-				},
+				ResourceName:      rn,
+				ImportState:       true,
+				ImportStateIdFunc: resourceid.ImportState4PartIDFunc(rn, "organization", "integration_type", "integration_id", "id"),
 				ImportStateVerify: true,
 			},
 		},
@@ -222,19 +200,9 @@ func TestAccOrganizationRepositoryResource_VSTS(t *testing.T) {
 				},
 			},
 			{
-				ResourceName: rn,
-				ImportState:  true,
-				ImportStateIdFunc: func(s *terraform.State) (string, error) {
-					rs, ok := s.RootModule().Resources[rn]
-					if !ok {
-						return "", fmt.Errorf("not found: %s", rn)
-					}
-					organization := rs.Primary.Attributes["organization"]
-					integrationType := rs.Primary.Attributes["integration_type"]
-					integrationId := rs.Primary.Attributes["integration_id"]
-					id := rs.Primary.ID
-					return tfutils.BuildFourPartId(organization, integrationType, integrationId, id), nil
-				},
+				ResourceName:      rn,
+				ImportState:       true,
+				ImportStateIdFunc: resourceid.ImportState4PartIDFunc(rn, "organization", "integration_type", "integration_id", "id"),
 				ImportStateVerify: true,
 			},
 		},
