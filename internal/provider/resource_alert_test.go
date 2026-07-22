@@ -224,9 +224,14 @@ func TestAccAlertResource_basic(t *testing.T) {
 				},
 			},
 			{
-				ResourceName:      rn,
-				ImportState:       true,
-				ImportStateIdFunc: resourceid.ImportStateURL2PartIDFunc(rn, "https://{organization}.sentry.io/monitors/alerts/{id}/", "organization", "organization", "id", "id"),
+				ResourceName: rn,
+				ImportState:  true,
+				ImportStateIdFunc: resourceid.ImportStateURL2PartIDFunc(
+					rn,
+					"https://{organization}.sentry.io/monitors/alerts/{id}/",
+					"organization", "organization",
+					"id", "id",
+				),
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
 					"action_filters.0.actions.3.slack.channel_name", // Sentry API returns the channel name with `#` prefix

@@ -384,9 +384,14 @@ func TestAccCronMonitorResource_basic(t *testing.T) {
 				ImportStateVerifyIgnore: []string{"project"},
 			},
 			{
-				ResourceName:            rn,
-				ImportState:             true,
-				ImportStateIdFunc:       resourceid.ImportStateURL2PartIDFunc(rn, "https://{organization}.sentry.io/monitors/{id}/", "organization", "organization", "id", "id"),
+				ResourceName: rn,
+				ImportState:  true,
+				ImportStateIdFunc: resourceid.ImportStateURL2PartIDFunc(
+					rn,
+					"https://{organization}.sentry.io/monitors/{id}/",
+					"organization", "organization",
+					"id", "id",
+				),
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"project"},
 			},
