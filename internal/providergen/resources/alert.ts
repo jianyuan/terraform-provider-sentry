@@ -25,7 +25,10 @@ export default {
   generate: {
     modelFillers: false,
   },
-  importStateAttributes: ["organization", "id"],
+  import: {
+    url: "https://{organization}.sentry.io/monitors/alerts/{id}/",
+    targetAttributes: ["organization", "id"],
+  },
   attributes: [
     {
       name: "id",

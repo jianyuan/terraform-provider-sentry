@@ -1,4 +1,6 @@
+# import using the full URL:
+terraform import sentry_metric_monitor.default https://{organization}.sentry.io/monitors/{id}/
+
 # import using the organization and monitor id from the URL:
-# https://[org-slug].sentry.io/monitors/[monitor-id]/
-# project slug is also required
-terraform import sentry_metric_monitor.default org-slug/project-slug/monitor-id
+# https://{organization}.sentry.io/monitors/{id}/
+terraform import sentry_metric_monitor.default {organization}/{id}

@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/jianyuan/terraform-provider-sentry/internal/resourceid"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
@@ -303,15 +304,14 @@ func (r *UptimeMonitorResource) Delete(ctx context.Context, req resource.DeleteR
 }
 
 func (r *UptimeMonitorResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	organization, project, id, err := tfutils.SplitThreePartId(req.ID, "organization", "project", "id")
+	valueA, valueB, err := resourceid.Split2(req.ID, "https://{organization}.sentry.io/monitors/{id}/", "organization", "id")
 	if err != nil {
-		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Error parsing ID: %s", err.Error()))
+		resp.Diagnostics.AddError("Parsing Resource ID", err.Error())
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization"), organization)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("project"), project)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization"), valueA)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), valueB)...)
 }
 
 type UptimeMonitorResourceModel struct {

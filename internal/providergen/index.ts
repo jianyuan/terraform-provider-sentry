@@ -640,7 +640,7 @@ import (
 
 var _ resource.Resource = &${resourceName}{}
 ${
-  resource.importStateAttributes
+  resource.import
     ? `var _ resource.ResourceWithImportState = &${resourceName}{}`
     : ""
 }
@@ -877,43 +877,103 @@ func (r *${resourceName}) Delete(ctx context.Context, req resource.DeleteRequest
   }
 }
 
-${match(resource.importStateAttributes)
-  .with([P.any], (attributes) => {
-    return `
+${match(resource.import)
+  .with(
+    { url: P.nonNullable, targetAttributes: [P.any] },
+    ({ url, targetAttributes }) => {
+      return `
         func (r *${resourceName}) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-          resource.ImportStatePassthroughID(ctx, path.Root("${attributes[0]}"), req, resp)
-        }
-      `;
-  })
-  .with([P.any, P.any], (attributes) => {
-    return `
-        func (r *${resourceName}) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-          ${camelize(attributes[0], true)}, ${camelize(attributes[1], true)}, err := tfutils.SplitTwoPartId(req.ID, "${attributes[0]}", "${attributes[1]}")
+          valueA, err := resourceid.Parse(req.ID, "${url}", "${targetAttributes[0]}")
           if err != nil {
-            resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Error parsing ID: %s", err.Error()))
+            resp.Diagnostics.AddError("Parsing Resource ID", err.Error())
             return
           }
 
-          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${attributes[0]}"), ${camelize(attributes[0], true)})...)
-          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${attributes[1]}"), ${camelize(attributes[1], true)})...)
+          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${targetAttributes[0]}"), valueA)...)
         }
       `;
-  })
-  .with([P.any, P.any, P.any], (attributes) => {
-    return `
+    },
+  )
+  .with(
+    { url: P.nullish, targetAttributes: [P.any] },
+    ({ targetAttributes }) => {
+      return `
         func (r *${resourceName}) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-          ${camelize(attributes[0], true)}, ${camelize(attributes[1], true)}, ${camelize(attributes[2], true)}, err := tfutils.SplitThreePartId(req.ID, "${attributes[0]}", "${attributes[1]}", "${attributes[2]}")
+          resource.ImportStatePassthroughID(ctx, path.Root("${targetAttributes[0]}"), req, resp)
+        }
+      `;
+    },
+  )
+  .with(
+    { url: P.nonNullable, targetAttributes: [P.any, P.any] },
+    ({ url, targetAttributes }) => {
+      return `
+        func (r *${resourceName}) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+          valueA, valueB, err := resourceid.Split2(req.ID, "${url}", "${targetAttributes[0]}", "${targetAttributes[1]}")
           if err != nil {
-            resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Error parsing ID: %s", err.Error()))
+            resp.Diagnostics.AddError("Parsing Resource ID", err.Error())
             return
           }
 
-          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${attributes[0]}"), ${camelize(attributes[0], true)})...)
-          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${attributes[1]}"), ${camelize(attributes[1], true)})...)
-          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${attributes[2]}"), ${camelize(attributes[2], true)})...)
+          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${targetAttributes[0]}"), valueA)...)
+          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${targetAttributes[1]}"), valueB)...)
         }
       `;
-  })
+    },
+  )
+  .with(
+    { url: P.nullish, targetAttributes: [P.any, P.any] },
+    ({ targetAttributes }) => {
+      return `
+        func (r *${resourceName}) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+          valueA, valueB, err := tfutils.SplitTwoPartId(req.ID, "${targetAttributes[0]}", "${targetAttributes[1]}")
+          if err != nil {
+            resp.Diagnostics.AddError("Parsing Resource ID", err.Error())
+            return
+          }
+
+          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${targetAttributes[0]}"), valueA)...)
+          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${targetAttributes[1]}"), valueB)...)
+        }
+      `;
+    },
+  )
+  .with(
+    { url: P.nonNullable, targetAttributes: [P.any, P.any, P.any] },
+    ({ url, targetAttributes }) => {
+      return `
+        func (r *${resourceName}) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+          valueA, valueB, valueC, err := resourceid.Split3(req.ID, "${url}", "${targetAttributes[0]}", "${targetAttributes[1]}", "${targetAttributes[2]}")
+          if err != nil {
+            resp.Diagnostics.AddError("Parsing Resource ID", err.Error())
+            return
+          }
+
+          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${targetAttributes[0]}"), valueA)...)
+          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${targetAttributes[1]}"), valueB)...)
+          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${targetAttributes[2]}"), valueC)...)
+        }
+      `;
+    },
+  )
+  .with(
+    { url: P.nullish, targetAttributes: [P.any, P.any, P.any] },
+    ({ targetAttributes }) => {
+      return `
+        func (r *${resourceName}) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+          valueA, valueB, valueC, err := tfutils.SplitThreePartId(req.ID, "${targetAttributes[0]}", "${targetAttributes[1]}", "${targetAttributes[2]}")
+          if err != nil {
+            resp.Diagnostics.AddError("Parsing Resource ID", err.Error())
+            return
+          }
+
+          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${targetAttributes[0]}"), valueA)...)
+          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${targetAttributes[1]}"), valueB)...)
+          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${targetAttributes[2]}"), valueC)...)
+        }
+      `;
+    },
+  )
   .otherwise(() => "")}
 
 ${generateResourceModel({ resource })}
