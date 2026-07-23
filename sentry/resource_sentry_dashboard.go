@@ -11,8 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
+	"github.com/jianyuan/terraform-provider-sentry/internal/resourceid"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
-	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
 
 func resourceSentryDashboard() *schema.Resource {
@@ -257,7 +257,11 @@ func resourceSentryDashboardCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(tfutils.BuildTwoPartId(org, sentry.StringValue(dashboard.ID)))
+	id, err := resourceid.BuildPath2(org, sentry.StringValue(dashboard.ID))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	d.SetId(id)
 	return resourceSentryDashboardRead(ctx, d, meta)
 }
 
@@ -288,7 +292,11 @@ func resourceSentryDashboardRead(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	d.SetId(tfutils.BuildTwoPartId(org, sentry.StringValue(dashboard.ID)))
+	id, err := resourceid.BuildPath2(org, sentry.StringValue(dashboard.ID))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	d.SetId(id)
 	err = errors.Join(
 		d.Set("organization", org),
 		d.Set("title", dashboard.Title),
@@ -335,7 +343,7 @@ func resourceSentryDashboardDelete(ctx context.Context, d *schema.ResourceData, 
 }
 
 func splitSentryDashboardID(id string) (org string, dashboardID string, err error) {
-	org, dashboardID, err = tfutils.SplitTwoPartId(id, "organization-slug", "dashboard-id")
+	org, dashboardID, err = resourceid.Split2Path(id, "organization-slug", "dashboard-id")
 	return
 }
 

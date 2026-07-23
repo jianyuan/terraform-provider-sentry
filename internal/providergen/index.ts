@@ -636,11 +636,12 @@ import (
   supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
   fint64validator "github.com/orange-cloudavenue/terraform-plugin-framework-validators/int64validator"
   fstringvalidator "github.com/orange-cloudavenue/terraform-plugin-framework-validators/stringvalidator"
+  intresource "github.com/jianyuan/terraform-provider-sentry/internal/resource"
 )
 
 var _ resource.Resource = &${resourceName}{}
 ${
-  resource.importStateAttributes
+  resource.import
     ? `var _ resource.ResourceWithImportState = &${resourceName}{}`
     : ""
 }
@@ -877,43 +878,79 @@ func (r *${resourceName}) Delete(ctx context.Context, req resource.DeleteRequest
   }
 }
 
-${match(resource.importStateAttributes)
-  .with([P.any], (attributes) => {
-    return `
+${match(resource.import)
+  .with(
+    { url: P.nonNullable, targetAttributes: [P.any] },
+    ({ url, targetAttributes }) => {
+      return `
         func (r *${resourceName}) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-          resource.ImportStatePassthroughID(ctx, path.Root("${attributes[0]}"), req, resp)
+          intresource.ImportState1Part(
+            "${url}",
+            "${targetAttributes[0]}", "${targetAttributes[0]}",
+          )(ctx, req, resp)
         }
       `;
-  })
-  .with([P.any, P.any], (attributes) => {
-    return `
+    },
+  )
+  .with(
+    { url: P.nullish, targetAttributes: [P.any] },
+    ({ targetAttributes }) => {
+      return `
         func (r *${resourceName}) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-          ${camelize(attributes[0], true)}, ${camelize(attributes[1], true)}, err := tfutils.SplitTwoPartId(req.ID, "${attributes[0]}", "${attributes[1]}")
-          if err != nil {
-            resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Error parsing ID: %s", err.Error()))
-            return
-          }
-
-          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${attributes[0]}"), ${camelize(attributes[0], true)})...)
-          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${attributes[1]}"), ${camelize(attributes[1], true)})...)
+          intresource.ImportState1PartPassthrough("${targetAttributes[0]}")(ctx, req, resp)
         }
       `;
-  })
-  .with([P.any, P.any, P.any], (attributes) => {
-    return `
+    },
+  )
+  .with(
+    { url: P.nonNullable, targetAttributes: [P.any, P.any] },
+    ({ url, targetAttributes }) => {
+      return `
         func (r *${resourceName}) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-          ${camelize(attributes[0], true)}, ${camelize(attributes[1], true)}, ${camelize(attributes[2], true)}, err := tfutils.SplitThreePartId(req.ID, "${attributes[0]}", "${attributes[1]}", "${attributes[2]}")
-          if err != nil {
-            resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Error parsing ID: %s", err.Error()))
-            return
-          }
-
-          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${attributes[0]}"), ${camelize(attributes[0], true)})...)
-          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${attributes[1]}"), ${camelize(attributes[1], true)})...)
-          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${attributes[2]}"), ${camelize(attributes[2], true)})...)
+          intresource.ImportState2Part(
+            "${url}",
+            "${targetAttributes[0]}", "${targetAttributes[0]}",
+            "${targetAttributes[1]}", "${targetAttributes[1]}",
+          )(ctx, req, resp)
         }
       `;
-  })
+    },
+  )
+  .with(
+    { url: P.nullish, targetAttributes: [P.any, P.any] },
+    ({ targetAttributes }) => {
+      return `
+        func (r *${resourceName}) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+          intresource.ImportState2PartPath("${targetAttributes[0]}", "${targetAttributes[1]}")(ctx, req, resp)
+        }
+      `;
+    },
+  )
+  .with(
+    { url: P.nonNullable, targetAttributes: [P.any, P.any, P.any] },
+    ({ url, targetAttributes }) => {
+      return `
+        func (r *${resourceName}) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+          intresource.ImportState3Part(
+            "${url}",
+            "${targetAttributes[0]}", "${targetAttributes[0]}",
+            "${targetAttributes[1]}", "${targetAttributes[1]}",
+            "${targetAttributes[2]}", "${targetAttributes[2]}",
+          )(ctx, req, resp)
+        }
+      `;
+    },
+  )
+  .with(
+    { url: P.nullish, targetAttributes: [P.any, P.any, P.any] },
+    ({ targetAttributes }) => {
+      return `
+        func (r *${resourceName}) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+          intresource.ImportState3PartPath("${targetAttributes[0]}", "${targetAttributes[1]}", "${targetAttributes[2]}")(ctx, req, resp)
+        }
+      `;
+    },
+  )
   .otherwise(() => "")}
 
 ${generateResourceModel({ resource })}

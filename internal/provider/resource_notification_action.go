@@ -14,8 +14,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
+	intresource "github.com/jianyuan/terraform-provider-sentry/internal/resource"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
-	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
 
 type NotificationActionResourceModel struct {
@@ -291,5 +291,5 @@ func (r *NotificationActionResource) Delete(ctx context.Context, req resource.De
 }
 
 func (r *NotificationActionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	tfutils.ImportStateTwoPartId(ctx, "organization", req, resp)
+	intresource.ImportState2PartPath("organization", "id")(ctx, req, resp)
 }

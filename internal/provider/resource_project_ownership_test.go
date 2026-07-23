@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
+	"github.com/jianyuan/terraform-provider-sentry/internal/resourceid"
 )
 
 func TestAccProjectOwnershipResource(t *testing.T) {
@@ -32,6 +33,25 @@ func TestAccProjectOwnershipResource(t *testing.T) {
 					resource.TestCheckResourceAttr(rn, "auto_assignment", autoAssignment),
 					resource.TestCheckResourceAttr(rn, "raw", raw),
 				),
+			},
+			{
+				ResourceName:                         rn,
+				ImportState:                          true,
+				ImportStateIdFunc:                    resourceid.ImportState2PartIDFunc(rn, "organization", "project"),
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "project",
+			},
+			{
+				ResourceName: rn,
+				ImportState:  true,
+				ImportStateIdFunc: resourceid.ImportStateURL2PartIDFunc(
+					rn,
+					"https://{organization}.sentry.io/projects/{project}/",
+					"organization", "organization",
+					"project", "project",
+				),
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "project",
 			},
 		},
 	})

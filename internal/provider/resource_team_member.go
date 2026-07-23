@@ -19,7 +19,7 @@ import (
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
-	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/resourceid"
 	"github.com/samber/lo"
 )
 
@@ -35,7 +35,11 @@ type TeamMemberResourceModel struct {
 }
 
 func (data *TeamMemberResourceModel) Fill(organization string, team string, memberId string, role *string, effectiveRole string) error {
-	data.Id = types.StringValue(tfutils.BuildThreePartId(organization, team, memberId))
+	if id, err := resourceid.BuildPath3(organization, team, memberId); err != nil {
+		return err
+	} else {
+		data.Id = types.StringValue(id)
+	}
 	data.Organization = types.StringValue(organization)
 	data.MemberId = types.StringValue(memberId)
 	data.Team = types.StringValue(team)
@@ -326,7 +330,7 @@ func (r *TeamMemberResource) Delete(ctx context.Context, req resource.DeleteRequ
 }
 
 func (r *TeamMemberResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	organization, team, memberId, err := tfutils.SplitThreePartId(req.ID, "organization", "team-slug", "member-id")
+	organization, team, memberId, err := resourceid.Split3Path(req.ID, "organization", "team-slug", "member-id")
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewImportError(err))
 		return

@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/resourceid"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
 )
 
@@ -216,7 +217,21 @@ func TestAccAlertResource_basic(t *testing.T) {
 			{
 				ResourceName:      rn,
 				ImportState:       true,
-				ImportStateIdFunc: acctest.TwoPartImportStateIdFunc(rn, "organization"),
+				ImportStateIdFunc: resourceid.ImportState2PartIDFunc(rn, "organization", "id"),
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"action_filters.0.actions.3.slack.channel_name", // Sentry API returns the channel name with `#` prefix
+				},
+			},
+			{
+				ResourceName: rn,
+				ImportState:  true,
+				ImportStateIdFunc: resourceid.ImportStateURL2PartIDFunc(
+					rn,
+					"https://{organization}.sentry.io/monitors/alerts/{id}/",
+					"organization", "organization",
+					"id", "id",
+				),
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
 					"action_filters.0.actions.3.slack.channel_name", // Sentry API returns the channel name with `#` prefix

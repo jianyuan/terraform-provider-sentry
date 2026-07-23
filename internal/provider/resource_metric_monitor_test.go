@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/resourceid"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
 )
 
@@ -389,9 +390,9 @@ func TestAccMetricMonitorResource_threshold(t *testing.T) {
 			{
 				ResourceName:            rn,
 				ImportState:             true,
-				ImportStateIdFunc:       acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
+				ImportStateIdFunc:       resourceid.ImportState2PartIDFunc(rn, "organization", "id"),
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"query_type"},
+				ImportStateVerifyIgnore: []string{"project", "query_type"},
 			},
 		},
 	})
@@ -565,9 +566,9 @@ func TestAccMetricMonitorResource_change(t *testing.T) {
 			{
 				ResourceName:            rn,
 				ImportState:             true,
-				ImportStateIdFunc:       acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
+				ImportStateIdFunc:       resourceid.ImportState2PartIDFunc(rn, "organization", "id"),
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"query_type"},
+				ImportStateVerifyIgnore: []string{"project", "query_type"},
 			},
 		},
 	})
@@ -649,9 +650,9 @@ func TestAccMetricMonitorResource_dynamic(t *testing.T) {
 			{
 				ResourceName:            rn,
 				ImportState:             true,
-				ImportStateIdFunc:       acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
+				ImportStateIdFunc:       resourceid.ImportState2PartIDFunc(rn, "organization", "id"),
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"query_type"},
+				ImportStateVerifyIgnore: []string{"project", "query_type"},
 			},
 		},
 	})
@@ -741,9 +742,9 @@ func TestAccMetricMonitorResource_fractionalComparison(t *testing.T) {
 			{
 				ResourceName:            rn,
 				ImportState:             true,
-				ImportStateIdFunc:       acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
+				ImportStateIdFunc:       resourceid.ImportState2PartIDFunc(rn, "organization", "id"),
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"query_type"},
+				ImportStateVerifyIgnore: []string{"project", "query_type"},
 			},
 		},
 	})
@@ -834,9 +835,9 @@ func TestAccMetricMonitorResource_eventsAnalyticsPlatform(t *testing.T) {
 			{
 				ResourceName:            rn,
 				ImportState:             true,
-				ImportStateIdFunc:       acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
+				ImportStateIdFunc:       resourceid.ImportState2PartIDFunc(rn, "organization", "id"),
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"query_type"},
+				ImportStateVerifyIgnore: []string{"project", "query_type"},
 			},
 		},
 	})

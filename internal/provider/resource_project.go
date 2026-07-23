@@ -23,15 +23,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
-	"github.com/samber/lo"
-
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
+	intresource "github.com/jianyuan/terraform-provider-sentry/internal/resource"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
+	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
+	"github.com/samber/lo"
 )
 
 type ProjectFilterResourceModel struct {
@@ -1006,5 +1006,9 @@ func (r *ProjectResource) Delete(ctx context.Context, req resource.DeleteRequest
 }
 
 func (r *ProjectResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	tfutils.ImportStateTwoPartId(ctx, "organization", req, resp)
+	intresource.ImportState2Part(
+		"https://{organization}.sentry.io/projects/{project}/",
+		"organization", "organization",
+		"project", "id",
+	)(ctx, req, resp)
 }

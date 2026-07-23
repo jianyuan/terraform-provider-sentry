@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 	"github.com/jianyuan/terraform-provider-sentry/internal/must"
+	"github.com/jianyuan/terraform-provider-sentry/internal/resourceid"
 )
 
 func TestAccClientKeyResource_validation(t *testing.T) {
@@ -266,7 +267,7 @@ func TestAccClientKeyResource(t *testing.T) {
 			{
 				ResourceName:      rn,
 				ImportState:       true,
-				ImportStateIdFunc: acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
+				ImportStateIdFunc: resourceid.ImportState3PartIDFunc(rn, "organization", "project", "id"),
 				ImportStateVerify: true,
 			},
 		},

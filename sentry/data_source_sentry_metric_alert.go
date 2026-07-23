@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
-	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/resourceid"
 )
 
 func dataSourceSentryMetricAlert() *schema.Resource {
@@ -156,7 +156,11 @@ func dataSourceSentryMetricAlertRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	d.SetId(tfutils.BuildThreePartId(org, project, sentry.StringValue(alert.ID)))
+	id, err := resourceid.BuildPath3(org, project, sentry.StringValue(alert.ID))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	d.SetId(id)
 	err = errors.Join(
 		d.Set("organization", org),
 		d.Set("project", project),
