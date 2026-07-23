@@ -137,9 +137,10 @@ export interface ResourceApiStrategy {
   model?: string;
   createMethod: string;
   createRequestAttributes?: Array<string>;
-  readMethod: string;
+  /** Required unless readStrategy is "custom". */
+  readMethod?: string;
   readRequestAttributes?: Array<string>;
-  readStrategy?: "paginate";
+  readStrategy?: "paginate" | "custom";
   readModel?: string;
   readCursorParam?: string;
   updateMethod?: string;

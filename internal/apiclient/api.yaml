@@ -15,6 +15,29 @@ paths:
           description: OK
         "401":
           description: Unauthorized
+  /0/organizations/:
+    post:
+      summary: Create a New Organization
+      operationId: createOrganization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOrganization"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Organization"
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
   /0/organizations/{organization_id_or_slug}/:
     parameters:
       - $ref: "#/components/parameters/organization_id_or_slug"
@@ -28,6 +51,113 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Organization"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+    put:
+      summary: Update an Organization
+      operationId: updateOrganization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateOrganization"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Organization"
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+    delete:
+      summary: Delete an Organization
+      operationId: deleteOrganization
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+  /0/organizations/{organization_id_or_slug}/external-users/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+    post:
+      summary: Create an External User
+      operationId: createOrganizationExternalUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateExternalUser"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExternalUser"
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+  /0/organizations/{organization_id_or_slug}/external-users/{external_user_id}/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+      - name: external_user_id
+        in: path
+        required: true
+        schema:
+          type: string
+    put:
+      summary: Update an External User
+      operationId: updateOrganizationExternalUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateExternalUser"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExternalUser"
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+    delete:
+      summary: Delete an External User
+      operationId: deleteOrganizationExternalUser
+      responses:
+        "204":
+          description: No Content
         "401":
           description: Unauthorized
         "403":
@@ -1265,6 +1395,243 @@ components:
           type: array
           items:
             type: string
+        isEarlyAdopter:
+          type: boolean
+        hideAiFeatures:
+          type: boolean
+        codecovAccess:
+          type: boolean
+        defaultRole:
+          type: string
+        openMembership:
+          type: boolean
+        eventsMemberAdmin:
+          type: boolean
+        alertsMemberWrite:
+          type: boolean
+        attachmentsRole:
+          type: string
+        debugFilesRole:
+          type: string
+        avatar:
+          $ref: "#/components/schemas/OrganizationAvatar"
+        require2FA:
+          type: boolean
+        allowSharedIssues:
+          type: boolean
+        enhancedPrivacy:
+          type: boolean
+        scrapeJavaScript:
+          type: boolean
+        storeCrashReports:
+          type: integer
+        allowJoinRequests:
+          type: boolean
+        dataScrubber:
+          type: boolean
+        dataScrubberDefaults:
+          type: boolean
+        sensitiveFields:
+          type: array
+          items:
+            type: string
+        safeFields:
+          type: array
+          items:
+            type: string
+        scrubIPAddresses:
+          type: boolean
+        relayPiiConfig:
+          type: string
+          nullable: true
+        trustedRelays:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrustedRelay"
+        githubPRBot:
+          type: boolean
+        githubOpenPRBot:
+          type: boolean
+        githubNudgeInvite:
+          type: boolean
+        gitlabPRBot:
+          type: boolean
+        allowMemberProjectCreation:
+          type: boolean
+    OrganizationAvatar:
+      type: object
+      properties:
+        avatarType:
+          type: string
+        avatarUuid:
+          type: string
+          nullable: true
+    TrustedRelay:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        publicKey:
+          type: string
+        description:
+          type: string
+          nullable: true
+    CreateOrganization:
+      type: object
+      required:
+        - name
+        - agreeTerms
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+        agreeTerms:
+          type: boolean
+    UpdateOrganization:
+      type: object
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+        isEarlyAdopter:
+          type: boolean
+        hideAiFeatures:
+          type: boolean
+        codecovAccess:
+          type: boolean
+        defaultRole:
+          type: string
+        openMembership:
+          type: boolean
+        eventsMemberAdmin:
+          type: boolean
+        alertsMemberWrite:
+          type: boolean
+        attachmentsRole:
+          type: string
+        debugFilesRole:
+          type: string
+        avatarType:
+          type: string
+        avatar:
+          type: string
+        require2FA:
+          type: boolean
+        allowSharedIssues:
+          type: boolean
+        enhancedPrivacy:
+          type: boolean
+        scrapeJavaScript:
+          type: boolean
+        storeCrashReports:
+          type: integer
+        allowJoinRequests:
+          type: boolean
+        dataScrubber:
+          type: boolean
+        dataScrubberDefaults:
+          type: boolean
+        sensitiveFields:
+          type: array
+          items:
+            type: string
+        safeFields:
+          type: array
+          items:
+            type: string
+        scrubIPAddresses:
+          type: boolean
+        relayPiiConfig:
+          type: string
+          nullable: true
+        trustedRelays:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrustedRelayUpdate"
+        githubPRBot:
+          type: boolean
+        githubOpenPRBot:
+          type: boolean
+        githubNudgeInvite:
+          type: boolean
+        gitlabPRBot:
+          type: boolean
+        allowMemberProjectCreation:
+          type: boolean
+    TrustedRelayUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        publicKey:
+          type: string
+        description:
+          type: string
+    CreateExternalUser:
+      type: object
+      required:
+        - user_id
+        - external_name
+        - provider
+        - integration_id
+        - id
+      properties:
+        user_id:
+          type: integer
+        external_name:
+          type: string
+        provider:
+          type: string
+        integration_id:
+          type: integer
+        id:
+          type: integer
+        external_id:
+          type: string
+    UpdateExternalUser:
+      type: object
+      required:
+        - user_id
+        - external_name
+        - provider
+        - integration_id
+        - id
+      properties:
+        user_id:
+          type: integer
+        external_name:
+          type: string
+        provider:
+          type: string
+        integration_id:
+          type: integer
+        id:
+          type: integer
+        external_id:
+          type: string
+    ExternalUser:
+      type: object
+      required:
+        - id
+        - userId
+        - externalName
+        - provider
+        - integrationId
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        externalName:
+          type: string
+        provider:
+          type: string
+        integrationId:
+          type: string
     OrganizationMember:
       type: object
       required:
