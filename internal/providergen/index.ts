@@ -636,6 +636,7 @@ import (
   supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
   fint64validator "github.com/orange-cloudavenue/terraform-plugin-framework-validators/int64validator"
   fstringvalidator "github.com/orange-cloudavenue/terraform-plugin-framework-validators/stringvalidator"
+  intresource "github.com/jianyuan/terraform-provider-sentry/internal/resource"
 )
 
 var _ resource.Resource = &${resourceName}{}
@@ -883,13 +884,10 @@ ${match(resource.import)
     ({ url, targetAttributes }) => {
       return `
         func (r *${resourceName}) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-          valueA, err := resourceid.Parse(req.ID, "${url}", "${targetAttributes[0]}")
-          if err != nil {
-            resp.Diagnostics.AddError("Parsing Resource ID", err.Error())
-            return
-          }
-
-          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${targetAttributes[0]}"), valueA)...)
+          intresource.ImportState1Part(
+            "${url}",
+            "${targetAttributes[0]}", "${targetAttributes[0]}",
+          )(ctx, req, resp)
         }
       `;
     },
@@ -899,7 +897,7 @@ ${match(resource.import)
     ({ targetAttributes }) => {
       return `
         func (r *${resourceName}) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-          resource.ImportStatePassthroughID(ctx, path.Root("${targetAttributes[0]}"), req, resp)
+          intresource.ImportState1PartPassthrough("${targetAttributes[0]}")(ctx, req, resp)
         }
       `;
     },
@@ -909,14 +907,11 @@ ${match(resource.import)
     ({ url, targetAttributes }) => {
       return `
         func (r *${resourceName}) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-          valueA, valueB, err := resourceid.Split2(req.ID, "${url}", "${targetAttributes[0]}", "${targetAttributes[1]}")
-          if err != nil {
-            resp.Diagnostics.AddError("Parsing Resource ID", err.Error())
-            return
-          }
-
-          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${targetAttributes[0]}"), valueA)...)
-          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${targetAttributes[1]}"), valueB)...)
+          intresource.ImportState2Part(
+            "${url}",
+            "${targetAttributes[0]}", "${targetAttributes[0]}",
+            "${targetAttributes[1]}", "${targetAttributes[1]}",
+          )(ctx, req, resp)
         }
       `;
     },
@@ -926,14 +921,7 @@ ${match(resource.import)
     ({ targetAttributes }) => {
       return `
         func (r *${resourceName}) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-          valueA, valueB, err := tfutils.SplitTwoPartId(req.ID, "${targetAttributes[0]}", "${targetAttributes[1]}")
-          if err != nil {
-            resp.Diagnostics.AddError("Parsing Resource ID", err.Error())
-            return
-          }
-
-          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${targetAttributes[0]}"), valueA)...)
-          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${targetAttributes[1]}"), valueB)...)
+          intresource.ImportState2PartPath("${targetAttributes[0]}", "${targetAttributes[1]}")(ctx, req, resp)
         }
       `;
     },
@@ -943,15 +931,12 @@ ${match(resource.import)
     ({ url, targetAttributes }) => {
       return `
         func (r *${resourceName}) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-          valueA, valueB, valueC, err := resourceid.Split3(req.ID, "${url}", "${targetAttributes[0]}", "${targetAttributes[1]}", "${targetAttributes[2]}")
-          if err != nil {
-            resp.Diagnostics.AddError("Parsing Resource ID", err.Error())
-            return
-          }
-
-          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${targetAttributes[0]}"), valueA)...)
-          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${targetAttributes[1]}"), valueB)...)
-          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${targetAttributes[2]}"), valueC)...)
+          intresource.ImportState3Part(
+            "${url}",
+            "${targetAttributes[0]}", "${targetAttributes[0]}",
+            "${targetAttributes[1]}", "${targetAttributes[1]}",
+            "${targetAttributes[2]}", "${targetAttributes[2]}",
+          )(ctx, req, resp)
         }
       `;
     },
@@ -961,15 +946,7 @@ ${match(resource.import)
     ({ targetAttributes }) => {
       return `
         func (r *${resourceName}) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-          valueA, valueB, valueC, err := tfutils.SplitThreePartId(req.ID, "${targetAttributes[0]}", "${targetAttributes[1]}", "${targetAttributes[2]}")
-          if err != nil {
-            resp.Diagnostics.AddError("Parsing Resource ID", err.Error())
-            return
-          }
-
-          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${targetAttributes[0]}"), valueA)...)
-          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${targetAttributes[1]}"), valueB)...)
-          resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("${targetAttributes[2]}"), valueC)...)
+          intresource.ImportState3PartPath("${targetAttributes[0]}", "${targetAttributes[1]}", "${targetAttributes[2]}")(ctx, req, resp)
         }
       `;
     },

@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/jianyuan/terraform-provider-sentry/internal/resourceid"
+	intresource "github.com/jianyuan/terraform-provider-sentry/internal/resource"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
@@ -305,14 +305,11 @@ func (r *CronMonitorResource) Delete(ctx context.Context, req resource.DeleteReq
 }
 
 func (r *CronMonitorResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	valueA, valueB, err := resourceid.Split2(req.ID, "https://{organization}.sentry.io/monitors/{id}/", "organization", "id")
-	if err != nil {
-		resp.Diagnostics.AddError("Parsing Resource ID", err.Error())
-		return
-	}
-
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization"), valueA)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), valueB)...)
+	intresource.ImportState2Part(
+		"https://{organization}.sentry.io/monitors/{id}/",
+		"organization", "organization",
+		"id", "id",
+	)(ctx, req, resp)
 }
 
 type CronMonitorResourceModel struct {
