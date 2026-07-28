@@ -154,8 +154,15 @@ func issueAlertActionModelKey(ctx context.Context) func(m IssueAlertActionModel)
 				f.Account.ValueString(), f.Service.ValueString(), f.Severity.ValueString())
 		case m.SlackNotifyService.IsKnown():
 			f := m.SlackNotifyService.MustGet(ctx)
+			// Normalize the channel the same way sentrytypes.SlackChannel's
+			// StringSemanticEquals does (ignore a leading "#"). Sentry returns
+			// the channel without the "#", so keying on the raw value makes the
+			// prior (planned/state) and incoming (API) keys diverge, which
+			// prevents reorderToMatchPrior from pairing them and produces a
+			// "Provider produced inconsistent result after apply" error on
+			// actions_v2 ordering.
 			return fmt.Sprintf("slack_notify_service\x00%s\x00%s\x00%s",
-				f.Workspace.ValueString(), f.Channel.ValueString(), stringSetKey(f.Tags))
+				f.Workspace.ValueString(), strings.TrimPrefix(f.Channel.ValueString(), "#"), stringSetKey(f.Tags))
 		case m.MsTeamsNotifyService.IsKnown():
 			f := m.MsTeamsNotifyService.MustGet(ctx)
 			return fmt.Sprintf("msteams_notify_service\x00%s\x00%s",

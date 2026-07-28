@@ -5,11 +5,11 @@ import (
 	"errors"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/resourceid"
 )
 
 func importOrganizationAndID(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-	org, id, err := tfutils.SplitTwoPartId(d.Id(), "organization-slug", "id")
+	org, id, err := resourceid.Split2Path(d.Id(), "organization-slug", "id")
 	if err != nil {
 		return nil, err
 	}
@@ -25,7 +25,7 @@ func importOrganizationAndID(ctx context.Context, d *schema.ResourceData, meta i
 }
 
 func importOrganizationProjectAndID(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-	org, project, id, err := tfutils.SplitThreePartId(d.Id(), "organization-slug", "project-slug", "id")
+	org, project, id, err := resourceid.Split3Path(d.Id(), "organization-slug", "project-slug", "id")
 	if err != nil {
 		return nil, err
 	}

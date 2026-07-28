@@ -156,6 +156,9 @@ export interface Resource {
   generate?: {
     modelFillers?: boolean;
   };
-  importStateAttributes?: Array<string>;
+  import?: {
+    url?: string;
+    targetAttributes?: Array<string>;
+  };
   attributes: Array<Attribute>;
 }

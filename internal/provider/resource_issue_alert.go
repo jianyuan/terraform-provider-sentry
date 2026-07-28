@@ -19,6 +19,8 @@ import (
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/must"
+	intresource "github.com/jianyuan/terraform-provider-sentry/internal/resource"
+	"github.com/jianyuan/terraform-provider-sentry/internal/resourceid"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
@@ -1098,7 +1100,7 @@ func (r *IssueAlertResource) Delete(ctx context.Context, req resource.DeleteRequ
 }
 
 func (r *IssueAlertResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	tfutils.ImportStateThreePartId(ctx, "organization", "project", req, resp)
+	intresource.ImportState3PartPath("organization", "project", "id")(ctx, req, resp)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -1193,7 +1195,7 @@ func (r *IssueAlertResource) UpgradeState(ctx context.Context) map[int64]resourc
 					return
 				}
 
-				organization, project, actionId, err := tfutils.SplitThreePartId(priorStateData.Id.ValueString(), "organization", "project-slug", "alert-id")
+				organization, project, actionId, err := resourceid.Split3Path(priorStateData.Id.ValueString(), "organization", "project-slug", "alert-id")
 				if err != nil {
 					resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Error parsing ID: %s", err.Error()))
 					return

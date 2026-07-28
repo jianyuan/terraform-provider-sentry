@@ -20,6 +20,7 @@ import (
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/must"
+	"github.com/jianyuan/terraform-provider-sentry/internal/resourceid"
 	"github.com/samber/lo"
 )
 
@@ -342,7 +343,7 @@ func TestAccProjectResource_basic(t *testing.T) {
 			{
 				ResourceName:      rn,
 				ImportState:       true,
-				ImportStateIdFunc: acctest.TwoPartImportStateIdFunc(rn, "organization"),
+				ImportStateIdFunc: resourceid.ImportState2PartIDFunc(rn, "organization", "id"),
 				ImportStateVerify: true,
 			},
 		},

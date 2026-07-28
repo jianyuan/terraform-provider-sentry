@@ -16,7 +16,7 @@ require (
 	github.com/hashicorp/terraform-plugin-testing v1.16.0
 	github.com/jianyuan/go-sentry/v2 v2.8.5-0.20260212151526-49ef3a5c44c6
 	github.com/oapi-codegen/nullable v1.2.0
-	github.com/oapi-codegen/runtime v1.5.0
+	github.com/oapi-codegen/runtime v1.6.0
 	github.com/orange-cloudavenue/terraform-plugin-framework-supertypes v1.2.0
 	github.com/orange-cloudavenue/terraform-plugin-framework-validators v1.17.0
 	github.com/peterhellberg/link v1.2.0
@@ -109,7 +109,7 @@ require (
 	golang.org/x/tools v0.48.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260504160031-60b97b32f348 // indirect
-	google.golang.org/grpc v1.81.0 // indirect
+	google.golang.org/grpc v1.82.1 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

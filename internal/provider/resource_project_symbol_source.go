@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
-	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
+	intresource "github.com/jianyuan/terraform-provider-sentry/internal/resource"
 )
 
 type ProjectSymbolSourcesResourceModel struct {
@@ -394,5 +394,5 @@ func (r *ProjectSymbolSourcesResource) Delete(ctx context.Context, req resource.
 }
 
 func (r *ProjectSymbolSourcesResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	tfutils.ImportStateThreePartId(ctx, "organization", "project", req, resp)
+	intresource.ImportState3PartPath("organization", "project", "id")(ctx, req, resp)
 }

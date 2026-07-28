@@ -11,8 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
+	intresource "github.com/jianyuan/terraform-provider-sentry/internal/resource"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
-	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
 
 type ProjectOwnershipResourceModel struct {
@@ -225,5 +225,9 @@ func (r *ProjectOwnershipResource) Delete(ctx context.Context, req resource.Dele
 }
 
 func (r *ProjectOwnershipResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	tfutils.ImportStateTwoPart(ctx, "organization", "project", req, resp)
+	intresource.ImportState2Part(
+		"https://{organization}.sentry.io/projects/{project}/",
+		"organization", "organization",
+		"project", "project",
+	)(ctx, req, resp)
 }

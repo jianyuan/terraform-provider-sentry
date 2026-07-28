@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
-	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/resourceid"
 )
 
 func TestAccSentryMetricAlert_basic(t *testing.T) {
@@ -69,7 +69,7 @@ func testAccCheckSentryMetricAlertDestroy(s *terraform.State) error {
 			continue
 		}
 
-		org, project, id, err := tfutils.SplitThreePartId(rs.Primary.ID, "organization-slug", "project-slug", "alert-id")
+		org, project, id, err := resourceid.Split3Path(rs.Primary.ID, "organization-slug", "project-slug", "alert-id")
 		if err != nil {
 			return err
 		}
@@ -101,7 +101,7 @@ func testAccCheckSentryMetricAlertExists(n string, gotAlertID *string) resource.
 			return errors.New("no ID is set")
 		}
 
-		org, project, alertID, err := tfutils.SplitThreePartId(rs.Primary.ID, "organization-slug", "project-slug", "alert-id")
+		org, project, alertID, err := resourceid.Split3Path(rs.Primary.ID, "organization-slug", "project-slug", "alert-id")
 		if err != nil {
 			return err
 		}

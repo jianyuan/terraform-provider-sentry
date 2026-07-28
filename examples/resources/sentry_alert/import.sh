@@ -1,3 +1,6 @@
-# import using the organization and monitor id from the URL:
-# https://[org-slug].sentry.io/monitors/alerts/[alert-id]/
-terraform import sentry_alert.default org-slug/alert-id
+# import using the full URL:
+terraform import sentry_alert.default https://{organization}.sentry.io/monitors/alerts/{id}/
+
+# import using the organization and alert id from the URL:
+# https://{organization}.sentry.io/monitors/alerts/{id}/
+terraform import sentry_alert.default organization/id

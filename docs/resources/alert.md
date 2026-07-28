@@ -1345,3 +1345,18 @@ Optional:
 
 <a id="nestedatt--trigger_conditions--regression_event"></a>
 ### Nested Schema for `trigger_conditions.regression_event`
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# import using the full URL:
+terraform import sentry_alert.default https://{organization}.sentry.io/monitors/alerts/{id}/
+
+# import using the organization and alert id from the URL:
+# https://{organization}.sentry.io/monitors/alerts/{id}/
+terraform import sentry_alert.default organization/id
+```

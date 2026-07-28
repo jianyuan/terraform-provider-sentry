@@ -5,9 +5,8 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
-	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/resourceid"
 )
 
 func TestAccNotificationActionResource(t *testing.T) {
@@ -44,17 +43,9 @@ func TestAccNotificationActionResource(t *testing.T) {
 				),
 			},
 			{
-				ResourceName: rn,
-				ImportState:  true,
-				ImportStateIdFunc: func(s *terraform.State) (string, error) {
-					rs, ok := s.RootModule().Resources[rn]
-					if !ok {
-						return "", fmt.Errorf("not found: %s", rn)
-					}
-					org := rs.Primary.Attributes["organization"]
-					actionId := rs.Primary.ID
-					return tfutils.BuildTwoPartId(org, actionId), nil
-				},
+				ResourceName:      rn,
+				ImportState:       true,
+				ImportStateIdFunc: resourceid.ImportState2PartIDFunc(rn, "organization", "id"),
 				ImportStateVerify: true,
 			},
 		},

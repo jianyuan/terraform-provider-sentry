@@ -1,4 +1,3 @@
-import dedent from "dedent";
 import type { Resource } from "../schema";
 
 export default {
@@ -18,7 +17,10 @@ export default {
   generate: {
     modelFillers: false,
   },
-  importStateAttributes: ["organization", "project", "id"],
+  import: {
+    url: "https://{organization}.sentry.io/monitors/{id}/",
+    targetAttributes: ["organization", "id"],
+  },
   attributes: [
     {
       name: "id",

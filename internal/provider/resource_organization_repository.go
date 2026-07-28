@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
-	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
+	intresource "github.com/jianyuan/terraform-provider-sentry/internal/resource"
 )
 
 var _ resource.Resource = &OrganizationRepositoryResource{}
@@ -170,5 +170,5 @@ func (r *OrganizationRepositoryResource) Delete(ctx context.Context, req resourc
 }
 
 func (r *OrganizationRepositoryResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	tfutils.ImportStateFourPartId(ctx, "organization", "integration_type", "integration_id", req, resp)
+	intresource.ImportState4PartPath("organization", "integration_type", "integration_id", "id")(ctx, req, resp)
 }

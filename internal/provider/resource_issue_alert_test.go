@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
+	"github.com/jianyuan/terraform-provider-sentry/internal/resourceid"
 )
 
 func TestAccIssueAlertResource_validation(t *testing.T) {
@@ -655,7 +656,7 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 			{
 				ResourceName:      rn,
 				ImportState:       true,
-				ImportStateIdFunc: acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
+				ImportStateIdFunc: resourceid.ImportState3PartIDFunc(rn, "organization", "project", "id"),
 			},
 		},
 	})
@@ -721,7 +722,7 @@ func TestAccIssueAlertResource_importRoundTrip(t *testing.T) {
 				ResourceName:      rn,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateIdFunc: acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
+				ImportStateIdFunc: resourceid.ImportState3PartIDFunc(rn, "organization", "project", "id"),
 			},
 			// Updating the (now in-state) rule must not 404.
 			{
@@ -737,7 +738,7 @@ func TestAccIssueAlertResource_importRoundTrip(t *testing.T) {
 				ResourceName:      rn,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateIdFunc: acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
+				ImportStateIdFunc: resourceid.ImportState3PartIDFunc(rn, "organization", "project", "id"),
 			},
 		},
 	})
@@ -824,7 +825,7 @@ func TestAccIssueAlertResource_emptyArray(t *testing.T) {
 			{
 				ResourceName:      rn,
 				ImportState:       true,
-				ImportStateIdFunc: acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
+				ImportStateIdFunc: resourceid.ImportState3PartIDFunc(rn, "organization", "project", "id"),
 			},
 		},
 	})
@@ -887,7 +888,7 @@ func TestAccIssueAlertResource_jsonValues(t *testing.T) {
 			{
 				ResourceName:      rn,
 				ImportState:       true,
-				ImportStateIdFunc: acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
+				ImportStateIdFunc: resourceid.ImportState3PartIDFunc(rn, "organization", "project", "id"),
 			},
 		},
 	})
@@ -974,7 +975,7 @@ func TestAccIssueAlertResource_jsonValues_emptyArray(t *testing.T) {
 			{
 				ResourceName:      rn,
 				ImportState:       true,
-				ImportStateIdFunc: acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
+				ImportStateIdFunc: resourceid.ImportState3PartIDFunc(rn, "organization", "project", "id"),
 			},
 		},
 	})

@@ -5,9 +5,8 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
-	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/resourceid"
 )
 
 func TestAccProjectSymbolSourceResource(t *testing.T) {
@@ -51,18 +50,9 @@ func TestAccProjectSymbolSourceResource(t *testing.T) {
 				),
 			},
 			{
-				ResourceName: rn,
-				ImportState:  true,
-				ImportStateIdFunc: func(s *terraform.State) (string, error) {
-					rs, ok := s.RootModule().Resources[rn]
-					if !ok {
-						return "", fmt.Errorf("not found: %s", rn)
-					}
-					organization := rs.Primary.Attributes["organization"]
-					project := rs.Primary.Attributes["project"]
-					sourceId := rs.Primary.ID
-					return tfutils.BuildThreePartId(organization, project, sourceId), nil
-				},
+				ResourceName:            rn,
+				ImportState:             true,
+				ImportStateIdFunc:       resourceid.ImportState3PartIDFunc(rn, "organization", "project", "id"),
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"secret_key"},
 			},
