@@ -1127,6 +1127,9 @@ func (r *AlertResource) Create(ctx context.Context, req resource.CreateRequest, 
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create, got error: %s", err))
 		return
+	} else if httpResp.StatusCode() == http.StatusNotFound {
+		resp.State.RemoveResource(ctx)
+		return
 	} else if httpResp.StatusCode() != http.StatusCreated {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create, got status code %d: %s", httpResp.StatusCode(), string(httpResp.Body)))
 		return
