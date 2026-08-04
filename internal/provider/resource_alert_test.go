@@ -9,6 +9,7 @@ import (
 	"sync"
 	"testing"
 
+	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -70,6 +71,72 @@ func init() {
 			return nil
 		},
 	})
+}
+
+var _ statecheck.StateCheck = (*expectAlertExists)(nil)
+
+type expectAlertExists struct {
+	resourceAddress string
+	workflow        *apiclient.OrganizationWorkflow
+}
+
+func (e *expectAlertExists) CheckState(ctx context.Context, req statecheck.CheckStateRequest, resp *statecheck.CheckStateResponse) {
+	if req.State == nil {
+		resp.Error = fmt.Errorf("state is nil")
+		return
+	} else if req.State.Values == nil {
+		resp.Error = fmt.Errorf("state does not contain any state values")
+		return
+	} else if req.State.Values.RootModule == nil {
+		resp.Error = fmt.Errorf("state does not contain a root module")
+		return
+	}
+
+	var resource *tfjson.StateResource
+	for _, r := range req.State.Values.RootModule.Resources {
+		if e.resourceAddress == r.Address {
+			resource = r
+			break
+		}
+	}
+
+	if resource == nil {
+		resp.Error = fmt.Errorf("%s - Resource not found in state", e.resourceAddress)
+		return
+	}
+
+	result, err := tfjsonpath.Traverse(resource.AttributeValues, tfjsonpath.New("id"))
+	if err != nil {
+		resp.Error = err
+		return
+	}
+
+	id, ok := result.(string)
+	if !ok {
+		resp.Error = fmt.Errorf("%s - Expected id to be a string, got %T", e.resourceAddress, result)
+		return
+	}
+
+	httpResp, err := acctest.SharedApiClient.GetOrganizationWorkflowWithResponse(ctx, acctest.TestOrganization, id)
+	if err != nil {
+		resp.Error = err
+		return
+	} else if httpResp.StatusCode() != http.StatusOK {
+		resp.Error = fmt.Errorf("%s - Expected status code %d, got %d", e.resourceAddress, http.StatusOK, httpResp.StatusCode())
+		return
+	} else if httpResp.JSON200 == nil {
+		resp.Error = fmt.Errorf("%s - Expected status code %d, got nil", e.resourceAddress, http.StatusOK)
+		return
+	}
+
+	*e.workflow = *httpResp.JSON200
+}
+
+func stateCheckAlertExists(resourceAddress string, workflow *apiclient.OrganizationWorkflow) statecheck.StateCheck {
+	return &expectAlertExists{
+		resourceAddress: resourceAddress,
+		workflow:        workflow,
+	}
 }
 
 func TestAccAlertResource_validation(t *testing.T) {
@@ -192,7 +259,9 @@ func TestAccAlertResource_basic(t *testing.T) {
 	opsgenieTeamName := acctest.RandomWithPrefix("tf-opsgenie")
 	rn := "sentry_alert.test"
 
+	var workflow apiclient.OrganizationWorkflow
 	checks := []statecheck.StateCheck{
+		stateCheckAlertExists(rn, &workflow),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
 	}
 
@@ -212,6 +281,22 @@ func TestAccAlertResource_basic(t *testing.T) {
 				ConfigStateChecks: append(
 					checks,
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(alertName+"-updated")),
+				),
+				PostApplyFunc: func() {
+					// Simulate external deletion of the alert
+					httpResp, err := acctest.SharedApiClient.DeleteOrganizationWorkflowWithResponse(t.Context(), acctest.TestOrganization, workflow.Id)
+					if err != nil {
+						t.Errorf("%s - Failed to delete alert: %v", rn, err)
+					} else if httpResp.StatusCode() != http.StatusNoContent {
+						t.Errorf("%s - Expected status code %d, got %d", rn, http.StatusNoContent, httpResp.StatusCode())
+					}
+				},
+			},
+			{
+				Config: testAccAlertResourceConfig(projectName, monitorName, alertName, opsgenieTeamName),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(alertName)),
 				),
 			},
 			{
