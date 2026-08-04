@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
+	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
 )
 
 func init() {
@@ -17,34 +19,35 @@ func init() {
 		F: func(r string) error {
 			ctx := context.Background()
 
-			listParams := &sentry.ListCursorParams{}
-
+			params := &apiclient.ListOrganizationTeamsParams{}
 			for {
-				teams, resp, err := acctest.SharedClient.Teams.List(ctx, acctest.TestOrganization, listParams)
+				listHttpResp, err := acctest.SharedApiClient.ListOrganizationTeamsWithResponse(ctx, acctest.TestOrganization, params)
 				if err != nil {
 					return err
+				} else if listHttpResp.StatusCode() != http.StatusOK || listHttpResp.JSON200 == nil {
+					return fmt.Errorf("failed to list organization teams: %s", listHttpResp.Status())
 				}
 
-				for _, team := range teams {
-					if !strings.HasPrefix(sentry.StringValue(team.Slug), "tf-team") {
+				for _, team := range *listHttpResp.JSON200 {
+					if !strings.HasPrefix(team.Slug, "tf-team") {
 						continue
 					}
 
-					log.Printf("[INFO] Destroying Team: %s", sentry.StringValue(team.Slug))
+					log.Printf("[INFO] Destroying Team: %s", team.Slug)
 
-					_, err := acctest.SharedClient.Teams.Delete(ctx, acctest.TestOrganization, sentry.StringValue(team.Slug))
+					_, err := acctest.SharedApiClient.DeleteOrganizationTeamWithResponse(ctx, acctest.TestOrganization, team.Id)
 					if err != nil {
-						log.Printf("[ERROR] Failed to destroy Team %q: %s", sentry.StringValue(team.Slug), err)
+						log.Printf("[ERROR] Failed to destroy Team %q: %s", team.Slug, err)
 						continue
 					}
 
-					log.Printf("[INFO] Team %q has been destroyed.", sentry.StringValue(team.Slug))
+					log.Printf("[INFO] Team %q has been destroyed.", team.Slug)
 				}
 
-				if resp.Cursor == "" {
+				params.Cursor = sentryclient.ParseNextPaginationCursor(listHttpResp.HTTPResponse)
+				if params.Cursor == nil {
 					break
 				}
-				listParams.Cursor = resp.Cursor
 			}
 
 			return nil
