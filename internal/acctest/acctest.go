@@ -8,6 +8,7 @@ import (
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/must"
+	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
 )
 
@@ -54,6 +55,9 @@ var (
 
 	// SharedClient is a shared Sentry client for acceptance tests.
 	SharedClient *sentry.Client
+
+	// SharedProviderData is a shared provider data for acceptance tests.
+	SharedProviderData *providerdata.ProviderData
 )
 
 func init() {
@@ -86,6 +90,11 @@ func init() {
 		SharedClient = sentry.NewClient(httpClient)
 	} else {
 		SharedClient = must.Get(sentry.NewOnPremiseClient(baseUrl, httpClient))
+	}
+
+	SharedProviderData = &providerdata.ProviderData{
+		Client:    SharedClient,
+		ApiClient: SharedApiClient,
 	}
 }
 

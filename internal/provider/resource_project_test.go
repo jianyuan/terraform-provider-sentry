@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"regexp"
 	"slices"
@@ -16,56 +15,47 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/must"
+	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/resourceid"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sweep"
 	"github.com/samber/lo"
 )
 
 func init() {
-	resource.AddTestSweepers("sentry_project", &resource.Sweeper{
-		Name: "sentry_project",
-		F: func(r string) error {
-			ctx := context.Background()
+	sweep.Register("sentry_project", func(ctx context.Context, pd *providerdata.ProviderData) ([]sweep.Sweepable, error) {
+		var sweepables []sweep.Sweepable
 
-			listParams := &sentry.ListOrganizationProjectsParams{}
-
-			for {
-				projects, resp, err := acctest.SharedClient.OrganizationProjects.List(ctx, acctest.TestOrganization, listParams)
-				if err != nil {
-					return err
-				}
-
-				for _, project := range projects {
-					if !strings.HasPrefix(project.Slug, "tf-project") {
-						continue
-					}
-
-					log.Printf("[INFO] Destroying Project: %s", project.Slug)
-
-					_, err := acctest.SharedApiClient.DeleteOrganizationProjectWithResponse(
-						ctx,
-						acctest.TestOrganization,
-						project.Slug,
-					)
-					if err != nil {
-						log.Printf("[ERROR] Failed to destroy Project %q: %s", project.Slug, err)
-						continue
-					}
-
-					log.Printf("[INFO] Project %q has been destroyed.", project.Slug)
-				}
-
-				if resp.Cursor == "" {
-					break
-				}
-				listParams.Cursor = resp.Cursor
+		params := &apiclient.ListOrganizationProjectsParams{}
+		for {
+			listHttpResp, err := acctest.SharedApiClient.ListOrganizationProjectsWithResponse(ctx, acctest.TestOrganization, params)
+			if err != nil {
+				return nil, err
+			} else if listHttpResp.StatusCode() != http.StatusOK || listHttpResp.JSON200 == nil {
+				return nil, fmt.Errorf("failed to list organization workflows: %s", listHttpResp.Status())
 			}
 
-			return nil
-		},
+			for _, project := range *listHttpResp.JSON200 {
+				if !strings.HasPrefix(project.Slug, "tf-project") {
+					continue
+				}
+
+				sweepables = append(sweepables, sweep.NewSweepResource(NewProjectResource, pd, map[string]any{
+					"organization": acctest.TestOrganization,
+					"id":           project.Id,
+				}))
+			}
+
+			params.Cursor = sentryclient.ParseNextPaginationCursor(listHttpResp.HTTPResponse)
+			if params.Cursor == nil {
+				break
+			}
+		}
+
+		return sweepables, nil
 	})
 }
 

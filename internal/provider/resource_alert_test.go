@@ -3,10 +3,8 @@ package provider
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
-	"sync"
 	"testing"
 
 	tfjson "github.com/hashicorp/terraform-json"
@@ -16,60 +14,43 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/resourceid"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sweep"
 )
 
 func init() {
-	resource.AddTestSweepers("sentry_alert", &resource.Sweeper{
-		Name: "sentry_alert",
-		F: func(r string) error {
-			ctx := context.Background()
+	sweep.Register("sentry_alert", func(ctx context.Context, pd *providerdata.ProviderData) ([]sweep.Sweepable, error) {
+		var sweepables []sweep.Sweepable
 
-			params := &apiclient.ListOrganizationWorkflowsParams{}
-			workflows := []apiclient.OrganizationWorkflow{}
-
-			for {
-				listHttpResp, err := acctest.SharedApiClient.ListOrganizationWorkflowsWithResponse(ctx, acctest.TestOrganization, params)
-				if err != nil {
-					return err
-				} else if listHttpResp.StatusCode() != http.StatusOK || listHttpResp.JSON200 == nil {
-					return fmt.Errorf("[ERROR] Failed to list organization workflows: %s", listHttpResp.Status())
-				}
-
-				for _, workflow := range *listHttpResp.JSON200 {
-					if !strings.HasPrefix(workflow.Name, "tf-alert") && workflow.Name != "Send a notification for high priority issues" {
-						continue
-					}
-
-					workflows = append(workflows, workflow)
-				}
-
-				params.Cursor = sentryclient.ParseNextPaginationCursor(listHttpResp.HTTPResponse)
-				if params.Cursor == nil {
-					break
-				}
+		params := &apiclient.ListOrganizationWorkflowsParams{}
+		for {
+			listHttpResp, err := acctest.SharedApiClient.ListOrganizationWorkflowsWithResponse(ctx, acctest.TestOrganization, params)
+			if err != nil {
+				return nil, err
+			} else if listHttpResp.StatusCode() != http.StatusOK || listHttpResp.JSON200 == nil {
+				return nil, fmt.Errorf("failed to list organization workflows: %s", listHttpResp.Status())
 			}
 
-			var wg sync.WaitGroup
+			for _, workflow := range *listHttpResp.JSON200 {
+				if !strings.HasPrefix(workflow.Name, "tf-alert") && workflow.Name != "Send a notification for high priority issues" {
+					continue
+				}
 
-			for _, workflow := range workflows {
-				wg.Go(func() {
-					deleteHttpResp, err := acctest.SharedApiClient.DeleteOrganizationWorkflowWithResponse(ctx, acctest.TestOrganization, workflow.Id)
-					if err != nil {
-						log.Printf("[ERROR] Failed to delete alert: %s", err)
-					} else if deleteHttpResp.StatusCode() != http.StatusNoContent {
-						log.Printf("[ERROR] Failed to delete alert: %s", deleteHttpResp.Status())
-					} else {
-						log.Printf("[INFO] Deleted alert: %s (ID: %s)", workflow.Name, workflow.Id)
-					}
-				})
+				sweepables = append(sweepables, sweep.NewSweepResource(NewAlertResource, pd, map[string]any{
+					"organization": acctest.TestOrganization,
+					"id":           workflow.Id,
+				}))
 			}
 
-			wg.Wait()
+			params.Cursor = sentryclient.ParseNextPaginationCursor(listHttpResp.HTTPResponse)
+			if params.Cursor == nil {
+				break
+			}
+		}
 
-			return nil
-		},
+		return sweepables, nil
 	})
 }
 
