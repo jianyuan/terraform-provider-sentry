@@ -1139,13 +1139,14 @@ var DataConditionTypes = []string{
 	"event_attribute",
 	"event_created_by_detector",
 	"event_seen_count",
+	"every_event",
 	"existing_high_priority_issue",
 	"first_seen_event",
 	"issue_category",
 	"issue_occurrences",
 	"issue_open_duration",
-	"issue_priority_equals",
 	"issue_priority_deescalating",
+	"issue_priority_equals",
 	"issue_priority_greater_or_equal",
 	"issue_resolution_change",
 	"issue_resolved_trigger",
@@ -1163,7 +1164,6 @@ var DataConditionTypes = []string{
 	"event_unique_user_frequency_percent",
 	"percent_sessions_count",
 	"percent_sessions_percent",
-	"every_event",
 	"seer_activity_trigger",
 }
 
