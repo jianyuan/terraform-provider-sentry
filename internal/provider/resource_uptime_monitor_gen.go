@@ -226,6 +226,9 @@ func (r *UptimeMonitorResource) Read(ctx context.Context, req resource.ReadReque
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read, got error: %s", err))
 		return
+	} else if httpResp.StatusCode() == http.StatusNotFound {
+		resp.State.RemoveResource(ctx)
+		return
 	} else if httpResp.StatusCode() != http.StatusOK {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read, got status code %d: %s", httpResp.StatusCode(), string(httpResp.Body)))
 		return

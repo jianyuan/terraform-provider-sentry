@@ -170,6 +170,8 @@ paths:
     get:
       summary: List Teams
       operationId: listOrganizationTeams
+      parameters:
+        - $ref: "#/components/parameters/cursor"
       responses:
         "200":
           description: OK

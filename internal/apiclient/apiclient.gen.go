@@ -3211,6 +3211,11 @@ type EnableSpikeProtectionJSONBody struct {
 	Projects []string `json:"projects"`
 }
 
+// ListOrganizationTeamsParams defines parameters for ListOrganizationTeams.
+type ListOrganizationTeamsParams struct {
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+}
+
 // CreateOrganizationTeamJSONBody defines parameters for CreateOrganizationTeam.
 type CreateOrganizationTeamJSONBody struct {
 	Name string `json:"name"`
@@ -6898,7 +6903,7 @@ type ClientInterface interface {
 	EnableSpikeProtection(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body EnableSpikeProtectionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListOrganizationTeams request
-	ListOrganizationTeams(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error)
+	ListOrganizationTeams(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationTeamsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateOrganizationTeamWithBody request with any body
 	CreateOrganizationTeamWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -7428,8 +7433,8 @@ func (c *Client) EnableSpikeProtection(ctx context.Context, organizationIdOrSlug
 	return c.Client.Do(req)
 }
 
-func (c *Client) ListOrganizationTeams(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewListOrganizationTeamsRequest(c.Server, organizationIdOrSlug)
+func (c *Client) ListOrganizationTeams(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationTeamsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListOrganizationTeamsRequest(c.Server, organizationIdOrSlug, params)
 	if err != nil {
 		return nil, err
 	}
@@ -9100,7 +9105,7 @@ func NewEnableSpikeProtectionRequestWithBody(server string, organizationIdOrSlug
 }
 
 // NewListOrganizationTeamsRequest generates requests for ListOrganizationTeams
-func NewListOrganizationTeamsRequest(server string, organizationIdOrSlug OrganizationIdOrSlug) (*http.Request, error) {
+func NewListOrganizationTeamsRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationTeamsParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -9123,6 +9128,33 @@ func NewListOrganizationTeamsRequest(server string, organizationIdOrSlug Organiz
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
 	}
 
 	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
@@ -10530,7 +10562,7 @@ type ClientWithResponsesInterface interface {
 	EnableSpikeProtectionWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body EnableSpikeProtectionJSONRequestBody, reqEditors ...RequestEditorFn) (*EnableSpikeProtectionResponse, error)
 
 	// ListOrganizationTeamsWithResponse request
-	ListOrganizationTeamsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*ListOrganizationTeamsResponse, error)
+	ListOrganizationTeamsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationTeamsParams, reqEditors ...RequestEditorFn) (*ListOrganizationTeamsResponse, error)
 
 	// CreateOrganizationTeamWithBodyWithResponse request with any body
 	CreateOrganizationTeamWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOrganizationTeamResponse, error)
@@ -12463,8 +12495,8 @@ func (c *ClientWithResponses) EnableSpikeProtectionWithResponse(ctx context.Cont
 }
 
 // ListOrganizationTeamsWithResponse request returning *ListOrganizationTeamsResponse
-func (c *ClientWithResponses) ListOrganizationTeamsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*ListOrganizationTeamsResponse, error) {
-	rsp, err := c.ListOrganizationTeams(ctx, organizationIdOrSlug, reqEditors...)
+func (c *ClientWithResponses) ListOrganizationTeamsWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationTeamsParams, reqEditors ...RequestEditorFn) (*ListOrganizationTeamsResponse, error) {
+	rsp, err := c.ListOrganizationTeams(ctx, organizationIdOrSlug, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
