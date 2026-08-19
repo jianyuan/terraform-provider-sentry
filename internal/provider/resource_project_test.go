@@ -78,12 +78,8 @@ func TestAccProjectResource_basic(t *testing.T) {
 				return fmt.Errorf("unexpected project slug %v", project.Slug)
 			}
 
-			if v, err := project.Platform.Get(); err == nil {
-				if data.Platform != v {
-					return fmt.Errorf("unexpected platform %v", v)
-				}
-			} else {
-				return fmt.Errorf("unexpected platform: %s", err)
+			if project.Platform != data.Platform {
+				return fmt.Errorf("unexpected platform %s", project.Platform)
 			}
 
 			if len(project.Teams) != len(data.TeamIds) {
@@ -351,7 +347,7 @@ func TestAccProjectResource_filters(t *testing.T) {
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("teams"), knownvalue.SetExact([]knownvalue.Check{knownvalue.StringExact(teamName)})),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(projectName)),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("slug"), knownvalue.NotNull()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("platform"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("platform"), knownvalue.NotNull()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_rules"), knownvalue.Null()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_key"), knownvalue.Null()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("internal_id"), knownvalue.NotNull()),
@@ -381,6 +377,7 @@ func TestAccProjectResource_filters(t *testing.T) {
 				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
 					TeamName:    teamName,
 					ProjectName: projectName,
+					Platform:    "go",
 					Extras: `
 						filters = {
 							blacklisted_ips = ["127.0.0.1", "0.0.0.0/8"]
@@ -407,6 +404,7 @@ func TestAccProjectResource_filters(t *testing.T) {
 				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
 					TeamName:    teamName,
 					ProjectName: projectName,
+					Platform:    "go",
 					Extras: `
 						filters = {
 							blacklisted_ips = ["0.0.0.0/8"]
@@ -435,6 +433,7 @@ func TestAccProjectResource_filters(t *testing.T) {
 				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
 					TeamName:    teamName,
 					ProjectName: projectName,
+					Platform:    "go",
 					Extras: `
 						filters = {}
 					`,
@@ -470,7 +469,7 @@ func TestAccProjectResource_issueGrouping(t *testing.T) {
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("teams"), knownvalue.SetExact([]knownvalue.Check{knownvalue.StringExact(teamName)})),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(projectName)),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("slug"), knownvalue.NotNull()),
-		statecheck.ExpectKnownValue(rn, tfjsonpath.New("platform"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("platform"), knownvalue.StringExact("go")),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_rules"), knownvalue.Null()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_key"), knownvalue.Null()),
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("internal_id"), knownvalue.NotNull()),
@@ -503,6 +502,7 @@ func TestAccProjectResource_issueGrouping(t *testing.T) {
 				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
 					TeamName:    teamName,
 					ProjectName: projectName,
+					Platform:    "go",
 					Extras: `
 						fingerprinting_rules = <<-EOT
 							# force all errors of the same type to have the same fingerprint
@@ -524,6 +524,7 @@ func TestAccProjectResource_issueGrouping(t *testing.T) {
 				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
 					TeamName:    teamName,
 					ProjectName: projectName,
+					Platform:    "go",
 					Extras: `
 						fingerprinting_rules = <<-EOT
 							# force all errors of the same type to have the same fingerprint
@@ -549,6 +550,7 @@ func TestAccProjectResource_issueGrouping(t *testing.T) {
 				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
 					TeamName:    teamName,
 					ProjectName: projectName,
+					Platform:    "go",
 				}),
 				ConfigStateChecks: append(
 					checks,
@@ -574,6 +576,7 @@ func TestAccProjectResource_noDefaultKeyOnCreate(t *testing.T) {
 				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
 					TeamName:    teamName,
 					ProjectName: projectName,
+					Platform:    "go",
 					Extras: `
 						default_key = false
 					`,
@@ -589,7 +592,7 @@ func TestAccProjectResource_noDefaultKeyOnCreate(t *testing.T) {
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("teams"), knownvalue.SetExact([]knownvalue.Check{knownvalue.StringExact(teamName)})),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(projectName)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("slug"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("platform"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("platform"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_rules"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_key"), knownvalue.Bool(false)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("internal_id"), knownvalue.NotNull()),
@@ -820,11 +823,9 @@ resource "sentry_project" "test" {
 	organization = sentry_team.test.organization
 	teams        = [sentry_team.test.slug]
 	name         = "{{ .ProjectName }}"
+	platform     = "{{ .Platform }}"
 	{{ if .ProjectSlug }}
 	slug         = "{{ .ProjectSlug }}"
-	{{ end }}
-	{{ if .Platform }}
-	platform = "{{ .Platform }}"
 	{{ end }}
 	{{ .Extras }}
 }
@@ -867,9 +868,7 @@ resource "sentry_project" "test" {
 	{{ if .ProjectSlug }}
 	slug         = "{{ .ProjectSlug }}"
 	{{ end }}
-	{{ if .Platform }}
 	platform     = "{{ .Platform }}"
-	{{ end }}
 
 	client_security = {
 		{{ if ne .AllowedDomains nil }}

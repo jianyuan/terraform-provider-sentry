@@ -164,11 +164,7 @@ func (m *ProjectDataSourceModel) Fill(ctx context.Context, data apiclient.Projec
 	m.Slug = supertypes.NewStringValue(data.Slug)
 	m.InternalId = supertypes.NewStringValue(data.Id)
 	m.Name = supertypes.NewStringValue(data.Name)
-	if v, err := data.Platform.Get(); err == nil {
-		m.Platform = supertypes.NewStringValueOrNull(v)
-	} else {
-		m.Platform = supertypes.NewStringNull()
-	}
+	m.Platform = supertypes.NewStringValue(data.Platform)
 	m.SubjectTemplate = supertypes.NewStringValue(data.SubjectTemplate)
 	m.Color = supertypes.NewStringValue(data.Color)
 	m.IsPublic = supertypes.NewBoolValue(data.IsPublic)

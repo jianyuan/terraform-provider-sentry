@@ -195,11 +195,7 @@ func (m *AllProjectsDataSourceModelProjectsItem) Fill(ctx context.Context, data 
 	m.Slug = supertypes.NewStringValue(data.Slug)
 	m.InternalId = supertypes.NewStringValue(data.Id)
 	m.Name = supertypes.NewStringValue(data.Name)
-	if v, err := data.Platform.Get(); err == nil {
-		m.Platform = supertypes.NewStringValueOrNull(v)
-	} else {
-		m.Platform = supertypes.NewStringNull()
-	}
+	m.Platform = supertypes.NewStringValue(data.Platform)
 	m.Color = supertypes.NewStringValue(data.Color)
 	m.DateCreated = supertypes.NewStringValue(data.DateCreated.String())
 	m.Features = supertypes.NewSetValueOfSlice(ctx, data.Features)

@@ -632,6 +632,7 @@ paths:
               type: object
               required:
                 - name
+                - platform
               properties:
                 name:
                   type: string
@@ -1573,7 +1574,6 @@ components:
           type: string
         platform:
           type: string
-          nullable: true
         dateCreated:
           type: string
           format: date-time

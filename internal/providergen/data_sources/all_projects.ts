@@ -66,7 +66,6 @@ export default {
           type: "string",
           description: "The platform of this project.",
           computedOptionalRequired: "computed",
-          nullable: true,
         },
         {
           name: "color",

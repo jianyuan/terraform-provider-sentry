@@ -29,6 +29,7 @@ func TestAccAllProjectsSpikeProtectionResource(t *testing.T) {
 				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
 					TeamName:    teamName,
 					ProjectName: project1Name,
+					Platform:    "go",
 				}) + `
 					resource "sentry_all_projects_spike_protection" "test" {
 						organization = sentry_team.test.organization
@@ -48,6 +49,7 @@ func TestAccAllProjectsSpikeProtectionResource(t *testing.T) {
 				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
 					TeamName:    teamName,
 					ProjectName: project1Name,
+					Platform:    "go",
 				}) + `
 					resource "sentry_all_projects_spike_protection" "test" {
 						organization = sentry_team.test.organization
@@ -67,11 +69,13 @@ func TestAccAllProjectsSpikeProtectionResource(t *testing.T) {
 				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
 					TeamName:    teamName,
 					ProjectName: project1Name,
+					Platform:    "go",
 				}) + fmt.Sprintf(`
 					resource "sentry_project" "test2" {
 						organization = sentry_team.test.organization
 						teams        = [sentry_team.test.slug]
 						name         = "%[1]s"
+						platform     = "go"
 					}
 
 					resource "sentry_all_projects_spike_protection" "test" {
