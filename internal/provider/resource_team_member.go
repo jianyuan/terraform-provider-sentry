@@ -317,12 +317,17 @@ func (r *TeamMemberResource) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 
-	_, _, err := r.client.TeamMembers.Delete(
+	_, apiResp, err := r.client.TeamMembers.Delete(
 		ctx,
 		data.Organization.ValueString(),
 		data.MemberId.ValueString(),
 		data.Team.ValueString(),
 	)
+	// The membership is already gone (e.g. the team was deleted or re-slugged
+	// out-of-band), so treat a 404 as a successful delete.
+	if apiResp != nil && apiResp.StatusCode == http.StatusNotFound {
+		return
+	}
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("delete", err))
 		return
