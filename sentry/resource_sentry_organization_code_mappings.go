@@ -3,6 +3,8 @@ package sentry
 import (
 	"context"
 	"errors"
+	"fmt"
+	"net/url"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -11,6 +13,68 @@ import (
 	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/resourceid"
 )
+
+const organizationCodeMappingsPerPage = 100
+
+// organizationCodeMappingsListPath builds GET /code-mappings/ with an optional project
+// filter. Sentry's unfiltered list uses unordered OFFSET pagination, so orgs with
+// more than one page of mappings can skip IDs. Filtering by project keeps each
+// page small and stable.
+func organizationCodeMappingsListPath(org, integrationId, projectId, cursor string) string {
+	q := url.Values{}
+	q.Set("per_page", fmt.Sprintf("%d", organizationCodeMappingsPerPage))
+	if integrationId != "" {
+		q.Set("integrationId", integrationId)
+	}
+	if projectId != "" {
+		q.Set("project", projectId)
+	}
+	if cursor != "" {
+		q.Set("cursor", cursor)
+	}
+	return fmt.Sprintf("0/organizations/%s/code-mappings/?%s", org, q.Encode())
+}
+
+func listOrganizationCodeMappings(ctx context.Context, client *sentry.Client, org, integrationId, projectId string) ([]*sentry.OrganizationCodeMapping, error) {
+	var all []*sentry.OrganizationCodeMapping
+	seen := make(map[string]struct{})
+	cursor := ""
+	for page := 0; page < 50; page++ {
+		req, err := client.NewRequest("GET", organizationCodeMappingsListPath(org, integrationId, projectId, cursor), nil)
+		if err != nil {
+			return nil, err
+		}
+		var pageItems []*sentry.OrganizationCodeMapping
+		resp, err := client.Do(ctx, req, &pageItems)
+		if err != nil {
+			return nil, err
+		}
+		for _, mapping := range pageItems {
+			if mapping == nil || mapping.ID == "" {
+				continue
+			}
+			if _, ok := seen[mapping.ID]; ok {
+				continue
+			}
+			seen[mapping.ID] = struct{}{}
+			all = append(all, mapping)
+		}
+		if resp == nil || resp.Cursor == "" {
+			break
+		}
+		cursor = resp.Cursor
+	}
+	return all, nil
+}
+
+func findOrganizationCodeMapping(mappings []*sentry.OrganizationCodeMapping, id string) *sentry.OrganizationCodeMapping {
+	for _, mapping := range mappings {
+		if mapping != nil && mapping.ID == id {
+			return mapping
+		}
+	}
+	return nil
+}
 
 func resourceSentryOrganizationCodeMapping() *schema.Resource {
 	return &schema.Resource{
@@ -110,50 +174,43 @@ func resourceSentryOrganizationCodeMappingRead(ctx context.Context, d *schema.Re
 	// it just does not filter by integration_id so more iterations may be required
 	// but id *should* be unique across integrations
 	integrationId := d.Get("integration_id").(string)
+	projectId := d.Get("project_id").(string)
 
 	tflog.Debug(ctx, "Reading Sentry Organization Code Mapping", map[string]interface{}{
-		"id":  id,
-		"org": org,
+		"id":         id,
+		"org":        org,
+		"project_id": projectId,
 	})
 
-	// get all paginated organization repositories with the query
-	// query does a fuzzy match on name
-	var orgCodeMappings []*sentry.OrganizationCodeMapping
-	params := &sentry.ListOrganizationCodeMappingsParams{
-		IntegrationId: integrationId,
-	}
-	for {
-		keys, resp, err := client.OrganizationCodeMappings.List(ctx, org, params)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		orgCodeMappings = append(orgCodeMappings, keys...)
-
-		tflog.Debug(ctx, "Requested organization code mappings list cursor", map[string]interface{}{"cursor": resp.Cursor})
-		if resp.Cursor == "" {
-			break
-		}
-		params.Cursor = resp.Cursor
+	orgCodeMappings, err := listOrganizationCodeMappings(ctx, client, org, integrationId, projectId)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	// filter for first exactly matching name
-	for _, orgCodeMapping := range orgCodeMappings {
-		if orgCodeMapping.ID == id {
-			d.SetId(orgCodeMapping.ID)
-			err := errors.Join(
-				d.Set("internal_id", orgCodeMapping.ID),
-				d.Set("integration_id", orgCodeMapping.IntegrationId),
-				d.Set("repository_id", orgCodeMapping.RepoId),
-				d.Set("project_id", orgCodeMapping.ProjectId),
-				d.Set("default_branch", orgCodeMapping.DefaultBranch),
-				d.Set("stack_root", orgCodeMapping.StackRoot),
-				d.Set("source_root", orgCodeMapping.SourceRoot),
-			)
-			return diag.FromErr(err)
+	orgCodeMapping := findOrganizationCodeMapping(orgCodeMappings, id)
+	if orgCodeMapping == nil {
+		if projectId != "" {
+			tflog.Info(ctx, "Removing organization code mapping from state because it no longer exists in Sentry", map[string]interface{}{
+				"id":         id,
+				"project_id": projectId,
+			})
+			d.SetId("")
+			return nil
 		}
+		return diag.Errorf("Can't find Sentry Organization Code Mapping: %s", id)
 	}
 
-	return diag.Errorf("Can't find Sentry Organization Code Mapping: %s", id)
+	d.SetId(orgCodeMapping.ID)
+	err = errors.Join(
+		d.Set("internal_id", orgCodeMapping.ID),
+		d.Set("integration_id", orgCodeMapping.IntegrationId),
+		d.Set("repository_id", orgCodeMapping.RepoId),
+		d.Set("project_id", orgCodeMapping.ProjectId),
+		d.Set("default_branch", orgCodeMapping.DefaultBranch),
+		d.Set("stack_root", orgCodeMapping.StackRoot),
+		d.Set("source_root", orgCodeMapping.SourceRoot),
+	)
+	return diag.FromErr(err)
 }
 
 func resourceSentryOrganizationCodeMappingUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

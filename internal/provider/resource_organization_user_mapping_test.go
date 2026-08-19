@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
-	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/resourceid"
 )
 
 func TestAccOrganizationUserMappingResource_validation(t *testing.T) {
@@ -165,7 +165,7 @@ func testAccCheckOrganizationUserMappingDestroy(s *terraform.State) error {
 		organization := rs.Primary.Attributes["organization"]
 		internalID := rs.Primary.Attributes["internal_id"]
 		if organization == "" || internalID == "" {
-			organization, internalID, _ = tfutils.SplitTwoPartId(rs.Primary.ID, "organization", "internal_id")
+			organization, internalID, _ = resourceid.Split2Path(rs.Primary.ID, "organization", "internal_id")
 		}
 		if organization == "" || internalID == "" {
 			return fmt.Errorf("unable to determine organization/internal_id for %s", rs.Primary.ID)

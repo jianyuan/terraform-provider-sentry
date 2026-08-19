@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
-	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/resourceid"
 )
 
 type AllOrganizationRepositoriesDataSourceRepositoryModel struct {
@@ -78,7 +78,13 @@ func (m *AllOrganizationRepositoriesDataSourceRepositoryModel) Fill(organization
 	}
 
 	if integrationType != "" && repo.IntegrationId != "" && repo.ID != "" {
-		m.ImportId = types.StringValue(tfutils.BuildFourPartId(organization, integrationType, repo.IntegrationId, repo.ID))
+		importId, err := resourceid.BuildPath(organization, integrationType, repo.IntegrationId, repo.ID)
+		if err != nil {
+			diags.Append(diagutils.NewFillError(err))
+			m.ImportId = types.StringNull()
+		} else {
+			m.ImportId = types.StringValue(importId)
+		}
 	} else {
 		m.ImportId = types.StringNull()
 	}

@@ -7,13 +7,12 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
+	intresource "github.com/jianyuan/terraform-provider-sentry/internal/resource"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 )
 
@@ -202,14 +201,7 @@ func (r *OrganizationUserMappingResource) Delete(ctx context.Context, req resour
 }
 
 func (r *OrganizationUserMappingResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	organization, internalId, err := tfutils.SplitTwoPartId(req.ID, "organization", "internal_id")
-	if err != nil {
-		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Error parsing ID: %s", err.Error()))
-		return
-	}
-
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization"), organization)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("internal_id"), internalId)...)
+	intresource.ImportState2PartPath("organization", "internal_id")(ctx, req, resp)
 }
 
 type OrganizationUserMappingResourceModel struct {

@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
-	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
+	"github.com/jianyuan/terraform-provider-sentry/internal/resourceid"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 )
 
@@ -41,19 +41,31 @@ func (r *OrganizationUserMappingResource) getUpdateJSONRequestBody(ctx context.C
 }
 
 func (r *OrganizationUserMappingResource) read(ctx context.Context, data *OrganizationUserMappingResourceModel) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	// No GET API for external user mappings; keep prior state.
 	if data.Id.IsNull() || data.Id.ValueString() == "" {
 		if !data.Organization.IsNull() && !data.InternalId.IsNull() {
-			data.Id = supertypes.NewStringValue(tfutils.BuildTwoPartId(data.Organization.ValueString(), data.InternalId.ValueString()))
+			id, err := resourceid.BuildPath2(data.Organization.ValueString(), data.InternalId.ValueString())
+			if err != nil {
+				diags.AddError("Invalid ID", err.Error())
+				return diags
+			}
+			data.Id = supertypes.NewStringValue(id)
 		}
 	}
-	return nil
+	return diags
 }
 
 func (m *OrganizationUserMappingResourceModel) Fill(ctx context.Context, data apiclient.ExternalUser) (diags diag.Diagnostics) {
 	m.InternalId = supertypes.NewStringValue(data.Id)
 	if !m.Organization.IsNull() && !m.Organization.IsUnknown() {
-		m.Id = supertypes.NewStringValue(tfutils.BuildTwoPartId(m.Organization.ValueString(), data.Id))
+		id, err := resourceid.BuildPath2(m.Organization.ValueString(), data.Id)
+		if err != nil {
+			diags.AddError("Invalid ID", err.Error())
+		} else {
+			m.Id = supertypes.NewStringValue(id)
+		}
 	} else {
 		m.Id = supertypes.NewStringValue(data.Id)
 	}
