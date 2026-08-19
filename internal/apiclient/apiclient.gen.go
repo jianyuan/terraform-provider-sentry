@@ -2196,7 +2196,7 @@ type Project struct {
 	Name                 string                    `json:"name"`
 	Options              map[string]interface{}    `json:"options"`
 	Organization         Organization              `json:"organization"`
-	Platform             nullable.Nullable[string] `json:"platform"`
+	Platform             string                    `json:"platform"`
 	ResolveAge           int64                     `json:"resolveAge"`
 	ScrapeJavaScript     bool                      `json:"scrapeJavaScript"`
 	SecurityToken        string                    `json:"securityToken"`
@@ -3198,7 +3198,7 @@ type UpdateProjectRuleJSONBody struct {
 type CreateOrganizationTeamProjectJSONBody struct {
 	DefaultRules *bool   `json:"default_rules,omitempty"`
 	Name         string  `json:"name"`
-	Platform     *string `json:"platform,omitempty"`
+	Platform     string  `json:"platform"`
 	Slug         *string `json:"slug,omitempty"`
 }
 

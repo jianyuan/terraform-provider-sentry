@@ -78,12 +78,8 @@ func TestAccProjectResource_basic(t *testing.T) {
 				return fmt.Errorf("unexpected project slug %v", project.Slug)
 			}
 
-			if v, err := project.Platform.Get(); err == nil {
-				if data.Platform != v {
-					return fmt.Errorf("unexpected platform %v", v)
-				}
-			} else {
-				return fmt.Errorf("unexpected platform: %s", err)
+			if project.Platform != data.Platform {
+				return fmt.Errorf("unexpected platform %s", project.Platform)
 			}
 
 			if len(project.Teams) != len(data.TeamIds) {

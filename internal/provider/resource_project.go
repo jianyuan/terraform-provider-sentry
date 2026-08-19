@@ -161,13 +161,7 @@ func (m *ProjectResourceModel) Fill(ctx context.Context, project apiclient.Proje
 	}))
 	m.Name = types.StringValue(project.Name)
 	m.Slug = types.StringValue(project.Slug)
-
-	if v, err := project.Platform.Get(); err == nil && v != "" {
-		m.Platform = types.StringValue(v)
-	} else {
-		m.Platform = types.StringNull()
-	}
-
+	m.Platform = types.StringValue(project.Platform)
 	m.InternalId = types.StringValue(project.Id)
 	m.Features = supertypes.NewSetValueOfSlice(ctx, project.Features)
 	m.DigestsMinDelay = types.Int64Value(project.DigestsMinDelay)
@@ -496,7 +490,7 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 	// Create the project
 	createBody := apiclient.CreateOrganizationTeamProjectJSONRequestBody{
 		Name:         data.Name.ValueString(),
-		Platform:     data.Platform.ValueStringPointer(),
+		Platform:     data.Platform.ValueString(),
 		DefaultRules: data.DefaultRules.ValueBoolPointer(),
 	}
 
