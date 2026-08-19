@@ -614,6 +614,16 @@ function generateResource({ resource }: { resource: Resource }) {
   }
   updateRequestParams.push("*body");
 
+  if (resource.api.createThenUpdate && !resource.api.updateMethod) {
+    throw new Error(
+      `updateMethod is required for resource ${resource.name} when createThenUpdate is true`,
+    );
+  }
+
+  const createThenUpdateParams = updateRequestParams.map((param) =>
+    param === "*body" ? "*updateBody" : param,
+  );
+
   const deleteRequestParams = ["ctx"];
   if (resource.api.deleteRequestAttributes) {
     deleteRequestParams.push(
@@ -705,9 +715,52 @@ func (r *${resourceName}) Create(ctx context.Context, req resource.CreateRequest
     return
   }
 
-  resp.Diagnostics.Append(data.Fill(ctx, *httpResp.JSON201)...)
-  if resp.Diagnostics.HasError() {
-    return
+  ${
+    resource.api.createThenUpdate
+      ? dedent`
+          var created ${modelName}
+          resp.Diagnostics.Append(created.Fill(ctx, *httpResp.JSON201)...)
+          if resp.Diagnostics.HasError() {
+            return
+          }
+          data.Id = created.Id
+          resp.Diagnostics.Append(resp.State.Set(ctx, &created)...)
+          if resp.Diagnostics.HasError() {
+            return
+          }
+
+          updateBody, updateDiags := r.getUpdateJSONRequestBody(ctx, data)
+          resp.Diagnostics.Append(updateDiags...)
+          if resp.Diagnostics.HasError() {
+            return
+          } else if updateBody == nil {
+            resp.Diagnostics.AddError("Provider Error", "getUpdateJSONRequestBody returned a nil body")
+            return
+          }
+
+          updateResp, err := r.apiClient.${resource.api.updateMethod}WithResponse(${createThenUpdateParams.join(",")})
+          if err != nil {
+            resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update, got error: %s", err))
+            return
+          } else if updateResp.StatusCode() != http.StatusOK {
+            resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update, got status code %d: %s", updateResp.StatusCode(), string(updateResp.Body)))
+            return
+          } else if updateResp.JSON200 == nil {
+            resp.Diagnostics.AddError("Client Error", "Unable to update, got empty response body")
+            return
+          }
+
+          resp.Diagnostics.Append(data.Fill(ctx, *updateResp.JSON200)...)
+          if resp.Diagnostics.HasError() {
+            return
+          }
+        `
+      : dedent`
+          resp.Diagnostics.Append(data.Fill(ctx, *httpResp.JSON201)...)
+          if resp.Diagnostics.HasError() {
+            return
+          }
+        `
   }
 
   resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

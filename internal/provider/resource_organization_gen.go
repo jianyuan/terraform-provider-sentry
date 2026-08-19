@@ -297,7 +297,39 @@ func (r *OrganizationResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	resp.Diagnostics.Append(data.Fill(ctx, *httpResp.JSON201)...)
+	var created OrganizationResourceModel
+	resp.Diagnostics.Append(created.Fill(ctx, *httpResp.JSON201)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	data.Id = created.Id
+	resp.Diagnostics.Append(resp.State.Set(ctx, &created)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	updateBody, updateDiags := r.getUpdateJSONRequestBody(ctx, data)
+	resp.Diagnostics.Append(updateDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	} else if updateBody == nil {
+		resp.Diagnostics.AddError("Provider Error", "getUpdateJSONRequestBody returned a nil body")
+		return
+	}
+
+	updateResp, err := r.apiClient.UpdateOrganizationWithResponse(ctx, data.Id.ValueString(), *updateBody)
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update, got error: %s", err))
+		return
+	} else if updateResp.StatusCode() != http.StatusOK {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update, got status code %d: %s", updateResp.StatusCode(), string(updateResp.Body)))
+		return
+	} else if updateResp.JSON200 == nil {
+		resp.Diagnostics.AddError("Client Error", "Unable to update, got empty response body")
+		return
+	}
+
+	resp.Diagnostics.Append(data.Fill(ctx, *updateResp.JSON200)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -316,6 +348,9 @@ func (r *OrganizationResource) Read(ctx context.Context, req resource.ReadReques
 	httpResp, err := r.apiClient.GetOrganizationWithResponse(ctx, data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read, got error: %s", err))
+		return
+	} else if httpResp.StatusCode() == http.StatusNotFound {
+		resp.State.RemoveResource(ctx)
 		return
 	} else if httpResp.StatusCode() != http.StatusOK {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read, got status code %d: %s", httpResp.StatusCode(), string(httpResp.Body)))

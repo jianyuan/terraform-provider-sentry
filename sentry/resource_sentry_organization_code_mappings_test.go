@@ -2,6 +2,8 @@ package sentry
 
 import (
 	"testing"
+
+	"github.com/jianyuan/go-sentry/v2/sentry"
 )
 
 func TestOrganizationCodeMappingsListPath(t *testing.T) {
@@ -43,5 +45,23 @@ func TestOrganizationCodeMappingsListPath(t *testing.T) {
 				t.Fatalf("organizationCodeMappingsListPath() = %q, want %q", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestFindOrganizationCodeMapping(t *testing.T) {
+	t.Parallel()
+
+	mappings := []*sentry.OrganizationCodeMapping{
+		{ID: "1"},
+		{ID: "570"},
+	}
+
+	got := findOrganizationCodeMapping(mappings, "570")
+	if got == nil || got.ID != "570" {
+		t.Fatalf("findOrganizationCodeMapping() = %#v, want ID 570", got)
+	}
+
+	if got := findOrganizationCodeMapping(mappings, "missing"); got != nil {
+		t.Fatalf("findOrganizationCodeMapping() = %#v, want nil so Read returns an error instead of clearing state", got)
 	}
 }

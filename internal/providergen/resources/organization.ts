@@ -10,6 +10,7 @@ export default {
     readRequestAttributes: ["id"],
     updateMethod: "UpdateOrganization",
     updateRequestAttributes: ["id"],
+    createThenUpdate: true,
     deleteMethod: "DeleteOrganization",
     deleteRequestAttributes: ["id"],
   },

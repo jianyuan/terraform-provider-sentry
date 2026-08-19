@@ -145,6 +145,8 @@ export interface ResourceApiStrategy {
   readCursorParam?: string;
   updateMethod?: string;
   updateRequestAttributes?: Array<string>;
+  /** After create, PUT attributes the create API does not accept, using the planned values. */
+  createThenUpdate?: boolean;
   deleteMethod?: string;
   deleteRequestAttributes?: Array<string>;
 }

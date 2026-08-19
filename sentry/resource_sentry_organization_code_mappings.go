@@ -189,14 +189,6 @@ func resourceSentryOrganizationCodeMappingRead(ctx context.Context, d *schema.Re
 
 	orgCodeMapping := findOrganizationCodeMapping(orgCodeMappings, id)
 	if orgCodeMapping == nil {
-		if projectId != "" {
-			tflog.Info(ctx, "Removing organization code mapping from state because it no longer exists in Sentry", map[string]interface{}{
-				"id":         id,
-				"project_id": projectId,
-			})
-			d.SetId("")
-			return nil
-		}
 		return diag.Errorf("Can't find Sentry Organization Code Mapping: %s", id)
 	}
 

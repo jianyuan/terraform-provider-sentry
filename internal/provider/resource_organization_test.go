@@ -57,6 +57,7 @@ func TestAccOrganizationResource_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("internal_id"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("agree_terms"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("open_membership"), knownvalue.Bool(true)),
 				},
 			},
 			{
@@ -67,6 +68,7 @@ func TestAccOrganizationResource_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("internal_id"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("agree_terms"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("open_membership"), knownvalue.Bool(true)),
 				},
 			},
 			{
@@ -104,8 +106,9 @@ func testAccCheckOrganizationDestroy(s *terraform.State) error {
 func testAccOrganizationResourceConfig(name string) string {
 	return fmt.Sprintf(`
 resource "sentry_organization" "test" {
-	name        = "%[1]s"
-	agree_terms = true
+	name            = "%[1]s"
+	agree_terms     = true
+	open_membership = true
 }
 `, name)
 }
