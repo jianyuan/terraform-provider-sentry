@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -53,6 +54,43 @@ func TestAccTeamMemberResource(t *testing.T) {
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
 					"role",
+				},
+			},
+		},
+	})
+}
+
+// TestAccTeamMemberResource_teamDeletedOutOfBand reproduces the case where the
+// team backing a membership is removed from Sentry outside of Terraform (e.g. it
+// was deleted or re-slugged). On destroy, the DELETE against the stale team slug
+// returns 404; the resource must treat that as a successful delete instead of
+// erroring. Without the fix, teardown fails with "Unable to delete, got error:
+// ... 404 The requested resource does not exist".
+func TestAccTeamMemberResource_teamDeletedOutOfBand(t *testing.T) {
+	team := acctest.RandomWithPrefix("tf-team")
+	memberEmail := acctest.RandomWithPrefix("tf-member") + "@example.com"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccTeamMemberConfig_minimumPriority(team, memberEmail, "member", "contributor"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("sentry_team_member.test", "organization", acctest.TestOrganization),
+				),
+			},
+			{
+				// Delete the team out-of-band so the membership's team slug no
+				// longer exists, then destroy. The membership's DELETE now 404s
+				// and must be treated as already-deleted rather than an error.
+				Config:  testAccTeamMemberConfig_minimumPriority(team, memberEmail, "member", "contributor"),
+				Destroy: true,
+				PreConfig: func() {
+					_, err := acctest.SharedClient.Teams.Delete(context.Background(), acctest.TestOrganization, team)
+					if err != nil {
+						t.Fatalf("failed to delete team out-of-band: %s", err)
+					}
 				},
 			},
 		},

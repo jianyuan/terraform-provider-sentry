@@ -305,6 +305,7 @@ func testAccClientKeyResourceConfig(data testAccClientKeyResourceConfigData) str
 	must.Get(builder.WriteString(testAccProjectResourceConfig(testAccProjectResourceConfigData{
 		TeamName:    data.TeamName,
 		ProjectName: data.ProjectName,
+		Platform:    "go",
 	})))
 	must.Do(testAccClientKeyResourceConfigTemplate.Execute(&builder, data))
 

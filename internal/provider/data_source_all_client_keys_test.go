@@ -61,6 +61,7 @@ func testAccAllClientKeysDataSourceConfig(teamName, projectName string) string {
 	return testAccProjectResourceConfig(testAccProjectResourceConfigData{
 		TeamName:    teamName,
 		ProjectName: projectName,
+		Platform:    "go",
 	}) + `
 data "sentry_all_keys" "test" {
 	organization = sentry_project.test.organization

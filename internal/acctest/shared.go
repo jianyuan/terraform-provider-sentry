@@ -54,7 +54,7 @@ func setupSharedProject(ctx context.Context) error {
 
 	createHttpResp, err := SharedApiClient.CreateOrganizationTeamProjectWithResponse(ctx, TestOrganization, TestTeam.Id, apiclient.CreateOrganizationTeamProjectJSONRequestBody{
 		Name:     TestProjectName,
-		Platform: new("go"),
+		Platform: "go",
 	})
 	if err != nil {
 		return err
