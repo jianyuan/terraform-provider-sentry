@@ -3869,6 +3869,7 @@ components:
           properties:
             additionalFields:
               type: object
+              additionalProperties: true
               required:
                 - project
                 - issuetype
@@ -3876,6 +3877,16 @@ components:
                 project:
                   type: string
                 issuetype:
+                  type: string
+                labels:
+                  type: string
+                components:
+                  type: array
+                  items:
+                    type: string
+                priority:
+                  type: string
+                reporter:
                   type: string
         config:
           type: object
@@ -3907,6 +3918,7 @@ components:
           properties:
             additionalFields:
               type: object
+              additionalProperties: true
               required:
                 - project
                 - issuetype
@@ -3914,6 +3926,16 @@ components:
                 project:
                   type: string
                 issuetype:
+                  type: string
+                labels:
+                  type: string
+                components:
+                  type: array
+                  items:
+                    type: string
+                priority:
+                  type: string
+                reporter:
                   type: string
         config:
           type: object

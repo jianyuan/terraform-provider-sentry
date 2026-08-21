@@ -1716,10 +1716,7 @@ type OrganizationWorkflowActionFilterActionJira struct {
 		TargetType OrganizationWorkflowActionFilterActionJiraConfigTargetType `json:"targetType"`
 	} `json:"config"`
 	Data struct {
-		AdditionalFields struct {
-			Issuetype string `json:"issuetype"`
-			Project   string `json:"project"`
-		} `json:"additionalFields"`
+		AdditionalFields OrganizationWorkflowActionFilterActionJira_Data_AdditionalFields `json:"additionalFields"`
 	} `json:"data"`
 	IntegrationId string                                         `json:"integrationId"`
 	Type          OrganizationWorkflowActionFilterActionJiraType `json:"type"`
@@ -1727,6 +1724,17 @@ type OrganizationWorkflowActionFilterActionJira struct {
 
 // OrganizationWorkflowActionFilterActionJiraConfigTargetType defines model for OrganizationWorkflowActionFilterActionJira.Config.TargetType.
 type OrganizationWorkflowActionFilterActionJiraConfigTargetType string
+
+// OrganizationWorkflowActionFilterActionJira_Data_AdditionalFields defines model for OrganizationWorkflowActionFilterActionJira.Data.AdditionalFields.
+type OrganizationWorkflowActionFilterActionJira_Data_AdditionalFields struct {
+	Components           *[]string              `json:"components,omitempty"`
+	Issuetype            string                 `json:"issuetype"`
+	Labels               *string                `json:"labels,omitempty"`
+	Priority             *string                `json:"priority,omitempty"`
+	Project              string                 `json:"project"`
+	Reporter             *string                `json:"reporter,omitempty"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
 
 // OrganizationWorkflowActionFilterActionJiraType defines model for OrganizationWorkflowActionFilterActionJira.Type.
 type OrganizationWorkflowActionFilterActionJiraType string
@@ -1737,10 +1745,7 @@ type OrganizationWorkflowActionFilterActionJiraServer struct {
 		TargetType OrganizationWorkflowActionFilterActionJiraServerConfigTargetType `json:"targetType"`
 	} `json:"config"`
 	Data struct {
-		AdditionalFields struct {
-			Issuetype string `json:"issuetype"`
-			Project   string `json:"project"`
-		} `json:"additionalFields"`
+		AdditionalFields OrganizationWorkflowActionFilterActionJiraServer_Data_AdditionalFields `json:"additionalFields"`
 	} `json:"data"`
 	IntegrationId string                                               `json:"integrationId"`
 	Type          OrganizationWorkflowActionFilterActionJiraServerType `json:"type"`
@@ -1748,6 +1753,17 @@ type OrganizationWorkflowActionFilterActionJiraServer struct {
 
 // OrganizationWorkflowActionFilterActionJiraServerConfigTargetType defines model for OrganizationWorkflowActionFilterActionJiraServer.Config.TargetType.
 type OrganizationWorkflowActionFilterActionJiraServerConfigTargetType string
+
+// OrganizationWorkflowActionFilterActionJiraServer_Data_AdditionalFields defines model for OrganizationWorkflowActionFilterActionJiraServer.Data.AdditionalFields.
+type OrganizationWorkflowActionFilterActionJiraServer_Data_AdditionalFields struct {
+	Components           *[]string              `json:"components,omitempty"`
+	Issuetype            string                 `json:"issuetype"`
+	Labels               *string                `json:"labels,omitempty"`
+	Priority             *string                `json:"priority,omitempty"`
+	Project              string                 `json:"project"`
+	Reporter             *string                `json:"reporter,omitempty"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
 
 // OrganizationWorkflowActionFilterActionJiraServerType defines model for OrganizationWorkflowActionFilterActionJiraServer.Type.
 type OrganizationWorkflowActionFilterActionJiraServerType string
@@ -3259,6 +3275,284 @@ type UpdateProjectRuleJSONRequestBody UpdateProjectRuleJSONBody
 
 // CreateOrganizationTeamProjectJSONRequestBody defines body for CreateOrganizationTeamProject for application/json ContentType.
 type CreateOrganizationTeamProjectJSONRequestBody CreateOrganizationTeamProjectJSONBody
+
+// Getter for additional properties for OrganizationWorkflowActionFilterActionJira_Data_AdditionalFields. Returns the specified
+// element and whether it was found
+func (a OrganizationWorkflowActionFilterActionJira_Data_AdditionalFields) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for OrganizationWorkflowActionFilterActionJira_Data_AdditionalFields
+func (a *OrganizationWorkflowActionFilterActionJira_Data_AdditionalFields) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for OrganizationWorkflowActionFilterActionJira_Data_AdditionalFields to handle AdditionalProperties
+func (a *OrganizationWorkflowActionFilterActionJira_Data_AdditionalFields) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["components"]; found {
+		err = json.Unmarshal(raw, &a.Components)
+		if err != nil {
+			return fmt.Errorf("error reading 'components': %w", err)
+		}
+		delete(object, "components")
+	}
+
+	if raw, found := object["issuetype"]; found {
+		err = json.Unmarshal(raw, &a.Issuetype)
+		if err != nil {
+			return fmt.Errorf("error reading 'issuetype': %w", err)
+		}
+		delete(object, "issuetype")
+	}
+
+	if raw, found := object["labels"]; found {
+		err = json.Unmarshal(raw, &a.Labels)
+		if err != nil {
+			return fmt.Errorf("error reading 'labels': %w", err)
+		}
+		delete(object, "labels")
+	}
+
+	if raw, found := object["priority"]; found {
+		err = json.Unmarshal(raw, &a.Priority)
+		if err != nil {
+			return fmt.Errorf("error reading 'priority': %w", err)
+		}
+		delete(object, "priority")
+	}
+
+	if raw, found := object["project"]; found {
+		err = json.Unmarshal(raw, &a.Project)
+		if err != nil {
+			return fmt.Errorf("error reading 'project': %w", err)
+		}
+		delete(object, "project")
+	}
+
+	if raw, found := object["reporter"]; found {
+		err = json.Unmarshal(raw, &a.Reporter)
+		if err != nil {
+			return fmt.Errorf("error reading 'reporter': %w", err)
+		}
+		delete(object, "reporter")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for OrganizationWorkflowActionFilterActionJira_Data_AdditionalFields to handle AdditionalProperties
+func (a OrganizationWorkflowActionFilterActionJira_Data_AdditionalFields) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.Components != nil {
+		object["components"], err = json.Marshal(a.Components)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'components': %w", err)
+		}
+	}
+
+	object["issuetype"], err = json.Marshal(a.Issuetype)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'issuetype': %w", err)
+	}
+
+	if a.Labels != nil {
+		object["labels"], err = json.Marshal(a.Labels)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'labels': %w", err)
+		}
+	}
+
+	if a.Priority != nil {
+		object["priority"], err = json.Marshal(a.Priority)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'priority': %w", err)
+		}
+	}
+
+	object["project"], err = json.Marshal(a.Project)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'project': %w", err)
+	}
+
+	if a.Reporter != nil {
+		object["reporter"], err = json.Marshal(a.Reporter)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'reporter': %w", err)
+		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for OrganizationWorkflowActionFilterActionJiraServer_Data_AdditionalFields. Returns the specified
+// element and whether it was found
+func (a OrganizationWorkflowActionFilterActionJiraServer_Data_AdditionalFields) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for OrganizationWorkflowActionFilterActionJiraServer_Data_AdditionalFields
+func (a *OrganizationWorkflowActionFilterActionJiraServer_Data_AdditionalFields) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for OrganizationWorkflowActionFilterActionJiraServer_Data_AdditionalFields to handle AdditionalProperties
+func (a *OrganizationWorkflowActionFilterActionJiraServer_Data_AdditionalFields) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["components"]; found {
+		err = json.Unmarshal(raw, &a.Components)
+		if err != nil {
+			return fmt.Errorf("error reading 'components': %w", err)
+		}
+		delete(object, "components")
+	}
+
+	if raw, found := object["issuetype"]; found {
+		err = json.Unmarshal(raw, &a.Issuetype)
+		if err != nil {
+			return fmt.Errorf("error reading 'issuetype': %w", err)
+		}
+		delete(object, "issuetype")
+	}
+
+	if raw, found := object["labels"]; found {
+		err = json.Unmarshal(raw, &a.Labels)
+		if err != nil {
+			return fmt.Errorf("error reading 'labels': %w", err)
+		}
+		delete(object, "labels")
+	}
+
+	if raw, found := object["priority"]; found {
+		err = json.Unmarshal(raw, &a.Priority)
+		if err != nil {
+			return fmt.Errorf("error reading 'priority': %w", err)
+		}
+		delete(object, "priority")
+	}
+
+	if raw, found := object["project"]; found {
+		err = json.Unmarshal(raw, &a.Project)
+		if err != nil {
+			return fmt.Errorf("error reading 'project': %w", err)
+		}
+		delete(object, "project")
+	}
+
+	if raw, found := object["reporter"]; found {
+		err = json.Unmarshal(raw, &a.Reporter)
+		if err != nil {
+			return fmt.Errorf("error reading 'reporter': %w", err)
+		}
+		delete(object, "reporter")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for OrganizationWorkflowActionFilterActionJiraServer_Data_AdditionalFields to handle AdditionalProperties
+func (a OrganizationWorkflowActionFilterActionJiraServer_Data_AdditionalFields) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.Components != nil {
+		object["components"], err = json.Marshal(a.Components)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'components': %w", err)
+		}
+	}
+
+	object["issuetype"], err = json.Marshal(a.Issuetype)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'issuetype': %w", err)
+	}
+
+	if a.Labels != nil {
+		object["labels"], err = json.Marshal(a.Labels)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'labels': %w", err)
+		}
+	}
+
+	if a.Priority != nil {
+		object["priority"], err = json.Marshal(a.Priority)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'priority': %w", err)
+		}
+	}
+
+	object["project"], err = json.Marshal(a.Project)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'project': %w", err)
+	}
+
+	if a.Reporter != nil {
+		object["reporter"], err = json.Marshal(a.Reporter)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'reporter': %w", err)
+		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
 
 // AsOrganizationIntegrationOpsgenie returns the union data inside the OrganizationIntegration as a OrganizationIntegrationOpsgenie
 func (t OrganizationIntegration) AsOrganizationIntegrationOpsgenie() (OrganizationIntegrationOpsgenie, error) {

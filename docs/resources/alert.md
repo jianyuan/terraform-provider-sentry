@@ -238,6 +238,20 @@ resource "sentry_alert" "default" {
             integration_id = data.sentry_organization_integration.jira.id
             project        = "349719"
             issue_type     = "1"
+
+            # Optional Jira fields. All values are IDs, not display names.
+            labels     = "oncall,triage" # comma-separated, not a list
+            components = ["10001"]
+            priority   = "3"
+            reporter   = "5b10ac8d82e05b22cc7d4ef5" # Jira account ID
+
+            # Any other Jira field, keyed by field ID. Sentry rewrites
+            # camelCase keys on write, so camelCase field IDs must be
+            # spelled all-lowercase: `fixversions`, not `fixVersions`.
+            additional_fields = {
+              customfield_10101 = "sre-team"
+              fixversions       = "10500"
+            }
           }
         }
       ]
@@ -268,6 +282,20 @@ resource "sentry_alert" "default" {
             integration_id = data.sentry_organization_integration.jira_server.id
             project        = "349719"
             issue_type     = "1"
+
+            # Optional Jira fields. All values are IDs, not display names.
+            labels     = "oncall,triage" # comma-separated, not a list
+            components = ["10001"]
+            priority   = "3"
+            reporter   = "jira-bot" # Jira Server username
+
+            # Any other Jira field, keyed by field ID. Sentry rewrites
+            # camelCase keys on write, so camelCase field IDs must be
+            # spelled all-lowercase: `fixversions`, not `fixVersions`.
+            additional_fields = {
+              customfield_10101 = "sre-team"
+              fixversions       = "10500"
+            }
           }
         }
       ]
@@ -970,6 +998,14 @@ Required:
 - `issue_type` (String) The ID of the type of issue that the ticket should be created as.
 - `project` (String) The ID of the Jira project.
 
+Optional:
+
+- `additional_fields` (Map of String) Additional Jira fields to set on the created issue, keyed by Jira field ID (e.g. `customfield_10101`). Use this for custom fields and any built-in field not exposed above. Sentry's API converts camelCase keys to snake_case on write, which corrupts them, so camelCase field IDs must be written all-lowercase: use `fixversions`, not `fixVersions`. Jira matches field IDs case-insensitively, so the lowercase spelling resolves to the same field.
+- `components` (Set of String) The IDs of the Jira components to assign to the issue, used for triage routing. These are component IDs, not names.
+- `labels` (String) A comma-separated list of labels to add to the issue (e.g. `oncall,triage`). Note: unlike the `github` action's `labels`, Jira expects a single comma-separated string rather than a list.
+- `priority` (String) The ID of the priority to set on the issue. This is a priority ID, not a name.
+- `reporter` (String) The Jira account ID of the user to set as the reporter of the issue. Useful for attributing automated tickets to a service account.
+
 
 <a id="nestedatt--action_filters--actions--jira_server"></a>
 ### Nested Schema for `action_filters.actions.jira_server`
@@ -979,6 +1015,14 @@ Required:
 - `integration_id` (String) The ID of the Jira Server integration.
 - `issue_type` (String) The ID of the type of issue that the ticket should be created as.
 - `project` (String) The ID of the Jira project.
+
+Optional:
+
+- `additional_fields` (Map of String) Additional Jira Server fields to set on the created issue, keyed by Jira Server field ID (e.g. `customfield_10101`). Use this for custom fields and any built-in field not exposed above. Sentry's API converts camelCase keys to snake_case on write, which corrupts them, so camelCase field IDs must be written all-lowercase: use `fixversions`, not `fixVersions`. Jira matches field IDs case-insensitively, so the lowercase spelling resolves to the same field.
+- `components` (Set of String) The IDs of the Jira Server components to assign to the issue, used for triage routing. These are component IDs, not names.
+- `labels` (String) A comma-separated list of labels to add to the issue (e.g. `oncall,triage`). Note: unlike the `github` action's `labels`, Jira Server expects a single comma-separated string rather than a list.
+- `priority` (String) The ID of the priority to set on the issue. This is a priority ID, not a name.
+- `reporter` (String) The Jira Server username of the user to set as the reporter of the issue. Useful for attributing automated tickets to a service account.
 
 
 <a id="nestedatt--action_filters--actions--msteams"></a>
