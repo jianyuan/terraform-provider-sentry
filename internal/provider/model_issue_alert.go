@@ -549,7 +549,7 @@ func (m *IssueAlertFilterEventAttributeModel) Fill(ctx context.Context, filter a
 			m.Value = types.StringValue(v.String())
 		}
 	} else {
-		diags.AddError("Invalid event attribute value", fmt.Sprintf("Invalid event attribute value %q. Please report this to the provider developers.", filter.Value))
+		diags.AddError("Invalid event attribute value", fmt.Sprintf("Invalid event attribute value %v. Please report this to the provider developers.", filter.Value))
 	}
 
 	return
