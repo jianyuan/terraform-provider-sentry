@@ -8,7 +8,6 @@ import (
 	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 	"github.com/oapi-codegen/nullable"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
-	"github.com/samber/lo"
 )
 
 func (r *OrganizationResource) getCreateJSONRequestBody(ctx context.Context, data OrganizationResourceModel) (*apiclient.CreateOrganizationJSONRequestBody, diag.Diagnostics) {
@@ -19,7 +18,7 @@ func (r *OrganizationResource) getCreateJSONRequestBody(ctx context.Context, dat
 		AgreeTerms: data.AgreeTerms.ValueBool(),
 	}
 	if !data.Slug.IsNull() && !data.Slug.IsUnknown() {
-		body.Slug = lo.ToPtr(data.Slug.ValueString())
+		body.Slug = data.Slug.ValueStringPointer()
 	}
 
 	return &body, diags
@@ -29,20 +28,20 @@ func (r *OrganizationResource) getUpdateJSONRequestBody(ctx context.Context, dat
 	var diags diag.Diagnostics
 
 	body := apiclient.UpdateOrganizationJSONRequestBody{
-		Name: lo.ToPtr(data.Name.ValueString()),
+		Name: data.Name.ValueStringPointer(),
 	}
 
 	if !data.Slug.IsNull() && !data.Slug.IsUnknown() {
-		body.Slug = lo.ToPtr(data.Slug.ValueString())
+		body.Slug = data.Slug.ValueStringPointer()
 	}
 	setBoolPtr := func(dst **bool, v supertypes.BoolValue) {
 		if !v.IsNull() && !v.IsUnknown() {
-			*dst = lo.ToPtr(v.ValueBool())
+			*dst = v.ValueBoolPointer()
 		}
 	}
 	setStringPtr := func(dst **string, v supertypes.StringValue) {
 		if !v.IsNull() && !v.IsUnknown() {
-			*dst = lo.ToPtr(v.ValueString())
+			*dst = v.ValueStringPointer()
 		}
 	}
 
@@ -62,7 +61,7 @@ func (r *OrganizationResource) getUpdateJSONRequestBody(ctx context.Context, dat
 	setBoolPtr(&body.EnhancedPrivacy, data.EnhancedPrivacy)
 	setBoolPtr(&body.ScrapeJavaScript, data.ScrapeJavascript)
 	if !data.StoreCrashReports.IsNull() && !data.StoreCrashReports.IsUnknown() {
-		body.StoreCrashReports = lo.ToPtr(int(data.StoreCrashReports.ValueInt64()))
+		body.StoreCrashReports = new(int(data.StoreCrashReports.ValueInt64()))
 	}
 	setBoolPtr(&body.AllowJoinRequests, data.AllowJoinRequests)
 	setBoolPtr(&body.DataScrubber, data.DataScrubber)
@@ -106,13 +105,13 @@ func (r *OrganizationResource) getUpdateJSONRequestBody(ctx context.Context, dat
 		for _, relay := range relays {
 			item := apiclient.TrustedRelayUpdate{}
 			if !relay.Name.IsNull() && !relay.Name.IsUnknown() {
-				item.Name = lo.ToPtr(relay.Name.ValueString())
+				item.Name = relay.Name.ValueStringPointer()
 			}
 			if !relay.PublicKey.IsNull() && !relay.PublicKey.IsUnknown() {
-				item.PublicKey = lo.ToPtr(relay.PublicKey.ValueString())
+				item.PublicKey = relay.PublicKey.ValueStringPointer()
 			}
 			if !relay.Description.IsNull() && !relay.Description.IsUnknown() {
-				item.Description = lo.ToPtr(relay.Description.ValueString())
+				item.Description = relay.Description.ValueStringPointer()
 			}
 			out = append(out, item)
 		}
