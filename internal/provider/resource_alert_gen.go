@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/mapvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -979,6 +980,34 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 												Required:            true,
 												CustomType:          supertypes.StringType{},
 											},
+											"labels": schema.StringAttribute{
+												MarkdownDescription: "A comma-separated list of labels to add to the issue (e.g. `oncall,triage`). Note: unlike the `github` action's `labels`, Jira expects a single comma-separated string rather than a list.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"components": schema.SetAttribute{
+												MarkdownDescription: "The IDs of the Jira components to assign to the issue, used for triage routing. These are component IDs, not names.",
+												Optional:            true,
+												CustomType:          supertypes.NewSetTypeOf[string](ctx),
+											},
+											"priority": schema.StringAttribute{
+												MarkdownDescription: "The ID of the priority to set on the issue. This is a priority ID, not a name.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"reporter": schema.StringAttribute{
+												MarkdownDescription: "The Jira account ID of the user to set as the reporter of the issue. Useful for attributing automated tickets to a service account.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"additional_fields": schema.MapAttribute{
+												MarkdownDescription: "Additional Jira fields to set on the created issue, keyed by Jira field ID (e.g. `customfield_10101`). Use this for custom fields and any built-in field not exposed above. Sentry's API converts camelCase keys to snake_case on write, which corrupts them, so camelCase field IDs must be written all-lowercase: use `fixversions`, not `fixVersions`. Jira matches field IDs case-insensitively, so the lowercase spelling resolves to the same field.",
+												Optional:            true,
+												CustomType:          supertypes.NewMapTypeOf[string](ctx),
+												Validators: []validator.Map{
+													mapvalidator.KeysAre(ticketAdditionalFieldKeyValidator()),
+												},
+											},
 										},
 									},
 									"jira_server": schema.SingleNestedAttribute{
@@ -1003,6 +1032,34 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 												MarkdownDescription: "The ID of the type of issue that the ticket should be created as.",
 												Required:            true,
 												CustomType:          supertypes.StringType{},
+											},
+											"labels": schema.StringAttribute{
+												MarkdownDescription: "A comma-separated list of labels to add to the issue (e.g. `oncall,triage`). Note: unlike the `github` action's `labels`, Jira Server expects a single comma-separated string rather than a list.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"components": schema.SetAttribute{
+												MarkdownDescription: "The IDs of the Jira Server components to assign to the issue, used for triage routing. These are component IDs, not names.",
+												Optional:            true,
+												CustomType:          supertypes.NewSetTypeOf[string](ctx),
+											},
+											"priority": schema.StringAttribute{
+												MarkdownDescription: "The ID of the priority to set on the issue. This is a priority ID, not a name.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"reporter": schema.StringAttribute{
+												MarkdownDescription: "The Jira Server username of the user to set as the reporter of the issue. Useful for attributing automated tickets to a service account.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"additional_fields": schema.MapAttribute{
+												MarkdownDescription: "Additional Jira Server fields to set on the created issue, keyed by Jira Server field ID (e.g. `customfield_10101`). Use this for custom fields and any built-in field not exposed above. Sentry's API converts camelCase keys to snake_case on write, which corrupts them, so camelCase field IDs must be written all-lowercase: use `fixversions`, not `fixVersions`. Jira matches field IDs case-insensitively, so the lowercase spelling resolves to the same field.",
+												Optional:            true,
+												CustomType:          supertypes.NewMapTypeOf[string](ctx),
+												Validators: []validator.Map{
+													mapvalidator.KeysAre(ticketAdditionalFieldKeyValidator()),
+												},
 											},
 										},
 									},
@@ -1485,15 +1542,25 @@ type AlertResourceModelActionFiltersItemActionsItemVsts struct {
 }
 
 type AlertResourceModelActionFiltersItemActionsItemJira struct {
-	IntegrationId supertypes.StringValue `tfsdk:"integration_id"`
-	Project       supertypes.StringValue `tfsdk:"project"`
-	IssueType     supertypes.StringValue `tfsdk:"issue_type"`
+	IntegrationId    supertypes.StringValue        `tfsdk:"integration_id"`
+	Project          supertypes.StringValue        `tfsdk:"project"`
+	IssueType        supertypes.StringValue        `tfsdk:"issue_type"`
+	Labels           supertypes.StringValue        `tfsdk:"labels"`
+	Components       supertypes.SetValueOf[string] `tfsdk:"components"`
+	Priority         supertypes.StringValue        `tfsdk:"priority"`
+	Reporter         supertypes.StringValue        `tfsdk:"reporter"`
+	AdditionalFields supertypes.MapValueOf[string] `tfsdk:"additional_fields"`
 }
 
 type AlertResourceModelActionFiltersItemActionsItemJiraServer struct {
-	IntegrationId supertypes.StringValue `tfsdk:"integration_id"`
-	Project       supertypes.StringValue `tfsdk:"project"`
-	IssueType     supertypes.StringValue `tfsdk:"issue_type"`
+	IntegrationId    supertypes.StringValue        `tfsdk:"integration_id"`
+	Project          supertypes.StringValue        `tfsdk:"project"`
+	IssueType        supertypes.StringValue        `tfsdk:"issue_type"`
+	Labels           supertypes.StringValue        `tfsdk:"labels"`
+	Components       supertypes.SetValueOf[string] `tfsdk:"components"`
+	Priority         supertypes.StringValue        `tfsdk:"priority"`
+	Reporter         supertypes.StringValue        `tfsdk:"reporter"`
+	AdditionalFields supertypes.MapValueOf[string] `tfsdk:"additional_fields"`
 }
 
 type AlertResourceModelActionFiltersItemActionsItemGithub struct {

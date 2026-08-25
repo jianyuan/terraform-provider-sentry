@@ -532,6 +532,18 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				outJira.Config.TargetType = "specific"
 				outJira.Data.AdditionalFields.Project = inJira.Project.Get()
 				outJira.Data.AdditionalFields.Issuetype = inJira.IssueType.Get()
+				outJira.Data.AdditionalFields.Labels = inJira.Labels.GetPtr()
+				outJira.Data.AdditionalFields.Priority = inJira.Priority.GetPtr()
+				outJira.Data.AdditionalFields.Reporter = inJira.Reporter.GetPtr()
+				if inJira.Components.IsKnown() {
+					components := inJira.Components.DiagsGet(ctx, diags)
+					outJira.Data.AdditionalFields.Components = &components
+				}
+				if inJira.AdditionalFields.IsKnown() {
+					for k, v := range inJira.AdditionalFields.DiagsGet(ctx, diags) {
+						outJira.Data.AdditionalFields.Set(k, v)
+					}
+				}
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -552,6 +564,18 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				outJiraServer.Config.TargetType = "specific"
 				outJiraServer.Data.AdditionalFields.Project = inJiraServer.Project.Get()
 				outJiraServer.Data.AdditionalFields.Issuetype = inJiraServer.IssueType.Get()
+				outJiraServer.Data.AdditionalFields.Labels = inJiraServer.Labels.GetPtr()
+				outJiraServer.Data.AdditionalFields.Priority = inJiraServer.Priority.GetPtr()
+				outJiraServer.Data.AdditionalFields.Reporter = inJiraServer.Reporter.GetPtr()
+				if inJiraServer.Components.IsKnown() {
+					components := inJiraServer.Components.DiagsGet(ctx, diags)
+					outJiraServer.Data.AdditionalFields.Components = &components
+				}
+				if inJiraServer.AdditionalFields.IsKnown() {
+					for k, v := range inJiraServer.AdditionalFields.DiagsGet(ctx, diags) {
+						outJiraServer.Data.AdditionalFields.Set(k, v)
+					}
+				}
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -1177,6 +1201,11 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 				outJira.IntegrationId = supertypes.NewStringValue(actionValue.IntegrationId)
 				outJira.Project = supertypes.NewStringValue(actionValue.Data.AdditionalFields.Project)
 				outJira.IssueType = supertypes.NewStringValue(actionValue.Data.AdditionalFields.Issuetype)
+				outJira.Labels = newOptionalTicketString(actionValue.Data.AdditionalFields.Labels)
+				outJira.Priority = newOptionalTicketString(actionValue.Data.AdditionalFields.Priority)
+				outJira.Reporter = newOptionalTicketString(actionValue.Data.AdditionalFields.Reporter)
+				outJira.Components = newOptionalTicketStringSet(ctx, actionValue.Data.AdditionalFields.Components)
+				outJira.AdditionalFields = newOptionalTicketAdditionalFields(ctx, actionValue.Data.AdditionalFields.AdditionalProperties, &diags)
 
 				outAction.Jira = supertypes.NewSingleNestedObjectValueOf(ctx, &outJira)
 
@@ -1185,6 +1214,11 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 				outJiraServer.IntegrationId = supertypes.NewStringValue(actionValue.IntegrationId)
 				outJiraServer.Project = supertypes.NewStringValue(actionValue.Data.AdditionalFields.Project)
 				outJiraServer.IssueType = supertypes.NewStringValue(actionValue.Data.AdditionalFields.Issuetype)
+				outJiraServer.Labels = newOptionalTicketString(actionValue.Data.AdditionalFields.Labels)
+				outJiraServer.Priority = newOptionalTicketString(actionValue.Data.AdditionalFields.Priority)
+				outJiraServer.Reporter = newOptionalTicketString(actionValue.Data.AdditionalFields.Reporter)
+				outJiraServer.Components = newOptionalTicketStringSet(ctx, actionValue.Data.AdditionalFields.Components)
+				outJiraServer.AdditionalFields = newOptionalTicketAdditionalFields(ctx, actionValue.Data.AdditionalFields.AdditionalProperties, &diags)
 
 				outAction.JiraServer = supertypes.NewSingleNestedObjectValueOf(ctx, &outJiraServer)
 
@@ -1242,4 +1276,66 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 	m.ActionFilters = supertypes.NewListNestedObjectValueOfValueSlice(ctx, outActionFilters)
 
 	return
+}
+
+// newOptionalTicketString converts an optional ticket `additionalFields` string
+// into a Terraform value. Sentry stores unset ticket fields inconsistently --
+// the key may be absent, or present with an empty string -- and both mean "not
+// set". Normalising both to null keeps an omitted attribute from showing
+// permanent drift after apply.
+func newOptionalTicketString(value *string) supertypes.StringValue {
+	if value == nil || *value == "" {
+		return supertypes.NewStringNull()
+	}
+	return supertypes.NewStringValue(*value)
+}
+
+// newOptionalTicketStringSet converts an optional ticket `additionalFields`
+// string list into a Terraform set, mapping both an absent key and an empty
+// list to null for the same reason as newOptionalTicketString.
+func newOptionalTicketStringSet(ctx context.Context, values *[]string) supertypes.SetValueOf[string] {
+	if values == nil || len(*values) == 0 {
+		return supertypes.NewSetValueOfNull[string](ctx)
+	}
+	return supertypes.NewSetValueOfSlice(ctx, *values)
+}
+
+// newOptionalTicketAdditionalFields converts the passthrough `additionalFields`
+// keys that have no dedicated attribute into a Terraform map. Values are
+// stringified because the schema models them as a map of strings; Sentry echoes
+// back whatever JSON scalar it was given, so a number written as "3" returns as
+// 3 and must be normalised to avoid drift.
+func newOptionalTicketAdditionalFields(ctx context.Context, values map[string]interface{}, diags *diag.Diagnostics) supertypes.MapValueOf[string] {
+	if len(values) == 0 {
+		return supertypes.NewMapValueOfNull[string](ctx)
+	}
+
+	out := make(map[string]string, len(values))
+	for k, v := range values {
+		switch tv := v.(type) {
+		case nil:
+			continue
+		case string:
+			out[k] = tv
+		case json.Number:
+			out[k] = tv.String()
+		case float64:
+			out[k] = strconv.FormatFloat(tv, 'f', -1, 64)
+		case bool:
+			out[k] = strconv.FormatBool(tv)
+		default:
+			b, err := json.Marshal(tv)
+			if err != nil {
+				continue
+			}
+			out[k] = string(b)
+		}
+	}
+
+	if len(out) == 0 {
+		return supertypes.NewMapValueOfNull[string](ctx)
+	}
+	v, d := supertypes.NewMapValueOfMap(ctx, out)
+	diags.Append(d...)
+	return v
 }
