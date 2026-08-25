@@ -144,7 +144,7 @@ func camelToSnakeCase(value string) string {
 			prevIsLower := prev >= 'a' && prev <= 'z'
 			// Mirrors Django's `[A-Z](?![A-Z]|$)`: a run-final uppercase only splits
 			// when followed by a lowercase character, not at end of string.
-			nextIsNotUpper := i+1 < len(runes) && !(runes[i+1] >= 'A' && runes[i+1] <= 'Z')
+			nextIsNotUpper := i+1 < len(runes) && (runes[i+1] < 'A' || runes[i+1] > 'Z')
 			if prevIsLower || nextIsNotUpper {
 				b.WriteRune('_')
 			}
