@@ -1,6 +1,6 @@
 module github.com/jianyuan/terraform-provider-sentry
 
-go 1.26.1
+go 1.27
 
 require (
 	github.com/google/go-cmp v0.7.0
