@@ -880,6 +880,10 @@ export default {
                   description:
                     "The integration ID associated with the Microsoft Teams team.",
                   computedOptionalRequired: "required",
+                  customType: {
+                    type: "sentrytypes.MsTeamsTeamIdType{}",
+                    value: "sentrytypes.MsTeamsTeamId",
+                  },
                 },
                 {
                   name: "channel_name",

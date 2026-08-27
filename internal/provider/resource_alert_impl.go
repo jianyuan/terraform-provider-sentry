@@ -474,7 +474,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				var outMsteams apiclient.OrganizationWorkflowActionFilterActionMsTeams
 				outMsteams.IntegrationId = inMsteams.IntegrationId.Get()
 				outMsteams.Config.TargetType = "specific"
-				outMsteams.Config.TargetIdentifier = inMsteams.TeamId.Get()
+				outMsteams.Config.TargetIdentifier = inMsteams.TeamId.ValueString()
 				outMsteams.Config.TargetDisplay = inMsteams.ChannelName.Get()
 				outMsteams.Data = map[string]interface{}{}
 
@@ -1174,7 +1174,7 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 			case apiclient.OrganizationWorkflowActionFilterActionMsTeams:
 				var outMsteams AlertResourceModelActionFiltersItemActionsItemMsteams
 				outMsteams.IntegrationId = supertypes.NewStringValue(actionValue.IntegrationId)
-				outMsteams.TeamId = supertypes.NewStringValue(actionValue.Config.TargetIdentifier)
+				outMsteams.TeamId = sentrytypes.NewMsTeamsTeamIdValue(actionValue.Config.TargetIdentifier)
 				outMsteams.ChannelName = supertypes.NewStringValue(actionValue.Config.TargetDisplay)
 
 				outAction.Msteams = supertypes.NewSingleNestedObjectValueOf(ctx, &outMsteams)

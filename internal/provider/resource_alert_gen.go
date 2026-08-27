@@ -893,7 +893,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 											"team_id": schema.StringAttribute{
 												MarkdownDescription: "The integration ID associated with the Microsoft Teams team.",
 												Required:            true,
-												CustomType:          supertypes.StringType{},
+												CustomType:          sentrytypes.MsTeamsTeamIdType{},
 											},
 											"channel_name": schema.StringAttribute{
 												MarkdownDescription: "The name of the Microsoft Teams channel to send the notification to.",
@@ -1523,9 +1523,9 @@ type AlertResourceModelActionFiltersItemActionsItemDiscord struct {
 }
 
 type AlertResourceModelActionFiltersItemActionsItemMsteams struct {
-	IntegrationId supertypes.StringValue `tfsdk:"integration_id"`
-	TeamId        supertypes.StringValue `tfsdk:"team_id"`
-	ChannelName   supertypes.StringValue `tfsdk:"channel_name"`
+	IntegrationId supertypes.StringValue    `tfsdk:"integration_id"`
+	TeamId        sentrytypes.MsTeamsTeamId `tfsdk:"team_id"`
+	ChannelName   supertypes.StringValue    `tfsdk:"channel_name"`
 }
 
 type AlertResourceModelActionFiltersItemActionsItemOpsgenie struct {
