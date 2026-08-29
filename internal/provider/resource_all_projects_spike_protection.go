@@ -14,10 +14,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/jianyuan/terraform-plugin-framework-utils/fwdiag"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
-	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 	"github.com/samber/lo"
 )
 
@@ -157,7 +157,7 @@ func (r *AllProjectsSpikeProtectionResource) Create(ctx context.Context, req res
 		}
 	}
 
-	allProjects := tfutils.MergeDiagnostics(r.readProjects(ctx, data.Organization.ValueString(), data.Enabled.ValueBool(), projects))(&resp.Diagnostics)
+	allProjects := fwdiag.Merge(r.readProjects(ctx, data.Organization.ValueString(), data.Enabled.ValueBool(), projects))(&resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -183,7 +183,7 @@ func (r *AllProjectsSpikeProtectionResource) Read(ctx context.Context, req resou
 		resp.Diagnostics.Append(data.Projects.ElementsAs(ctx, &projects, false)...)
 	}
 
-	allProjects := tfutils.MergeDiagnostics(r.readProjects(ctx, data.Organization.ValueString(), data.Enabled.ValueBool(), projects))(&resp.Diagnostics)
+	allProjects := fwdiag.Merge(r.readProjects(ctx, data.Organization.ValueString(), data.Enabled.ValueBool(), projects))(&resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -241,7 +241,7 @@ func (r *AllProjectsSpikeProtectionResource) Update(ctx context.Context, req res
 		}
 	}
 
-	allProjects := tfutils.MergeDiagnostics(r.readProjects(ctx, data.Organization.ValueString(), data.Enabled.ValueBool(), projects))(&resp.Diagnostics)
+	allProjects := fwdiag.Merge(r.readProjects(ctx, data.Organization.ValueString(), data.Enabled.ValueBool(), projects))(&resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}

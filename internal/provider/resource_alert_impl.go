@@ -7,10 +7,10 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/jianyuan/terraform-plugin-framework-utils/fwdiag"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/must"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
-	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 	"github.com/samber/lo"
 )
@@ -742,7 +742,7 @@ func (r *AlertResource) getCreateJSONRequestBody(ctx context.Context, data Alert
 
 	triggerConditions := append(
 		[]apiclient.OrganizationWorkflowTriggerCondition{},
-		tfutils.MergeDiagnostics(r.getTriggerConditions(ctx, data))(&diags)...,
+		fwdiag.Merge(r.getTriggerConditions(ctx, data))(&diags)...,
 	)
 
 	req := apiclient.CreateOrganizationWorkflowJSONRequestBody{
@@ -757,7 +757,7 @@ func (r *AlertResource) getCreateJSONRequestBody(ctx context.Context, data Alert
 			LogicType:  apiclient.OrganizationWorkflowTriggerLogicTypeAnyShort,
 			Conditions: triggerConditions,
 		},
-		ActionFilters: tfutils.MergeDiagnostics(r.getActionFilters(ctx, data))(&diags),
+		ActionFilters: fwdiag.Merge(r.getActionFilters(ctx, data))(&diags),
 	}
 
 	return &req, nil
@@ -773,7 +773,7 @@ func (r *AlertResource) getUpdateJSONRequestBody(ctx context.Context, data Alert
 
 	triggerConditions := append(
 		[]apiclient.OrganizationWorkflowTriggerCondition{},
-		tfutils.MergeDiagnostics(r.getTriggerConditions(ctx, data))(&diags)...,
+		fwdiag.Merge(r.getTriggerConditions(ctx, data))(&diags)...,
 	)
 
 	req := apiclient.UpdateOrganizationWorkflowJSONRequestBody{
@@ -789,7 +789,7 @@ func (r *AlertResource) getUpdateJSONRequestBody(ctx context.Context, data Alert
 			LogicType:  apiclient.OrganizationWorkflowTriggerLogicTypeAnyShort,
 			Conditions: triggerConditions,
 		},
-		ActionFilters: tfutils.MergeDiagnostics(r.getActionFilters(ctx, data))(&diags),
+		ActionFilters: fwdiag.Merge(r.getActionFilters(ctx, data))(&diags),
 	}
 
 	return &req, nil
