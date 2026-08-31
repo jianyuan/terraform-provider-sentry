@@ -113,6 +113,31 @@ export default {
           computedOptionalRequired: "optional",
           attributes: [],
         },
+        {
+          name: "event_frequency_count",
+          type: "single_nested",
+          description:
+            "Number of events seen by the workflow exceeds a threshold within an interval.",
+          computedOptionalRequired: "optional",
+          attributes: [
+            {
+              name: "value",
+              type: "int64",
+              description:
+                "The number of events that must be exceeded before the alert will fire.",
+              computedOptionalRequired: "required",
+              validators: ["int64validator.AtLeast(0)"],
+            },
+            {
+              name: "interval",
+              type: "string",
+              description:
+                "The time period in which to evaluate the event count.",
+              computedOptionalRequired: "required",
+              enum: `sentrydata.EventFrequencyStandardIntervals`,
+            },
+          ],
+        },
       ]),
     },
     {
