@@ -1176,6 +1176,7 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 				outMsteams.IntegrationId = supertypes.NewStringValue(actionValue.IntegrationId)
 				outMsteams.TeamId = sentrytypes.NewMsTeamsTeamIdValue(actionValue.Config.TargetIdentifier)
 				outMsteams.ChannelName = supertypes.NewStringValue(actionValue.Config.TargetDisplay)
+				outMsteams.TeamThreadId = supertypes.NewStringValue(actionValue.Config.TargetIdentifier)
 
 				outAction.Msteams = supertypes.NewSingleNestedObjectValueOf(ctx, &outMsteams)
 

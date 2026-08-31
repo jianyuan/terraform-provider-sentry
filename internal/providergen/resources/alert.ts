@@ -892,6 +892,13 @@ export default {
                     "The name of the Microsoft Teams channel to send the notification to.",
                   computedOptionalRequired: "required",
                 },
+                {
+                  name: "team_thread_id",
+                  type: "string",
+                  description:
+                    "The Microsoft Teams team's underlying thread ID, as resolved and returned by Sentry (e.g. `19:xxxxxxxx@thread.tacv2`). Sentry resolves `team_id` into this value server-side.",
+                  computedOptionalRequired: "computed",
+                },
               ],
             },
             {

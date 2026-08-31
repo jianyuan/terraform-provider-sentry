@@ -900,6 +900,11 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 												Required:            true,
 												CustomType:          supertypes.StringType{},
 											},
+											"team_thread_id": schema.StringAttribute{
+												MarkdownDescription: "The Microsoft Teams team's underlying thread ID, as resolved and returned by Sentry (e.g. `19:xxxxxxxx@thread.tacv2`). Sentry resolves `team_id` into this value server-side.",
+												Computed:            true,
+												CustomType:          supertypes.StringType{},
+											},
 										},
 									},
 									"opsgenie": schema.SingleNestedAttribute{
@@ -1526,6 +1531,7 @@ type AlertResourceModelActionFiltersItemActionsItemMsteams struct {
 	IntegrationId supertypes.StringValue    `tfsdk:"integration_id"`
 	TeamId        sentrytypes.MsTeamsTeamId `tfsdk:"team_id"`
 	ChannelName   supertypes.StringValue    `tfsdk:"channel_name"`
+	TeamThreadId  supertypes.StringValue    `tfsdk:"team_thread_id"`
 }
 
 type AlertResourceModelActionFiltersItemActionsItemOpsgenie struct {
