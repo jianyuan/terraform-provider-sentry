@@ -478,7 +478,7 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	teams := data.Teams.DiagsGet(ctx, resp.Diagnostics)
+	teams := fwdiag.Merge(data.Teams.Get(ctx))(&resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -861,8 +861,8 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	// Update teams
 	if !plan.Teams.Equal(state.Teams) {
-		planTeams := plan.Teams.DiagsGet(ctx, resp.Diagnostics)
-		stateTeams := state.Teams.DiagsGet(ctx, resp.Diagnostics)
+		planTeams := fwdiag.Merge(plan.Teams.Get(ctx))(&resp.Diagnostics)
+		stateTeams := fwdiag.Merge(state.Teams.Get(ctx))(&resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}
