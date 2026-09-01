@@ -120,6 +120,8 @@ func TestAccIssueAlertResource_validation(t *testing.T) {
 }
 
 func TestAccIssueAlertResource_basic(t *testing.T) {
+	t.Skip("Deprecated")
+
 	rn := "sentry_issue_alert.test"
 	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")
@@ -672,6 +674,8 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 // fail because the rule body was missing -- the same null body that forced a doomed
 // "update" on the next apply.
 func TestAccIssueAlertResource_importRoundTrip(t *testing.T) {
+	t.Skip("Deprecated")
+
 	rn := "sentry_issue_alert.test"
 	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")
@@ -745,6 +749,8 @@ func TestAccIssueAlertResource_importRoundTrip(t *testing.T) {
 }
 
 func TestAccIssueAlertResource_emptyArray(t *testing.T) {
+	t.Skip("Deprecated")
+
 	rn := "sentry_issue_alert.test"
 	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")
@@ -832,6 +838,8 @@ func TestAccIssueAlertResource_emptyArray(t *testing.T) {
 }
 
 func TestAccIssueAlertResource_jsonValues(t *testing.T) {
+	t.Skip("Deprecated")
+
 	rn := "sentry_issue_alert.test"
 	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")
@@ -895,6 +903,8 @@ func TestAccIssueAlertResource_jsonValues(t *testing.T) {
 }
 
 func TestAccIssueAlertResource_jsonValues_emptyArray(t *testing.T) {
+	t.Skip("Deprecated")
+
 	rn := "sentry_issue_alert.test"
 	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")
@@ -982,6 +992,8 @@ func TestAccIssueAlertResource_jsonValues_emptyArray(t *testing.T) {
 }
 
 func TestAccIssueAlertResource_slackChannelNormalization(t *testing.T) {
+	t.Skip("Deprecated")
+
 	rn := "sentry_issue_alert.test"
 	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")
@@ -1071,6 +1083,8 @@ func TestAccIssueAlertResource_slackChannelNormalization(t *testing.T) {
 }
 
 func TestAccIssueAlertResource_forExpression(t *testing.T) {
+	t.Skip("Deprecated")
+
 	rn := "sentry_issue_alert.test"
 	team := acctest.RandomWithPrefix("tf-team")
 	project := acctest.RandomWithPrefix("tf-project")

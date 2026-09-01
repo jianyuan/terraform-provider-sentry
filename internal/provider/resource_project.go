@@ -23,6 +23,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/jianyuan/terraform-plugin-framework-utils/fwdiag"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	intresource "github.com/jianyuan/terraform-provider-sentry/internal/resource"
@@ -170,14 +171,14 @@ func (m *ProjectResourceModel) Fill(ctx context.Context, project apiclient.Proje
 
 	var filters ProjectFilterResourceModel
 	diags.Append(filters.Fill(ctx, project)...)
-	m.Filters = tfutils.MergeDiagnostics(types.ObjectValueFrom(ctx, filters.AttributeTypes(), filters))(&diags)
+	m.Filters = fwdiag.Merge(types.ObjectValueFrom(ctx, filters.AttributeTypes(), filters))(&diags)
 
 	m.FingerprintingRules = sentrytypes.TrimmedStringValue(project.FingerprintingRules)
 	m.GroupingEnhancements = sentrytypes.TrimmedStringValue(project.GroupingEnhancements)
 
 	var clientSecurity ProjectClientSecurityResourceModel
 	diags.Append(clientSecurity.Fill(ctx, project)...)
-	m.ClientSecurity = tfutils.MergeDiagnostics(types.ObjectValueFrom(ctx, clientSecurity.AttributeTypes(), clientSecurity))(&diags)
+	m.ClientSecurity = fwdiag.Merge(types.ObjectValueFrom(ctx, clientSecurity.AttributeTypes(), clientSecurity))(&diags)
 
 	if project.HighlightTags != nil {
 		m.HighlightTags = supertypes.NewSetValueOfSlice(ctx, *project.HighlightTags)

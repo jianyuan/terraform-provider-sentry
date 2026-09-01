@@ -16,10 +16,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/jianyuan/terraform-plugin-framework-utils/fwdiag"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	intresource "github.com/jianyuan/terraform-provider-sentry/internal/resource"
-	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 	"github.com/samber/lo"
 )
@@ -258,7 +258,7 @@ func (r *ClientKeyResource) Create(ctx context.Context, req resource.CreateReque
 	}
 
 	if !data.JavascriptLoaderScript.IsUnknown() {
-		javascriptLoaderScript := tfutils.MergeDiagnostics(data.JavascriptLoaderScript.Get(ctx))(&resp.Diagnostics)
+		javascriptLoaderScript := fwdiag.Merge(data.JavascriptLoaderScript.Get(ctx))(&resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -362,7 +362,7 @@ func (r *ClientKeyResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 
 	if !plan.JavascriptLoaderScript.Equal(state.JavascriptLoaderScript) {
-		javascriptLoaderScript := tfutils.MergeDiagnostics(plan.JavascriptLoaderScript.Get(ctx))(&resp.Diagnostics)
+		javascriptLoaderScript := fwdiag.Merge(plan.JavascriptLoaderScript.Get(ctx))(&resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}

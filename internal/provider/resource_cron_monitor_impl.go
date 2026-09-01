@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/jianyuan/terraform-plugin-framework-utils/fwdiag"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
-	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
 
 func (r *CronMonitorResource) getCreateJSONRequestBody(ctx context.Context, data CronMonitorResourceModel) (*apiclient.CreateProjectMonitorJSONRequestBody, diag.Diagnostics) {
@@ -14,7 +14,7 @@ func (r *CronMonitorResource) getCreateJSONRequestBody(ctx context.Context, data
 
 	var outDs apiclient.ProjectMonitorDataSourceConfigCron
 
-	inSchedule := tfutils.MergeDiagnostics(data.Schedule.Get(ctx))(&diags)
+	inSchedule := fwdiag.Merge(data.Schedule.Get(ctx))(&diags)
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -84,7 +84,7 @@ func (r *CronMonitorResource) getCreateJSONRequestBody(ctx context.Context, data
 	}
 
 	if data.Owner.IsKnown() {
-		owner := tfutils.MergeDiagnostics(data.Owner.Get(ctx))(&diags)
+		owner := fwdiag.Merge(data.Owner.Get(ctx))(&diags)
 		if diags.HasError() {
 			return nil, diags
 		}

@@ -8,10 +8,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/jianyuan/terraform-plugin-framework-utils/fwdiag"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
-	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 	"github.com/samber/lo"
 )
@@ -896,8 +896,8 @@ func (m *IssueAlertActionNotifyEventSentryAppModel) Fill(ctx context.Context, ac
 				labelsMap[setting.Name] = *setting.Label
 			}
 		}
-		m.Settings = tfutils.MergeDiagnostics(supertypes.NewMapValueOfMap(ctx, settingsMap))(&diags)
-		m.SettingsLabels = tfutils.MergeDiagnostics(supertypes.NewMapValueOfMap(ctx, labelsMap))(&diags)
+		m.Settings = fwdiag.Merge(supertypes.NewMapValueOfMap(ctx, settingsMap))(&diags)
+		m.SettingsLabels = fwdiag.Merge(supertypes.NewMapValueOfMap(ctx, labelsMap))(&diags)
 	}
 	return
 }
@@ -913,14 +913,14 @@ func (m IssueAlertActionNotifyEventSentryAppModel) ToApi(ctx context.Context) (*
 	}
 
 	if m.Settings.IsKnown() {
-		elements := tfutils.MergeDiagnostics(m.Settings.Get(ctx))(&diags)
+		elements := fwdiag.Merge(m.Settings.Get(ctx))(&diags)
 		if diags.HasError() {
 			return nil, diags
 		}
 
 		var labels map[string]string
 		if m.SettingsLabels.IsKnown() {
-			labels = tfutils.MergeDiagnostics(m.SettingsLabels.Get(ctx))(&diags)
+			labels = fwdiag.Merge(m.SettingsLabels.Get(ctx))(&diags)
 			if diags.HasError() {
 				return nil, diags
 			}
@@ -1037,7 +1037,7 @@ func (m *IssueAlertActionSlackNotifyServiceModel) Fill(ctx context.Context, acti
 	m.Workspace = types.StringValue(action.Workspace)
 	m.Channel = sentrytypes.NewSlackChannelValue(action.Channel)
 	m.ChannelId = types.StringPointerValue(action.ChannelId)
-	m.Tags = tfutils.MergeDiagnostics(sentrytypes.StringSetPointerValue(action.Tags))(&diags)
+	m.Tags = fwdiag.Merge(sentrytypes.StringSetPointerValue(action.Tags))(&diags)
 	m.Notes = types.StringPointerValue(action.Notes)
 	return
 }
@@ -1050,7 +1050,7 @@ func (m IssueAlertActionSlackNotifyServiceModel) ToApi(ctx context.Context) (*ap
 		Workspace: m.Workspace.ValueString(),
 		Channel:   m.Channel.ValueString(),
 		ChannelId: m.ChannelId.ValueStringPointer(),
-		Tags:      tfutils.MergeDiagnostics(m.Tags.ValueStringPointer(ctx))(&diags),
+		Tags:      fwdiag.Merge(m.Tags.ValueStringPointer(ctx))(&diags),
 		Notes:     m.Notes.ValueStringPointer(),
 	})
 	if err != nil {
@@ -1102,7 +1102,7 @@ func (m *IssueAlertActionDiscordNotifyServiceModel) Fill(ctx context.Context, ac
 	m.Name = types.StringPointerValue(action.Name)
 	m.Server = types.StringValue(action.Server.String())
 	m.ChannelId = types.StringValue(action.ChannelId)
-	m.Tags = tfutils.MergeDiagnostics(sentrytypes.StringSetPointerValue(action.Tags))(&diags)
+	m.Tags = fwdiag.Merge(sentrytypes.StringSetPointerValue(action.Tags))(&diags)
 	return
 }
 
@@ -1113,7 +1113,7 @@ func (m IssueAlertActionDiscordNotifyServiceModel) ToApi(ctx context.Context) (*
 		Name:      m.Name.ValueStringPointer(),
 		Server:    json.Number(m.Server.ValueString()),
 		ChannelId: m.ChannelId.ValueString(),
-		Tags:      tfutils.MergeDiagnostics(m.Tags.ValueStringPointer(ctx))(&diags),
+		Tags:      fwdiag.Merge(m.Tags.ValueStringPointer(ctx))(&diags),
 	})
 	if err != nil {
 		diags.AddError("Failed to convert to API model", err.Error())
