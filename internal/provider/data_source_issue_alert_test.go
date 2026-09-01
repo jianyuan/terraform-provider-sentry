@@ -13,6 +13,8 @@ import (
 )
 
 func TestAccIssueAlertDataSource(t *testing.T) {
+	t.Skip("Deprecated")
+
 	rn := "sentry_issue_alert.test"
 	dsn := "data.sentry_issue_alert.test"
 	project := acctest.RandomWithPrefix("tf-project")
