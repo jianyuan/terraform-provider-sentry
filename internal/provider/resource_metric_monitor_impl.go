@@ -154,7 +154,7 @@ func (r *MetricMonitorResource) getCreateJSONRequestBody(ctx context.Context, da
 		diags.AddError("Error marshalling JSON", err.Error())
 		return nil, diags
 	}
-	return &req, nil
+	return &req, diags
 }
 
 func (r *MetricMonitorResource) getUpdateJSONRequestBody(ctx context.Context, data MetricMonitorResourceModel) (*apiclient.UpdateProjectMonitorJSONRequestBody, diag.Diagnostics) {

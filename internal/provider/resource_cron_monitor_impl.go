@@ -105,7 +105,7 @@ func (r *CronMonitorResource) getCreateJSONRequestBody(ctx context.Context, data
 		diags.AddError("Error marshalling JSON", err.Error())
 		return nil, diags
 	}
-	return &req, nil
+	return &req, diags
 }
 
 func (r *CronMonitorResource) getUpdateJSONRequestBody(ctx context.Context, data CronMonitorResourceModel) (*apiclient.UpdateProjectMonitorJSONRequestBody, diag.Diagnostics) {

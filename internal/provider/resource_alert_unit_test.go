@@ -7,7 +7,6 @@ import (
 
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -60,8 +59,7 @@ func TestNewOptionalTicketStringSet(t *testing.T) {
 	if got.IsNull() {
 		t.Fatal("expected a value for a populated components list")
 	}
-	var diags diag.Diagnostics
-	elems := got.DiagsGet(ctx, diags)
+	elems, diags := got.Get(ctx)
 	if diags.HasError() {
 		t.Fatalf("unexpected diagnostics: %v", diags)
 	}
