@@ -1160,7 +1160,7 @@ Optional:
 
 Required:
 
-- `comparison_interval` (String) The time period to compare against. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
+- `comparison_interval` (String) The time period to compare against. Valid values are: `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
 - `interval` (String) The time period in which to evaluate the value. e.g. Number of events in an issue is `comparisonInterval` percent higher `value` compared to `interval`. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
 - `value` (Number) A positive integer representing the number of events in an issue that must come in before the alert will fire.
 
@@ -1277,7 +1277,7 @@ Required:
 
 Required:
 
-- `interval` (String) The time period in which to evaluate the value. e.g. Percentage of sessions affected by an issue is more than `value` in `interval`. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
+- `interval` (String) The time period in which to evaluate the value. e.g. Percentage of sessions affected by an issue is more than `value` in `interval`. Valid values are: `1m`, `5m`, `10m`, `30m`, and `1h`.
 - `value` (Number) A positive integer representing the number of events in an issue that must come in before the alert will fire.
 
 
@@ -1286,8 +1286,8 @@ Required:
 
 Required:
 
-- `comparison_interval` (String) The time period to compare against. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
-- `interval` (String) The time period in which to evaluate the value. e.g. Percentage of sessions affected by an issue is `comparisonInterval` percent higher `value` compared to `interval`. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
+- `comparison_interval` (String) The time period to compare against. Valid values are: `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
+- `interval` (String) The time period in which to evaluate the value. e.g. Percentage of sessions affected by an issue is `comparisonInterval` percent higher `value` compared to `interval`. Valid values are: `1m`, `5m`, `10m`, `30m`, and `1h`.
 - `value` (Number) A positive integer representing the number of events in an issue that must come in before the alert will fire.
 
 Optional:
@@ -1326,10 +1326,114 @@ Optional:
 
 Optional:
 
+- `event_frequency_count` (Attributes) Number of events seen by the workflow exceeds a threshold within an interval. Acts as a WHEN trigger; Sentry's processor evaluates it asynchronously via the delayed-workflow path. (see [below for nested schema](#nestedatt--trigger_conditions--event_frequency_count))
+- `event_frequency_percent` (Attributes) Percent change in event count compared to a previous interval. Acts as a WHEN trigger. (see [below for nested schema](#nestedatt--trigger_conditions--event_frequency_percent))
+- `event_unique_user_frequency_count` (Attributes) Number of unique users affected by an issue exceeds a threshold within an interval. Acts as a WHEN trigger. (see [below for nested schema](#nestedatt--trigger_conditions--event_unique_user_frequency_count))
+- `event_unique_user_frequency_percent` (Attributes) Percent change in unique users affected by an issue compared to a previous interval. Acts as a WHEN trigger. (see [below for nested schema](#nestedatt--trigger_conditions--event_unique_user_frequency_percent))
 - `first_seen_event` (Attributes) A new issue is created. (see [below for nested schema](#nestedatt--trigger_conditions--first_seen_event))
 - `issue_resolved_trigger` (Attributes) An issue is resolved. (see [below for nested schema](#nestedatt--trigger_conditions--issue_resolved_trigger))
+- `percent_sessions_count` (Attributes) Percentage of sessions affected by an issue exceeds a threshold within an interval. Acts as a WHEN trigger. (see [below for nested schema](#nestedatt--trigger_conditions--percent_sessions_count))
+- `percent_sessions_percent` (Attributes) Percent change in session-affected percentage compared to a previous interval. Acts as a WHEN trigger. (see [below for nested schema](#nestedatt--trigger_conditions--percent_sessions_percent))
 - `reappeared_event` (Attributes) An issue escalates. (see [below for nested schema](#nestedatt--trigger_conditions--reappeared_event))
 - `regression_event` (Attributes) A resolved issue becomes unresolved. (see [below for nested schema](#nestedatt--trigger_conditions--regression_event))
+
+<a id="nestedatt--trigger_conditions--event_frequency_count"></a>
+### Nested Schema for `trigger_conditions.event_frequency_count`
+
+Required:
+
+- `interval` (String) The time period in which to evaluate the value. e.g. Number of events in an issue is more than `value` in `interval`. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
+- `value` (Number) A positive integer representing the number of events in an issue that must come in before the alert will fire.
+
+Optional:
+
+- `filters` (Attributes List) A list of additional sub-filters to evaluate before the alert will fire. (see [below for nested schema](#nestedatt--trigger_conditions--event_frequency_count--filters))
+
+<a id="nestedatt--trigger_conditions--event_frequency_count--filters"></a>
+### Nested Schema for `trigger_conditions.event_frequency_count.filters`
+
+Optional:
+
+- `attribute` (String) The attribute of the filter. Conflicts with `key`.
+- `key` (String) The key of the filter. Conflicts with `attribute`.
+- `match` (String) The match type of the filter. Valid values are: `co`, `ew`, `eq`, `gte`, `gt`, `is`, `in`, `lte`, `lt`, `nc`, `new`, `ne`, `ns`, `nsw`, `nin`, and `sw`.
+- `value` (String) The value of the filter.
+
+
+
+<a id="nestedatt--trigger_conditions--event_frequency_percent"></a>
+### Nested Schema for `trigger_conditions.event_frequency_percent`
+
+Required:
+
+- `comparison_interval` (String) The time period to compare against. Valid values are: `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
+- `interval` (String) The time period in which to evaluate the value. e.g. Number of events in an issue is `comparisonInterval` percent higher `value` compared to `interval`. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
+- `value` (Number) A positive integer representing the number of events in an issue that must come in before the alert will fire.
+
+Optional:
+
+- `filters` (Attributes List) A list of additional sub-filters to evaluate before the alert will fire. (see [below for nested schema](#nestedatt--trigger_conditions--event_frequency_percent--filters))
+
+<a id="nestedatt--trigger_conditions--event_frequency_percent--filters"></a>
+### Nested Schema for `trigger_conditions.event_frequency_percent.filters`
+
+Optional:
+
+- `attribute` (String) The attribute of the filter. Conflicts with `key`.
+- `key` (String) The key of the filter. Conflicts with `attribute`.
+- `match` (String) The match type of the filter. Valid values are: `co`, `ew`, `eq`, `gte`, `gt`, `is`, `in`, `lte`, `lt`, `nc`, `new`, `ne`, `ns`, `nsw`, `nin`, and `sw`.
+- `value` (String) The value of the filter.
+
+
+
+<a id="nestedatt--trigger_conditions--event_unique_user_frequency_count"></a>
+### Nested Schema for `trigger_conditions.event_unique_user_frequency_count`
+
+Required:
+
+- `interval` (String) The time period in which to evaluate the value. e.g. Number of users affected by an issue is more than `value` in `interval`. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
+- `value` (Number) A positive integer representing the number of users that must be affected before the alert will fire.
+
+Optional:
+
+- `filters` (Attributes List) A list of additional sub-filters to evaluate before the alert will fire. (see [below for nested schema](#nestedatt--trigger_conditions--event_unique_user_frequency_count--filters))
+
+<a id="nestedatt--trigger_conditions--event_unique_user_frequency_count--filters"></a>
+### Nested Schema for `trigger_conditions.event_unique_user_frequency_count.filters`
+
+Optional:
+
+- `attribute` (String) The attribute of the filter. Conflicts with `key`.
+- `key` (String) The key of the filter. Conflicts with `attribute`.
+- `match` (String) The match type of the filter. Valid values are: `co`, `ew`, `eq`, `gte`, `gt`, `is`, `in`, `lte`, `lt`, `nc`, `new`, `ne`, `ns`, `nsw`, `nin`, and `sw`.
+- `value` (String) The value of the filter.
+
+
+
+<a id="nestedatt--trigger_conditions--event_unique_user_frequency_percent"></a>
+### Nested Schema for `trigger_conditions.event_unique_user_frequency_percent`
+
+Required:
+
+- `comparison_interval` (String) The time period to compare against. Valid values are: `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
+- `interval` (String) The time period in which to evaluate the value. e.g. Number of users affected by an issue is `comparison_interval` percent higher than `value` compared to `interval`. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
+- `value` (Number) A positive integer representing the percent increase in unique users that must be affected before the alert will fire.
+
+Optional:
+
+- `filters` (Attributes List) A list of additional sub-filters to evaluate before the alert will fire. (see [below for nested schema](#nestedatt--trigger_conditions--event_unique_user_frequency_percent--filters))
+
+<a id="nestedatt--trigger_conditions--event_unique_user_frequency_percent--filters"></a>
+### Nested Schema for `trigger_conditions.event_unique_user_frequency_percent.filters`
+
+Optional:
+
+- `attribute` (String) The attribute of the filter. Conflicts with `key`.
+- `key` (String) The key of the filter. Conflicts with `attribute`.
+- `match` (String) The match type of the filter. Valid values are: `co`, `ew`, `eq`, `gte`, `gt`, `is`, `in`, `lte`, `lt`, `nc`, `new`, `ne`, `ns`, `nsw`, `nin`, and `sw`.
+- `value` (String) The value of the filter.
+
+
 
 <a id="nestedatt--trigger_conditions--first_seen_event"></a>
 ### Nested Schema for `trigger_conditions.first_seen_event`
@@ -1337,6 +1441,55 @@ Optional:
 
 <a id="nestedatt--trigger_conditions--issue_resolved_trigger"></a>
 ### Nested Schema for `trigger_conditions.issue_resolved_trigger`
+
+
+<a id="nestedatt--trigger_conditions--percent_sessions_count"></a>
+### Nested Schema for `trigger_conditions.percent_sessions_count`
+
+Required:
+
+- `interval` (String) The time period in which to evaluate the value. e.g. Percentage of sessions affected by an issue is more than `value` in `interval`. Valid values are: `1m`, `5m`, `10m`, `30m`, and `1h`.
+- `value` (Number) The percentage of sessions affected by an issue that must be exceeded before the alert will fire.
+
+Optional:
+
+- `filters` (Attributes List) A list of additional sub-filters to evaluate before the alert will fire. (see [below for nested schema](#nestedatt--trigger_conditions--percent_sessions_count--filters))
+
+<a id="nestedatt--trigger_conditions--percent_sessions_count--filters"></a>
+### Nested Schema for `trigger_conditions.percent_sessions_count.filters`
+
+Optional:
+
+- `attribute` (String) The attribute of the filter. Conflicts with `key`.
+- `key` (String) The key of the filter. Conflicts with `attribute`.
+- `match` (String) The match type of the filter. Valid values are: `co`, `ew`, `eq`, `gte`, `gt`, `is`, `in`, `lte`, `lt`, `nc`, `new`, `ne`, `ns`, `nsw`, `nin`, and `sw`.
+- `value` (String) The value of the filter.
+
+
+
+<a id="nestedatt--trigger_conditions--percent_sessions_percent"></a>
+### Nested Schema for `trigger_conditions.percent_sessions_percent`
+
+Required:
+
+- `comparison_interval` (String) The time period to compare against. Valid values are: `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
+- `interval` (String) The time period in which to evaluate the value. e.g. Percentage of sessions affected by an issue is `comparisonInterval` percent higher `value` compared to `interval`. Valid values are: `1m`, `5m`, `10m`, `30m`, and `1h`.
+- `value` (Number) The percent increase threshold for sessions affected by an issue.
+
+Optional:
+
+- `filters` (Attributes List) A list of additional sub-filters to evaluate before the alert will fire. (see [below for nested schema](#nestedatt--trigger_conditions--percent_sessions_percent--filters))
+
+<a id="nestedatt--trigger_conditions--percent_sessions_percent--filters"></a>
+### Nested Schema for `trigger_conditions.percent_sessions_percent.filters`
+
+Optional:
+
+- `attribute` (String) The attribute of the filter. Conflicts with `key`.
+- `key` (String) The key of the filter. Conflicts with `attribute`.
+- `match` (String) The match type of the filter. Valid values are: `co`, `ew`, `eq`, `gte`, `gt`, `is`, `in`, `lte`, `lt`, `nc`, `new`, `ne`, `ns`, `nsw`, `nin`, and `sw`.
+- `value` (String) The value of the filter.
+
 
 
 <a id="nestedatt--trigger_conditions--reappeared_event"></a>

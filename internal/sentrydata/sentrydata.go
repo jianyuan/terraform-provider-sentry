@@ -1193,3 +1193,22 @@ var EventFrequencyStandardIntervals = []string{
 	"1w",
 	"30d",
 }
+
+// https://github.com/getsentry/sentry/blob/master/src/sentry/rules/conditions/event_frequency.py
+var EventFrequencyComparisonIntervals = []string{
+	"5m",
+	"15m",
+	"1h",
+	"1d",
+	"1w",
+	"30d",
+}
+
+// https://github.com/getsentry/sentry/blob/master/src/sentry/rules/conditions/event_frequency.py
+var EventFrequencyPercentIntervals = []string{
+	"1m",
+	"5m",
+	"10m",
+	"30m",
+	"1h",
+}

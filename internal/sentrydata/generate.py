@@ -637,17 +637,26 @@ def parse_data_condition_group_types() -> dict[str, ResultData[Any]]:
 def parse_event_frequency() -> dict[str, ResultData[Any]]:
     data = get_file_data("src/sentry/rules/conditions/event_frequency.py")
     out: dict[str, ResultData[Any]] = {}
+    # The interval dicts drive the enum validators on the frequency trigger
+    # conditions. STANDARD_INTERVALS feeds the *_count / event_frequency_percent
+    # `interval`; PERCENT_INTERVALS feeds the percent_sessions_* `interval`;
+    # COMPARISON_INTERVALS feeds every *_percent `comparison_interval`.
+    interval_vars = {
+        "STANDARD_INTERVALS": "EventFrequencyStandardIntervals",
+        "PERCENT_INTERVALS": "EventFrequencyPercentIntervals",
+        "COMPARISON_INTERVALS": "EventFrequencyComparisonIntervals",
+    }
     for node in ast.walk(data.tree):
         match node:
             case ast.AnnAssign(
-                target=ast.Name(id="STANDARD_INTERVALS"),
+                target=ast.Name(id=name),
                 value=ast.Dict(keys=keys),
-            ):
+            ) if name in interval_vars:
                 result_intervals: list[str] = []
                 for key in keys:
                     assert isinstance(key, ast.Constant)
                     result_intervals.append(key.value)
-                out["EventFrequencyStandardIntervals"] = ResultData(
+                out[interval_vars[name]] = ResultData(
                     github_url=data.github_url, result=result_intervals
                 )
             case _:
