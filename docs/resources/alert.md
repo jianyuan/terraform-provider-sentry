@@ -1385,7 +1385,6 @@ Required:
 - `value` (Number) The number of events that must be exceeded before the alert will fire.
 
 
-
 <a id="nestedatt--trigger_conditions--first_seen_event"></a>
 ### Nested Schema for `trigger_conditions.first_seen_event`
 
