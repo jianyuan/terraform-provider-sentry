@@ -974,7 +974,7 @@ ${match(resource.import)
     },
   )
   .with(
-    { url: P.nullish, targetAttributes: [P.any] },
+    { url: P.optional(P.nullish), targetAttributes: [P.any] },
     ({ targetAttributes }) => {
       return `
         func (r *${resourceName}) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
@@ -998,7 +998,7 @@ ${match(resource.import)
     },
   )
   .with(
-    { url: P.nullish, targetAttributes: [P.any, P.any] },
+    { url: P.optional(P.nullish), targetAttributes: [P.any, P.any] },
     ({ targetAttributes }) => {
       return `
         func (r *${resourceName}) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
@@ -1023,7 +1023,7 @@ ${match(resource.import)
     },
   )
   .with(
-    { url: P.nullish, targetAttributes: [P.any, P.any, P.any] },
+    { url: P.optional(P.nullish), targetAttributes: [P.any, P.any, P.any] },
     ({ targetAttributes }) => {
       return `
         func (r *${resourceName}) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

@@ -28,7 +28,9 @@ export default {
   generate: {
     modelFillers: false,
   },
-  importStateAttributes: ["organization", "internal_id"],
+  import: {
+    targetAttributes: ["organization", "internal_id"],
+  },
   attributes: [
     {
       name: "id",

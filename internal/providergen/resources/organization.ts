@@ -17,7 +17,9 @@ export default {
   generate: {
     modelFillers: false,
   },
-  importStateAttributes: ["id"],
+  import: {
+    targetAttributes: ["id"],
+  },
   attributes: [
     {
       name: "id",
