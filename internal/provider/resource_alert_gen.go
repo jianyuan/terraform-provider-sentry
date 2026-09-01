@@ -919,11 +919,16 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 											"team_id": schema.StringAttribute{
 												MarkdownDescription: "The integration ID associated with the Microsoft Teams team.",
 												Required:            true,
-												CustomType:          supertypes.StringType{},
+												CustomType:          sentrytypes.MsTeamsTeamIdType{},
 											},
 											"channel_name": schema.StringAttribute{
 												MarkdownDescription: "The name of the Microsoft Teams channel to send the notification to.",
 												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"team_thread_id": schema.StringAttribute{
+												MarkdownDescription: "The Microsoft Teams team's underlying thread ID, as resolved and returned by Sentry (e.g. `19:xxxxxxxx@thread.tacv2`). Sentry resolves `team_id` into this value server-side.",
+												Computed:            true,
 												CustomType:          supertypes.StringType{},
 											},
 										},
@@ -1555,9 +1560,10 @@ type AlertResourceModelActionFiltersItemActionsItemDiscord struct {
 }
 
 type AlertResourceModelActionFiltersItemActionsItemMsteams struct {
-	IntegrationId supertypes.StringValue `tfsdk:"integration_id"`
-	TeamId        supertypes.StringValue `tfsdk:"team_id"`
-	ChannelName   supertypes.StringValue `tfsdk:"channel_name"`
+	IntegrationId supertypes.StringValue    `tfsdk:"integration_id"`
+	TeamId        sentrytypes.MsTeamsTeamId `tfsdk:"team_id"`
+	ChannelName   supertypes.StringValue    `tfsdk:"channel_name"`
+	TeamThreadId  supertypes.StringValue    `tfsdk:"team_thread_id"`
 }
 
 type AlertResourceModelActionFiltersItemActionsItemOpsgenie struct {

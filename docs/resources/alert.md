@@ -1034,6 +1034,10 @@ Required:
 - `integration_id` (String) The ID of the Microsoft Teams integration.
 - `team_id` (String) The integration ID associated with the Microsoft Teams team.
 
+Read-Only:
+
+- `team_thread_id` (String) The Microsoft Teams team's underlying thread ID, as resolved and returned by Sentry (e.g. `19:xxxxxxxx@thread.tacv2`). Sentry resolves `team_id` into this value server-side.
+
 
 <a id="nestedatt--action_filters--actions--opsgenie"></a>
 ### Nested Schema for `action_filters.actions.opsgenie`
