@@ -1167,14 +1167,6 @@ var DataConditionTypes = []string{
 	"seer_activity_trigger",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/workflow_engine/models/data_condition.py
-var TriggerConditionTypes = []string{
-	"first_seen_event",
-	"issue_resolved_trigger",
-	"reappeared_event",
-	"regression_event",
-}
-
 // https://github.com/getsentry/sentry/blob/master/src/sentry/workflow_engine/models/data_condition_group.py
 var DataConditionGroupTypes = []string{
 	"any",
