@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/jianyuan/terraform-plugin-framework-utils/fwdiag"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
-	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 	"github.com/oapi-codegen/nullable"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 )
@@ -82,14 +82,14 @@ func (r *OrganizationResource) getUpdateJSONRequestBody(ctx context.Context, dat
 	}
 
 	if !data.SensitiveFields.IsNull() && !data.SensitiveFields.IsUnknown() {
-		fields := tfutils.MergeDiagnostics(data.SensitiveFields.Get(ctx))(&diags)
+		fields := fwdiag.Merge(data.SensitiveFields.Get(ctx))(&diags)
 		if diags.HasError() {
 			return nil, diags
 		}
 		body.SensitiveFields = &fields
 	}
 	if !data.SafeFields.IsNull() && !data.SafeFields.IsUnknown() {
-		fields := tfutils.MergeDiagnostics(data.SafeFields.Get(ctx))(&diags)
+		fields := fwdiag.Merge(data.SafeFields.Get(ctx))(&diags)
 		if diags.HasError() {
 			return nil, diags
 		}
@@ -97,7 +97,7 @@ func (r *OrganizationResource) getUpdateJSONRequestBody(ctx context.Context, dat
 	}
 
 	if !data.TrustedRelays.IsNull() && !data.TrustedRelays.IsUnknown() {
-		relays := tfutils.MergeDiagnostics(data.TrustedRelays.Get(ctx))(&diags)
+		relays := fwdiag.Merge(data.TrustedRelays.Get(ctx))(&diags)
 		if diags.HasError() {
 			return nil, diags
 		}
