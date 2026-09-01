@@ -9,10 +9,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/jianyuan/terraform-plugin-framework-utils/fwdiag"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/must"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
-	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 )
 
@@ -23,7 +23,7 @@ func (r *MetricMonitorResource) getCreateJSONRequestBody(ctx context.Context, da
 	outDs.Aggregate = data.Aggregate.Get()
 	outDs.Dataset = data.Dataset.Get()
 
-	outDs.EventTypes = tfutils.MergeDiagnostics(data.EventTypes.Get(ctx))(&diags)
+	outDs.EventTypes = fwdiag.Merge(data.EventTypes.Get(ctx))(&diags)
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -58,12 +58,12 @@ func (r *MetricMonitorResource) getCreateJSONRequestBody(ctx context.Context, da
 		outDs.ExtrapolationMode.SetNull()
 	}
 
-	inConditionGroup := tfutils.MergeDiagnostics(data.ConditionGroup.Get(ctx))(&diags)
+	inConditionGroup := fwdiag.Merge(data.ConditionGroup.Get(ctx))(&diags)
 	if diags.HasError() {
 		return nil, diags
 	}
 
-	inConditions := tfutils.MergeDiagnostics(inConditionGroup.Conditions.Get(ctx))(&diags)
+	inConditions := fwdiag.Merge(inConditionGroup.Conditions.Get(ctx))(&diags)
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -96,7 +96,7 @@ func (r *MetricMonitorResource) getCreateJSONRequestBody(ctx context.Context, da
 		}
 	}
 
-	inConfig := tfutils.MergeDiagnostics(data.IssueDetection.Get(ctx))(&diags)
+	inConfig := fwdiag.Merge(data.IssueDetection.Get(ctx))(&diags)
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -133,7 +133,7 @@ func (r *MetricMonitorResource) getCreateJSONRequestBody(ctx context.Context, da
 	}
 
 	if data.Owner.IsKnown() {
-		owner := tfutils.MergeDiagnostics(data.Owner.Get(ctx))(&diags)
+		owner := fwdiag.Merge(data.Owner.Get(ctx))(&diags)
 		if diags.HasError() {
 			return nil, diags
 		}

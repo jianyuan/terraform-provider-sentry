@@ -7,10 +7,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/jianyuan/terraform-plugin-framework-utils/fwdiag"
+	"github.com/jianyuan/terraform-plugin-framework-utils/fwtypes"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
-	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
 )
 
 func (r *UptimeMonitorResource) getCreateJSONRequestBody(ctx context.Context, data UptimeMonitorResourceModel) (*apiclient.CreateProjectMonitorJSONRequestBody, diag.Diagnostics) {
@@ -23,13 +24,13 @@ func (r *UptimeMonitorResource) getCreateJSONRequestBody(ctx context.Context, da
 		IntervalSeconds: data.IntervalSeconds.Get(),
 		TimeoutMs:       data.TimeoutMs.Get(),
 	}
-	if !data.Body.IsNull() && !data.Body.IsUnknown() {
+	if fwtypes.IsKnown(data.Body) {
 		outDs.Body.Set(data.Body.ValueString())
 	} else {
 		outDs.Body.SetNull()
 	}
 	if data.Headers.IsKnown() {
-		inHeaders := tfutils.MergeDiagnostics(data.Headers.Get(ctx))(&diags)
+		inHeaders := fwdiag.Merge(data.Headers.Get(ctx))(&diags)
 		if diags.HasError() {
 			return nil, diags
 		}
@@ -37,7 +38,7 @@ func (r *UptimeMonitorResource) getCreateJSONRequestBody(ctx context.Context, da
 			outDs.Headers = append(outDs.Headers, []string{key, value})
 		}
 	}
-	if !data.AssertionJson.IsNull() && !data.AssertionJson.IsUnknown() {
+	if fwtypes.IsKnown(data.AssertionJson) {
 		outDs.Assertion.Set(json.RawMessage(data.AssertionJson.ValueString()))
 	} else {
 		outDs.Assertion.SetNull()
@@ -76,7 +77,7 @@ func (r *UptimeMonitorResource) getCreateJSONRequestBody(ctx context.Context, da
 	}
 
 	if data.Owner.IsKnown() {
-		owner := tfutils.MergeDiagnostics(data.Owner.Get(ctx))(&diags)
+		owner := fwdiag.Merge(data.Owner.Get(ctx))(&diags)
 		if diags.HasError() {
 			return nil, diags
 		}

@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/jianyuan/terraform-plugin-framework-utils/fwdiag"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	"github.com/jianyuan/terraform-provider-sentry/internal/must"
@@ -709,7 +710,7 @@ func (r *IssueAlertResource) ValidateConfig(ctx context.Context, req resource.Va
 	}
 
 	if data.ConditionsV2.IsKnown() {
-		conditions := tfutils.MergeDiagnostics(data.ConditionsV2.Get(ctx))(&resp.Diagnostics)
+		conditions := fwdiag.Merge(data.ConditionsV2.Get(ctx))(&resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -726,7 +727,7 @@ func (r *IssueAlertResource) ValidateConfig(ctx context.Context, req resource.Va
 	}
 
 	if data.FiltersV2.IsKnown() {
-		filters := tfutils.MergeDiagnostics(data.FiltersV2.Get(ctx))(&resp.Diagnostics)
+		filters := fwdiag.Merge(data.FiltersV2.Get(ctx))(&resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -751,7 +752,7 @@ func (r *IssueAlertResource) ValidateConfig(ctx context.Context, req resource.Va
 			)
 		}
 	} else if data.ActionsV2.IsKnown() {
-		actions := tfutils.MergeDiagnostics(data.ActionsV2.Get(ctx))(&resp.Diagnostics)
+		actions := fwdiag.Merge(data.ActionsV2.Get(ctx))(&resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}
