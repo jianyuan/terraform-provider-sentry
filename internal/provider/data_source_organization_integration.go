@@ -81,7 +81,8 @@ func (d *OrganizationIntegrationDataSource) Read(ctx context.Context, req dataso
 
 	var matchedIntegrations []apiclient.OrganizationIntegration
 	params := &apiclient.ListOrganizationIntegrationsParams{
-		ProviderKey: data.ProviderKey.ValueStringPointer(),
+		ProviderKey:   data.ProviderKey.ValueStringPointer(),
+		IncludeConfig: new(apiclient.ListOrganizationIntegrationsParamsIncludeConfigFalse),
 	}
 
 	for {
