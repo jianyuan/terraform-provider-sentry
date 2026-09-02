@@ -3,12 +3,18 @@
 page_title: "sentry_organization_integration Data Source - terraform-provider-sentry"
 subcategory: ""
 description: |-
-  Sentry Organization Integration data source. See the Sentry documentation https://docs.sentry.io/api/integrations/list-an-organizations-available-integrations/ for more information.
+  Retrieves details for a single integration connected to an organization. For more information, see the Sentry documentation https://docs.sentry.io/api/integrations/list-an-organizations-available-integrations/.
+  Because organizations often connect multiple integrations for the same provider, this data source automatically handles API pagination to find and return the specific integration matching your requested name. It will return an error if more than one matching integration is found.
+  If you need to retrieve multiple or all integrations for an organization, use the sentry_organization_integrations organization_integrations.md data source instead.
 ---
 
 # sentry_organization_integration (Data Source)
 
-Sentry Organization Integration data source. See the [Sentry documentation](https://docs.sentry.io/api/integrations/list-an-organizations-available-integrations/) for more information.
+Retrieves details for a single integration connected to an organization. For more information, see the [Sentry documentation](https://docs.sentry.io/api/integrations/list-an-organizations-available-integrations/).
+
+Because organizations often connect multiple integrations for the same provider, this data source automatically handles API pagination to find and return the specific integration matching your requested `name`. It will return an error if more than one matching integration is found.
+
+If you need to retrieve multiple or all integrations for an organization, use the [`sentry_organization_integrations`](organization_integrations.md) data source instead.
 
 ## Example Usage
 
@@ -37,9 +43,10 @@ data "sentry_organization_integration" "slack" {
 
 - `name` (String) The name of the integration.
 - `organization` (String) The organization the resource belongs to.
-- `provider_key` (String) Specific integration provider to filter by such as `slack`. See [the list of supported providers](https://docs.sentry.io/product/integrations/).
+- `provider_key` (String) Specific integration provider to filter by such as `slack`. See [the list of supported providers](https://docs.sentry.io/integrations/).
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) The ID of the integration.
 - `internal_id` (String, Deprecated) The internal ID for this organization integration. **Deprecated** Use `id` instead.
+- `raw_json` (String) Raw JSON representation of the integration. Use this if you need to access fields that are not explicitly exposed by the provider.
