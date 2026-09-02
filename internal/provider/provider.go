@@ -165,6 +165,7 @@ func (p *SentryProvider) DataSources(ctx context.Context) []func() datasource.Da
 		NewClientKeyDataSource,
 		NewIssueAlertDataSource,
 		NewOrganizationIntegrationDataSource,
+		NewOrganizationIntegrationsDataSource,
 		NewOrganizationMemberDataSource,
 		NewSentryAppInstallationDataSource,
 	)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -14,18 +15,27 @@ import (
 )
 
 type OrganizationIntegrationDataSourceModel struct {
-	Id           types.String `tfsdk:"id"`
-	InternalId   types.String `tfsdk:"internal_id"`
-	Organization types.String `tfsdk:"organization"`
-	ProviderKey  types.String `tfsdk:"provider_key"`
-	Name         types.String `tfsdk:"name"`
+	Organization types.String         `tfsdk:"organization"`
+	ProviderKey  types.String         `tfsdk:"provider_key"`
+	Id           types.String         `tfsdk:"id"`
+	InternalId   types.String         `tfsdk:"internal_id"`
+	Name         types.String         `tfsdk:"name"`
+	RawJson      jsontypes.Normalized `tfsdk:"raw_json"`
 }
 
-func (m *OrganizationIntegrationDataSourceModel) Fill(ctx context.Context, d apiclient.OrganizationIntegration) (diags diag.Diagnostics) {
-	m.Id = types.StringValue(d.Id)
-	m.InternalId = types.StringValue(d.Id)
-	m.ProviderKey = types.StringValue(d.Provider.Key)
-	m.Name = types.StringValue(d.Name)
+func (m *OrganizationIntegrationDataSourceModel) Fill(ctx context.Context, data apiclient.OrganizationIntegration) (diags diag.Diagnostics) {
+	m.Id = types.StringValue(data.Id)
+	m.InternalId = types.StringValue(data.Id)
+	m.ProviderKey = types.StringValue(data.Provider.Key)
+	m.Name = types.StringValue(data.Name)
+	m.RawJson = func() jsontypes.Normalized {
+		b, err := data.MarshalJSON()
+		if err != nil {
+			diags.AddError("failed to marshal organization integration", err.Error())
+			return jsontypes.NewNormalizedUnknown()
+		}
+		return jsontypes.NewNormalizedValue(string(b))
+	}()
 	return
 }
 
@@ -46,26 +56,31 @@ func (d *OrganizationIntegrationDataSource) Metadata(ctx context.Context, req da
 
 func (d *OrganizationIntegrationDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Sentry Organization Integration data source. See the [Sentry documentation](https://docs.sentry.io/api/integrations/list-an-organizations-available-integrations/) for more information.",
+		MarkdownDescription: "Retrieves details for a single integration connected to an organization. For more information, see the [Sentry documentation](https://docs.sentry.io/api/integrations/list-an-organizations-available-integrations/).\n\nBecause organizations often connect multiple integrations for the same provider, this data source automatically handles API pagination to find and return the specific integration matching your requested `name`. It will return an error if more than one matching integration is found.\n\nIf you need to retrieve multiple or all integrations for an organization, use the [`sentry_organization_integrations`](organization_integrations.md) data source instead.",
 
 		Attributes: map[string]schema.Attribute{
+			"organization": DataSourceOrganizationAttribute(),
+			"provider_key": schema.StringAttribute{
+				MarkdownDescription: "Specific integration provider to filter by such as `slack`. See [the list of supported providers](https://docs.sentry.io/integrations/).",
+				Required:            true,
+			},
 			"id": schema.StringAttribute{
-				Description: "The ID of this resource.",
-				Computed:    true,
+				MarkdownDescription: "The ID of the integration.",
+				Computed:            true,
 			},
 			"internal_id": schema.StringAttribute{
 				MarkdownDescription: "The internal ID for this organization integration. **Deprecated** Use `id` instead.",
 				Computed:            true,
 				DeprecationMessage:  "This field is deprecated and will be removed in a future version. Use `id` instead.",
 			},
-			"organization": DataSourceOrganizationAttribute(),
-			"provider_key": schema.StringAttribute{
-				Description: "Specific integration provider to filter by such as `slack`. See [the list of supported providers](https://docs.sentry.io/product/integrations/).",
-				Required:    true,
-			},
 			"name": schema.StringAttribute{
-				Description: "The name of the integration.",
-				Required:    true,
+				MarkdownDescription: "The name of the integration.",
+				Required:            true,
+			},
+			"raw_json": schema.StringAttribute{
+				MarkdownDescription: "Raw JSON representation of the integration. Use this if you need to access fields that are not explicitly exposed by the provider.",
+				Computed:            true,
+				CustomType:          jsontypes.NormalizedType{},
 			},
 		},
 	}
