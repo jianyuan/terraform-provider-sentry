@@ -88,11 +88,20 @@ paths:
       operationId: listOrganizationIntegrations
       parameters:
         - $ref: "#/components/parameters/cursor"
-        - name: provider_key
+        - name: providerKey
           in: query
           required: false
           schema:
             type: string
+        - name: includeConfig
+          in: query
+          required: false
+          schema:
+            type: integer
+            enum:
+              - 0
+            x-enum-varnames:
+              - "ListOrganizationIntegrationsParamsIncludeConfigFalse"
       responses:
         "200":
           description: OK

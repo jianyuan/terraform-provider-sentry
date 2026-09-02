@@ -1453,6 +1453,21 @@ func (e ProjectRuleFilterTaggedEventId) Valid() bool {
 	}
 }
 
+// Defines values for ListOrganizationIntegrationsParamsIncludeConfig.
+const (
+	ListOrganizationIntegrationsParamsIncludeConfigFalse ListOrganizationIntegrationsParamsIncludeConfig = 0
+)
+
+// Valid indicates whether the value is a known member of the ListOrganizationIntegrationsParamsIncludeConfig enum.
+func (e ListOrganizationIntegrationsParamsIncludeConfig) Valid() bool {
+	switch e {
+	case ListOrganizationIntegrationsParamsIncludeConfigFalse:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ListProjectClientKeysParamsStatus.
 const (
 	Active   ListProjectClientKeysParamsStatus = "active"
@@ -3052,9 +3067,13 @@ type ListOrganizationMonitorsParams struct {
 
 // ListOrganizationIntegrationsParams defines parameters for ListOrganizationIntegrations.
 type ListOrganizationIntegrationsParams struct {
-	Cursor      *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
-	ProviderKey *string `form:"provider_key,omitempty" json:"provider_key,omitempty"`
+	Cursor        *Cursor                                          `form:"cursor,omitempty" json:"cursor,omitempty"`
+	ProviderKey   *string                                          `form:"providerKey,omitempty" json:"providerKey,omitempty"`
+	IncludeConfig *ListOrganizationIntegrationsParamsIncludeConfig `form:"includeConfig,omitempty" json:"includeConfig,omitempty"`
 }
+
+// ListOrganizationIntegrationsParamsIncludeConfig defines parameters for ListOrganizationIntegrations.
+type ListOrganizationIntegrationsParamsIncludeConfig int
 
 // UpdateOrganizationIntegrationJSONBody defines parameters for UpdateOrganizationIntegration.
 type UpdateOrganizationIntegrationJSONBody struct {
@@ -9095,7 +9114,19 @@ func NewListOrganizationIntegrationsRequest(server string, organizationIdOrSlug 
 
 		if params.ProviderKey != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "provider_key", *params.ProviderKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "providerKey", *params.ProviderKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.IncludeConfig != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "includeConfig", *params.IncludeConfig, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
 				return nil, err
 			} else {
 				for _, qp := range strings.Split(queryFrag, "&") {
