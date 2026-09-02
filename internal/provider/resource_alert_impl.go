@@ -3,6 +3,8 @@ package provider
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"math"
 	"slices"
 	"strconv"
 
@@ -18,14 +20,14 @@ import (
 func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResourceModel) ([]apiclient.OrganizationWorkflowActionFilter, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	inActionFilters := data.ActionFilters.DiagsGet(ctx, diags)
+	inActionFilters := fwdiag.Merge(data.ActionFilters.Get(ctx))(&diags)
 	if diags.HasError() {
 		return nil, diags
 	}
 	var outActionFilters []apiclient.OrganizationWorkflowActionFilter
 	for _, inActionFilter := range inActionFilters {
 		// Conditions
-		inConditions := inActionFilter.Conditions.DiagsGet(ctx, diags)
+		inConditions := fwdiag.Merge(inActionFilter.Conditions.Get(ctx))(&diags)
 		if diags.HasError() {
 			return nil, diags
 		}
@@ -35,7 +37,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 			var outCondition apiclient.OrganizationWorkflowActionFilterCondition
 			switch {
 			case inCondition.AgeComparison.IsKnown():
-				inAgeComparison := inCondition.AgeComparison.DiagsGet(ctx, diags)
+				inAgeComparison := fwdiag.Merge(inCondition.AgeComparison.Get(ctx))(&diags)
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -52,7 +54,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				}
 
 			case inCondition.AssignedTo.IsKnown():
-				inAssignedTo := inCondition.AssignedTo.DiagsGet(ctx, diags)
+				inAssignedTo := fwdiag.Merge(inCondition.AssignedTo.Get(ctx))(&diags)
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -78,7 +80,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				}
 
 			case inCondition.IssueCategory.IsKnown():
-				inIssueCategory := inCondition.IssueCategory.DiagsGet(ctx, diags)
+				inIssueCategory := fwdiag.Merge(inCondition.IssueCategory.Get(ctx))(&diags)
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -94,7 +96,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				}
 
 			case inCondition.IssueOccurrences.IsKnown():
-				inIssueOccurrences := inCondition.IssueOccurrences.DiagsGet(ctx, diags)
+				inIssueOccurrences := fwdiag.Merge(inCondition.IssueOccurrences.Get(ctx))(&diags)
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -109,7 +111,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				}
 
 			case inCondition.IssuePriorityDeescalating.IsKnown():
-				inIssuePriorityDeescalating := inCondition.IssuePriorityDeescalating.DiagsGet(ctx, diags)
+				inIssuePriorityDeescalating := fwdiag.Merge(inCondition.IssuePriorityDeescalating.Get(ctx))(&diags)
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -124,7 +126,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				}
 
 			case inCondition.IssuePriorityGreaterOrEqual.IsKnown():
-				inIssuePriorityGreaterOrEqual := inCondition.IssuePriorityGreaterOrEqual.DiagsGet(ctx, diags)
+				inIssuePriorityGreaterOrEqual := fwdiag.Merge(inCondition.IssuePriorityGreaterOrEqual.Get(ctx))(&diags)
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -139,12 +141,12 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				}
 
 			case inCondition.EventUniqueUserFrequencyCount.IsKnown():
-				inEventUniqueUserFrequencyCount := inCondition.EventUniqueUserFrequencyCount.DiagsGet(ctx, diags)
+				inEventUniqueUserFrequencyCount := fwdiag.Merge(inCondition.EventUniqueUserFrequencyCount.Get(ctx))(&diags)
 				if diags.HasError() {
 					return nil, diags
 				}
 
-				inFilters := inEventUniqueUserFrequencyCount.Filters.DiagsGet(ctx, diags)
+				inFilters := fwdiag.Merge(inEventUniqueUserFrequencyCount.Filters.Get(ctx))(&diags)
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -168,12 +170,12 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				}
 
 			case inCondition.EventFrequencyCount.IsKnown():
-				inEventFrequencyCount := inCondition.EventFrequencyCount.DiagsGet(ctx, diags)
+				inEventFrequencyCount := fwdiag.Merge(inCondition.EventFrequencyCount.Get(ctx))(&diags)
 				if diags.HasError() {
 					return nil, diags
 				}
 
-				inFrequencyCountFilters := inEventFrequencyCount.Filters.DiagsGet(ctx, diags)
+				inFrequencyCountFilters := fwdiag.Merge(inEventFrequencyCount.Filters.Get(ctx))(&diags)
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -197,12 +199,12 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				}
 
 			case inCondition.EventFrequencyPercent.IsKnown():
-				inEventFrequencyPercent := inCondition.EventFrequencyPercent.DiagsGet(ctx, diags)
+				inEventFrequencyPercent := fwdiag.Merge(inCondition.EventFrequencyPercent.Get(ctx))(&diags)
 				if diags.HasError() {
 					return nil, diags
 				}
 
-				inFrequencyPercentFilters := inEventFrequencyPercent.Filters.DiagsGet(ctx, diags)
+				inFrequencyPercentFilters := fwdiag.Merge(inEventFrequencyPercent.Filters.Get(ctx))(&diags)
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -227,7 +229,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				}
 
 			case inCondition.PercentSessionsCount.IsKnown():
-				inPercentSessionsCount := inCondition.PercentSessionsCount.DiagsGet(ctx, diags)
+				inPercentSessionsCount := fwdiag.Merge(inCondition.PercentSessionsCount.Get(ctx))(&diags)
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -243,12 +245,12 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				}
 
 			case inCondition.PercentSessionsPercent.IsKnown():
-				inPercentSessionsPercent := inCondition.PercentSessionsPercent.DiagsGet(ctx, diags)
+				inPercentSessionsPercent := fwdiag.Merge(inCondition.PercentSessionsPercent.Get(ctx))(&diags)
 				if diags.HasError() {
 					return nil, diags
 				}
 
-				inSessionsPercentFilters := inPercentSessionsPercent.Filters.DiagsGet(ctx, diags)
+				inSessionsPercentFilters := fwdiag.Merge(inPercentSessionsPercent.Filters.Get(ctx))(&diags)
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -273,7 +275,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				}
 
 			case inCondition.EventAttribute.IsKnown():
-				inEventAttribute := inCondition.EventAttribute.DiagsGet(ctx, diags)
+				inEventAttribute := fwdiag.Merge(inCondition.EventAttribute.Get(ctx))(&diags)
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -290,7 +292,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				}
 
 			case inCondition.TaggedEvent.IsKnown():
-				inTaggedEvent := inCondition.TaggedEvent.DiagsGet(ctx, diags)
+				inTaggedEvent := fwdiag.Merge(inCondition.TaggedEvent.Get(ctx))(&diags)
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -317,7 +319,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				}
 
 			case inCondition.LatestAdoptedRelease.IsKnown():
-				inLatestAdoptedRelease := inCondition.LatestAdoptedRelease.DiagsGet(ctx, diags)
+				inLatestAdoptedRelease := fwdiag.Merge(inCondition.LatestAdoptedRelease.Get(ctx))(&diags)
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -334,7 +336,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				}
 
 			case inCondition.Level.IsKnown():
-				inLevel := inCondition.Level.DiagsGet(ctx, diags)
+				inLevel := fwdiag.Merge(inCondition.Level.Get(ctx))(&diags)
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -350,7 +352,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				}
 
 			case inCondition.IssueType.IsKnown():
-				inIssueType := inCondition.IssueType.DiagsGet(ctx, diags)
+				inIssueType := fwdiag.Merge(inCondition.IssueType.Get(ctx))(&diags)
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -369,7 +371,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 		}
 
 		// Actions
-		inActions := inActionFilter.Actions.DiagsGet(ctx, diags)
+		inActions := fwdiag.Merge(inActionFilter.Actions.Get(ctx))(&diags)
 		if diags.HasError() {
 			return nil, diags
 		}
@@ -379,7 +381,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 			var outAction apiclient.OrganizationWorkflowActionFilterAction
 			switch {
 			case inAction.Email.IsKnown():
-				inEmail := inAction.Email.DiagsGet(ctx, diags)
+				inEmail := fwdiag.Merge(inAction.Email.Get(ctx))(&diags)
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -406,7 +408,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				}
 
 			case inAction.Slack.IsKnown():
-				inSlack := inAction.Slack.DiagsGet(ctx, diags)
+				inSlack := fwdiag.Merge(inAction.Slack.Get(ctx))(&diags)
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -429,7 +431,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				}
 
 			case inAction.Pagerduty.IsKnown():
-				inPagerduty := inAction.Pagerduty.DiagsGet(ctx, diags)
+				inPagerduty := fwdiag.Merge(inAction.Pagerduty.Get(ctx))(&diags)
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -447,7 +449,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				}
 
 			case inAction.Discord.IsKnown():
-				inDiscord := inAction.Discord.DiagsGet(ctx, diags)
+				inDiscord := fwdiag.Merge(inAction.Discord.Get(ctx))(&diags)
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -466,7 +468,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				}
 
 			case inAction.Msteams.IsKnown():
-				inMsteams := inAction.Msteams.DiagsGet(ctx, diags)
+				inMsteams := fwdiag.Merge(inAction.Msteams.Get(ctx))(&diags)
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -474,7 +476,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				var outMsteams apiclient.OrganizationWorkflowActionFilterActionMsTeams
 				outMsteams.IntegrationId = inMsteams.IntegrationId.Get()
 				outMsteams.Config.TargetType = "specific"
-				outMsteams.Config.TargetIdentifier = inMsteams.TeamId.Get()
+				outMsteams.Config.TargetIdentifier = inMsteams.TeamId.ValueString()
 				outMsteams.Config.TargetDisplay = inMsteams.ChannelName.Get()
 				outMsteams.Data = map[string]interface{}{}
 
@@ -484,7 +486,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				}
 
 			case inAction.Opsgenie.IsKnown():
-				inOpsgenie := inAction.Opsgenie.DiagsGet(ctx, diags)
+				inOpsgenie := fwdiag.Merge(inAction.Opsgenie.Get(ctx))(&diags)
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -502,7 +504,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				}
 
 			case inAction.Vsts.IsKnown():
-				inVsts := inAction.Vsts.DiagsGet(ctx, diags)
+				inVsts := fwdiag.Merge(inAction.Vsts.Get(ctx))(&diags)
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -522,7 +524,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				}
 
 			case inAction.Jira.IsKnown():
-				inJira := inAction.Jira.DiagsGet(ctx, diags)
+				inJira := fwdiag.Merge(inAction.Jira.Get(ctx))(&diags)
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -536,11 +538,12 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				outJira.Data.AdditionalFields.Priority = inJira.Priority.GetPtr()
 				outJira.Data.AdditionalFields.Reporter = inJira.Reporter.GetPtr()
 				if inJira.Components.IsKnown() {
-					components := inJira.Components.DiagsGet(ctx, diags)
+					components := fwdiag.Merge(inJira.Components.Get(ctx))(&diags)
 					outJira.Data.AdditionalFields.Components = &components
 				}
 				if inJira.AdditionalFields.IsKnown() {
-					for k, v := range inJira.AdditionalFields.DiagsGet(ctx, diags) {
+					inAdditionalFields := fwdiag.Merge(inJira.AdditionalFields.Get(ctx))(&diags)
+					for k, v := range inAdditionalFields {
 						outJira.Data.AdditionalFields.Set(k, v)
 					}
 				}
@@ -554,7 +557,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				}
 
 			case inAction.JiraServer.IsKnown():
-				inJiraServer := inAction.JiraServer.DiagsGet(ctx, diags)
+				inJiraServer := fwdiag.Merge(inAction.JiraServer.Get(ctx))(&diags)
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -568,11 +571,12 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				outJiraServer.Data.AdditionalFields.Priority = inJiraServer.Priority.GetPtr()
 				outJiraServer.Data.AdditionalFields.Reporter = inJiraServer.Reporter.GetPtr()
 				if inJiraServer.Components.IsKnown() {
-					components := inJiraServer.Components.DiagsGet(ctx, diags)
+					components := fwdiag.Merge(inJiraServer.Components.Get(ctx))(&diags)
 					outJiraServer.Data.AdditionalFields.Components = &components
 				}
 				if inJiraServer.AdditionalFields.IsKnown() {
-					for k, v := range inJiraServer.AdditionalFields.DiagsGet(ctx, diags) {
+					inAdditionalFields := fwdiag.Merge(inJiraServer.AdditionalFields.Get(ctx))(&diags)
+					for k, v := range inAdditionalFields {
 						outJiraServer.Data.AdditionalFields.Set(k, v)
 					}
 				}
@@ -586,7 +590,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				}
 
 			case inAction.Github.IsKnown():
-				inGithub := inAction.Github.DiagsGet(ctx, diags)
+				inGithub := fwdiag.Merge(inAction.Github.Get(ctx))(&diags)
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -596,7 +600,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				outGithub.Config.TargetType = "specific"
 				outGithub.Data.AdditionalFields.Repo = inGithub.Repo.Get()
 				outGithub.Data.AdditionalFields.Assignee = inGithub.Assignee.Get()
-				outGithub.Data.AdditionalFields.Labels = inGithub.Labels.DiagsGet(ctx, diags)
+				outGithub.Data.AdditionalFields.Labels = fwdiag.Merge(inGithub.Labels.Get(ctx))(&diags)
 				outGithub.Data.AdditionalFields.Integration = inGithub.IntegrationId.Get()
 				if diags.HasError() {
 					return nil, diags
@@ -608,7 +612,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				}
 
 			case inAction.SentryApp.IsKnown():
-				inSentryApp := inAction.SentryApp.DiagsGet(ctx, diags)
+				inSentryApp := fwdiag.Merge(inAction.SentryApp.Get(ctx))(&diags)
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -618,7 +622,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				outSentryApp.Config.TargetIdentifier = inSentryApp.SentryAppId.Get()
 
 				if inSentryApp.Settings.IsKnown() {
-					inSettings := inSentryApp.Settings.DiagsGet(ctx, diags)
+					inSettings := fwdiag.Merge(inSentryApp.Settings.Get(ctx))(&diags)
 					if diags.HasError() {
 						return nil, diags
 					}
@@ -647,7 +651,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				}
 
 			case inAction.Webhook.IsKnown():
-				inWebhook := inAction.Webhook.DiagsGet(ctx, diags)
+				inWebhook := fwdiag.Merge(inAction.Webhook.Get(ctx))(&diags)
 				if diags.HasError() {
 					return nil, diags
 				}
@@ -679,7 +683,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 func (r *AlertResource) getTriggerConditions(ctx context.Context, data AlertResourceModel) ([]apiclient.OrganizationWorkflowTriggerCondition, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	inTriggerConditions := data.TriggerConditions.DiagsGet(ctx, diags)
+	inTriggerConditions := fwdiag.Merge(data.TriggerConditions.Get(ctx))(&diags)
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -704,13 +708,29 @@ func (r *AlertResource) getTriggerConditions(ctx context.Context, data AlertReso
 			outTriggerCondition.Type = "reappeared_event"
 		case triggerCondition.RegressionEvent.IsKnown():
 			outTriggerCondition.Type = "regression_event"
+		case triggerCondition.EventFrequencyCount.IsKnown():
+			in := fwdiag.Merge(triggerCondition.EventFrequencyCount.Get(ctx))(&diags)
+			if diags.HasError() {
+				return nil, diags
+			}
+
+			comparison := map[string]any{
+				"interval": in.Interval.Get(),
+				"value":    in.Value.Get(),
+			}
+
+			if err := outTriggerCondition.Comparison.FromOrganizationWorkflowTriggerConditionComparison1(comparison); err != nil {
+				diags.AddError("Failed to create event_frequency_count trigger condition", err.Error())
+				return nil, diags
+			}
+			outTriggerCondition.Type = "event_frequency_count"
 		}
 
 		outTriggerConditions = append(outTriggerConditions, outTriggerCondition)
 	}
 
 	if data.LegacyTriggerConditions.IsKnown() {
-		inLegacyTriggerConditions := data.LegacyTriggerConditions.DiagsGet(ctx, diags)
+		inLegacyTriggerConditions := fwdiag.Merge(data.LegacyTriggerConditions.Get(ctx))(&diags)
 		if diags.HasError() {
 			return nil, diags
 		}
@@ -732,10 +752,36 @@ func (r *AlertResource) getTriggerConditions(ctx context.Context, data AlertReso
 	return outTriggerConditions, diags
 }
 
+func parseEventFrequencyCountTriggerComparison(comparison map[string]any) (string, int64, error) {
+	interval, ok := comparison["interval"].(string)
+	if !ok {
+		return "", 0, fmt.Errorf("expected interval to be a string, got %T", comparison["interval"])
+	}
+
+	value, ok := comparison["value"].(float64)
+	if !ok {
+		return "", 0, fmt.Errorf("expected value to be a number, got %T", comparison["value"])
+	} else if value < 0 || value >= float64(math.MaxInt64) || math.Trunc(value) != value {
+		return "", 0, fmt.Errorf("expected value to be a non-negative integer, got %v", value)
+	}
+
+	if rawFilters, exists := comparison["filters"]; exists && rawFilters != nil {
+		filters, ok := rawFilters.([]any)
+		if !ok {
+			return "", 0, fmt.Errorf("expected filters to be a list, got %T", rawFilters)
+		}
+		if len(filters) > 0 {
+			return "", 0, fmt.Errorf("event_frequency_count filters are not supported")
+		}
+	}
+
+	return interval, int64(value), nil
+}
+
 func (r *AlertResource) getCreateJSONRequestBody(ctx context.Context, data AlertResourceModel) (*apiclient.CreateOrganizationWorkflowJSONRequestBody, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	monitorIds := data.MonitorIds.DiagsGet(ctx, diags)
+	monitorIds := fwdiag.Merge(data.MonitorIds.Get(ctx))(&diags)
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -760,13 +806,13 @@ func (r *AlertResource) getCreateJSONRequestBody(ctx context.Context, data Alert
 		ActionFilters: fwdiag.Merge(r.getActionFilters(ctx, data))(&diags),
 	}
 
-	return &req, nil
+	return &req, diags
 }
 
 func (r *AlertResource) getUpdateJSONRequestBody(ctx context.Context, data AlertResourceModel) (*apiclient.UpdateOrganizationWorkflowJSONRequestBody, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	monitorIds := data.MonitorIds.DiagsGet(ctx, diags)
+	monitorIds := fwdiag.Merge(data.MonitorIds.Get(ctx))(&diags)
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -792,7 +838,7 @@ func (r *AlertResource) getUpdateJSONRequestBody(ctx context.Context, data Alert
 		ActionFilters: fwdiag.Merge(r.getActionFilters(ctx, data))(&diags),
 	}
 
-	return &req, nil
+	return &req, diags
 }
 
 func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.OrganizationWorkflow) (diags diag.Diagnostics) {
@@ -829,6 +875,7 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 			IssueResolvedTrigger: supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemIssueResolvedTrigger](ctx),
 			ReappearedEvent:      supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemReappearedEvent](ctx),
 			RegressionEvent:      supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemRegressionEvent](ctx),
+			EventFrequencyCount:  supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemEventFrequencyCount](ctx),
 		}
 		switch triggerCondition.Type {
 		case "first_seen_event":
@@ -842,6 +889,26 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 			triggerConditions = append(triggerConditions, outTriggerCondition)
 		case "regression_event":
 			outTriggerCondition.RegressionEvent = supertypes.NewSingleNestedObjectValueOf(ctx, &AlertResourceModelTriggerConditionsItemRegressionEvent{})
+			triggerConditions = append(triggerConditions, outTriggerCondition)
+		case "event_frequency_count":
+			comparison, err := triggerCondition.Comparison.AsOrganizationWorkflowTriggerConditionComparison1()
+			if err != nil {
+				if _, boolErr := triggerCondition.Comparison.AsOrganizationWorkflowTriggerConditionComparison0(); boolErr == nil {
+					legacyTriggerConditions = append(legacyTriggerConditions, triggerCondition.Type)
+					continue
+				}
+				diags.AddError("Failed to parse event_frequency_count trigger condition", err.Error())
+				return diags
+			}
+			interval, value, err := parseEventFrequencyCountTriggerComparison(comparison)
+			if err != nil {
+				diags.AddError("Failed to parse event_frequency_count trigger condition", err.Error())
+				return diags
+			}
+			outTriggerCondition.EventFrequencyCount = supertypes.NewSingleNestedObjectValueOf(ctx, &AlertResourceModelTriggerConditionsItemEventFrequencyCount{
+				Interval: supertypes.NewStringValue(interval),
+				Value:    supertypes.NewInt64Value(value),
+			})
 			triggerConditions = append(triggerConditions, outTriggerCondition)
 		default:
 			legacyTriggerConditions = append(legacyTriggerConditions, triggerCondition.Type)
@@ -1174,8 +1241,9 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 			case apiclient.OrganizationWorkflowActionFilterActionMsTeams:
 				var outMsteams AlertResourceModelActionFiltersItemActionsItemMsteams
 				outMsteams.IntegrationId = supertypes.NewStringValue(actionValue.IntegrationId)
-				outMsteams.TeamId = supertypes.NewStringValue(actionValue.Config.TargetIdentifier)
+				outMsteams.TeamId = sentrytypes.NewMsTeamsTeamIdValue(actionValue.Config.TargetIdentifier)
 				outMsteams.ChannelName = supertypes.NewStringValue(actionValue.Config.TargetDisplay)
+				outMsteams.TeamThreadId = supertypes.NewStringValue(actionValue.Config.TargetIdentifier)
 
 				outAction.Msteams = supertypes.NewSingleNestedObjectValueOf(ctx, &outMsteams)
 

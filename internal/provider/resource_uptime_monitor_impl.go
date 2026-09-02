@@ -98,7 +98,7 @@ func (r *UptimeMonitorResource) getCreateJSONRequestBody(ctx context.Context, da
 		diags.AddError("Error marshalling JSON", err.Error())
 		return nil, diags
 	}
-	return &req, nil
+	return &req, diags
 }
 
 func (r *UptimeMonitorResource) getUpdateJSONRequestBody(ctx context.Context, data UptimeMonitorResourceModel) (*apiclient.UpdateProjectMonitorJSONRequestBody, diag.Diagnostics) {

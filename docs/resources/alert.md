@@ -1034,6 +1034,10 @@ Required:
 - `integration_id` (String) The ID of the Microsoft Teams integration.
 - `team_id` (String) The integration ID associated with the Microsoft Teams team.
 
+Read-Only:
+
+- `team_thread_id` (String) The Microsoft Teams team's underlying thread ID, as resolved and returned by Sentry (e.g. `19:xxxxxxxx@thread.tacv2`). Sentry resolves `team_id` into this value server-side.
+
 
 <a id="nestedatt--action_filters--actions--opsgenie"></a>
 ### Nested Schema for `action_filters.actions.opsgenie`
@@ -1370,10 +1374,20 @@ Optional:
 
 Optional:
 
+- `event_frequency_count` (Attributes) Number of events seen by the workflow exceeds a threshold within an interval. (see [below for nested schema](#nestedatt--trigger_conditions--event_frequency_count))
 - `first_seen_event` (Attributes) A new issue is created. (see [below for nested schema](#nestedatt--trigger_conditions--first_seen_event))
 - `issue_resolved_trigger` (Attributes) An issue is resolved. (see [below for nested schema](#nestedatt--trigger_conditions--issue_resolved_trigger))
 - `reappeared_event` (Attributes) An issue escalates. (see [below for nested schema](#nestedatt--trigger_conditions--reappeared_event))
 - `regression_event` (Attributes) A resolved issue becomes unresolved. (see [below for nested schema](#nestedatt--trigger_conditions--regression_event))
+
+<a id="nestedatt--trigger_conditions--event_frequency_count"></a>
+### Nested Schema for `trigger_conditions.event_frequency_count`
+
+Required:
+
+- `interval` (String) The time period in which to evaluate the event count. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
+- `value` (Number) The number of events that must be exceeded before the alert will fire.
+
 
 <a id="nestedatt--trigger_conditions--first_seen_event"></a>
 ### Nested Schema for `trigger_conditions.first_seen_event`

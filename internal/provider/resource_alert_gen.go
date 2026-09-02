@@ -101,7 +101,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 							Optional:            true,
 							CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemFirstSeenEvent](ctx),
 							Validators: []validator.Object{
-								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event")),
+								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event"), path.MatchRelative().AtParent().AtName("event_frequency_count")),
 							},
 							Attributes: map[string]schema.Attribute{},
 						},
@@ -110,7 +110,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 							Optional:            true,
 							CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemIssueResolvedTrigger](ctx),
 							Validators: []validator.Object{
-								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event")),
+								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event"), path.MatchRelative().AtParent().AtName("event_frequency_count")),
 							},
 							Attributes: map[string]schema.Attribute{},
 						},
@@ -119,7 +119,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 							Optional:            true,
 							CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemReappearedEvent](ctx),
 							Validators: []validator.Object{
-								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("regression_event")),
+								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("regression_event"), path.MatchRelative().AtParent().AtName("event_frequency_count")),
 							},
 							Attributes: map[string]schema.Attribute{},
 						},
@@ -128,9 +128,35 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 							Optional:            true,
 							CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemRegressionEvent](ctx),
 							Validators: []validator.Object{
-								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event")),
+								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("event_frequency_count")),
 							},
 							Attributes: map[string]schema.Attribute{},
+						},
+						"event_frequency_count": schema.SingleNestedAttribute{
+							MarkdownDescription: "Number of events seen by the workflow exceeds a threshold within an interval.",
+							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemEventFrequencyCount](ctx),
+							Validators: []validator.Object{
+								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event")),
+							},
+							Attributes: map[string]schema.Attribute{
+								"value": schema.Int64Attribute{
+									MarkdownDescription: "The number of events that must be exceeded before the alert will fire.",
+									Required:            true,
+									CustomType:          supertypes.Int64Type{},
+									Validators: []validator.Int64{
+										int64validator.AtLeast(0),
+									},
+								},
+								"interval": tfutils.WithEnumStringAttribute(
+									schema.StringAttribute{
+										MarkdownDescription: "The time period in which to evaluate the event count.",
+										Required:            true,
+										CustomType:          supertypes.StringType{},
+									},
+									sentrydata.EventFrequencyStandardIntervals,
+								),
+							},
 						},
 					},
 				},
@@ -893,11 +919,16 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 											"team_id": schema.StringAttribute{
 												MarkdownDescription: "The integration ID associated with the Microsoft Teams team.",
 												Required:            true,
-												CustomType:          supertypes.StringType{},
+												CustomType:          sentrytypes.MsTeamsTeamIdType{},
 											},
 											"channel_name": schema.StringAttribute{
 												MarkdownDescription: "The name of the Microsoft Teams channel to send the notification to.",
 												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"team_thread_id": schema.StringAttribute{
+												MarkdownDescription: "The Microsoft Teams team's underlying thread ID, as resolved and returned by Sentry (e.g. `19:xxxxxxxx@thread.tacv2`). Sentry resolves `team_id` into this value server-side.",
+												Computed:            true,
 												CustomType:          supertypes.StringType{},
 											},
 										},
@@ -1318,6 +1349,7 @@ type AlertResourceModelTriggerConditionsItem struct {
 	IssueResolvedTrigger supertypes.SingleNestedObjectValueOf[AlertResourceModelTriggerConditionsItemIssueResolvedTrigger] `tfsdk:"issue_resolved_trigger"`
 	ReappearedEvent      supertypes.SingleNestedObjectValueOf[AlertResourceModelTriggerConditionsItemReappearedEvent]      `tfsdk:"reappeared_event"`
 	RegressionEvent      supertypes.SingleNestedObjectValueOf[AlertResourceModelTriggerConditionsItemRegressionEvent]      `tfsdk:"regression_event"`
+	EventFrequencyCount  supertypes.SingleNestedObjectValueOf[AlertResourceModelTriggerConditionsItemEventFrequencyCount]  `tfsdk:"event_frequency_count"`
 }
 
 type AlertResourceModelTriggerConditionsItemFirstSeenEvent struct {
@@ -1330,6 +1362,11 @@ type AlertResourceModelTriggerConditionsItemReappearedEvent struct {
 }
 
 type AlertResourceModelTriggerConditionsItemRegressionEvent struct {
+}
+
+type AlertResourceModelTriggerConditionsItemEventFrequencyCount struct {
+	Value    supertypes.Int64Value  `tfsdk:"value"`
+	Interval supertypes.StringValue `tfsdk:"interval"`
 }
 
 type AlertResourceModelActionFiltersItem struct {
@@ -1523,9 +1560,10 @@ type AlertResourceModelActionFiltersItemActionsItemDiscord struct {
 }
 
 type AlertResourceModelActionFiltersItemActionsItemMsteams struct {
-	IntegrationId supertypes.StringValue `tfsdk:"integration_id"`
-	TeamId        supertypes.StringValue `tfsdk:"team_id"`
-	ChannelName   supertypes.StringValue `tfsdk:"channel_name"`
+	IntegrationId supertypes.StringValue    `tfsdk:"integration_id"`
+	TeamId        sentrytypes.MsTeamsTeamId `tfsdk:"team_id"`
+	ChannelName   supertypes.StringValue    `tfsdk:"channel_name"`
+	TeamThreadId  supertypes.StringValue    `tfsdk:"team_thread_id"`
 }
 
 type AlertResourceModelActionFiltersItemActionsItemOpsgenie struct {

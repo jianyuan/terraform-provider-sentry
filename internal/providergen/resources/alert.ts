@@ -113,6 +113,31 @@ export default {
           computedOptionalRequired: "optional",
           attributes: [],
         },
+        {
+          name: "event_frequency_count",
+          type: "single_nested",
+          description:
+            "Number of events seen by the workflow exceeds a threshold within an interval.",
+          computedOptionalRequired: "optional",
+          attributes: [
+            {
+              name: "value",
+              type: "int64",
+              description:
+                "The number of events that must be exceeded before the alert will fire.",
+              computedOptionalRequired: "required",
+              validators: ["int64validator.AtLeast(0)"],
+            },
+            {
+              name: "interval",
+              type: "string",
+              description:
+                "The time period in which to evaluate the event count.",
+              computedOptionalRequired: "required",
+              enum: `sentrydata.EventFrequencyStandardIntervals`,
+            },
+          ],
+        },
       ]),
     },
     {
@@ -880,6 +905,10 @@ export default {
                   description:
                     "The integration ID associated with the Microsoft Teams team.",
                   computedOptionalRequired: "required",
+                  customType: {
+                    type: "sentrytypes.MsTeamsTeamIdType{}",
+                    value: "sentrytypes.MsTeamsTeamId",
+                  },
                 },
                 {
                   name: "channel_name",
@@ -887,6 +916,13 @@ export default {
                   description:
                     "The name of the Microsoft Teams channel to send the notification to.",
                   computedOptionalRequired: "required",
+                },
+                {
+                  name: "team_thread_id",
+                  type: "string",
+                  description:
+                    "The Microsoft Teams team's underlying thread ID, as resolved and returned by Sentry (e.g. `19:xxxxxxxx@thread.tacv2`). Sentry resolves `team_id` into this value server-side.",
+                  computedOptionalRequired: "computed",
                 },
               ],
             },
