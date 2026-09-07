@@ -318,6 +318,17 @@ func TestParseEventFrequencyCountTriggerComparisonRejectsFilters(t *testing.T) {
 	}
 }
 
+func TestParseEventUniqueUserFrequencyCountTriggerComparisonRejectsFilters(t *testing.T) {
+	_, _, err := parseEventUniqueUserFrequencyCountTriggerComparison(map[string]any{
+		"interval": "1m",
+		"value":    float64(1),
+		"filters":  []any{map[string]any{"key": "level"}},
+	})
+	if err == nil || !strings.Contains(err.Error(), "filters are not supported") {
+		t.Fatalf("expected unsupported filters error, got %v", err)
+	}
+}
+
 func TestAccAlertResource_eventFrequencyCountTriggerRoundTrip(t *testing.T) {
 	projectName := acctest.RandomWithPrefix("tf-project")
 	alertName := acctest.RandomWithPrefix("tf-alert")
@@ -402,6 +413,112 @@ func testAccAlertResourceEventFrequencyCountConfig(projectName, alertName string
 				event_frequency_count = {
 					value    = 0
 					interval = "1m"
+				}
+				},
+			]
+
+			action_filters = [
+				{
+					logic_type = "all"
+					conditions = []
+					actions = [
+						{
+							email = {
+								target_type      = "issue_owners"
+								fallthrough_type = "AllMembers"
+							}
+						},
+					]
+				},
+			]
+		}
+	`, acctest.TestOrganization, acctest.TestTeam.Slug, projectName, alertName)
+}
+
+func TestAccAlertResource_eventUniqueUserFrequencyCountTriggerRoundTrip(t *testing.T) {
+	projectName := acctest.RandomWithPrefix("tf-project")
+	alertName := acctest.RandomWithPrefix("tf-alert")
+	rn := "sentry_alert.test"
+	config := testAccAlertResourceEventUniqueUserFrequencyCountConfig(projectName, alertName)
+
+	var workflow apiclient.OrganizationWorkflow
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: config,
+				ConfigStateChecks: []statecheck.StateCheck{
+					stateCheckAlertExists(rn, &workflow),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("trigger_conditions"), knownvalue.ListExact([]knownvalue.Check{
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"event_unique_user_frequency_count": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"interval": knownvalue.StringExact("5m"),
+								"value":    knownvalue.Int64Exact(3),
+							}),
+						}),
+					})),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("legacy_trigger_conditions"), knownvalue.Null()),
+				},
+				PostApplyFunc: func() {
+					requireEventUniqueUserFrequencyCountTriggerComparison(t, workflow)
+				},
+			},
+		},
+	})
+}
+
+func requireEventUniqueUserFrequencyCountTriggerComparison(t *testing.T, workflow apiclient.OrganizationWorkflow) {
+	t.Helper()
+
+	triggers, err := workflow.Triggers.AsOrganizationWorkflowTrigger()
+	if err != nil {
+		t.Fatalf("failed to parse workflow triggers: %v", err)
+	}
+	for _, condition := range triggers.Conditions {
+		if condition.Type != "event_unique_user_frequency_count" {
+			continue
+		}
+
+		comparison, err := condition.Comparison.AsOrganizationWorkflowTriggerConditionComparison1()
+		if err != nil {
+			t.Fatalf("event_unique_user_frequency_count comparison is not an object: %v", err)
+		}
+		if comparison["interval"] != "5m" || comparison["value"] != float64(3) {
+			t.Fatalf("unexpected event_unique_user_frequency_count comparison: %#v", comparison)
+		}
+
+		return
+	}
+
+	t.Fatal("event_unique_user_frequency_count trigger not found in workflow API response")
+}
+
+func testAccAlertResourceEventUniqueUserFrequencyCountConfig(projectName, alertName string) string {
+	return fmt.Sprintf(`
+		resource "sentry_project" "test" {
+			organization = "%[1]s"
+			teams        = ["%[2]s"]
+			name         = "%[3]s"
+			platform     = "go"
+		}
+
+		data "sentry_project_issue_stream_monitor" "test" {
+			organization = "%[1]s"
+			project      = sentry_project.test.slug
+		}
+
+		resource "sentry_alert" "test" {
+			organization      = "%[1]s"
+			name              = "%[4]s"
+			frequency_minutes = 1440
+			monitor_ids       = [data.sentry_project_issue_stream_monitor.test.id]
+
+			trigger_conditions = [
+				{
+				event_unique_user_frequency_count = {
+					value    = 3
+					interval = "5m"
 				}
 				},
 			]
