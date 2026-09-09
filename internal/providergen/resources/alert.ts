@@ -138,6 +138,31 @@ export default {
             },
           ],
         },
+        {
+          name: "event_unique_user_frequency_count",
+          type: "single_nested",
+          description:
+            "Number of unique users affected by the workflow exceeds a threshold within an interval.",
+          computedOptionalRequired: "optional",
+          attributes: [
+            {
+              name: "value",
+              type: "int64",
+              description:
+                "The number of unique users that must be exceeded before the alert will fire.",
+              computedOptionalRequired: "required",
+              validators: ["int64validator.AtLeast(0)"],
+            },
+            {
+              name: "interval",
+              type: "string",
+              description:
+                "The time period in which to evaluate the unique user count.",
+              computedOptionalRequired: "required",
+              enum: `sentrydata.EventFrequencyStandardIntervals`,
+            },
+          ],
+        },
       ]),
     },
     {
