@@ -619,17 +619,21 @@ async def parse_event_frequency(
 ) -> dict[str, Variable[Any]]:
     data = await get_file_data(client, "src/sentry/rules/conditions/event_frequency.py")
     out: dict[str, Variable[Any]] = {}
+    interval_vars = {
+        "STANDARD_INTERVALS": "EventFrequencyStandardIntervals",
+        "PERCENT_INTERVALS": "EventFrequencyPercentIntervals",
+    }
     for node in ast.walk(data.tree):
         match node:
             case ast.AnnAssign(
-                target=ast.Name(id="STANDARD_INTERVALS"),
+                target=ast.Name(id=name),
                 value=ast.Dict(keys=keys),
-            ):
+            ) if name in interval_vars:
                 result_intervals: list[str] = []
                 for key in keys:
                     assert isinstance(key, ast.Constant)
                     result_intervals.append(key.value)
-                out["EventFrequencyStandardIntervals"] = Variable(
+                out[interval_vars[name]] = Variable(
                     github_url=data.github_url, data=result_intervals
                 )
             case _:
