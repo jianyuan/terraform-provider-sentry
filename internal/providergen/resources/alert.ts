@@ -163,6 +163,34 @@ export default {
             },
           ],
         },
+        {
+          name: "percent_sessions_count",
+          type: "single_nested",
+          description:
+            "Percentage of sessions affected by the workflow exceeds a threshold within an interval.",
+          computedOptionalRequired: "optional",
+          attributes: [
+            {
+              name: "value",
+              type: "float64",
+              description:
+                "The percentage of sessions affected that must be exceeded before the alert will fire.",
+              computedOptionalRequired: "required",
+              validators: [
+                "float64validator.AtLeast(0)",
+                "float64validator.AtMost(100)",
+              ],
+            },
+            {
+              name: "interval",
+              type: "string",
+              description:
+                "The time period in which to evaluate the percentage of affected sessions.",
+              computedOptionalRequired: "required",
+              enum: `sentrydata.EventFrequencyPercentIntervals`,
+            },
+          ],
+        },
       ]),
     },
     {
