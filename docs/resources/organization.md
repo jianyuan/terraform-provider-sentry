@@ -27,17 +27,58 @@ resource "sentry_organization" "default" {
 
 ### Required
 
-- `agree_terms` (Boolean) You agree to the applicable terms of service and privacy policy.
+- `agree_terms` (Boolean) You agree to the applicable terms of service and privacy policy. This is only used for creation.
 - `name` (String) The human readable name for the organization.
 
 ### Optional
 
+- `alerts_member_write` (Boolean) Allow members to create, edit, and delete alert rules by granting them the `alerts:write` scope.
+- `allow_join_requests` (Boolean) Allow users to request to join your organization.
+- `allow_member_project_creation` (Boolean) Allow members to create projects.
+- `allow_shared_issues` (Boolean) Allow sharing of limited details on issues to anonymous users.
+- `attachments_role` (String) The role required to download event attachments. Valid values are `member`, `admin`, `manager`, `owner`.
+- `avatar` (String) The image to upload as the organization avatar, in base64. Required if `avatar_type` is `upload`.
+- `avatar_type` (String) The type of display picture for the organization. Valid values are `letter_avatar`, `upload`.
+- `codecov_access` (Boolean) Enable Code Coverage Insights. This feature is only available for organizations on the Team plan and above.
+- `data_scrubber` (Boolean) Require server-side data scrubbing for all projects.
+- `data_scrubber_defaults` (Boolean) Apply the default scrubbers to prevent things like passwords and credit cards from being stored for all projects.
+- `debug_files_role` (String) The role required to download debug information files. Valid values are `member`, `admin`, `manager`, `owner`.
+- `default_role` (String) The default role new members will receive. Valid values are `member`, `admin`, `manager`, `owner`.
+- `enhanced_privacy` (Boolean) Enable enhanced privacy controls to limit personally identifiable information (PII) as well as source code in things like notifications.
+- `events_member_admin` (Boolean) Allow members to delete events by granting them the `event:admin` scope.
+- `github_nudge_invite` (Boolean) Allow Sentry to detect users committing to your GitHub repositories that are not part of your Sentry organization.
+- `github_open_pr_bot` (Boolean) Allow Sentry to comment on open pull requests to show recent error issues for the code being changed.
+- `github_pr_bot` (Boolean) Allow Sentry to comment on recent pull requests suspected of causing issues.
+- `gitlab_pr_bot` (Boolean) Allow Sentry to comment on recent pull requests suspected of causing issues.
+- `hide_ai_features` (Boolean) Hide AI features from the organization.
+- `is_early_adopter` (Boolean) Opt-in to new features before they're released to the public.
+- `open_membership` (Boolean) Allow organization members to freely join any team.
+- `relay_pii_config` (String) Advanced data scrubbing rules that can be configured for each project as a JSON string.
+- `require_2fa` (Boolean) Require and enforce two-factor authentication for all members.
+- `safe_fields` (List of String) A list of global field names which data scrubbers should ignore.
+- `scrape_javascript` (Boolean) Allow Sentry to scrape missing JavaScript source context when possible.
+- `scrub_ip_addresses` (Boolean) Prevent IP addresses from being stored for new events on all projects.
+- `sensitive_fields` (List of String) A list of additional global field names to match against when scrubbing data for all projects.
 - `slug` (String) The unique URL slug for this organization.
+- `store_crash_reports` (Number) How many native crash reports to store per issue. Valid values are `0`, `1`, `5`, `10`, `20`, `50`, `100`, `-1` (unlimited).
+- `trusted_relays` (Attributes List) A list of local Relays registered for the organization. (see [below for nested schema](#nestedatt--trusted_relays))
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) The unique URL slug for this organization.
 - `internal_id` (String) The internal ID for this organization.
+
+<a id="nestedatt--trusted_relays"></a>
+### Nested Schema for `trusted_relays`
+
+Required:
+
+- `name` (String) The name of the relay.
+- `public_key` (String) The public key of the relay.
+
+Optional:
+
+- `description` (String) A description for the relay.
 
 ## Import
 
