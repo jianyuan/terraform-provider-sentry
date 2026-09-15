@@ -622,6 +622,7 @@ async def parse_event_frequency(
     interval_vars = {
         "STANDARD_INTERVALS": "EventFrequencyStandardIntervals",
         "PERCENT_INTERVALS": "EventFrequencyPercentIntervals",
+        "COMPARISON_INTERVALS": "EventFrequencyComparisonIntervals",
     }
     for node in ast.walk(data.tree):
         match node:

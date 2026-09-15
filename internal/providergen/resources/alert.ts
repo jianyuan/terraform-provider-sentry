@@ -191,6 +191,38 @@ export default {
             },
           ],
         },
+        {
+          name: "percent_sessions_percent",
+          type: "single_nested",
+          description:
+            "Percent change in session-affected percentage compared to a previous interval.",
+          computedOptionalRequired: "optional",
+          attributes: [
+            {
+              name: "value",
+              type: "float64",
+              description:
+                "The percent increase threshold for sessions affected by an issue.",
+              computedOptionalRequired: "required",
+              validators: ["float64validator.AtLeast(0)"],
+            },
+            {
+              name: "interval",
+              type: "string",
+              description:
+                "The time period in which to evaluate the session percentage.",
+              computedOptionalRequired: "required",
+              enum: `sentrydata.EventFrequencyPercentIntervals`,
+            },
+            {
+              name: "comparison_interval",
+              type: "string",
+              description: "The time period to compare against.",
+              computedOptionalRequired: "required",
+              enum: `sentrydata.EventFrequencyComparisonIntervals`,
+            },
+          ],
+        },
       ]),
     },
     {
