@@ -75,6 +75,7 @@ func (r *IntegrationPagerDuty) Schema(ctx context.Context, req resource.SchemaRe
 			"integration_key": schema.StringAttribute{
 				MarkdownDescription: "The integration key of the PagerDuty service.",
 				Required:            true,
+				Sensitive:           true,
 			},
 		},
 	}

@@ -37,7 +37,7 @@ resource "sentry_integration_opsgenie" "test" {
 ### Required
 
 - `integration_id` (String) The ID of the Opsgenie integration. Source from the URL `https://<organization>.sentry.io/settings/integrations/opsgenie/<integration-id>/` or use the `sentry_organization_integration` data source.
-- `integration_key` (String) The integration key of the Opsgenie service.
+- `integration_key` (String, Sensitive) The integration key of the Opsgenie service.
 - `organization` (String) The organization of this resource.
 - `team` (String) The name of the Opsgenie team. In Sentry, this is called Label.
 

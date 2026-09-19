@@ -86,7 +86,7 @@ Optional:
 
 - `allowed_domains` (Set of String) A list of allowed domains. Examples: https://example.com, *, *.example.com, *:80.
 - `scrape_javascript` (Boolean) Enable JavaScript source fetching. Allow Sentry to scrape missing JavaScript source context when possible.
-- `security_token` (String) Security Token. Outbound requests matching Allowed Domains will have the header "{security_token_header}: {security_token}" appended.
+- `security_token` (String, Sensitive) Security Token. Outbound requests matching Allowed Domains will have the header "{security_token_header}: {security_token}" appended.
 - `security_token_header` (String) Security Token Header. Outbound requests matching Allowed Domains will have the header "{security_token_header}: {security_token}" appended.
 - `verify_tls_ssl` (Boolean) Verify TLS/SSL. Outbound requests will verify TLS (sometimes known as SSL) connections.
 

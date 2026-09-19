@@ -65,6 +65,7 @@ func (r *IntegrationOpsgenie) Schema(ctx context.Context, req resource.SchemaReq
 			"integration_key": schema.StringAttribute{
 				MarkdownDescription: "The integration key of the Opsgenie service.",
 				Required:            true,
+				Sensitive:           true,
 			},
 		},
 	}
