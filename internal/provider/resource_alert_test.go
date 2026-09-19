@@ -340,6 +340,18 @@ func TestParsePercentSessionsCountTriggerComparisonRejectsFilters(t *testing.T) 
 	}
 }
 
+func TestParsePercentSessionsPercentTriggerComparisonRejectsFilters(t *testing.T) {
+	_, _, _, err := parsePercentSessionsPercentTriggerComparison(map[string]any{
+		"interval":           "1h",
+		"comparisonInterval": "1w",
+		"value":              float64(20),
+		"filters":            []any{map[string]any{"key": "level"}},
+	})
+	if err == nil || !strings.Contains(err.Error(), "filters are not supported") {
+		t.Fatalf("expected unsupported filters error, got %v", err)
+	}
+}
+
 func TestAccAlertResource_eventFrequencyCountTriggerRoundTrip(t *testing.T) {
 	projectName := acctest.RandomWithPrefix("tf-project")
 	alertName := acctest.RandomWithPrefix("tf-alert")
@@ -637,6 +649,114 @@ func testAccAlertResourcePercentSessionsCountConfig(projectName, alertName strin
 					value    = 17.2
 					interval = "10m"
 				}
+				},
+			]
+
+			action_filters = [
+				{
+					logic_type = "all"
+					conditions = []
+					actions = [
+						{
+							email = {
+								target_type      = "issue_owners"
+								fallthrough_type = "AllMembers"
+							}
+						},
+					]
+				},
+			]
+		}
+	`, acctest.TestOrganization, acctest.TestTeam.Slug, projectName, alertName)
+}
+
+func TestAccAlertResource_percentSessionsPercentTriggerRoundTrip(t *testing.T) {
+	projectName := acctest.RandomWithPrefix("tf-project")
+	alertName := acctest.RandomWithPrefix("tf-alert")
+	rn := "sentry_alert.test"
+	config := testAccAlertResourcePercentSessionsPercentConfig(projectName, alertName)
+
+	var workflow apiclient.OrganizationWorkflow
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: config,
+				ConfigStateChecks: []statecheck.StateCheck{
+					stateCheckAlertExists(rn, &workflow),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("trigger_conditions"), knownvalue.ListExact([]knownvalue.Check{
+						knownvalue.ObjectPartial(map[string]knownvalue.Check{
+							"percent_sessions_percent": knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"interval":            knownvalue.StringExact("1h"),
+								"comparison_interval": knownvalue.StringExact("1w"),
+								"value":               knownvalue.Float64Exact(20),
+							}),
+						}),
+					})),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("legacy_trigger_conditions"), knownvalue.Null()),
+				},
+				PostApplyFunc: func() {
+					requirePercentSessionsPercentTriggerComparison(t, workflow)
+				},
+			},
+		},
+	})
+}
+
+func requirePercentSessionsPercentTriggerComparison(t *testing.T, workflow apiclient.OrganizationWorkflow) {
+	t.Helper()
+
+	triggers, err := workflow.Triggers.AsOrganizationWorkflowTrigger()
+	if err != nil {
+		t.Fatalf("failed to parse workflow triggers: %v", err)
+	}
+	for _, condition := range triggers.Conditions {
+		if condition.Type != "percent_sessions_percent" {
+			continue
+		}
+
+		comparison, err := condition.Comparison.AsOrganizationWorkflowTriggerConditionComparison1()
+		if err != nil {
+			t.Fatalf("percent_sessions_percent comparison is not an object: %v", err)
+		}
+		if comparison["interval"] != "1h" || comparison["comparisonInterval"] != "1w" || comparison["value"] != float64(20) {
+			t.Fatalf("unexpected percent_sessions_percent comparison: %#v", comparison)
+		}
+
+		return
+	}
+
+	t.Fatal("percent_sessions_percent trigger not found in workflow API response")
+}
+
+func testAccAlertResourcePercentSessionsPercentConfig(projectName, alertName string) string {
+	return fmt.Sprintf(`
+		resource "sentry_project" "test" {
+			organization = "%[1]s"
+			teams        = ["%[2]s"]
+			name         = "%[3]s"
+			platform     = "go"
+		}
+
+		data "sentry_project_issue_stream_monitor" "test" {
+			organization = "%[1]s"
+			project      = sentry_project.test.slug
+		}
+
+		resource "sentry_alert" "test" {
+			organization      = "%[1]s"
+			name              = "%[4]s"
+			frequency_minutes = 1440
+			monitor_ids       = [data.sentry_project_issue_stream_monitor.test.id]
+
+			trigger_conditions = [
+				{
+					percent_sessions_percent = {
+						value               = 20
+						interval            = "1h"
+						comparison_interval = "1w"
+					}
 				},
 			]
 
