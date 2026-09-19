@@ -36,9 +36,9 @@ resource "sentry_integration_pagerduty" "test" {
 
 ### Required
 
-- `integration_id` (String) The ID of the PagerDuty integration. Source from the URL `https://<organization>.sentry.io/settings/integrations/pagerduty/<integration-id>/` or use the `sentry_organization_integration` data source.
+- `integration_id` (String) <i style="color:red;font-weight: bold">(ForceNew)</i> The ID of the PagerDuty integration. Source from the URL `https://<organization>.sentry.io/settings/integrations/pagerduty/<integration-id>/` or use the `sentry_organization_integration` data source.
 - `integration_key` (String, Sensitive) The integration key of the PagerDuty service.
-- `organization` (String) The organization of this resource.
+- `organization` (String) <i style="color:red;font-weight: bold">(ForceNew)</i> The organization of this resource.
 - `service` (String) The name of the PagerDuty service.
 
 ### Read-Only

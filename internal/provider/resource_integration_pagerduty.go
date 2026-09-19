@@ -9,11 +9,14 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	schemaR "github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	intresource "github.com/jianyuan/terraform-provider-sentry/internal/resource"
+	superschema "github.com/orange-cloudavenue/terraform-plugin-framework-superschema"
 )
 
 type IntegrationPagerDutyModel struct {
@@ -58,27 +61,53 @@ func (r *IntegrationPagerDuty) Metadata(ctx context.Context, req resource.Metada
 }
 
 func (r *IntegrationPagerDuty) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
-		MarkdownDescription: "Manage a PagerDuty service integration.",
-
-		Attributes: map[string]schema.Attribute{
-			"id":           ResourceIdAttribute(),
-			"organization": ResourceOrganizationAttribute(),
-			"integration_id": schema.StringAttribute{
-				MarkdownDescription: "The ID of the PagerDuty integration. Source from the URL `https://<organization>.sentry.io/settings/integrations/pagerduty/<integration-id>/` or use the `sentry_organization_integration` data source.",
-				Required:            true,
+	resp.Schema = superschema.Schema{
+		Resource: superschema.SchemaDetails{
+			MarkdownDescription: "Manage a PagerDuty service integration.",
+		},
+		Attributes: superschema.Attributes{
+			"id": superschema.StringAttribute{
+				Resource: &schemaR.StringAttribute{
+					MarkdownDescription: "The ID of this resource.",
+					Computed:            true,
+					PlanModifiers: []planmodifier.String{
+						stringplanmodifier.UseStateForUnknown(),
+					},
+				},
 			},
-			"service": schema.StringAttribute{
-				MarkdownDescription: "The name of the PagerDuty service.",
-				Required:            true,
+			"organization": superschema.StringAttribute{
+				Resource: &schemaR.StringAttribute{
+					MarkdownDescription: "The organization of this resource.",
+					Required:            true,
+					PlanModifiers: []planmodifier.String{
+						stringplanmodifier.RequiresReplace(),
+					},
+				},
 			},
-			"integration_key": schema.StringAttribute{
-				MarkdownDescription: "The integration key of the PagerDuty service.",
-				Required:            true,
-				Sensitive:           true,
+			"integration_id": superschema.StringAttribute{
+				Resource: &schemaR.StringAttribute{
+					MarkdownDescription: "The ID of the PagerDuty integration. Source from the URL `https://<organization>.sentry.io/settings/integrations/pagerduty/<integration-id>/` or use the `sentry_organization_integration` data source.",
+					Required:            true,
+					PlanModifiers: []planmodifier.String{
+						stringplanmodifier.RequiresReplace(),
+					},
+				},
+			},
+			"service": superschema.StringAttribute{
+				Resource: &schemaR.StringAttribute{
+					MarkdownDescription: "The name of the PagerDuty service.",
+					Required:            true,
+				},
+			},
+			"integration_key": superschema.StringAttribute{
+				Resource: &schemaR.StringAttribute{
+					MarkdownDescription: "The integration key of the PagerDuty service.",
+					Required:            true,
+					Sensitive:           true,
+				},
 			},
 		},
-	}
+	}.GetResource(ctx)
 }
 
 func (r *IntegrationPagerDuty) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
