@@ -103,7 +103,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 							Optional:            true,
 							CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemFirstSeenEvent](ctx),
 							Validators: []validator.Object{
-								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent")),
+								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent")),
 							},
 							Attributes: map[string]schema.Attribute{},
 						},
@@ -112,7 +112,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 							Optional:            true,
 							CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemIssueResolvedTrigger](ctx),
 							Validators: []validator.Object{
-								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent")),
+								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent")),
 							},
 							Attributes: map[string]schema.Attribute{},
 						},
@@ -121,7 +121,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 							Optional:            true,
 							CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemReappearedEvent](ctx),
 							Validators: []validator.Object{
-								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("regression_event"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent")),
+								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("regression_event"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent")),
 							},
 							Attributes: map[string]schema.Attribute{},
 						},
@@ -130,7 +130,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 							Optional:            true,
 							CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemRegressionEvent](ctx),
 							Validators: []validator.Object{
-								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent")),
+								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent")),
 							},
 							Attributes: map[string]schema.Attribute{},
 						},
@@ -139,7 +139,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 							Optional:            true,
 							CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemEventFrequencyCount](ctx),
 							Validators: []validator.Object{
-								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent")),
+								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent")),
 							},
 							Attributes: map[string]schema.Attribute{
 								"value": schema.Int64Attribute{
@@ -160,12 +160,46 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 								),
 							},
 						},
+						"event_frequency_percent": schema.SingleNestedAttribute{
+							MarkdownDescription: "Percent change in event count compared to a previous interval.",
+							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemEventFrequencyPercent](ctx),
+							Validators: []validator.Object{
+								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent")),
+							},
+							Attributes: map[string]schema.Attribute{
+								"value": schema.Int64Attribute{
+									MarkdownDescription: "The percent increase threshold for events seen by the workflow.",
+									Required:            true,
+									CustomType:          supertypes.Int64Type{},
+									Validators: []validator.Int64{
+										int64validator.AtLeast(0),
+									},
+								},
+								"interval": tfutils.WithEnumStringAttribute(
+									schema.StringAttribute{
+										MarkdownDescription: "The time period in which to evaluate the event count.",
+										Required:            true,
+										CustomType:          supertypes.StringType{},
+									},
+									sentrydata.EventFrequencyStandardIntervals,
+								),
+								"comparison_interval": tfutils.WithEnumStringAttribute(
+									schema.StringAttribute{
+										MarkdownDescription: "The time period to compare against.",
+										Required:            true,
+										CustomType:          supertypes.StringType{},
+									},
+									sentrydata.EventFrequencyComparisonIntervals,
+								),
+							},
+						},
 						"event_unique_user_frequency_count": schema.SingleNestedAttribute{
 							MarkdownDescription: "Number of unique users affected by the workflow exceeds a threshold within an interval.",
 							Optional:            true,
 							CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemEventUniqueUserFrequencyCount](ctx),
 							Validators: []validator.Object{
-								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent")),
+								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("percent_sessions_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent")),
 							},
 							Attributes: map[string]schema.Attribute{
 								"value": schema.Int64Attribute{
@@ -191,7 +225,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 							Optional:            true,
 							CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemPercentSessionsCount](ctx),
 							Validators: []validator.Object{
-								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent")),
+								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("percent_sessions_percent")),
 							},
 							Attributes: map[string]schema.Attribute{
 								"value": schema.Float64Attribute{
@@ -218,7 +252,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 							Optional:            true,
 							CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemPercentSessionsPercent](ctx),
 							Validators: []validator.Object{
-								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("percent_sessions_count")),
+								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event"), path.MatchRelative().AtParent().AtName("event_frequency_count"), path.MatchRelative().AtParent().AtName("event_frequency_percent"), path.MatchRelative().AtParent().AtName("event_unique_user_frequency_count"), path.MatchRelative().AtParent().AtName("percent_sessions_count")),
 							},
 							Attributes: map[string]schema.Attribute{
 								"value": schema.Float64Attribute{
@@ -1439,6 +1473,7 @@ type AlertResourceModelTriggerConditionsItem struct {
 	ReappearedEvent               supertypes.SingleNestedObjectValueOf[AlertResourceModelTriggerConditionsItemReappearedEvent]               `tfsdk:"reappeared_event"`
 	RegressionEvent               supertypes.SingleNestedObjectValueOf[AlertResourceModelTriggerConditionsItemRegressionEvent]               `tfsdk:"regression_event"`
 	EventFrequencyCount           supertypes.SingleNestedObjectValueOf[AlertResourceModelTriggerConditionsItemEventFrequencyCount]           `tfsdk:"event_frequency_count"`
+	EventFrequencyPercent         supertypes.SingleNestedObjectValueOf[AlertResourceModelTriggerConditionsItemEventFrequencyPercent]         `tfsdk:"event_frequency_percent"`
 	EventUniqueUserFrequencyCount supertypes.SingleNestedObjectValueOf[AlertResourceModelTriggerConditionsItemEventUniqueUserFrequencyCount] `tfsdk:"event_unique_user_frequency_count"`
 	PercentSessionsCount          supertypes.SingleNestedObjectValueOf[AlertResourceModelTriggerConditionsItemPercentSessionsCount]          `tfsdk:"percent_sessions_count"`
 	PercentSessionsPercent        supertypes.SingleNestedObjectValueOf[AlertResourceModelTriggerConditionsItemPercentSessionsPercent]        `tfsdk:"percent_sessions_percent"`
@@ -1459,6 +1494,12 @@ type AlertResourceModelTriggerConditionsItemRegressionEvent struct {
 type AlertResourceModelTriggerConditionsItemEventFrequencyCount struct {
 	Value    supertypes.Int64Value  `tfsdk:"value"`
 	Interval supertypes.StringValue `tfsdk:"interval"`
+}
+
+type AlertResourceModelTriggerConditionsItemEventFrequencyPercent struct {
+	Value              supertypes.Int64Value  `tfsdk:"value"`
+	Interval           supertypes.StringValue `tfsdk:"interval"`
+	ComparisonInterval supertypes.StringValue `tfsdk:"comparison_interval"`
 }
 
 type AlertResourceModelTriggerConditionsItemEventUniqueUserFrequencyCount struct {
