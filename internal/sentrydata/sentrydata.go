@@ -321,6 +321,7 @@ var Platforms = []string{
 	"node-hapi",
 	"node-hono",
 	"node-koa",
+	"node-mastra",
 	"node-nestjs",
 	"php",
 	"php-laravel",
