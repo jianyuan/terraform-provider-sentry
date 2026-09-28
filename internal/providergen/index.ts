@@ -564,26 +564,33 @@ function generateResource({ resource }: { resource: Resource }) {
   createRequestParams.push("*body");
 
   const readRequestParams = ["ctx"];
-  if (resource.api.readRequestAttributes) {
-    readRequestParams.push(
-      ...resource.api.readRequestAttributes.map((param) => {
-        const attribute = resource.attributes.find(
-          (attribute) => attribute.name === param,
-        );
-        if (!attribute) {
-          throw new Error(
-            `Attribute ${param} not found in resource ${resource.name}`,
+  if (resource.api.readStrategy !== "custom") {
+    if (!resource.api.readMethod) {
+      throw new Error(
+        `readMethod is required for resource ${resource.name} unless readStrategy is "custom"`,
+      );
+    }
+    if (resource.api.readRequestAttributes) {
+      readRequestParams.push(
+        ...resource.api.readRequestAttributes.map((param) => {
+          const attribute = resource.attributes.find(
+            (attribute) => attribute.name === param,
           );
-        }
-        return generateTerraformToPrimitive({
-          attribute,
-          srcVar: "data",
-        });
-      }),
-    );
-  }
-  if (resource.api.readStrategy === "paginate") {
-    readRequestParams.push("params");
+          if (!attribute) {
+            throw new Error(
+              `Attribute ${param} not found in resource ${resource.name}`,
+            );
+          }
+          return generateTerraformToPrimitive({
+            attribute,
+            srcVar: "data",
+          });
+        }),
+      );
+    }
+    if (resource.api.readStrategy === "paginate") {
+      readRequestParams.push("params");
+    }
   }
 
   const updateRequestParams = ["ctx"];
@@ -606,6 +613,16 @@ function generateResource({ resource }: { resource: Resource }) {
     );
   }
   updateRequestParams.push("*body");
+
+  if (resource.api.createThenUpdate && !resource.api.updateMethod) {
+    throw new Error(
+      `updateMethod is required for resource ${resource.name} when createThenUpdate is true`,
+    );
+  }
+
+  const createThenUpdateParams = updateRequestParams.map((param) =>
+    param === "*body" ? "*updateBody" : param,
+  );
 
   const deleteRequestParams = ["ctx"];
   if (resource.api.deleteRequestAttributes) {
@@ -698,9 +715,52 @@ func (r *${resourceName}) Create(ctx context.Context, req resource.CreateRequest
     return
   }
 
-  resp.Diagnostics.Append(data.Fill(ctx, *httpResp.JSON201)...)
-  if resp.Diagnostics.HasError() {
-    return
+  ${
+    resource.api.createThenUpdate
+      ? dedent`
+          var created ${modelName}
+          resp.Diagnostics.Append(created.Fill(ctx, *httpResp.JSON201)...)
+          if resp.Diagnostics.HasError() {
+            return
+          }
+          data.Id = created.Id
+          resp.Diagnostics.Append(resp.State.Set(ctx, &created)...)
+          if resp.Diagnostics.HasError() {
+            return
+          }
+
+          updateBody, updateDiags := r.getUpdateJSONRequestBody(ctx, data)
+          resp.Diagnostics.Append(updateDiags...)
+          if resp.Diagnostics.HasError() {
+            return
+          } else if updateBody == nil {
+            resp.Diagnostics.AddError("Provider Error", "getUpdateJSONRequestBody returned a nil body")
+            return
+          }
+
+          updateResp, err := r.apiClient.${resource.api.updateMethod}WithResponse(${createThenUpdateParams.join(",")})
+          if err != nil {
+            resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update, got error: %s", err))
+            return
+          } else if updateResp.StatusCode() != http.StatusOK {
+            resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update, got status code %d: %s", updateResp.StatusCode(), string(updateResp.Body)))
+            return
+          } else if updateResp.JSON200 == nil {
+            resp.Diagnostics.AddError("Client Error", "Unable to update, got empty response body")
+            return
+          }
+
+          resp.Diagnostics.Append(data.Fill(ctx, *updateResp.JSON200)...)
+          if resp.Diagnostics.HasError() {
+            return
+          }
+        `
+      : dedent`
+          resp.Diagnostics.Append(data.Fill(ctx, *httpResp.JSON201)...)
+          if resp.Diagnostics.HasError() {
+            return
+          }
+        `
   }
 
   resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -715,6 +775,18 @@ func (r *${resourceName}) Read(ctx context.Context, req resource.ReadRequest, re
   }
 
   ${match(resource.api)
+    .with(
+      { readStrategy: "custom" },
+      () => dedent`
+        resp.Diagnostics.Append(r.read(ctx, &data)...)
+        if resp.Diagnostics.HasError() {
+          return
+        }
+
+        resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+        return
+      `,
+    )
     .with(
       { readStrategy: "paginate" },
       (api) => dedent`
@@ -794,17 +866,23 @@ func (r *${resourceName}) Read(ctx context.Context, req resource.ReadRequest, re
       `,
     )}
 
-  if responseData == nil {
-    resp.Diagnostics.AddError("Client Error", "Unable to read, could not find resource in the list")
-    return
-  }
+  ${match(resource.api)
+    .with({ readStrategy: "custom" }, () => ``)
+    .otherwise(
+      () => dedent`
+        if responseData == nil {
+          resp.Diagnostics.AddError("Client Error", "Unable to read, could not find resource in the list")
+          return
+        }
 
-  resp.Diagnostics.Append(data.Fill(ctx, *responseData)...)
-  if resp.Diagnostics.HasError() {
-    return
-  }
+        resp.Diagnostics.Append(data.Fill(ctx, *responseData)...)
+        if resp.Diagnostics.HasError() {
+          return
+        }
 
-  resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+        resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+      `,
+    )}
 }
 
 func (r *${resourceName}) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -896,7 +974,7 @@ ${match(resource.import)
     },
   )
   .with(
-    { url: P.nullish, targetAttributes: [P.any] },
+    { url: P.optional(P.nullish), targetAttributes: [P.any] },
     ({ targetAttributes }) => {
       return `
         func (r *${resourceName}) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
@@ -920,7 +998,7 @@ ${match(resource.import)
     },
   )
   .with(
-    { url: P.nullish, targetAttributes: [P.any, P.any] },
+    { url: P.optional(P.nullish), targetAttributes: [P.any, P.any] },
     ({ targetAttributes }) => {
       return `
         func (r *${resourceName}) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
@@ -945,7 +1023,7 @@ ${match(resource.import)
     },
   )
   .with(
-    { url: P.nullish, targetAttributes: [P.any, P.any, P.any] },
+    { url: P.optional(P.nullish), targetAttributes: [P.any, P.any, P.any] },
     ({ targetAttributes }) => {
       return `
         func (r *${resourceName}) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
