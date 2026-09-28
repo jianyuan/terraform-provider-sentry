@@ -1208,7 +1208,7 @@ Optional:
 
 Required:
 
-- `comparison_interval` (String) The time period to compare against. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
+- `comparison_interval` (String) The time period to compare against. Valid values are: `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
 - `interval` (String) The time period in which to evaluate the value. e.g. Number of events in an issue is `comparisonInterval` percent higher `value` compared to `interval`. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
 - `value` (Number) A positive integer representing the number of events in an issue that must come in before the alert will fire.
 
@@ -1325,7 +1325,7 @@ Required:
 
 Required:
 
-- `interval` (String) The time period in which to evaluate the value. e.g. Percentage of sessions affected by an issue is more than `value` in `interval`. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
+- `interval` (String) The time period in which to evaluate the value. e.g. Percentage of sessions affected by an issue is more than `value` in `interval`. Valid values are: `1m`, `5m`, `10m`, `30m`, and `1h`.
 - `value` (Number) A positive integer representing the number of events in an issue that must come in before the alert will fire.
 
 
@@ -1334,8 +1334,8 @@ Required:
 
 Required:
 
-- `comparison_interval` (String) The time period to compare against. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
-- `interval` (String) The time period in which to evaluate the value. e.g. Percentage of sessions affected by an issue is `comparisonInterval` percent higher `value` compared to `interval`. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
+- `comparison_interval` (String) The time period to compare against. Valid values are: `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
+- `interval` (String) The time period in which to evaluate the value. e.g. Percentage of sessions affected by an issue is `comparisonInterval` percent higher `value` compared to `interval`. Valid values are: `1m`, `5m`, `10m`, `30m`, and `1h`.
 - `value` (Number) A positive integer representing the number of events in an issue that must come in before the alert will fire.
 
 Optional:
