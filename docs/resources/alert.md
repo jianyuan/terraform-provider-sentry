@@ -1375,6 +1375,7 @@ Optional:
 Optional:
 
 - `event_frequency_count` (Attributes) Number of events seen by the workflow exceeds a threshold within an interval. (see [below for nested schema](#nestedatt--trigger_conditions--event_frequency_count))
+- `event_frequency_percent` (Attributes) Percent change in event count compared to a previous interval. (see [below for nested schema](#nestedatt--trigger_conditions--event_frequency_percent))
 - `event_unique_user_frequency_count` (Attributes) Number of unique users affected by the workflow exceeds a threshold within an interval. (see [below for nested schema](#nestedatt--trigger_conditions--event_unique_user_frequency_count))
 - `first_seen_event` (Attributes) A new issue is created. (see [below for nested schema](#nestedatt--trigger_conditions--first_seen_event))
 - `issue_resolved_trigger` (Attributes) An issue is resolved. (see [below for nested schema](#nestedatt--trigger_conditions--issue_resolved_trigger))
@@ -1390,6 +1391,16 @@ Required:
 
 - `interval` (String) The time period in which to evaluate the event count. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
 - `value` (Number) The number of events that must be exceeded before the alert will fire.
+
+
+<a id="nestedatt--trigger_conditions--event_frequency_percent"></a>
+### Nested Schema for `trigger_conditions.event_frequency_percent`
+
+Required:
+
+- `comparison_interval` (String) The time period to compare against. Valid values are: `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
+- `interval` (String) The time period in which to evaluate the event count. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
+- `value` (Number) The percent increase threshold for events seen by the workflow.
 
 
 <a id="nestedatt--trigger_conditions--event_unique_user_frequency_count"></a>
