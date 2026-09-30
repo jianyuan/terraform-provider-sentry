@@ -308,3 +308,7 @@ func (m *MetricMonitorResourceModel) Fill(ctx context.Context, data apiclient.Pr
 
 	return
 }
+
+func (r *MetricMonitorResource) postRead(ctx context.Context, data *MetricMonitorResourceModel, monitor apiclient.ProjectMonitor) diag.Diagnostics {
+	return fillMonitorProject(ctx, r.apiClient, data.Organization.Get(), &data.Project, monitor.ProjectId)
+}

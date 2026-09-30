@@ -174,7 +174,7 @@ func TestAccUptimeMonitorResource_basic(t *testing.T) {
 				ImportState:             true,
 				ImportStateIdFunc:       resourceid.ImportState2PartIDFunc(rn, "organization", "id"),
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"project", "body", "assertion_json"},
+				ImportStateVerifyIgnore: []string{"body", "assertion_json"},
 			},
 			{
 				ResourceName: rn,
@@ -186,7 +186,7 @@ func TestAccUptimeMonitorResource_basic(t *testing.T) {
 					"id", "id",
 				),
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"project", "body", "assertion_json"},
+				ImportStateVerifyIgnore: []string{"body", "assertion_json"},
 			},
 		},
 	})

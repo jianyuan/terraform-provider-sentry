@@ -249,6 +249,11 @@ func (r *UptimeMonitorResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
+	resp.Diagnostics.Append(r.postRead(ctx, &data, *responseData)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
