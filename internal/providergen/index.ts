@@ -803,7 +803,16 @@ func (r *${resourceName}) Read(ctx context.Context, req resource.ReadRequest, re
   if resp.Diagnostics.HasError() {
     return
   }
-
+${
+  resource.generate?.postReadHook
+    ? `
+  resp.Diagnostics.Append(r.postRead(ctx, &data, *responseData)...)
+  if resp.Diagnostics.HasError() {
+    return
+  }
+`
+    : ""
+}
   resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 

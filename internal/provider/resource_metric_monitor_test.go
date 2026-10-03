@@ -385,7 +385,14 @@ func TestAccMetricMonitorResource_threshold(t *testing.T) {
 				ImportState:             true,
 				ImportStateIdFunc:       resourceid.ImportState2PartIDFunc(rn, "organization", "id"),
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"project", "query_type"},
+				ImportStateVerifyIgnore: []string{"query_type"},
+			},
+			{
+				// An import block must plan as a no-op, which requires project to be read back.
+				ResourceName:      rn,
+				ImportState:       true,
+				ImportStateKind:   resource.ImportBlockWithID,
+				ImportStateIdFunc: resourceid.ImportState2PartIDFunc(rn, "organization", "id"),
 			},
 		},
 	})
@@ -561,7 +568,7 @@ func TestAccMetricMonitorResource_change(t *testing.T) {
 				ImportState:             true,
 				ImportStateIdFunc:       resourceid.ImportState2PartIDFunc(rn, "organization", "id"),
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"project", "query_type"},
+				ImportStateVerifyIgnore: []string{"query_type"},
 			},
 		},
 	})
@@ -645,7 +652,7 @@ func TestAccMetricMonitorResource_dynamic(t *testing.T) {
 				ImportState:             true,
 				ImportStateIdFunc:       resourceid.ImportState2PartIDFunc(rn, "organization", "id"),
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"project", "query_type"},
+				ImportStateVerifyIgnore: []string{"query_type"},
 			},
 		},
 	})
@@ -737,7 +744,7 @@ func TestAccMetricMonitorResource_fractionalComparison(t *testing.T) {
 				ImportState:             true,
 				ImportStateIdFunc:       resourceid.ImportState2PartIDFunc(rn, "organization", "id"),
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"project", "query_type"},
+				ImportStateVerifyIgnore: []string{"query_type"},
 			},
 		},
 	})
@@ -830,7 +837,7 @@ func TestAccMetricMonitorResource_eventsAnalyticsPlatform(t *testing.T) {
 				ImportState:             true,
 				ImportStateIdFunc:       resourceid.ImportState2PartIDFunc(rn, "organization", "id"),
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"project", "query_type"},
+				ImportStateVerifyIgnore: []string{"query_type"},
 			},
 		},
 	})

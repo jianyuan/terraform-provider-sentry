@@ -215,3 +215,7 @@ func (m *CronMonitorResourceModel) Fill(ctx context.Context, data apiclient.Proj
 
 	return
 }
+
+func (r *CronMonitorResource) postRead(ctx context.Context, data *CronMonitorResourceModel, monitor apiclient.ProjectMonitor) diag.Diagnostics {
+	return fillMonitorProject(ctx, r.apiClient, data.Organization.Get(), &data.Project, monitor.ProjectId)
+}
