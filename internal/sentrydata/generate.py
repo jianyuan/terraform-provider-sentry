@@ -1,23 +1,20 @@
 import ast
 import asyncio
 import functools
+import json
 import pathlib
 import zoneinfo
 from collections import OrderedDict
-from collections.abc import Awaitable, Callable, Mapping
+from collections.abc import Awaitable, Callable, Mapping, Sequence
 from typing import Any, Generic, NamedTuple, TypeVar
 
 import httpx2
-from mako.template import Template
 
 REPO = "getsentry/sentry"
 BRANCH = "master"
 
 ROOT = pathlib.Path(__file__).parent.resolve()
 OUTPUT_FILE = (ROOT / "sentrydata.go").resolve()
-TEMPLATE_FILE = (ROOT / "sentrydata.go.mako").resolve()
-
-TEMPLATE = Template(filename=str(TEMPLATE_FILE))
 
 
 class FileData(NamedTuple):
@@ -653,7 +650,28 @@ async def parse_event_frequency(
 
 
 async def generate_and_format_code(variables: dict[str, Variable[Any]]) -> bytes:
-    unformatted_code = TEMPLATE.render(variables=variables)
+    lines = ["package sentrydata", ""]
+
+    for key, value in variables.items():
+        if value.github_url:
+            lines.append(f"// {value.github_url}")
+
+        if isinstance(value.data, Mapping):
+            lines.append(f"var {key} = map[{value.go_key_type}]{value.go_value_type}{{")
+            for k, v in value.data.items():
+                lines.append(f"\t{json.dumps(k)}: {json.dumps(v)},")
+            lines.append("}")
+        elif isinstance(value.data, Sequence):
+            lines.append(f"var {key} = []{value.go_value_type}{{")
+            for v in value.data:
+                lines.append(f"\t{json.dumps(v)},")
+            lines.append("}")
+        else:
+            raise TypeError(f"Unsupported type for {key}: {type(value.data)}")
+
+        lines.append("")
+
+    unformatted_code = "\n".join(lines)
 
     gofmt_proc = await asyncio.create_subprocess_exec(
         "gofmt",
