@@ -96,7 +96,7 @@ var IssueGroupCategoryIdToName = map[string]string{
 	"19": "Configuration",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/rules/conditions/event_attribute.py
+// https://github.com/getsentry/sentry/blob/master/src/sentry/workflow_engine/handlers/condition/utils/event_attribute.py
 var EventAttributes = []string{
 	"message",
 	"platform",
@@ -130,7 +130,7 @@ var EventAttributes = []string{
 	"ota_updates.update_id",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/rules/match.py
+// https://github.com/getsentry/sentry/blob/master/src/sentry/workflow_engine/handlers/condition/utils/match.py
 var MatchTypes = []string{
 	"CONTAINS",
 	"ENDS_WITH",
@@ -150,7 +150,7 @@ var MatchTypes = []string{
 	"STARTS_WITH",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/rules/match.py
+// https://github.com/getsentry/sentry/blob/master/src/sentry/workflow_engine/handlers/condition/utils/match.py
 var MatchTypeIds = []string{
 	"co",
 	"ew",
@@ -170,7 +170,7 @@ var MatchTypeIds = []string{
 	"sw",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/rules/match.py
+// https://github.com/getsentry/sentry/blob/master/src/sentry/workflow_engine/handlers/condition/utils/match.py
 var MatchTypeNameToId = map[string]string{
 	"CONTAINS":         "co",
 	"ENDS_WITH":        "ew",
@@ -190,7 +190,7 @@ var MatchTypeNameToId = map[string]string{
 	"STARTS_WITH":      "sw",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/rules/match.py
+// https://github.com/getsentry/sentry/blob/master/src/sentry/workflow_engine/handlers/condition/utils/match.py
 var MatchTypeIdToName = map[string]string{
 	"co":  "CONTAINS",
 	"ew":  "ENDS_WITH",
@@ -210,7 +210,7 @@ var MatchTypeIdToName = map[string]string{
 	"sw":  "STARTS_WITH",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/rules/match.py
+// https://github.com/getsentry/sentry/blob/master/src/sentry/workflow_engine/handlers/condition/utils/match.py
 var LevelMatchTypes = []string{
 	"EQUAL",
 	"GREATER_OR_EQUAL",
@@ -1178,7 +1178,7 @@ var DataConditionGroupTypes = []string{
 	"none",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/rules/conditions/event_frequency.py
+// https://github.com/getsentry/sentry/blob/master/src/sentry/workflow_engine/handlers/condition/utils/event_frequency.py
 var EventFrequencyStandardIntervals = []string{
 	"1m",
 	"5m",
@@ -1189,7 +1189,7 @@ var EventFrequencyStandardIntervals = []string{
 	"30d",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/rules/conditions/event_frequency.py
+// https://github.com/getsentry/sentry/blob/master/src/sentry/workflow_engine/handlers/condition/utils/event_frequency.py
 var EventFrequencyComparisonIntervals = []string{
 	"5m",
 	"15m",
@@ -1199,7 +1199,7 @@ var EventFrequencyComparisonIntervals = []string{
 	"30d",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/rules/conditions/event_frequency.py
+// https://github.com/getsentry/sentry/blob/master/src/sentry/workflow_engine/handlers/condition/utils/event_frequency.py
 var EventFrequencyPercentIntervals = []string{
 	"1m",
 	"5m",
