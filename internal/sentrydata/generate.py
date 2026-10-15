@@ -14,7 +14,7 @@ REPO = "getsentry/sentry"
 BRANCH = "master"
 
 ROOT = pathlib.Path(__file__).parent.resolve()
-OUTPUT_FILE = (ROOT / "sentrydata.go").resolve()
+OUTPUT_FILE = (ROOT / "sentrydata.gen.go").resolve()
 
 
 class FileData(NamedTuple):
