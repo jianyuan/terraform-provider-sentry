@@ -34,6 +34,45 @@ paths:
           description: Forbidden
         "404":
           description: Not Found
+    put:
+      summary: Update an Organization
+      operationId: updateOrganization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dataScrubber:
+                  type: boolean
+                dataScrubberDefaults:
+                  type: boolean
+                sensitiveFields:
+                  type: array
+                  items:
+                    type: string
+                safeFields:
+                  type: array
+                  items:
+                    type: string
+                scrubIPAddresses:
+                  type: boolean
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Organization"
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
   /0/organizations/{organization_id_or_slug}/teams/:
     parameters:
       - $ref: "#/components/parameters/organization_id_or_slug"
@@ -1277,6 +1316,20 @@ components:
           type: array
           items:
             type: string
+        dataScrubber:
+          type: boolean
+        dataScrubberDefaults:
+          type: boolean
+        sensitiveFields:
+          type: array
+          items:
+            type: string
+        safeFields:
+          type: array
+          items:
+            type: string
+        scrubIPAddresses:
+          type: boolean
     OrganizationMember:
       type: object
       required:
