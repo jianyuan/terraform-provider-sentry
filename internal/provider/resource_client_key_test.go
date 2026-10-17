@@ -52,6 +52,32 @@ func TestAccClientKeyResource_validation(t *testing.T) {
 						project      = "value"
 						name 	     = "value"
 
+						rate_limit_window = 60
+						rate_limit_count  = 0
+					}
+				`,
+				ExpectError: regexp.MustCompile(`Attribute rate_limit_count value must be at least 1`),
+			},
+			{
+				Config: `
+					resource "sentry_key" "test" {
+						organization = "value"
+						project      = "value"
+						name 	     = "value"
+
+						rate_limit_window = 0
+						rate_limit_count  = 1000
+					}
+				`,
+				ExpectError: regexp.MustCompile(`Attribute rate_limit_window value must be at least 1`),
+			},
+			{
+				Config: `
+					resource "sentry_key" "test" {
+						organization = "value"
+						project      = "value"
+						name 	     = "value"
+
 						javascript_loader_script = {
 							performance_monitoring_enabled = true
 						}
@@ -263,6 +289,52 @@ func TestAccClientKeyResource(t *testing.T) {
 						"debug_enabled":                  knownvalue.Bool(true),
 					})),
 				),
+			},
+			{
+				ResourceName:      rn,
+				ImportState:       true,
+				ImportStateIdFunc: resourceid.ImportState3PartIDFunc(rn, "organization", "project", "id"),
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccClientKeyResource_createWithRateLimit(t *testing.T) {
+	teamName := acctest.RandomWithPrefix("tf-team")
+	projectName := acctest.RandomWithPrefix("tf-project")
+	keyName := acctest.RandomWithPrefix("tf-key")
+	rn := "sentry_key.test"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccClientKeyResourceConfig(testAccClientKeyResourceConfigData{
+					TeamName:        teamName,
+					ProjectName:     projectName,
+					KeyName:         keyName,
+					RateLimitWindow: new(60),
+					RateLimitCount:  new(1000),
+				}),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("rate_limit_window"), knownvalue.Int64Exact(60)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("rate_limit_count"), knownvalue.Int64Exact(1000)),
+				},
+			},
+			{
+				Config: testAccClientKeyResourceConfig(testAccClientKeyResourceConfigData{
+					TeamName:        teamName,
+					ProjectName:     projectName,
+					KeyName:         keyName,
+					RateLimitWindow: new(120),
+					RateLimitCount:  new(2000),
+				}),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("rate_limit_window"), knownvalue.Int64Exact(120)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("rate_limit_count"), knownvalue.Int64Exact(2000)),
+				},
 			},
 			{
 				ResourceName:      rn,
