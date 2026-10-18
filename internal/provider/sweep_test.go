@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -9,9 +10,11 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	ctx := context.Background()
-	acctest.SetupShared(ctx)
-	defer acctest.TeardownShared(ctx)
+	if os.Getenv(resource.EnvTfAcc) != "" {
+		ctx := context.Background()
+		acctest.SetupShared(ctx)
+		defer acctest.TeardownShared(ctx)
+	}
 
 	resource.TestMain(m)
 }
