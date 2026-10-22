@@ -791,6 +791,23 @@ func (r *AlertResource) getTriggerConditions(ctx context.Context, data AlertReso
 				return nil, diags
 			}
 			outTriggerCondition.Type = "percent_sessions_percent"
+		case triggerCondition.SeerActivityTrigger.IsKnown():
+			in := fwdiag.Merge(triggerCondition.SeerActivityTrigger.Get(ctx))(&diags)
+			if diags.HasError() {
+				return nil, diags
+			}
+
+			stages := fwdiag.Merge(in.Stages.Get(ctx))(&diags)
+			if diags.HasError() {
+				return nil, diags
+			}
+			slices.Sort(stages)
+
+			if err := outTriggerCondition.Comparison.FromOrganizationWorkflowTriggerConditionComparison2(stages); err != nil {
+				diags.AddError("Failed to create seer_activity_trigger trigger condition", err.Error())
+				return nil, diags
+			}
+			outTriggerCondition.Type = "seer_activity_trigger"
 		}
 
 		outTriggerConditions = append(outTriggerConditions, outTriggerCondition)
@@ -803,6 +820,16 @@ func (r *AlertResource) getTriggerConditions(ctx context.Context, data AlertReso
 		}
 
 		for _, inLegacyTriggerCondition := range inLegacyTriggerConditions {
+			// Sentry requires seer_activity_trigger's comparison to be the list of stages, so the
+			// passthrough's `true` is rejected with a 400. It has a native trigger condition.
+			if inLegacyTriggerCondition == "seer_activity_trigger" {
+				diags.AddError(
+					"Unsupported legacy trigger condition",
+					"seer_activity_trigger cannot be set through legacy_trigger_conditions. Use trigger_conditions = [{ seer_activity_trigger = { stages = [...] } }] instead.",
+				)
+				return nil, diags
+			}
+
 			var comp apiclient.OrganizationWorkflowTriggerCondition_Comparison
 			if err := comp.FromOrganizationWorkflowTriggerConditionComparison0(true); err != nil {
 				diags.AddError("Failed to build legacy trigger condition", err.Error())
@@ -1067,6 +1094,7 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 			EventUniqueUserFrequencyCount: supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemEventUniqueUserFrequencyCount](ctx),
 			PercentSessionsCount:          supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemPercentSessionsCount](ctx),
 			PercentSessionsPercent:        supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemPercentSessionsPercent](ctx),
+			SeerActivityTrigger:           supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemSeerActivityTrigger](ctx),
 		}
 		switch triggerCondition.Type {
 		case "first_seen_event":
@@ -1181,6 +1209,18 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 				Interval:           supertypes.NewStringValue(interval),
 				ComparisonInterval: supertypes.NewStringValue(comparisonInterval),
 				Value:              types.Float64Value(value),
+			})
+			triggerConditions = append(triggerConditions, outTriggerCondition)
+		case "seer_activity_trigger":
+			stages, err := triggerCondition.Comparison.AsOrganizationWorkflowTriggerConditionComparison2()
+			if err != nil {
+				// Not a list of stages: keep it in the passthrough, as before.
+				legacyTriggerConditions = append(legacyTriggerConditions, triggerCondition.Type)
+				continue
+			}
+			slices.Sort(stages)
+			outTriggerCondition.SeerActivityTrigger = supertypes.NewSingleNestedObjectValueOf(ctx, &AlertResourceModelTriggerConditionsItemSeerActivityTrigger{
+				Stages: supertypes.NewSetValueOfSlice(ctx, stages),
 			})
 			triggerConditions = append(triggerConditions, outTriggerCondition)
 		default:

@@ -1383,6 +1383,7 @@ Optional:
 - `percent_sessions_percent` (Attributes) Percent change in session-affected percentage compared to a previous interval. (see [below for nested schema](#nestedatt--trigger_conditions--percent_sessions_percent))
 - `reappeared_event` (Attributes) An issue escalates. (see [below for nested schema](#nestedatt--trigger_conditions--reappeared_event))
 - `regression_event` (Attributes) A resolved issue becomes unresolved. (see [below for nested schema](#nestedatt--trigger_conditions--regression_event))
+- `seer_activity_trigger` (Attributes) Seer runs on an issue and reaches one of the given stages. (see [below for nested schema](#nestedatt--trigger_conditions--seer_activity_trigger))
 
 <a id="nestedatt--trigger_conditions--event_frequency_count"></a>
 ### Nested Schema for `trigger_conditions.event_frequency_count`
@@ -1445,6 +1446,14 @@ Required:
 
 <a id="nestedatt--trigger_conditions--regression_event"></a>
 ### Nested Schema for `trigger_conditions.regression_event`
+
+
+<a id="nestedatt--trigger_conditions--seer_activity_trigger"></a>
+### Nested Schema for `trigger_conditions.seer_activity_trigger`
+
+Required:
+
+- `stages` (Set of String) The Seer stages that trigger the alert. Valid values are: `rca_completed`, `solution_completed`, `coding_completed`, and `pr_ready_for_review`.
 
 ## Import
 
