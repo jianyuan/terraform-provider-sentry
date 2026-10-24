@@ -562,6 +562,114 @@ func TestAccProjectResource_issueGrouping(t *testing.T) {
 	})
 }
 
+func TestAccProjectResource_dataScrubbing(t *testing.T) {
+	teamName := acctest.RandomWithPrefix("tf-team")
+	projectName := acctest.RandomWithPrefix("tf-project")
+	rn := "sentry_project.test"
+
+	config := func(extras string) string {
+		return testAccProjectResourceConfig(testAccProjectResourceConfigData{
+			TeamName:    teamName,
+			ProjectName: projectName,
+			Platform:    "go",
+			Extras:      extras,
+		})
+	}
+
+	const relayPiiConfig = `{"applications":{"$message":["0"],"extra.foo":["1"]},"rules":{"0":{"redaction":{"method":"mask"},"type":"creditcard"},"1":{"redaction":{"method":"remove"},"type":"anything"}}}`
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: config(""),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("data_scrubber"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("data_scrubber_defaults"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("scrub_ip_addresses"), knownvalue.Bool(false)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("sensitive_fields"), knownvalue.SetSizeExact(0)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("safe_fields"), knownvalue.SetSizeExact(0)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("relay_pii_config"), knownvalue.Null()),
+				},
+			},
+			{
+				// The heredoc layout differs from the stored value; the post-apply plan must still be empty.
+				Config: config(`
+					data_scrubber_defaults = false
+					scrub_ip_addresses     = true
+					sensitive_fields       = ["email", "IBAN"]
+					safe_fields            = ["order_id"]
+					relay_pii_config       = <<-EOT
+						{
+							"rules": {
+								"0": {"type": "creditcard", "redaction": {"method": "mask"}},
+								"1": {"type": "anything", "redaction": {"method": "remove"}}
+							},
+							"applications": {"$message": ["0"], "extra.foo": ["1"]}
+						}
+					EOT
+				`),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("data_scrubber"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("data_scrubber_defaults"), knownvalue.Bool(false)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("scrub_ip_addresses"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("sensitive_fields"), knownvalue.SetExact([]knownvalue.Check{
+						knownvalue.StringExact("email"),
+						knownvalue.StringExact("IBAN"),
+					})),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("safe_fields"), knownvalue.SetExact([]knownvalue.Check{
+						knownvalue.StringExact("order_id"),
+					})),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("relay_pii_config"), knownvalue.NotNull()),
+				},
+				Check: testAccCheckProject(rn, func(project apiclient.Project) error {
+					if got := relayPiiConfigValue(project.RelayPiiConfig).ValueString(); got != relayPiiConfig {
+						return fmt.Errorf("unexpected relayPiiConfig in Sentry: %s", got)
+					}
+					return nil
+				}),
+			},
+			{
+				// Omitted attributes keep their values.
+				Config: config(""),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("data_scrubber_defaults"), knownvalue.Bool(false)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("scrub_ip_addresses"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("sensitive_fields"), knownvalue.SetSizeExact(2)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("safe_fields"), knownvalue.SetSizeExact(1)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("relay_pii_config"), knownvalue.NotNull()),
+				},
+			},
+			{
+				Config: config(`
+					data_scrubber          = false
+					data_scrubber_defaults = true
+					scrub_ip_addresses     = false
+					sensitive_fields       = []
+					safe_fields            = []
+					relay_pii_config       = jsonencode({})
+				`),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("data_scrubber"), knownvalue.Bool(false)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("data_scrubber_defaults"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("scrub_ip_addresses"), knownvalue.Bool(false)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("sensitive_fields"), knownvalue.SetSizeExact(0)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("safe_fields"), knownvalue.SetSizeExact(0)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("relay_pii_config"), knownvalue.StringExact("{}")),
+				},
+			},
+			{
+				ResourceName:      rn,
+				ImportState:       true,
+				ImportStateIdFunc: resourceid.ImportState2PartIDFunc(rn, "organization", "id"),
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAccProjectResource_noDefaultKeyOnCreate(t *testing.T) {
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
