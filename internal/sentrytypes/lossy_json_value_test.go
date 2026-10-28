@@ -114,6 +114,11 @@ func TestLossyJsonStringSemanticEquals(t *testing.T) {
 		},
 		// JSON Semantic equality uses (decoder).UseNumber to avoid Go parsing JSON numbers into float64. This ensures that Go
 		// won't normalize the JSON number representation or impose limits on numeric range.
+		"not equal - adjacent integers above float64 precision": {
+			currentJson:   NewLossyJsonValue(`{"large": 9007199254740992}`),
+			givenJson:     NewLossyJsonValue(`{"large": 9007199254740993}`),
+			expectedMatch: false,
+		},
 		"not equal - different JSON number representations": {
 			currentJson:   NewLossyJsonValue(`{"large": 12423434}`),
 			givenJson:     NewLossyJsonValue(`{"large": 1.2423434e+07}`),
