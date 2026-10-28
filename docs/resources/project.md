@@ -46,6 +46,21 @@ resource "sentry_project" "default" {
   EOT
 
   highlight_tags = ["release", "environment"]
+
+  data_scrubber          = true
+  data_scrubber_defaults = true
+  scrub_ip_addresses     = true
+  sensitive_fields       = ["email"]
+
+  # [Remove] [Anything] from [contexts.device.name]
+  relay_pii_config = jsonencode({
+    rules = {
+      "0" = { type = "anything", redaction = { method = "remove" } }
+    }
+    applications = {
+      "contexts.device.name" = ["0"]
+    }
+  })
 }
 ```
 
@@ -62,6 +77,8 @@ resource "sentry_project" "default" {
 ### Optional
 
 - `client_security` (Attributes) Configure origin URLs which Sentry should accept events from. This is used for communication with clients like [sentry-javascript](https://github.com/getsentry/sentry-javascript). (see [below for nested schema](#nestedatt--client_security))
+- `data_scrubber` (Boolean) Enable server-side data scrubbing for this project. If the organization requires data scrubbing, it applies regardless of this setting.
+- `data_scrubber_defaults` (Boolean) Apply the default scrubbers to prevent things like passwords and credit cards from being stored. If the organization requires the default scrubbers, they apply regardless of this setting.
 - `default_key` (Boolean) Whether to create a default key on project creation. By default, Sentry will create a key for you. If you wish to manage keys manually, set this to false and create keys using the `sentry_key` resource. Note that this only takes effect on project creation, not on project update.
 - `default_rules` (Boolean) Whether to create a default issue alert. Defaults to true where the behavior is to alert the user on every new issue.
 - `digests_max_delay` (Number) The maximum amount of time (in seconds) to wait between scheduling digests for delivery.
@@ -70,7 +87,11 @@ resource "sentry_project" "default" {
 - `fingerprinting_rules` (String) This can be used to modify the fingerprint rules on the server with custom rules. Rules follow the pattern `matcher:glob -> fingerprint, values`. To learn more about fingerprint rules, [read the docs](https://docs.sentry.io/concepts/data-management/event-grouping/fingerprint-rules/).
 - `grouping_enhancements` (String) This can be used to enhance the grouping algorithm with custom rules. Rules follow the pattern `matcher:glob [v^]?[+-]flag`. To learn more about stack trace rules, [read the docs](https://docs.sentry.io/concepts/data-management/event-grouping/stack-trace-rules/).
 - `highlight_tags` (Set of String) A list of strings with tag keys to highlight on this project's issues. E.g. ['release', 'environment']
+- `relay_pii_config` (String) Advanced data scrubbing rules, as a JSON string holding the `rules` and `applications` objects. Build it with `jsonencode()`. The value replaces all advanced data scrubbing rules. For details, see [Advanced Data Scrubbing](https://docs.sentry.io/security-legal-pii/scrubbing/advanced-datascrubbing/). To remove all rules, set it to `jsonencode({})`. The organization's rules also apply.
 - `resolve_age` (Number) Hours in which an issue is automatically resolve if not seen after this amount of time.
+- `safe_fields` (Set of String) Field names which data scrubbers should ignore. The organization's safe fields also apply.
+- `scrub_ip_addresses` (Boolean) Prevent IP addresses from being stored for new events. If the organization requires IP address scrubbing, it applies regardless of this setting.
+- `sensitive_fields` (Set of String) Additional field names to match against when scrubbing data. The organization's sensitive fields also apply.
 - `slug` (String) The optional slug for this project.
 
 ### Read-Only
