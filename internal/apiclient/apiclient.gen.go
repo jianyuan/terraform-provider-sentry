@@ -2206,6 +2206,9 @@ type OrganizationWorkflowTriggerConditionComparison0 = bool
 // OrganizationWorkflowTriggerConditionComparison1 defines model for OrganizationWorkflowTriggerCondition.Comparison.1.
 type OrganizationWorkflowTriggerConditionComparison1 = map[string]interface{}
 
+// OrganizationWorkflowTriggerConditionComparison2 defines model for OrganizationWorkflowTriggerCondition.Comparison.2.
+type OrganizationWorkflowTriggerConditionComparison2 = []string
+
 // OrganizationWorkflowTriggerCondition_Comparison defines model for OrganizationWorkflowTriggerCondition.Comparison.
 type OrganizationWorkflowTriggerCondition_Comparison struct {
 	union json.RawMessage
@@ -5173,6 +5176,32 @@ func (t *OrganizationWorkflowTriggerCondition_Comparison) FromOrganizationWorkfl
 
 // MergeOrganizationWorkflowTriggerConditionComparison1 performs a merge with any union data inside the OrganizationWorkflowTriggerCondition_Comparison, using the provided OrganizationWorkflowTriggerConditionComparison1
 func (t *OrganizationWorkflowTriggerCondition_Comparison) MergeOrganizationWorkflowTriggerConditionComparison1(v OrganizationWorkflowTriggerConditionComparison1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOrganizationWorkflowTriggerConditionComparison2 returns the union data inside the OrganizationWorkflowTriggerCondition_Comparison as a OrganizationWorkflowTriggerConditionComparison2
+func (t OrganizationWorkflowTriggerCondition_Comparison) AsOrganizationWorkflowTriggerConditionComparison2() (OrganizationWorkflowTriggerConditionComparison2, error) {
+	var body OrganizationWorkflowTriggerConditionComparison2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOrganizationWorkflowTriggerConditionComparison2 overwrites any union data inside the OrganizationWorkflowTriggerCondition_Comparison as the provided OrganizationWorkflowTriggerConditionComparison2
+func (t *OrganizationWorkflowTriggerCondition_Comparison) FromOrganizationWorkflowTriggerConditionComparison2(v OrganizationWorkflowTriggerConditionComparison2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOrganizationWorkflowTriggerConditionComparison2 performs a merge with any union data inside the OrganizationWorkflowTriggerCondition_Comparison, using the provided OrganizationWorkflowTriggerConditionComparison2
+func (t *OrganizationWorkflowTriggerCondition_Comparison) MergeOrganizationWorkflowTriggerConditionComparison2(v OrganizationWorkflowTriggerConditionComparison2) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err

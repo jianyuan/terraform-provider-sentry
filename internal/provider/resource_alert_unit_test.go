@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 )
 
 func TestNewOptionalTicketString(t *testing.T) {
@@ -174,5 +175,91 @@ func TestTicketAdditionalFieldsOverwriteTypedAttribute(t *testing.T) {
 	)
 	if !resp.Diagnostics.HasError() {
 		t.Fatal("expected the validator to reject a key that collides with a dedicated attribute")
+	}
+}
+
+func TestSeerActivityTriggerSendsStages(t *testing.T) {
+	// Sentry validates seer_activity_trigger's comparison as a non-empty list of stages and
+	// answers `true` with a 400, so the stages must reach the request as a JSON array.
+	ctx := context.Background()
+
+	r := &AlertResource{}
+	data := AlertResourceModel{
+		TriggerConditions: supertypes.NewListNestedObjectValueOfValueSlice(ctx, []AlertResourceModelTriggerConditionsItem{
+			{
+				FirstSeenEvent:                supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemFirstSeenEvent](ctx),
+				IssueResolvedTrigger:          supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemIssueResolvedTrigger](ctx),
+				ReappearedEvent:               supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemReappearedEvent](ctx),
+				RegressionEvent:               supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemRegressionEvent](ctx),
+				EventFrequencyCount:           supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemEventFrequencyCount](ctx),
+				EventFrequencyPercent:         supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemEventFrequencyPercent](ctx),
+				EventUniqueUserFrequencyCount: supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemEventUniqueUserFrequencyCount](ctx),
+				PercentSessionsCount:          supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemPercentSessionsCount](ctx),
+				PercentSessionsPercent:        supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemPercentSessionsPercent](ctx),
+				SeerActivityTrigger: supertypes.NewSingleNestedObjectValueOf(ctx, &AlertResourceModelTriggerConditionsItemSeerActivityTrigger{
+					Stages: supertypes.NewSetValueOfSlice(ctx, []string{"pr_ready_for_review", "coding_completed"}),
+				}),
+			},
+		}),
+		LegacyTriggerConditions: supertypes.NewListValueOfNull[string](ctx),
+	}
+
+	got, diags := r.getTriggerConditions(ctx, data)
+	if diags.HasError() {
+		t.Fatalf("unexpected diagnostics: %v", diags)
+	}
+	if len(got) != 1 {
+		t.Fatalf("expected 1 trigger condition, got %d", len(got))
+	}
+	if got[0].Type != "seer_activity_trigger" {
+		t.Fatalf("expected type seer_activity_trigger, got %q", got[0].Type)
+	}
+	b, err := json.Marshal(got[0].Comparison)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(b) != `["coding_completed","pr_ready_for_review"]` {
+		t.Fatalf("expected the sorted stages as the comparison, got %s", b)
+	}
+}
+
+func TestSeerActivityTriggerRejectedAsLegacy(t *testing.T) {
+	// The passthrough can only send `true`, which Sentry rejects for this type. Fail at plan
+	// time with a pointer to the native attribute instead of a 400 at apply.
+	ctx := context.Background()
+
+	r := &AlertResource{}
+	data := AlertResourceModel{
+		TriggerConditions:       supertypes.NewListNestedObjectValueOfValueSlice(ctx, []AlertResourceModelTriggerConditionsItem{}),
+		LegacyTriggerConditions: supertypes.NewListValueOfSlice(ctx, []string{"seer_activity_trigger"}),
+	}
+
+	if _, diags := r.getTriggerConditions(ctx, data); !diags.HasError() {
+		t.Fatal("expected an error for seer_activity_trigger in legacy_trigger_conditions")
+	}
+}
+
+func TestSeerActivityTriggerComparisonDecoding(t *testing.T) {
+	// Fill maps a list comparison to the native attribute, and anything else to the
+	// passthrough. That split rests on AsOrganizationWorkflowTriggerConditionComparison2
+	// failing for the boolean form.
+	var stages apiclient.OrganizationWorkflowTriggerCondition_Comparison
+	if err := json.Unmarshal([]byte(`["pr_ready_for_review"]`), &stages); err != nil {
+		t.Fatal(err)
+	}
+	got, err := stages.AsOrganizationWorkflowTriggerConditionComparison2()
+	if err != nil {
+		t.Fatalf("expected a list of stages to decode, got %v", err)
+	}
+	if len(got) != 1 || got[0] != "pr_ready_for_review" {
+		t.Fatalf("unexpected stages %v", got)
+	}
+
+	var boolean apiclient.OrganizationWorkflowTriggerCondition_Comparison
+	if err := json.Unmarshal([]byte(`true`), &boolean); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := boolean.AsOrganizationWorkflowTriggerConditionComparison2(); err == nil {
+		t.Fatal("expected a boolean comparison not to decode as stages")
 	}
 }
