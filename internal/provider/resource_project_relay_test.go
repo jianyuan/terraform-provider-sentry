@@ -24,6 +24,11 @@ func TestProjectResourceModelFillRelayAutomaticJsonExpansion(t *testing.T) {
 		wantErr bool
 	}{
 		{
+			name:    "nil options",
+			options: nil,
+			want:    false,
+		},
+		{
 			name:    "missing option",
 			options: baseOptions,
 			want:    false,
@@ -97,6 +102,19 @@ func TestAssignRelayAutomaticJsonExpansion(t *testing.T) {
 		assignRelayAutomaticJsonExpansion(&options, types.BoolNull())
 		if options != nil {
 			t.Fatalf("expected no options map, got %#v", *options)
+		}
+	})
+
+	t.Run("creates options map", func(t *testing.T) {
+		t.Parallel()
+
+		var options *map[string]interface{}
+		assignRelayAutomaticJsonExpansion(&options, types.BoolValue(false))
+		if options == nil {
+			t.Fatal("expected an options map")
+		}
+		if got, ok := (*options)["sentry:relay_automatic_json_expansion"].(bool); !ok || got {
+			t.Fatalf("option was not set: %#v", *options)
 		}
 	})
 

@@ -72,7 +72,7 @@ resource "sentry_project" "default" {
 - `fingerprinting_rules` (String) This can be used to modify the fingerprint rules on the server with custom rules. Rules follow the pattern `matcher:glob -> fingerprint, values`. To learn more about fingerprint rules, [read the docs](https://docs.sentry.io/concepts/data-management/event-grouping/fingerprint-rules/).
 - `grouping_enhancements` (String) This can be used to enhance the grouping algorithm with custom rules. Rules follow the pattern `matcher:glob [v^]?[+-]flag`. To learn more about stack trace rules, [read the docs](https://docs.sentry.io/concepts/data-management/event-grouping/stack-trace-rules/).
 - `highlight_tags` (Set of String) A list of strings with tag keys to highlight on this project's issues. E.g. ['release', 'environment']
-- `relay_automatic_json_expansion` (Boolean) Expand JSON-like string attributes on logs into nested attributes that can be searched. Writes the project option `sentry:relay_automatic_json_expansion`. Only applies to logs received after this is enabled.
+- `relay_automatic_json_expansion` (Boolean) Expand JSON-like string attributes on logs into nested attributes that can be searched. Only applies to logs received after this is enabled.
 - `resolve_age` (Number) Hours in which an issue is automatically resolve if not seen after this amount of time.
 - `slug` (String) The optional slug for this project.
 

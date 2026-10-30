@@ -458,11 +458,10 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 				},
 			},
 			"relay_automatic_json_expansion": schema.BoolAttribute{
-				MarkdownDescription: "Expand JSON-like string attributes on logs into nested attributes that can be searched. Writes the project option `sentry:relay_automatic_json_expansion`. Only applies to logs received after this is enabled.",
+				MarkdownDescription: "Expand JSON-like string attributes on logs into nested attributes that can be searched. Only applies to logs received after this is enabled.",
 				Optional:            true,
 				Computed:            true,
 				PlanModifiers: []planmodifier.Bool{
-					boolUseStateWhenUnsetModifier{},
 					boolplanmodifier.UseStateForUnknown(),
 				},
 			},
@@ -478,24 +477,6 @@ func ProjectResourceIdAttribute() schema.Attribute {
 			projectResourceIdUseStateUnlessSlugChangesModifier{},
 		},
 	}
-}
-
-type boolUseStateWhenUnsetModifier struct{}
-
-func (m boolUseStateWhenUnsetModifier) Description(context.Context) string {
-	return "Use the prior value when the configuration leaves this attribute unset."
-}
-
-func (m boolUseStateWhenUnsetModifier) MarkdownDescription(context.Context) string {
-	return "Use the prior value when the configuration leaves this attribute unset."
-}
-
-func (m boolUseStateWhenUnsetModifier) PlanModifyBool(ctx context.Context, req planmodifier.BoolRequest, resp *planmodifier.BoolResponse) {
-	if !req.ConfigValue.IsNull() || req.StateValue.IsNull() || req.StateValue.IsUnknown() {
-		return
-	}
-
-	resp.PlanValue = req.StateValue
 }
 
 type projectResourceIdUseStateUnlessSlugChangesModifier struct{}
