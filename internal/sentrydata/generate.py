@@ -1,22 +1,20 @@
 import ast
 import asyncio
+import functools
+import json
 import pathlib
 import zoneinfo
 from collections import OrderedDict
-from collections.abc import Mapping
+from collections.abc import Awaitable, Callable, Mapping, Sequence
 from typing import Any, Generic, NamedTuple, TypeVar
 
 import httpx2
-from mako.template import Template
 
 REPO = "getsentry/sentry"
 BRANCH = "master"
 
 ROOT = pathlib.Path(__file__).parent.resolve()
-OUTPUT_FILE = (ROOT / "sentrydata.go").resolve()
-TEMPLATE_FILE = (ROOT / "sentrydata.go.mako").resolve()
-
-TEMPLATE = Template(filename=str(TEMPLATE_FILE))
+OUTPUT_FILE = (ROOT / "sentrydata.gen.go").resolve()
 
 
 class FileData(NamedTuple):
@@ -25,6 +23,7 @@ class FileData(NamedTuple):
 
 
 DataT = TypeVar("DataT", list[str], OrderedDict[str, str])
+GetFileDataCallable = Callable[[str], Awaitable[FileData]]
 
 
 class Variable(NamedTuple, Generic[DataT]):
@@ -69,10 +68,12 @@ async def get_file_data(client: httpx2.AsyncClient, path: str) -> FileData:
     )
 
 
-async def parse_constants(client: httpx2.AsyncClient) -> dict[str, Variable[Any]]:
+async def parse_constants(
+    get_file_data: GetFileDataCallable,
+) -> dict[str, Variable[Any]]:
     import logging
 
-    data = await get_file_data(client, "src/sentry/constants.py")
+    data = await get_file_data("src/sentry/constants.py")
     out: dict[str, Variable[Any]] = {}
     for node in ast.walk(data.tree):
         match node:
@@ -105,9 +106,9 @@ async def parse_constants(client: httpx2.AsyncClient) -> dict[str, Variable[Any]
 
 
 async def parse_issues_grouptype(
-    client: httpx2.AsyncClient,
+    get_file_data: GetFileDataCallable,
 ) -> dict[str, Variable[Any]]:
-    data = await get_file_data(client, "src/sentry/issues/grouptype.py")
+    data = await get_file_data("src/sentry/issues/grouptype.py")
     out: dict[str, Variable[Any]] = {}
     for node in ast.walk(data.tree):
         match node:
@@ -142,9 +143,11 @@ async def parse_issues_grouptype(
 
 
 async def parse_rules_conditions_event_attribute(
-    client: httpx2.AsyncClient,
+    get_file_data: GetFileDataCallable,
 ) -> dict[str, Variable[Any]]:
-    data = await get_file_data(client, "src/sentry/rules/conditions/event_attribute.py")
+    data = await get_file_data(
+        "src/sentry/workflow_engine/handlers/condition/utils/event_attribute.py"
+    )
     out: dict[str, Variable[Any]] = {}
     for node in ast.walk(data.tree):
         match node:
@@ -164,8 +167,12 @@ async def parse_rules_conditions_event_attribute(
     return out
 
 
-async def parse_rules_match(client: httpx2.AsyncClient) -> dict[str, Variable[Any]]:
-    data = await get_file_data(client, "src/sentry/rules/match.py")
+async def parse_rules_match(
+    get_file_data: GetFileDataCallable,
+) -> dict[str, Variable[Any]]:
+    data = await get_file_data(
+        "src/sentry/workflow_engine/handlers/condition/utils/match.py"
+    )
     out: dict[str, Variable[Any]] = {}
     for node in ast.walk(data.tree):
         match node:
@@ -215,7 +222,7 @@ async def parse_rules_match(client: httpx2.AsyncClient) -> dict[str, Variable[An
 
 
 async def parse_models_dashboard_widget(
-    client: httpx2.AsyncClient,
+    get_file_data: GetFileDataCallable,
 ) -> dict[str, Variable[Any]]:
     def extract_types(classdef: ast.ClassDef) -> list[str]:
         out: list[str] = []
@@ -237,7 +244,7 @@ async def parse_models_dashboard_widget(
                     pass
         return out
 
-    data = await get_file_data(client, "src/sentry/models/dashboard_widget.py")
+    data = await get_file_data("src/sentry/models/dashboard_widget.py")
     out: dict[str, Variable[Any]] = {}
     for node in ast.walk(data.tree):
         match node:
@@ -254,9 +261,9 @@ async def parse_models_dashboard_widget(
 
 
 async def parse_models_project(
-    client: httpx2.AsyncClient,
+    get_file_data: GetFileDataCallable,
 ) -> dict[str, Variable[Any]]:
-    data = await get_file_data(client, "src/sentry/models/project.py")
+    data = await get_file_data("src/sentry/models/project.py")
     out: dict[str, Variable[Any]] = {}
     for node in ast.walk(data.tree):
         match node:
@@ -277,9 +284,9 @@ async def parse_models_project(
 
 
 async def parse_intervals(
-    client: httpx2.AsyncClient,
+    get_file_data: GetFileDataCallable,
 ) -> dict[str, Variable[Any]]:
-    data = await get_file_data(client, "src/sentry/monitors/validators.py")
+    data = await get_file_data("src/sentry/monitors/validators.py")
     out: dict[str, Variable[Any]] = {}
     for node in ast.walk(data.tree):
         match node:
@@ -311,9 +318,9 @@ async def get_timezones() -> dict[str, Variable[Any]]:
 
 
 async def parse_alert_rule_models(
-    client: httpx2.AsyncClient,
+    get_file_data: GetFileDataCallable,
 ) -> dict[str, Variable[Any]]:
-    data = await get_file_data(client, "src/sentry/incidents/models/alert_rule.py")
+    data = await get_file_data("src/sentry/incidents/models/alert_rule.py")
     out: dict[str, Variable[Any]] = {
         "AlertRuleDetectionTypes": Variable(github_url=data.github_url, data=[]),
         "AlertRuleSensitivities": Variable(github_url=data.github_url, data=[]),
@@ -365,9 +372,9 @@ async def parse_alert_rule_models(
 
 
 async def parse_uptime_models(
-    client: httpx2.AsyncClient,
+    get_file_data: GetFileDataCallable,
 ) -> dict[str, Variable[Any]]:
-    data = await get_file_data(client, "src/sentry/uptime/models.py")
+    data = await get_file_data("src/sentry/uptime/models.py")
     out: dict[str, Variable[Any]] = {
         "UptimeSubscriptionSupportedHttpMethods": Variable(
             github_url=data.github_url,
@@ -420,9 +427,9 @@ async def parse_uptime_models(
 
 
 async def parse_uptime_types(
-    client: httpx2.AsyncClient,
+    get_file_data: GetFileDataCallable,
 ) -> dict[str, Variable[Any]]:
-    data = await get_file_data(client, "src/sentry/uptime/types.py")
+    data = await get_file_data("src/sentry/uptime/types.py")
     out: dict[str, Variable[Any]] = {}
     for node in ast.walk(data.tree):
         match node:
@@ -459,9 +466,9 @@ async def parse_uptime_types(
 
 
 async def parse_snuba_models(
-    client: httpx2.AsyncClient,
+    get_file_data: GetFileDataCallable,
 ) -> dict[str, Variable[Any]]:
-    data = await get_file_data(client, "src/sentry/snuba/models.py")
+    data = await get_file_data("src/sentry/snuba/models.py")
     out: dict[str, Variable[Any]] = {
         "SnubaQueryTypes": Variable(github_url=data.github_url, data=[]),
         "SnubaQueryTypeNameToId": Variable(github_url=data.github_url, data={}),
@@ -526,9 +533,9 @@ async def parse_snuba_models(
 
 
 async def parse_snuba_datasets(
-    client: httpx2.AsyncClient,
+    get_file_data: GetFileDataCallable,
 ) -> dict[str, Variable[Any]]:
-    data = await get_file_data(client, "src/sentry/snuba/dataset.py")
+    data = await get_file_data("src/sentry/snuba/dataset.py")
     out: dict[str, Variable[Any]] = {}
     for node in ast.walk(data.tree):
         match node:
@@ -550,11 +557,9 @@ async def parse_snuba_datasets(
 
 
 async def parse_data_condition_types(
-    client: httpx2.AsyncClient,
+    get_file_data: GetFileDataCallable,
 ) -> dict[str, Variable[Any]]:
-    data = await get_file_data(
-        client, "src/sentry/workflow_engine/models/data_condition.py"
-    )
+    data = await get_file_data("src/sentry/workflow_engine/models/data_condition.py")
     out: dict[str, Variable[Any]] = {
         "DataConditionTypes": Variable(github_url=data.github_url, data=[]),
     }
@@ -582,10 +587,10 @@ async def parse_data_condition_types(
 
 
 async def parse_data_condition_group_types(
-    client: httpx2.AsyncClient,
+    get_file_data: GetFileDataCallable,
 ) -> dict[str, Variable[Any]]:
     data = await get_file_data(
-        client, "src/sentry/workflow_engine/models/data_condition_group.py"
+        "src/sentry/workflow_engine/models/data_condition_group.py"
     )
     out: dict[str, Variable[Any]] = {}
     for node in ast.walk(data.tree):
@@ -615,21 +620,28 @@ async def parse_data_condition_group_types(
 
 
 async def parse_event_frequency(
-    client: httpx2.AsyncClient,
+    get_file_data: GetFileDataCallable,
 ) -> dict[str, Variable[Any]]:
-    data = await get_file_data(client, "src/sentry/rules/conditions/event_frequency.py")
+    data = await get_file_data(
+        "src/sentry/workflow_engine/handlers/condition/utils/event_frequency.py"
+    )
     out: dict[str, Variable[Any]] = {}
+    interval_vars = {
+        "STANDARD_INTERVALS": "EventFrequencyStandardIntervals",
+        "PERCENT_INTERVALS": "EventFrequencyPercentIntervals",
+        "COMPARISON_INTERVALS": "EventFrequencyComparisonIntervals",
+    }
     for node in ast.walk(data.tree):
         match node:
             case ast.AnnAssign(
-                target=ast.Name(id="STANDARD_INTERVALS"),
+                target=ast.Name(id=name),
                 value=ast.Dict(keys=keys),
-            ):
+            ) if name in interval_vars:
                 result_intervals: list[str] = []
                 for key in keys:
                     assert isinstance(key, ast.Constant)
                     result_intervals.append(key.value)
-                out["EventFrequencyStandardIntervals"] = Variable(
+                out[interval_vars[name]] = Variable(
                     github_url=data.github_url, data=result_intervals
                 )
             case _:
@@ -638,7 +650,28 @@ async def parse_event_frequency(
 
 
 async def generate_and_format_code(variables: dict[str, Variable[Any]]) -> bytes:
-    unformatted_code = TEMPLATE.render(variables=variables)
+    lines = ["package sentrydata", ""]
+
+    for key, value in variables.items():
+        if value.github_url:
+            lines.append(f"// {value.github_url}")
+
+        if isinstance(value.data, Mapping):
+            lines.append(f"var {key} = map[{value.go_key_type}]{value.go_value_type}{{")
+            for k, v in value.data.items():
+                lines.append(f"\t{json.dumps(k)}: {json.dumps(v)},")
+            lines.append("}")
+        elif isinstance(value.data, Sequence):
+            lines.append(f"var {key} = []{value.go_value_type}{{")
+            for v in value.data:
+                lines.append(f"\t{json.dumps(v)},")
+            lines.append("}")
+        else:
+            raise TypeError(f"Unsupported type for {key}: {type(value.data)}")
+
+        lines.append("")
+
+    unformatted_code = "\n".join(lines)
 
     gofmt_proc = await asyncio.create_subprocess_exec(
         "gofmt",
@@ -661,23 +694,25 @@ async def main() -> None:
     async with httpx2.AsyncClient(
         headers={"User-Agent": "terraform-provider-sentry-data-generator/dev"}
     ) as client:
+        _get_file_data = functools.partial(get_file_data, client)
+
         results = await asyncio.gather(
-            parse_constants(client=client),
-            parse_issues_grouptype(client=client),
-            parse_rules_conditions_event_attribute(client=client),
-            parse_rules_match(client=client),
-            parse_models_dashboard_widget(client=client),
-            parse_models_project(client=client),
-            parse_intervals(client=client),
+            parse_constants(get_file_data=_get_file_data),
+            parse_issues_grouptype(get_file_data=_get_file_data),
+            parse_rules_conditions_event_attribute(get_file_data=_get_file_data),
+            parse_rules_match(get_file_data=_get_file_data),
+            parse_models_dashboard_widget(get_file_data=_get_file_data),
+            parse_models_project(get_file_data=_get_file_data),
+            parse_intervals(get_file_data=_get_file_data),
             get_timezones(),
-            parse_alert_rule_models(client=client),
-            parse_uptime_models(client=client),
-            parse_uptime_types(client=client),
-            parse_snuba_models(client=client),
-            parse_snuba_datasets(client=client),
-            parse_data_condition_types(client=client),
-            parse_data_condition_group_types(client=client),
-            parse_event_frequency(client=client),
+            parse_alert_rule_models(get_file_data=_get_file_data),
+            parse_uptime_models(get_file_data=_get_file_data),
+            parse_uptime_types(get_file_data=_get_file_data),
+            parse_snuba_models(get_file_data=_get_file_data),
+            parse_snuba_datasets(get_file_data=_get_file_data),
+            parse_data_condition_types(get_file_data=_get_file_data),
+            parse_data_condition_group_types(get_file_data=_get_file_data),
+            parse_event_frequency(get_file_data=_get_file_data),
         )
 
     variables: OrderedDict[str, Variable[Any]] = OrderedDict()

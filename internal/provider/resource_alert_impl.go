@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/terraform-plugin-framework-utils/fwdiag"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/must"
@@ -724,6 +725,72 @@ func (r *AlertResource) getTriggerConditions(ctx context.Context, data AlertReso
 				return nil, diags
 			}
 			outTriggerCondition.Type = "event_frequency_count"
+		case triggerCondition.EventFrequencyPercent.IsKnown():
+			in := fwdiag.Merge(triggerCondition.EventFrequencyPercent.Get(ctx))(&diags)
+			if diags.HasError() {
+				return nil, diags
+			}
+
+			comparison := map[string]any{
+				"interval":            in.Interval.Get(),
+				"value":               in.Value.Get(),
+				"comparison_interval": in.ComparisonInterval.Get(),
+			}
+
+			if err := outTriggerCondition.Comparison.FromOrganizationWorkflowTriggerConditionComparison1(comparison); err != nil {
+				diags.AddError("Failed to create event_frequency_percent trigger condition", err.Error())
+				return nil, diags
+			}
+			outTriggerCondition.Type = "event_frequency_percent"
+		case triggerCondition.EventUniqueUserFrequencyCount.IsKnown():
+			in := fwdiag.Merge(triggerCondition.EventUniqueUserFrequencyCount.Get(ctx))(&diags)
+			if diags.HasError() {
+				return nil, diags
+			}
+
+			comparison := map[string]any{
+				"interval": in.Interval.Get(),
+				"value":    in.Value.Get(),
+			}
+
+			if err := outTriggerCondition.Comparison.FromOrganizationWorkflowTriggerConditionComparison1(comparison); err != nil {
+				diags.AddError("Failed to create event_unique_user_frequency_count trigger condition", err.Error())
+				return nil, diags
+			}
+			outTriggerCondition.Type = "event_unique_user_frequency_count"
+		case triggerCondition.PercentSessionsCount.IsKnown():
+			in := fwdiag.Merge(triggerCondition.PercentSessionsCount.Get(ctx))(&diags)
+			if diags.HasError() {
+				return nil, diags
+			}
+
+			comparison := map[string]any{
+				"interval": in.Interval.Get(),
+				"value":    in.Value.ValueFloat64(),
+			}
+
+			if err := outTriggerCondition.Comparison.FromOrganizationWorkflowTriggerConditionComparison1(comparison); err != nil {
+				diags.AddError("Failed to create percent_sessions_count trigger condition", err.Error())
+				return nil, diags
+			}
+			outTriggerCondition.Type = "percent_sessions_count"
+		case triggerCondition.PercentSessionsPercent.IsKnown():
+			in := fwdiag.Merge(triggerCondition.PercentSessionsPercent.Get(ctx))(&diags)
+			if diags.HasError() {
+				return nil, diags
+			}
+
+			comparison := map[string]any{
+				"interval":            in.Interval.Get(),
+				"value":               in.Value.ValueFloat64(),
+				"comparison_interval": in.ComparisonInterval.Get(),
+			}
+
+			if err := outTriggerCondition.Comparison.FromOrganizationWorkflowTriggerConditionComparison1(comparison); err != nil {
+				diags.AddError("Failed to create percent_sessions_percent trigger condition", err.Error())
+				return nil, diags
+			}
+			outTriggerCondition.Type = "percent_sessions_percent"
 		}
 
 		outTriggerConditions = append(outTriggerConditions, outTriggerCondition)
@@ -776,6 +843,126 @@ func parseEventFrequencyCountTriggerComparison(comparison map[string]any) (strin
 	}
 
 	return interval, int64(value), nil
+}
+
+func parseEventUniqueUserFrequencyCountTriggerComparison(comparison map[string]any) (string, int64, error) {
+	interval, ok := comparison["interval"].(string)
+	if !ok {
+		return "", 0, fmt.Errorf("expected interval to be a string, got %T", comparison["interval"])
+	}
+
+	value, ok := comparison["value"].(float64)
+	if !ok {
+		return "", 0, fmt.Errorf("expected value to be a number, got %T", comparison["value"])
+	} else if value < 0 || value >= float64(math.MaxInt64) || math.Trunc(value) != value {
+		return "", 0, fmt.Errorf("expected value to be a non-negative integer, got %v", value)
+	}
+
+	if rawFilters, exists := comparison["filters"]; exists && rawFilters != nil {
+		filters, ok := rawFilters.([]any)
+		if !ok {
+			return "", 0, fmt.Errorf("expected filters to be a list, got %T", rawFilters)
+		}
+		if len(filters) > 0 {
+			return "", 0, fmt.Errorf("event_unique_user_frequency_count filters are not supported")
+		}
+	}
+
+	return interval, int64(value), nil
+}
+
+func parseEventFrequencyPercentTriggerComparison(comparison map[string]any) (string, string, int64, error) {
+	interval, ok := comparison["interval"].(string)
+	if !ok {
+		return "", "", 0, fmt.Errorf("expected interval to be a string, got %T", comparison["interval"])
+	}
+
+	comparisonInterval, ok := comparison["comparisonInterval"].(string)
+	if !ok {
+		comparisonInterval, ok = comparison["comparison_interval"].(string)
+	}
+	if !ok {
+		return "", "", 0, fmt.Errorf("expected comparison interval to be a string, got camelCase %T and snake_case %T", comparison["comparisonInterval"], comparison["comparison_interval"])
+	}
+
+	value, ok := comparison["value"].(float64)
+	if !ok {
+		return "", "", 0, fmt.Errorf("expected value to be a number, got %T", comparison["value"])
+	} else if value < 0 || value >= float64(math.MaxInt64) || math.Trunc(value) != value {
+		return "", "", 0, fmt.Errorf("expected value to be a non-negative integer, got %v", value)
+	}
+
+	if rawFilters, exists := comparison["filters"]; exists && rawFilters != nil {
+		filters, ok := rawFilters.([]any)
+		if !ok {
+			return "", "", 0, fmt.Errorf("expected filters to be a list, got %T", rawFilters)
+		}
+		if len(filters) > 0 {
+			return "", "", 0, fmt.Errorf("event_frequency_percent filters are not supported")
+		}
+	}
+
+	return interval, comparisonInterval, int64(value), nil
+}
+
+func parsePercentSessionsCountTriggerComparison(comparison map[string]any) (string, float64, error) {
+	interval, ok := comparison["interval"].(string)
+	if !ok {
+		return "", 0, fmt.Errorf("expected interval to be a string, got %T", comparison["interval"])
+	}
+
+	value, ok := comparison["value"].(float64)
+	if !ok {
+		return "", 0, fmt.Errorf("expected value to be a number, got %T", comparison["value"])
+	} else if value < 0 || value > 100 {
+		return "", 0, fmt.Errorf("expected value to be between 0 and 100, got %v", value)
+	}
+
+	if rawFilters, exists := comparison["filters"]; exists && rawFilters != nil {
+		filters, ok := rawFilters.([]any)
+		if !ok {
+			return "", 0, fmt.Errorf("expected filters to be a list, got %T", rawFilters)
+		}
+		if len(filters) > 0 {
+			return "", 0, fmt.Errorf("percent_sessions_count filters are not supported")
+		}
+	}
+
+	return interval, value, nil
+}
+
+func parsePercentSessionsPercentTriggerComparison(comparison map[string]any) (string, string, float64, error) {
+	interval, ok := comparison["interval"].(string)
+	if !ok {
+		return "", "", 0, fmt.Errorf("expected interval to be a string, got %T", comparison["interval"])
+	}
+
+	comparisonInterval, ok := comparison["comparisonInterval"].(string)
+	if !ok {
+		comparisonInterval, ok = comparison["comparison_interval"].(string)
+	}
+	if !ok {
+		return "", "", 0, fmt.Errorf("expected comparison interval to be a string, got camelCase %T and snake_case %T", comparison["comparisonInterval"], comparison["comparison_interval"])
+	}
+
+	value, ok := comparison["value"].(float64)
+	if !ok {
+		return "", "", 0, fmt.Errorf("expected value to be a number, got %T", comparison["value"])
+	} else if value < 0 {
+		return "", "", 0, fmt.Errorf("expected value to be non-negative, got %v", value)
+	}
+
+	if rawFilters, exists := comparison["filters"]; exists && rawFilters != nil {
+		filters, ok := rawFilters.([]any)
+		if !ok {
+			return "", "", 0, fmt.Errorf("expected filters to be a list, got %T", rawFilters)
+		}
+		if len(filters) > 0 {
+			return "", "", 0, fmt.Errorf("percent_sessions_percent filters are not supported")
+		}
+	}
+
+	return interval, comparisonInterval, value, nil
 }
 
 func (r *AlertResource) getCreateJSONRequestBody(ctx context.Context, data AlertResourceModel) (*apiclient.CreateOrganizationWorkflowJSONRequestBody, diag.Diagnostics) {
@@ -871,11 +1058,15 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 	var legacyTriggerConditions []string
 	for _, triggerCondition := range triggers.Conditions {
 		outTriggerCondition := AlertResourceModelTriggerConditionsItem{
-			FirstSeenEvent:       supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemFirstSeenEvent](ctx),
-			IssueResolvedTrigger: supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemIssueResolvedTrigger](ctx),
-			ReappearedEvent:      supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemReappearedEvent](ctx),
-			RegressionEvent:      supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemRegressionEvent](ctx),
-			EventFrequencyCount:  supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemEventFrequencyCount](ctx),
+			FirstSeenEvent:                supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemFirstSeenEvent](ctx),
+			IssueResolvedTrigger:          supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemIssueResolvedTrigger](ctx),
+			ReappearedEvent:               supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemReappearedEvent](ctx),
+			RegressionEvent:               supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemRegressionEvent](ctx),
+			EventFrequencyCount:           supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemEventFrequencyCount](ctx),
+			EventFrequencyPercent:         supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemEventFrequencyPercent](ctx),
+			EventUniqueUserFrequencyCount: supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemEventUniqueUserFrequencyCount](ctx),
+			PercentSessionsCount:          supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemPercentSessionsCount](ctx),
+			PercentSessionsPercent:        supertypes.NewSingleNestedObjectValueOfNull[AlertResourceModelTriggerConditionsItemPercentSessionsPercent](ctx),
 		}
 		switch triggerCondition.Type {
 		case "first_seen_event":
@@ -908,6 +1099,88 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 			outTriggerCondition.EventFrequencyCount = supertypes.NewSingleNestedObjectValueOf(ctx, &AlertResourceModelTriggerConditionsItemEventFrequencyCount{
 				Interval: supertypes.NewStringValue(interval),
 				Value:    supertypes.NewInt64Value(value),
+			})
+			triggerConditions = append(triggerConditions, outTriggerCondition)
+		case "event_frequency_percent":
+			comparison, err := triggerCondition.Comparison.AsOrganizationWorkflowTriggerConditionComparison1()
+			if err != nil {
+				if _, boolErr := triggerCondition.Comparison.AsOrganizationWorkflowTriggerConditionComparison0(); boolErr == nil {
+					legacyTriggerConditions = append(legacyTriggerConditions, triggerCondition.Type)
+					continue
+				}
+				diags.AddError("Failed to parse event_frequency_percent trigger condition", err.Error())
+				return diags
+			}
+			interval, comparisonInterval, value, err := parseEventFrequencyPercentTriggerComparison(comparison)
+			if err != nil {
+				diags.AddError("Failed to parse event_frequency_percent trigger condition", err.Error())
+				return diags
+			}
+			outTriggerCondition.EventFrequencyPercent = supertypes.NewSingleNestedObjectValueOf(ctx, &AlertResourceModelTriggerConditionsItemEventFrequencyPercent{
+				Interval:           supertypes.NewStringValue(interval),
+				ComparisonInterval: supertypes.NewStringValue(comparisonInterval),
+				Value:              supertypes.NewInt64Value(value),
+			})
+			triggerConditions = append(triggerConditions, outTriggerCondition)
+		case "event_unique_user_frequency_count":
+			comparison, err := triggerCondition.Comparison.AsOrganizationWorkflowTriggerConditionComparison1()
+			if err != nil {
+				if _, boolErr := triggerCondition.Comparison.AsOrganizationWorkflowTriggerConditionComparison0(); boolErr == nil {
+					legacyTriggerConditions = append(legacyTriggerConditions, triggerCondition.Type)
+					continue
+				}
+				diags.AddError("Failed to parse event_unique_user_frequency_count trigger condition", err.Error())
+				return diags
+			}
+			interval, value, err := parseEventUniqueUserFrequencyCountTriggerComparison(comparison)
+			if err != nil {
+				diags.AddError("Failed to parse event_unique_user_frequency_count trigger condition", err.Error())
+				return diags
+			}
+			outTriggerCondition.EventUniqueUserFrequencyCount = supertypes.NewSingleNestedObjectValueOf(ctx, &AlertResourceModelTriggerConditionsItemEventUniqueUserFrequencyCount{
+				Interval: supertypes.NewStringValue(interval),
+				Value:    supertypes.NewInt64Value(value),
+			})
+			triggerConditions = append(triggerConditions, outTriggerCondition)
+		case "percent_sessions_count":
+			comparison, err := triggerCondition.Comparison.AsOrganizationWorkflowTriggerConditionComparison1()
+			if err != nil {
+				if _, boolErr := triggerCondition.Comparison.AsOrganizationWorkflowTriggerConditionComparison0(); boolErr == nil {
+					legacyTriggerConditions = append(legacyTriggerConditions, triggerCondition.Type)
+					continue
+				}
+				diags.AddError("Failed to parse percent_sessions_count trigger condition", err.Error())
+				return diags
+			}
+			interval, value, err := parsePercentSessionsCountTriggerComparison(comparison)
+			if err != nil {
+				diags.AddError("Failed to parse percent_sessions_count trigger condition", err.Error())
+				return diags
+			}
+			outTriggerCondition.PercentSessionsCount = supertypes.NewSingleNestedObjectValueOf(ctx, &AlertResourceModelTriggerConditionsItemPercentSessionsCount{
+				Interval: supertypes.NewStringValue(interval),
+				Value:    types.Float64Value(value),
+			})
+			triggerConditions = append(triggerConditions, outTriggerCondition)
+		case "percent_sessions_percent":
+			comparison, err := triggerCondition.Comparison.AsOrganizationWorkflowTriggerConditionComparison1()
+			if err != nil {
+				if _, boolErr := triggerCondition.Comparison.AsOrganizationWorkflowTriggerConditionComparison0(); boolErr == nil {
+					legacyTriggerConditions = append(legacyTriggerConditions, triggerCondition.Type)
+					continue
+				}
+				diags.AddError("Failed to parse percent_sessions_percent trigger condition", err.Error())
+				return diags
+			}
+			interval, comparisonInterval, value, err := parsePercentSessionsPercentTriggerComparison(comparison)
+			if err != nil {
+				diags.AddError("Failed to parse percent_sessions_percent trigger condition", err.Error())
+				return diags
+			}
+			outTriggerCondition.PercentSessionsPercent = supertypes.NewSingleNestedObjectValueOf(ctx, &AlertResourceModelTriggerConditionsItemPercentSessionsPercent{
+				Interval:           supertypes.NewStringValue(interval),
+				ComparisonInterval: supertypes.NewStringValue(comparisonInterval),
+				Value:              types.Float64Value(value),
 			})
 			triggerConditions = append(triggerConditions, outTriggerCondition)
 		default:

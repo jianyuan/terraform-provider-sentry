@@ -138,6 +138,123 @@ export default {
             },
           ],
         },
+        {
+          name: "event_frequency_percent",
+          type: "single_nested",
+          description:
+            "Percent change in event count compared to a previous interval.",
+          computedOptionalRequired: "optional",
+          attributes: [
+            {
+              name: "value",
+              type: "int64",
+              description:
+                "The percent increase threshold for events seen by the workflow.",
+              computedOptionalRequired: "required",
+              validators: ["int64validator.AtLeast(0)"],
+            },
+            {
+              name: "interval",
+              type: "string",
+              description:
+                "The time period in which to evaluate the event count.",
+              computedOptionalRequired: "required",
+              enum: `sentrydata.EventFrequencyStandardIntervals`,
+            },
+            {
+              name: "comparison_interval",
+              type: "string",
+              description: "The time period to compare against.",
+              computedOptionalRequired: "required",
+              enum: `sentrydata.EventFrequencyComparisonIntervals`,
+            },
+          ],
+        },
+        {
+          name: "event_unique_user_frequency_count",
+          type: "single_nested",
+          description:
+            "Number of unique users affected by the workflow exceeds a threshold within an interval.",
+          computedOptionalRequired: "optional",
+          attributes: [
+            {
+              name: "value",
+              type: "int64",
+              description:
+                "The number of unique users that must be exceeded before the alert will fire.",
+              computedOptionalRequired: "required",
+              validators: ["int64validator.AtLeast(0)"],
+            },
+            {
+              name: "interval",
+              type: "string",
+              description:
+                "The time period in which to evaluate the unique user count.",
+              computedOptionalRequired: "required",
+              enum: `sentrydata.EventFrequencyStandardIntervals`,
+            },
+          ],
+        },
+        {
+          name: "percent_sessions_count",
+          type: "single_nested",
+          description:
+            "Percentage of sessions affected by the workflow exceeds a threshold within an interval.",
+          computedOptionalRequired: "optional",
+          attributes: [
+            {
+              name: "value",
+              type: "float64",
+              description:
+                "The percentage of sessions affected that must be exceeded before the alert will fire.",
+              computedOptionalRequired: "required",
+              validators: [
+                "float64validator.AtLeast(0)",
+                "float64validator.AtMost(100)",
+              ],
+            },
+            {
+              name: "interval",
+              type: "string",
+              description:
+                "The time period in which to evaluate the percentage of affected sessions.",
+              computedOptionalRequired: "required",
+              enum: `sentrydata.EventFrequencyPercentIntervals`,
+            },
+          ],
+        },
+        {
+          name: "percent_sessions_percent",
+          type: "single_nested",
+          description:
+            "Percent change in session-affected percentage compared to a previous interval.",
+          computedOptionalRequired: "optional",
+          attributes: [
+            {
+              name: "value",
+              type: "float64",
+              description:
+                "The percent increase threshold for sessions affected by an issue.",
+              computedOptionalRequired: "required",
+              validators: ["float64validator.AtLeast(0)"],
+            },
+            {
+              name: "interval",
+              type: "string",
+              description:
+                "The time period in which to evaluate the session percentage.",
+              computedOptionalRequired: "required",
+              enum: `sentrydata.EventFrequencyPercentIntervals`,
+            },
+            {
+              name: "comparison_interval",
+              type: "string",
+              description: "The time period to compare against.",
+              computedOptionalRequired: "required",
+              enum: `sentrydata.EventFrequencyComparisonIntervals`,
+            },
+          ],
+        },
       ]),
     },
     {

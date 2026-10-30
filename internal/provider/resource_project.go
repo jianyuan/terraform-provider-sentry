@@ -381,6 +381,7 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 						MarkdownDescription: "Security Token. Outbound requests matching Allowed Domains will have the header \"{security_token_header}: {security_token}\" appended.",
 						Optional:            true,
 						Computed:            true,
+						Sensitive:           true,
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.UseStateForUnknown(),
 						},
