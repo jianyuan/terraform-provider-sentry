@@ -73,7 +73,12 @@ func (m *OrganizationUserMappingResourceModel) Fill(ctx context.Context, data ap
 	m.ExternalName = supertypes.NewStringValue(data.ExternalName)
 	m.ExternalProvider = supertypes.NewStringValue(data.Provider)
 
-	if userID, err := strconv.ParseInt(data.UserId, 10, 64); err == nil {
+	// Sentry's external-user update response omits userId. Keep the id from the request.
+	if data.UserId == "" {
+		if m.UserId.IsNull() || m.UserId.IsUnknown() {
+			diags.AddError("Client Error", `Unable to parse userId "": strconv.ParseInt: parsing "": invalid syntax`)
+		}
+	} else if userID, err := strconv.ParseInt(data.UserId, 10, 64); err == nil {
 		m.UserId = supertypes.NewInt64Value(userID)
 	} else {
 		diags.AddError("Client Error", fmt.Sprintf("Unable to parse userId %q: %s", data.UserId, err))
