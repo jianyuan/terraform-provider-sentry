@@ -134,24 +134,25 @@ func (m *ProjectClientSecurityResourceModel) Fill(ctx context.Context, project a
 }
 
 type ProjectResourceModel struct {
-	Id                   types.String                  `tfsdk:"id"`
-	Organization         types.String                  `tfsdk:"organization"`
-	Teams                supertypes.SetValueOf[string] `tfsdk:"teams"`
-	Name                 types.String                  `tfsdk:"name"`
-	Slug                 types.String                  `tfsdk:"slug"`
-	Platform             types.String                  `tfsdk:"platform"`
-	DefaultRules         types.Bool                    `tfsdk:"default_rules"`
-	DefaultKey           types.Bool                    `tfsdk:"default_key"`
-	InternalId           types.String                  `tfsdk:"internal_id"`
-	Features             supertypes.SetValueOf[string] `tfsdk:"features"`
-	DigestsMinDelay      types.Int64                   `tfsdk:"digests_min_delay"`
-	DigestsMaxDelay      types.Int64                   `tfsdk:"digests_max_delay"`
-	ResolveAge           types.Int64                   `tfsdk:"resolve_age"`
-	Filters              types.Object                  `tfsdk:"filters"`
-	FingerprintingRules  sentrytypes.TrimmedString     `tfsdk:"fingerprinting_rules"`
-	GroupingEnhancements sentrytypes.TrimmedString     `tfsdk:"grouping_enhancements"`
-	ClientSecurity       types.Object                  `tfsdk:"client_security"`
-	HighlightTags        supertypes.SetValueOf[string] `tfsdk:"highlight_tags"`
+	Id                          types.String                  `tfsdk:"id"`
+	Organization                types.String                  `tfsdk:"organization"`
+	Teams                       supertypes.SetValueOf[string] `tfsdk:"teams"`
+	Name                        types.String                  `tfsdk:"name"`
+	Slug                        types.String                  `tfsdk:"slug"`
+	Platform                    types.String                  `tfsdk:"platform"`
+	DefaultRules                types.Bool                    `tfsdk:"default_rules"`
+	DefaultKey                  types.Bool                    `tfsdk:"default_key"`
+	InternalId                  types.String                  `tfsdk:"internal_id"`
+	Features                    supertypes.SetValueOf[string] `tfsdk:"features"`
+	DigestsMinDelay             types.Int64                   `tfsdk:"digests_min_delay"`
+	DigestsMaxDelay             types.Int64                   `tfsdk:"digests_max_delay"`
+	ResolveAge                  types.Int64                   `tfsdk:"resolve_age"`
+	Filters                     types.Object                  `tfsdk:"filters"`
+	FingerprintingRules         sentrytypes.TrimmedString     `tfsdk:"fingerprinting_rules"`
+	GroupingEnhancements        sentrytypes.TrimmedString     `tfsdk:"grouping_enhancements"`
+	ClientSecurity              types.Object                  `tfsdk:"client_security"`
+	HighlightTags               supertypes.SetValueOf[string] `tfsdk:"highlight_tags"`
+	RelayAutomaticJsonExpansion types.Bool                    `tfsdk:"relay_automatic_json_expansion"`
 }
 
 func (m *ProjectResourceModel) Fill(ctx context.Context, project apiclient.Project) (diags diag.Diagnostics) {
@@ -186,7 +187,44 @@ func (m *ProjectResourceModel) Fill(ctx context.Context, project apiclient.Proje
 		m.HighlightTags = supertypes.NewSetValueOfNull[string](ctx)
 	}
 
+	diags.Append(m.fillRelayAutomaticJsonExpansion(project)...)
+
 	return
+}
+
+func (m *ProjectResourceModel) fillRelayAutomaticJsonExpansion(project apiclient.Project) (diags diag.Diagnostics) {
+	if project.Options == nil {
+		m.RelayAutomaticJsonExpansion = types.BoolValue(false)
+		return
+	}
+
+	value, ok := project.Options["sentry:relay_automatic_json_expansion"]
+	if !ok || value == nil {
+		m.RelayAutomaticJsonExpansion = types.BoolValue(false)
+		return
+	}
+
+	enabled, ok := value.(bool)
+	if !ok {
+		diags.Append(diagutils.NewFillError(fmt.Errorf("invalid type for sentry:relay_automatic_json_expansion: %T", value)))
+		return
+	}
+
+	m.RelayAutomaticJsonExpansion = types.BoolValue(enabled)
+	return
+}
+
+func assignRelayAutomaticJsonExpansion(options **map[string]interface{}, value types.Bool) {
+	if value.IsNull() || value.IsUnknown() {
+		return
+	}
+
+	if *options == nil {
+		assigned := map[string]interface{}{}
+		*options = &assigned
+	}
+
+	(**options)["sentry:relay_automatic_json_expansion"] = value.ValueBool()
 }
 
 var _ resource.Resource = &ProjectResource{}
@@ -419,6 +457,15 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 					setplanmodifier.UseStateForUnknown(),
 				},
 			},
+			"relay_automatic_json_expansion": schema.BoolAttribute{
+				MarkdownDescription: "Expand JSON-like string attributes on logs into nested attributes that can be searched. Writes the project option `sentry:relay_automatic_json_expansion`. Only applies to logs received after this is enabled.",
+				Optional:            true,
+				Computed:            true,
+				PlanModifiers: []planmodifier.Bool{
+					boolUseStateWhenUnsetModifier{},
+					boolplanmodifier.UseStateForUnknown(),
+				},
+			},
 		},
 	}
 }
@@ -431,6 +478,24 @@ func ProjectResourceIdAttribute() schema.Attribute {
 			projectResourceIdUseStateUnlessSlugChangesModifier{},
 		},
 	}
+}
+
+type boolUseStateWhenUnsetModifier struct{}
+
+func (m boolUseStateWhenUnsetModifier) Description(context.Context) string {
+	return "Use the prior value when the configuration leaves this attribute unset."
+}
+
+func (m boolUseStateWhenUnsetModifier) MarkdownDescription(context.Context) string {
+	return "Use the prior value when the configuration leaves this attribute unset."
+}
+
+func (m boolUseStateWhenUnsetModifier) PlanModifyBool(ctx context.Context, req planmodifier.BoolRequest, resp *planmodifier.BoolResponse) {
+	if !req.ConfigValue.IsNull() || req.StateValue.IsNull() || req.StateValue.IsUnknown() {
+		return
+	}
+
+	resp.PlanValue = req.StateValue
 }
 
 type projectResourceIdUseStateUnlessSlugChangesModifier struct{}
@@ -578,6 +643,8 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 			updateBody.Options = &options
 		}
 	}
+
+	assignRelayAutomaticJsonExpansion(&updateBody.Options, data.RelayAutomaticJsonExpansion)
 
 	if !data.FingerprintingRules.IsUnknown() {
 		updateBody.FingerprintingRules = data.FingerprintingRules.ValueStringPointer()
@@ -791,6 +858,10 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 		if len(options) > 0 {
 			updateBody.Options = &options
 		}
+	}
+
+	if !plan.RelayAutomaticJsonExpansion.Equal(state.RelayAutomaticJsonExpansion) {
+		assignRelayAutomaticJsonExpansion(&updateBody.Options, plan.RelayAutomaticJsonExpansion)
 	}
 
 	if !plan.FingerprintingRules.Equal(state.FingerprintingRules) {
