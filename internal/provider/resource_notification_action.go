@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -59,7 +60,11 @@ func (m *NotificationActionResourceModel) Fill(action sentry.NotificationAction,
 	if len(action.Projects) > 0 {
 		projectElements := []attr.Value{}
 		for _, projectId := range action.Projects {
-			projectElements = append(projectElements, types.StringValue(projectIdToSlugMap[projectId.String()]))
+			projectSlug, ok := projectIdToSlugMap[projectId.String()]
+			if !ok {
+				return fmt.Errorf("unable to resolve project ID %q to a project slug", projectId.String())
+			}
+			projectElements = append(projectElements, types.StringValue(projectSlug))
 		}
 
 		m.Projects = types.ListValueMust(types.StringType, projectElements)
@@ -159,7 +164,7 @@ func (r *NotificationActionResource) Create(ctx context.Context, req resource.Cr
 
 	var projectIdToSlugMap map[string]string
 	if len(action.Projects) > 0 {
-		projectIdToSlugMap, err = sentryclient.GetProjectIdToSlugMap(ctx, r.client)
+		projectIdToSlugMap, err = sentryclient.GetProjectIdToSlugMap(ctx, r.apiClient, data.Organization.ValueString())
 		if err != nil {
 			resp.Diagnostics.Append(diagutils.NewClientError("read projects", err))
 			return
@@ -199,7 +204,7 @@ func (r *NotificationActionResource) Read(ctx context.Context, req resource.Read
 
 	var projectIdToSlugMap map[string]string
 	if len(action.Projects) > 0 {
-		projectIdToSlugMap, err = sentryclient.GetProjectIdToSlugMap(ctx, r.client)
+		projectIdToSlugMap, err = sentryclient.GetProjectIdToSlugMap(ctx, r.apiClient, data.Organization.ValueString())
 		if err != nil {
 			resp.Diagnostics.Append(diagutils.NewClientError("read projects", err))
 			return
@@ -253,7 +258,7 @@ func (r *NotificationActionResource) Update(ctx context.Context, req resource.Up
 
 	var projectIdToSlugMap map[string]string
 	if len(action.Projects) > 0 {
-		projectIdToSlugMap, err = sentryclient.GetProjectIdToSlugMap(ctx, r.client)
+		projectIdToSlugMap, err = sentryclient.GetProjectIdToSlugMap(ctx, r.apiClient, data.Organization.ValueString())
 		if err != nil {
 			resp.Diagnostics.Append(diagutils.NewClientError("read projects", err))
 			return
