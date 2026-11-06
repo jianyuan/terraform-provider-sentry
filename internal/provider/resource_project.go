@@ -7,6 +7,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -152,6 +153,12 @@ type ProjectResourceModel struct {
 	GroupingEnhancements sentrytypes.TrimmedString     `tfsdk:"grouping_enhancements"`
 	ClientSecurity       types.Object                  `tfsdk:"client_security"`
 	HighlightTags        supertypes.SetValueOf[string] `tfsdk:"highlight_tags"`
+	DataScrubber         types.Bool                    `tfsdk:"data_scrubber"`
+	DataScrubberDefaults types.Bool                    `tfsdk:"data_scrubber_defaults"`
+	ScrubIpAddresses     types.Bool                    `tfsdk:"scrub_ip_addresses"`
+	SensitiveFields      types.Set                     `tfsdk:"sensitive_fields"`
+	SafeFields           types.Set                     `tfsdk:"safe_fields"`
+	RelayPiiConfig       jsontypes.Normalized          `tfsdk:"relay_pii_config"`
 }
 
 func (m *ProjectResourceModel) Fill(ctx context.Context, project apiclient.Project) (diags diag.Diagnostics) {
@@ -185,6 +192,24 @@ func (m *ProjectResourceModel) Fill(ctx context.Context, project apiclient.Proje
 	} else {
 		m.HighlightTags = supertypes.NewSetValueOfNull[string](ctx)
 	}
+
+	m.DataScrubber = types.BoolPointerValue(project.DataScrubber)
+	m.DataScrubberDefaults = types.BoolPointerValue(project.DataScrubberDefaults)
+	m.ScrubIpAddresses = types.BoolPointerValue(project.ScrubIPAddresses)
+
+	if project.SensitiveFields != nil {
+		m.SensitiveFields = fwdiag.Merge(stringSetValue(ctx, project.SensitiveFields))(&diags)
+	} else {
+		m.SensitiveFields = types.SetNull(types.StringType)
+	}
+
+	if project.SafeFields != nil {
+		m.SafeFields = fwdiag.Merge(stringSetValue(ctx, project.SafeFields))(&diags)
+	} else {
+		m.SafeFields = types.SetNull(types.StringType)
+	}
+
+	m.RelayPiiConfig = relayPiiConfigValue(project.RelayPiiConfig)
 
 	return
 }
@@ -419,6 +444,63 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 					setplanmodifier.UseStateForUnknown(),
 				},
 			},
+			"data_scrubber": schema.BoolAttribute{
+				MarkdownDescription: "Enable server-side data scrubbing for this project. If the organization requires data scrubbing, it applies regardless of this setting.",
+				Optional:            true,
+				Computed:            true,
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"data_scrubber_defaults": schema.BoolAttribute{
+				MarkdownDescription: "Apply the default scrubbers to prevent things like passwords and credit cards from being stored. If the organization requires the default scrubbers, they apply regardless of this setting.",
+				Optional:            true,
+				Computed:            true,
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"scrub_ip_addresses": schema.BoolAttribute{
+				MarkdownDescription: "Prevent IP addresses from being stored for new events. If the organization requires IP address scrubbing, it applies regardless of this setting.",
+				Optional:            true,
+				Computed:            true,
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"sensitive_fields": schema.SetAttribute{
+				MarkdownDescription: "Additional field names to match against when scrubbing data. The organization's sensitive fields also apply.",
+				ElementType:         types.StringType,
+				Optional:            true,
+				Computed:            true,
+				Validators: []validator.Set{
+					setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+				},
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"safe_fields": schema.SetAttribute{
+				MarkdownDescription: "Field names which data scrubbers should ignore. The organization's safe fields also apply.",
+				ElementType:         types.StringType,
+				Optional:            true,
+				Computed:            true,
+				Validators: []validator.Set{
+					setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+				},
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"relay_pii_config": schema.StringAttribute{
+				MarkdownDescription: relayPiiConfigMarkdownDescription + " To remove all rules, set it to `jsonencode({})`. The organization's rules also apply.",
+				CustomType:          jsontypes.NormalizedType{},
+				Optional:            true,
+				Computed:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
 		},
 	}
 }
@@ -616,6 +698,38 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 		if !clientSecurity.VerifyTlsSsl.IsUnknown() {
 			updateBody.VerifySSL = clientSecurity.VerifyTlsSsl.ValueBoolPointer()
 		}
+	}
+
+	if !data.DataScrubber.IsUnknown() {
+		updateBody.DataScrubber = data.DataScrubber.ValueBoolPointer()
+	}
+
+	if !data.DataScrubberDefaults.IsUnknown() {
+		updateBody.DataScrubberDefaults = data.DataScrubberDefaults.ValueBoolPointer()
+	}
+
+	if !data.ScrubIpAddresses.IsUnknown() {
+		updateBody.ScrubIPAddresses = data.ScrubIpAddresses.ValueBoolPointer()
+	}
+
+	if !data.SensitiveFields.IsUnknown() {
+		sensitiveFields := fwdiag.Merge(stringSetElements(ctx, data.SensitiveFields))(&resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		updateBody.SensitiveFields = &sensitiveFields
+	}
+
+	if !data.SafeFields.IsUnknown() {
+		safeFields := fwdiag.Merge(stringSetElements(ctx, data.SafeFields))(&resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		updateBody.SafeFields = &safeFields
+	}
+
+	if !data.RelayPiiConfig.IsUnknown() {
+		updateBody.RelayPiiConfig = data.RelayPiiConfig.ValueStringPointer()
 	}
 
 	httpRespUpdate, err := r.apiClient.UpdateOrganizationProjectWithResponse(
@@ -840,6 +954,38 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 			return
 		}
 		updateBody.HighlightTags = &highlightTags
+	}
+
+	if !plan.DataScrubber.Equal(state.DataScrubber) {
+		updateBody.DataScrubber = plan.DataScrubber.ValueBoolPointer()
+	}
+
+	if !plan.DataScrubberDefaults.Equal(state.DataScrubberDefaults) {
+		updateBody.DataScrubberDefaults = plan.DataScrubberDefaults.ValueBoolPointer()
+	}
+
+	if !plan.ScrubIpAddresses.Equal(state.ScrubIpAddresses) {
+		updateBody.ScrubIPAddresses = plan.ScrubIpAddresses.ValueBoolPointer()
+	}
+
+	if !plan.SensitiveFields.Equal(state.SensitiveFields) {
+		sensitiveFields := fwdiag.Merge(stringSetElements(ctx, plan.SensitiveFields))(&resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		updateBody.SensitiveFields = &sensitiveFields
+	}
+
+	if !plan.SafeFields.Equal(state.SafeFields) {
+		safeFields := fwdiag.Merge(stringSetElements(ctx, plan.SafeFields))(&resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		updateBody.SafeFields = &safeFields
+	}
+
+	if !plan.RelayPiiConfig.Equal(state.RelayPiiConfig) {
+		updateBody.RelayPiiConfig = plan.RelayPiiConfig.ValueStringPointer()
 	}
 
 	httpRespUpdate, err := r.apiClient.UpdateOrganizationProjectWithResponse(
