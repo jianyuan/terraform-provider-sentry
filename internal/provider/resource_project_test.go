@@ -458,6 +458,89 @@ func TestAccProjectResource_filters(t *testing.T) {
 	})
 }
 
+func TestAccProjectResource_relayAutomaticJsonExpansion(t *testing.T) {
+	teamName := acctest.RandomWithPrefix("tf-team")
+	projectName := acctest.RandomWithPrefix("tf-project")
+	rn := "sentry_project.test"
+
+	checks := []statecheck.StateCheck{
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("teams"), knownvalue.SetExact([]knownvalue.Check{knownvalue.StringExact(teamName)})),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(projectName)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("slug"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("platform"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_rules"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_key"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("internal_id"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("features"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_min_delay"), knownvalue.Int64Exact(300)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_max_delay"), knownvalue.Int64Exact(1800)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("resolve_age"), knownvalue.Int64Exact(0)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("fingerprinting_rules"), knownvalue.StringExact("")),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("grouping_enhancements"), knownvalue.StringExact("")),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("client_security"), knownvalue.ObjectExact(map[string]knownvalue.Check{
+			"allowed_domains": knownvalue.SetExact([]knownvalue.Check{
+				knownvalue.StringExact("*"),
+			}),
+			"scrape_javascript":     knownvalue.Bool(true),
+			"security_token":        knownvalue.NotNull(),
+			"security_token_header": knownvalue.StringExact(""),
+			"verify_tls_ssl":        knownvalue.Bool(false),
+		})),
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
+					TeamName:    teamName,
+					ProjectName: projectName,
+					Platform:    "go",
+					Extras: `
+						relay_automatic_json_expansion = true
+					`,
+				}),
+				Check: testAccCheckProject(rn, testAccCheckRelayAutomaticJsonExpansion(true)),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("relay_automatic_json_expansion"), knownvalue.Bool(true)),
+				),
+			},
+			{
+				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
+					TeamName:    teamName,
+					ProjectName: projectName,
+					Platform:    "go",
+				}),
+				Check: testAccCheckProject(rn, testAccCheckRelayAutomaticJsonExpansion(true)),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("relay_automatic_json_expansion"), knownvalue.Bool(true)),
+				),
+			},
+			{
+				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
+					TeamName:    teamName,
+					ProjectName: projectName,
+					Platform:    "go",
+					Extras: `
+						relay_automatic_json_expansion = false
+					`,
+				}),
+				Check: testAccCheckProject(rn, testAccCheckRelayAutomaticJsonExpansion(false)),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("relay_automatic_json_expansion"), knownvalue.Bool(false)),
+				),
+			},
+		},
+	})
+}
+
 func TestAccProjectResource_issueGrouping(t *testing.T) {
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
@@ -792,6 +875,29 @@ func testAccCheckProject(rn string, check func(apiclient.Project) error) resourc
 		}
 
 		return check(*httpResp.JSON200)
+	}
+}
+
+func testAccCheckRelayAutomaticJsonExpansion(want bool) func(apiclient.Project) error {
+	return func(project apiclient.Project) error {
+		if project.Options == nil {
+			return fmt.Errorf("project options are nil")
+		}
+
+		value, ok := project.Options["sentry:relay_automatic_json_expansion"]
+		if !ok {
+			return fmt.Errorf("sentry:relay_automatic_json_expansion is missing")
+		}
+
+		enabled, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("sentry:relay_automatic_json_expansion has type %T", value)
+		}
+		if enabled != want {
+			return fmt.Errorf("sentry:relay_automatic_json_expansion = %v, want %v", enabled, want)
+		}
+
+		return nil
 	}
 }
 
