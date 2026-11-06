@@ -2,8 +2,11 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"slices"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -15,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/terraform-plugin-framework-utils/fwdiag"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
@@ -138,17 +142,23 @@ func (r *ClientKeyResource) Schema(ctx context.Context, req resource.SchemaReque
 				Required:            true,
 			},
 			"rate_limit_window": schema.Int64Attribute{
-				MarkdownDescription: "Length of time in seconds that will be considered when checking the rate limit.",
+				MarkdownDescription: "Length of time in seconds that will be considered when checking the rate limit. Requires a Sentry plan that supports per-key rate limits.",
 				Optional:            true,
 				Computed:            true,
+				Validators: []validator.Int64{
+					int64validator.AtLeast(1),
+				},
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.UseStateForUnknown(),
 				},
 			},
 			"rate_limit_count": schema.Int64Attribute{
-				MarkdownDescription: "Number of events that can be reported within the rate limit window.",
+				MarkdownDescription: "Number of events that can be reported within the rate limit window. Requires a Sentry plan that supports per-key rate limits.",
 				Optional:            true,
 				Computed:            true,
+				Validators: []validator.Int64{
+					int64validator.AtLeast(1),
+				},
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.UseStateForUnknown(),
 				},
@@ -282,6 +292,13 @@ func (r *ClientKeyResource) Create(ctx context.Context, req resource.CreateReque
 		}
 	}
 
+	if body.RateLimit != nil {
+		resp.Diagnostics.Append(r.checkRateLimitsAvailable(ctx, data.Organization.ValueString(), data.Project.ValueString())...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
 	httpResp, err := r.apiClient.CreateProjectClientKeyWithResponse(
 		ctx,
 		data.Organization.ValueString(),
@@ -302,6 +319,10 @@ func (r *ClientKeyResource) Create(ctx context.Context, req resource.CreateReque
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+
+	if body.RateLimit != nil && data.RateLimitCount.IsNull() {
+		resp.Diagnostics.Append(newRateLimitNotAppliedError())
+	}
 }
 
 func (r *ClientKeyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -380,6 +401,13 @@ func (r *ClientKeyResource) Update(ctx context.Context, req resource.UpdateReque
 		}
 	}
 
+	if body.RateLimit != nil {
+		resp.Diagnostics.Append(r.checkRateLimitsAvailable(ctx, plan.Organization.ValueString(), plan.Project.ValueString())...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
 	httpResp, err := r.apiClient.UpdateProjectClientKeyWithResponse(
 		ctx,
 		plan.Organization.ValueString(),
@@ -405,6 +433,10 @@ func (r *ClientKeyResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+
+	if body.RateLimit != nil && plan.RateLimitCount.IsNull() {
+		resp.Diagnostics.Append(newRateLimitNotAppliedError())
+	}
 }
 
 func (r *ClientKeyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -430,6 +462,43 @@ func (r *ClientKeyResource) Delete(ctx context.Context, req resource.DeleteReque
 		resp.Diagnostics.Append(diagutils.NewClientStatusError("delete", httpResp.StatusCode(), httpResp.Body))
 		return
 	}
+}
+
+// NOTE: Sentry silently ignores client key rate limits on projects without this feature.
+const clientKeyRateLimitsFeature = "rate-limits"
+
+func (r *ClientKeyResource) checkRateLimitsAvailable(ctx context.Context, organization string, project string) (diags diag.Diagnostics) {
+	httpResp, err := r.apiClient.GetOrganizationProjectWithResponse(ctx, organization, project)
+	if err != nil {
+		diags.Append(diagutils.NewClientError("read project", err))
+		return
+	} else if httpResp.StatusCode() != http.StatusOK {
+		diags.Append(diagutils.NewClientStatusError("read project", httpResp.StatusCode(), httpResp.Body))
+		return
+	} else if httpResp.JSON200 == nil {
+		diags.Append(diagutils.NewClientError("read project", diagutils.ErrEmptyResponse))
+		return
+	}
+
+	if !slices.Contains(httpResp.JSON200.Features, clientKeyRateLimitsFeature) {
+		diags.AddAttributeError(
+			path.Root("rate_limit_count"),
+			"Rate limits are not available",
+			fmt.Sprintf("The project %q does not have the %q feature enabled, so Sentry would ignore `rate_limit_window` and `rate_limit_count`. "+
+				"Per-key rate limits depend on your Sentry plan. Remove these attributes or upgrade your plan.", project, clientKeyRateLimitsFeature),
+		)
+	}
+	return
+}
+
+func newRateLimitNotAppliedError() diag.Diagnostic {
+	return diag.NewAttributeErrorDiagnostic(
+		path.Root("rate_limit_count"),
+		"Rate limit was not applied",
+		fmt.Sprintf("Sentry accepted the request but did not apply `rate_limit_window` and `rate_limit_count` to the client key. "+
+			"This happens when the project does not have the %q feature enabled, which depends on your Sentry plan. "+
+			"Remove these attributes or upgrade your plan.", clientKeyRateLimitsFeature),
+	)
 }
 
 func (r *ClientKeyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
