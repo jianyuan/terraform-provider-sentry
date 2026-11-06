@@ -12,7 +12,6 @@ import (
 
 func TestOpHeaderOperandLiteralFunction_known(t *testing.T) {
 	resource.UnitTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -32,7 +31,6 @@ func TestOpHeaderOperandLiteralFunction_known(t *testing.T) {
 
 func TestOpHeaderOperandLiteralFunction_null(t *testing.T) {
 	resource.UnitTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -49,7 +47,6 @@ func TestOpHeaderOperandLiteralFunction_null(t *testing.T) {
 
 func TestOpHeaderOperandLiteralFunction_unknown(t *testing.T) {
 	resource.UnitTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{

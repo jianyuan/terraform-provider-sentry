@@ -12,7 +12,6 @@ import (
 
 func TestOpStatusCodeCheckFunction_known(t *testing.T) {
 	resource.UnitTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -51,7 +50,6 @@ func TestOpStatusCodeCheckFunction_known(t *testing.T) {
 
 func TestOpStatusCodeCheckFunction_null(t *testing.T) {
 	resource.UnitTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -68,7 +66,6 @@ func TestOpStatusCodeCheckFunction_null(t *testing.T) {
 
 func TestOpStatusCodeCheckFunction_unknown(t *testing.T) {
 	resource.UnitTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{

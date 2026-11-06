@@ -104,12 +104,7 @@ func deepLossyEqual(v1, v2 interface{}, ignoreKeys []string) bool {
 	case json.Number:
 		switch v2 := v2.(type) {
 		case json.Number:
-			v1Float, err1 := v1.Float64()
-			v2Float, err2 := v2.Float64()
-			if err1 != nil || err2 != nil {
-				return false
-			}
-			return v1Float == v2Float
+			return v1 == v2
 		case string:
 			return v1.String() == v2
 		default:
