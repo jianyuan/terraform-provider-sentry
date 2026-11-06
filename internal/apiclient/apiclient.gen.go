@@ -1488,12 +1488,17 @@ func (e ListProjectClientKeysParamsStatus) Valid() bool {
 
 // Organization defines model for Organization.
 type Organization struct {
-	Features     *[]string                  `json:"features,omitempty"`
-	Id           string                     `json:"id"`
-	Name         string                     `json:"name"`
-	OrgRoleList  []OrganizationRoleListItem `json:"orgRoleList"`
-	Slug         string                     `json:"slug"`
-	TeamRoleList []TeamRoleListItem         `json:"teamRoleList"`
+	DataScrubber         *bool                      `json:"dataScrubber,omitempty"`
+	DataScrubberDefaults *bool                      `json:"dataScrubberDefaults,omitempty"`
+	Features             *[]string                  `json:"features,omitempty"`
+	Id                   string                     `json:"id"`
+	Name                 string                     `json:"name"`
+	OrgRoleList          []OrganizationRoleListItem `json:"orgRoleList"`
+	SafeFields           *[]string                  `json:"safeFields,omitempty"`
+	ScrubIPAddresses     *bool                      `json:"scrubIPAddresses,omitempty"`
+	SensitiveFields      *[]string                  `json:"sensitiveFields,omitempty"`
+	Slug                 string                     `json:"slug"`
+	TeamRoleList         []TeamRoleListItem         `json:"teamRoleList"`
 }
 
 // OrganizationIntegration defines model for OrganizationIntegration.
@@ -3058,6 +3063,15 @@ type ProjectIdOrSlug = string
 // TeamIdOrSlug defines model for team_id_or_slug.
 type TeamIdOrSlug = string
 
+// UpdateOrganizationJSONBody defines parameters for UpdateOrganization.
+type UpdateOrganizationJSONBody struct {
+	DataScrubber         *bool     `json:"dataScrubber,omitempty"`
+	DataScrubberDefaults *bool     `json:"dataScrubberDefaults,omitempty"`
+	SafeFields           *[]string `json:"safeFields,omitempty"`
+	ScrubIPAddresses     *bool     `json:"scrubIPAddresses,omitempty"`
+	SensitiveFields      *[]string `json:"sensitiveFields,omitempty"`
+}
+
 // ListOrganizationMonitorsParams defines parameters for ListOrganizationMonitors.
 type ListOrganizationMonitorsParams struct {
 	Cursor  *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
@@ -3236,6 +3250,9 @@ type CreateOrganizationTeamProjectJSONBody struct {
 	Platform     string  `json:"platform"`
 	Slug         *string `json:"slug,omitempty"`
 }
+
+// UpdateOrganizationJSONRequestBody defines body for UpdateOrganization for application/json ContentType.
+type UpdateOrganizationJSONRequestBody UpdateOrganizationJSONBody
 
 // UpdateProjectMonitorJSONRequestBody defines body for UpdateProjectMonitor for application/json ContentType.
 type UpdateProjectMonitorJSONRequestBody = ProjectMonitorRequest
@@ -7416,6 +7433,20 @@ type ClientInterface interface {
 	// Corresponds with GET /0/organizations/{organization_id_or_slug}/ (the `GetOrganization` operationId).
 	GetOrganization(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// UpdateOrganizationWithBody Update an Organization
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with PUT /0/organizations/{organization_id_or_slug}/ (the `UpdateOrganization` operationId).
+	UpdateOrganizationWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateOrganization Update an Organization
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with PUT /0/organizations/{organization_id_or_slug}/ (the `UpdateOrganization` operationId).
+	UpdateOrganization(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body UpdateOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListOrganizationMonitors List Monitors for an Organization
 	//
 	// Corresponds with GET /0/organizations/{organization_id_or_slug}/detectors/ (the `ListOrganizationMonitors` operationId).
@@ -7805,6 +7836,40 @@ func (c *Client) HealthCheck(ctx context.Context, reqEditors ...RequestEditorFn)
 // Corresponds with GET /0/organizations/{organization_id_or_slug}/ (the `GetOrganization` operationId).
 func (c *Client) GetOrganization(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetOrganizationRequest(c.Server, organizationIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateOrganizationWithBody Update an Organization
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with PUT /0/organizations/{organization_id_or_slug}/ (the `UpdateOrganization` operationId).
+func (c *Client) UpdateOrganizationWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateOrganizationRequestWithBody(c.Server, organizationIdOrSlug, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateOrganization Update an Organization
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with PUT /0/organizations/{organization_id_or_slug}/ (the `UpdateOrganization` operationId).
+func (c *Client) UpdateOrganization(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body UpdateOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateOrganizationRequest(c.Server, organizationIdOrSlug, body)
 	if err != nil {
 		return nil, err
 	}
@@ -8840,6 +8905,53 @@ func NewGetOrganizationRequest(server string, organizationIdOrSlug OrganizationI
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewUpdateOrganizationRequest calls the generic UpdateOrganization builder with application/json body
+func NewUpdateOrganizationRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, body UpdateOrganizationJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateOrganizationRequestWithBody(server, organizationIdOrSlug, "application/json", bodyReader)
+}
+
+// NewUpdateOrganizationRequestWithBody constructs an http.Request for the UpdateOrganization method, with any body, and a specified content type
+func NewUpdateOrganizationRequestWithBody(server string, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -11146,6 +11258,20 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /0/organizations/{organization_id_or_slug}/ (the `GetOrganization` operationId).
 	GetOrganizationWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*GetOrganizationResponse, error)
 
+	// UpdateOrganizationWithBodyWithResponse Update an Organization
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /0/organizations/{organization_id_or_slug}/ (the `UpdateOrganization` operationId).
+	UpdateOrganizationWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateOrganizationResponse, error)
+
+	// UpdateOrganizationWithResponse Update an Organization
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /0/organizations/{organization_id_or_slug}/ (the `UpdateOrganization` operationId).
+	UpdateOrganizationWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body UpdateOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateOrganizationResponse, error)
+
 	// ListOrganizationMonitorsWithResponse List Monitors for an Organization
 	//
 	// Returns a wrapper object for the known response body format(s).
@@ -11636,6 +11762,47 @@ func (r GetOrganizationResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r GetOrganizationResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type UpdateOrganizationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *Organization
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r UpdateOrganizationResponse) GetJSON200() *Organization {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r UpdateOrganizationResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateOrganizationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateOrganizationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r UpdateOrganizationResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -13379,6 +13546,32 @@ func (c *ClientWithResponses) GetOrganizationWithResponse(ctx context.Context, o
 	return ParseGetOrganizationResponse(rsp)
 }
 
+// UpdateOrganizationWithBodyWithResponse Update an Organization
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /0/organizations/{organization_id_or_slug}/ (the `UpdateOrganization` operationId).
+func (c *ClientWithResponses) UpdateOrganizationWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateOrganizationResponse, error) {
+	rsp, err := c.UpdateOrganizationWithBody(ctx, organizationIdOrSlug, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateOrganizationResponse(rsp)
+}
+
+// UpdateOrganizationWithResponse Update an Organization
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /0/organizations/{organization_id_or_slug}/ (the `UpdateOrganization` operationId).
+func (c *ClientWithResponses) UpdateOrganizationWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body UpdateOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateOrganizationResponse, error) {
+	rsp, err := c.UpdateOrganization(ctx, organizationIdOrSlug, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateOrganizationResponse(rsp)
+}
+
 // ListOrganizationMonitorsWithResponse List Monitors for an Organization
 //
 // Returns a wrapper object for the known response body format(s).
@@ -14195,6 +14388,44 @@ func ParseGetOrganizationResponse(rsp *http.Response) (*GetOrganizationResponse,
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case rsp.StatusCode == 401:
+		break // No content-type
+
+	case rsp.StatusCode == 403:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateOrganizationResponse parses an HTTP response from a UpdateOrganizationWithResponse call
+func ParseUpdateOrganizationResponse(rsp *http.Response) (*UpdateOrganizationResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateOrganizationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Organization
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
 
 	case rsp.StatusCode == 401:
 		break // No content-type
