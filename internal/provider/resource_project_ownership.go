@@ -136,8 +136,7 @@ func (r *ProjectOwnershipResource) Read(ctx context.Context, req resource.ReadRe
 		data.Organization.ValueString(),
 		data.Project.ValueString(),
 	)
-	if apiResp.StatusCode == http.StatusNotFound {
-		resp.Diagnostics.Append(diagutils.NewNotFoundError("project ownership"))
+	if apiResp != nil && apiResp.StatusCode == http.StatusNotFound {
 		resp.State.RemoveResource(ctx)
 		return
 	}
@@ -147,7 +146,6 @@ func (r *ProjectOwnershipResource) Read(ctx context.Context, req resource.ReadRe
 	}
 
 	if ownership == nil {
-		resp.Diagnostics.Append(diagutils.NewNotFoundError("project ownership"))
 		resp.State.RemoveResource(ctx)
 		return
 	}
