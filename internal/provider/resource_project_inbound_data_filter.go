@@ -153,8 +153,7 @@ func (r *ProjectInboundDataFilterResource) Read(ctx context.Context, req resourc
 		data.Organization.ValueString(),
 		data.Project.ValueString(),
 	)
-	if apiResp.StatusCode == http.StatusNotFound {
-		resp.Diagnostics.Append(diagutils.NewNotFoundError("project inbound data filter"))
+	if apiResp != nil && apiResp.StatusCode == http.StatusNotFound {
 		resp.State.RemoveResource(ctx)
 		return
 	}
@@ -173,7 +172,6 @@ func (r *ProjectInboundDataFilterResource) Read(ctx context.Context, req resourc
 	}
 
 	if foundFilter == nil {
-		resp.Diagnostics.Append(diagutils.NewNotFoundError("project inbound data filter"))
 		resp.State.RemoveResource(ctx)
 		return
 	}

@@ -322,7 +322,6 @@ func (r *ClientKeyResource) Read(ctx context.Context, req resource.ReadRequest, 
 		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 		return
 	} else if httpResp.StatusCode() == http.StatusNotFound {
-		resp.Diagnostics.Append(diagutils.NewNotFoundError("client key"))
 		resp.State.RemoveResource(ctx)
 		return
 	} else if httpResp.StatusCode() != http.StatusOK {

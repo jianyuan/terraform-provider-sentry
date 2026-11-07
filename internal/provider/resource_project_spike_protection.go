@@ -141,7 +141,6 @@ func (r *ProjectSpikeProtectionResource) Read(ctx context.Context, req resource.
 	}
 
 	if httpResp.StatusCode() == http.StatusNotFound {
-		resp.Diagnostics.Append(diagutils.NewNotFoundError("project"))
 		resp.State.RemoveResource(ctx)
 		return
 	} else if httpResp.StatusCode() != http.StatusOK {
