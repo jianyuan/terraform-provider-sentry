@@ -2402,19 +2402,19 @@ type ProjectMonitorDataSourceConfigCron struct {
 
 // ProjectMonitorDataSourceConfigCronBase defines model for ProjectMonitor_DataSource_Config_Cron_Base.
 type ProjectMonitorDataSourceConfigCronBase struct {
-	CheckinMargin         int64  `json:"checkin_margin"`
-	FailureIssueThreshold int64  `json:"failure_issue_threshold"`
-	MaxRuntime            int64  `json:"max_runtime"`
-	RecoveryThreshold     int64  `json:"recovery_threshold"`
-	Timezone              string `json:"timezone"`
+	CheckinMargin         int64                    `json:"checkin_margin"`
+	FailureIssueThreshold nullable.Nullable[int64] `json:"failure_issue_threshold"`
+	MaxRuntime            int64                    `json:"max_runtime"`
+	RecoveryThreshold     nullable.Nullable[int64] `json:"recovery_threshold"`
+	Timezone              string                   `json:"timezone"`
 }
 
 // ProjectMonitorDataSourceConfigCronCrontab defines model for ProjectMonitor_DataSource_Config_Cron_Crontab.
 type ProjectMonitorDataSourceConfigCronCrontab struct {
 	CheckinMargin         int64                                                 `json:"checkin_margin"`
-	FailureIssueThreshold int64                                                 `json:"failure_issue_threshold"`
+	FailureIssueThreshold nullable.Nullable[int64]                              `json:"failure_issue_threshold"`
 	MaxRuntime            int64                                                 `json:"max_runtime"`
-	RecoveryThreshold     int64                                                 `json:"recovery_threshold"`
+	RecoveryThreshold     nullable.Nullable[int64]                              `json:"recovery_threshold"`
 	Schedule              string                                                `json:"schedule"`
 	ScheduleType          ProjectMonitorDataSourceConfigCronCrontabScheduleType `json:"schedule_type"`
 	Timezone              string                                                `json:"timezone"`
@@ -2426,9 +2426,9 @@ type ProjectMonitorDataSourceConfigCronCrontabScheduleType string
 // ProjectMonitorDataSourceConfigCronInterval defines model for ProjectMonitor_DataSource_Config_Cron_Interval.
 type ProjectMonitorDataSourceConfigCronInterval struct {
 	CheckinMargin         int64                                                      `json:"checkin_margin"`
-	FailureIssueThreshold int64                                                      `json:"failure_issue_threshold"`
+	FailureIssueThreshold nullable.Nullable[int64]                                   `json:"failure_issue_threshold"`
 	MaxRuntime            int64                                                      `json:"max_runtime"`
-	RecoveryThreshold     int64                                                      `json:"recovery_threshold"`
+	RecoveryThreshold     nullable.Nullable[int64]                                   `json:"recovery_threshold"`
 	Schedule              []ProjectMonitorDataSourceConfigCronInterval_Schedule_Item `json:"schedule"`
 	ScheduleType          ProjectMonitorDataSourceConfigCronIntervalScheduleType     `json:"schedule_type"`
 	Timezone              string                                                     `json:"timezone"`

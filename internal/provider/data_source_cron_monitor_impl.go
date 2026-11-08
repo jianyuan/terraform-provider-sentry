@@ -64,17 +64,17 @@ func (m *CronMonitorDataSourceModel) fill(ctx context.Context, data apiclient.Pr
 	switch configValue := configValue.(type) {
 	case apiclient.ProjectMonitorDataSourceConfigCronCrontab:
 		m.CheckinMarginMinutes.Set(configValue.CheckinMargin)
-		m.FailureIssueThreshold.Set(configValue.FailureIssueThreshold)
+		m.FailureIssueThreshold.Set(cronMonitorThreshold(configValue.FailureIssueThreshold))
 		m.MaxRuntimeMinutes.Set(configValue.MaxRuntime)
-		m.RecoveryThreshold.Set(configValue.RecoveryThreshold)
+		m.RecoveryThreshold.Set(cronMonitorThreshold(configValue.RecoveryThreshold))
 		m.Timezone.Set(configValue.Timezone)
 		schedule.Crontab.Set(configValue.Schedule)
 
 	case apiclient.ProjectMonitorDataSourceConfigCronInterval:
 		m.CheckinMarginMinutes.Set(configValue.CheckinMargin)
-		m.FailureIssueThreshold.Set(configValue.FailureIssueThreshold)
+		m.FailureIssueThreshold.Set(cronMonitorThreshold(configValue.FailureIssueThreshold))
 		m.MaxRuntimeMinutes.Set(configValue.MaxRuntime)
-		m.RecoveryThreshold.Set(configValue.RecoveryThreshold)
+		m.RecoveryThreshold.Set(cronMonitorThreshold(configValue.RecoveryThreshold))
 		m.Timezone.Set(configValue.Timezone)
 
 		if len(configValue.Schedule) != 2 {
