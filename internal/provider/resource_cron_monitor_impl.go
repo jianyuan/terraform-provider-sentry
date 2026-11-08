@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/jianyuan/terraform-plugin-framework-utils/fwdiag"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
+	"github.com/oapi-codegen/nullable"
 )
 
 func (r *CronMonitorResource) getCreateJSONRequestBody(ctx context.Context, data CronMonitorResourceModel) (*apiclient.CreateProjectMonitorJSONRequestBody, diag.Diagnostics) {
@@ -23,9 +24,9 @@ func (r *CronMonitorResource) getCreateJSONRequestBody(ctx context.Context, data
 	case inSchedule.Crontab.IsKnown():
 		if err := outDs.FromProjectMonitorDataSourceConfigCronCrontab(apiclient.ProjectMonitorDataSourceConfigCronCrontab{
 			CheckinMargin:         data.CheckinMarginMinutes.Get(),
-			FailureIssueThreshold: data.FailureIssueThreshold.Get(),
+			FailureIssueThreshold: nullable.NewNullableWithValue(data.FailureIssueThreshold.Get()),
 			MaxRuntime:            data.MaxRuntimeMinutes.Get(),
-			RecoveryThreshold:     data.RecoveryThreshold.Get(),
+			RecoveryThreshold:     nullable.NewNullableWithValue(data.RecoveryThreshold.Get()),
 			Timezone:              data.Timezone.Get(),
 			Schedule:              inSchedule.Crontab.Get(),
 		}); err != nil {
@@ -46,9 +47,9 @@ func (r *CronMonitorResource) getCreateJSONRequestBody(ctx context.Context, data
 
 		if err := outDs.FromProjectMonitorDataSourceConfigCronInterval(apiclient.ProjectMonitorDataSourceConfigCronInterval{
 			CheckinMargin:         data.CheckinMarginMinutes.Get(),
-			FailureIssueThreshold: data.FailureIssueThreshold.Get(),
+			FailureIssueThreshold: nullable.NewNullableWithValue(data.FailureIssueThreshold.Get()),
 			MaxRuntime:            data.MaxRuntimeMinutes.Get(),
-			RecoveryThreshold:     data.RecoveryThreshold.Get(),
+			RecoveryThreshold:     nullable.NewNullableWithValue(data.RecoveryThreshold.Get()),
 			Timezone:              data.Timezone.Get(),
 			Schedule: []apiclient.ProjectMonitorDataSourceConfigCronInterval_Schedule_Item{
 				intervalValue,
@@ -177,17 +178,17 @@ func (m *CronMonitorResourceModel) Fill(ctx context.Context, data apiclient.Proj
 	switch configValue := configValue.(type) {
 	case apiclient.ProjectMonitorDataSourceConfigCronCrontab:
 		m.CheckinMarginMinutes.Set(configValue.CheckinMargin)
-		m.FailureIssueThreshold.Set(configValue.FailureIssueThreshold)
+		m.FailureIssueThreshold.Set(cronMonitorThreshold(configValue.FailureIssueThreshold))
 		m.MaxRuntimeMinutes.Set(configValue.MaxRuntime)
-		m.RecoveryThreshold.Set(configValue.RecoveryThreshold)
+		m.RecoveryThreshold.Set(cronMonitorThreshold(configValue.RecoveryThreshold))
 		m.Timezone.Set(configValue.Timezone)
 		schedule.Crontab.Set(configValue.Schedule)
 
 	case apiclient.ProjectMonitorDataSourceConfigCronInterval:
 		m.CheckinMarginMinutes.Set(configValue.CheckinMargin)
-		m.FailureIssueThreshold.Set(configValue.FailureIssueThreshold)
+		m.FailureIssueThreshold.Set(cronMonitorThreshold(configValue.FailureIssueThreshold))
 		m.MaxRuntimeMinutes.Set(configValue.MaxRuntime)
-		m.RecoveryThreshold.Set(configValue.RecoveryThreshold)
+		m.RecoveryThreshold.Set(cronMonitorThreshold(configValue.RecoveryThreshold))
 		m.Timezone.Set(configValue.Timezone)
 
 		if len(configValue.Schedule) != 2 {
@@ -218,4 +219,14 @@ func (m *CronMonitorResourceModel) Fill(ctx context.Context, data apiclient.Proj
 
 func (r *CronMonitorResource) postRead(ctx context.Context, data *CronMonitorResourceModel, monitor apiclient.ProjectMonitor) diag.Diagnostics {
 	return fillMonitorProject(ctx, r.apiClient, data.Organization.Get(), &data.Project, monitor.ProjectId)
+}
+
+// cronMonitorThreshold returns the threshold Sentry applies. Sentry stores null
+// for a threshold that was never set, for example on a monitor created by an SDK
+// check-in upsert, and treats null as 1.
+func cronMonitorThreshold(v nullable.Nullable[int64]) int64 {
+	if threshold, err := v.Get(); err == nil {
+		return threshold
+	}
+	return 1
 }
