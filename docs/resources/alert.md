@@ -457,6 +457,13 @@ resource "sentry_alert" "default" {
             tags           = "environment,level"
             notes          = "Please <http://example.com|click here> for triage information."
           }
+        },
+        {
+          # Sentry resolves the channel name from the channel ID.
+          slack = {
+            integration_id = data.sentry_organization_integration.slack.id
+            channel_id     = "C0123456789"
+          }
         }
       ]
     }
@@ -1095,12 +1102,12 @@ Optional:
 
 Required:
 
-- `channel_name` (String) The name of the Slack channel to send the notification to (e.g., #critical, Jane Schmidt).
 - `integration_id` (String) The ID of the Slack integration.
 
 Optional:
 
-- `channel_id` (String) The Slack channel ID to send the notification to. This is an optional field that can be used to avoid rate-limiting.
+- `channel_id` (String) The Slack channel ID to send the notification to. If `channel_name` is omitted, Sentry resolves the channel name from this ID. Set it to avoid rate-limiting and to keep the alert valid when the channel is renamed.
+- `channel_name` (String) The name of the Slack channel to send the notification to (e.g., #critical, Jane Schmidt). If omitted, Sentry resolves the name from `channel_id`. At least one of `channel_name` or `channel_id` must be set.
 - `notes` (String) Text to show alongside the notification. To @ a user, include their user id like `@<USER_ID>`. To include a clickable link, format the link and title like `<http://example.com|Click Here>`.
 - `tags` (String) A list of tags to show in the notification.
 

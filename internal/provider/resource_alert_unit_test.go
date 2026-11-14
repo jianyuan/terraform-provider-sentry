@@ -6,11 +6,55 @@ import (
 	"testing"
 
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
+
+func TestSlackTargetDisplay(t *testing.T) {
+	for _, tt := range []struct {
+		name  string
+		value sentrytypes.SlackChannel
+		want  *string
+	}{
+		{name: "null", value: sentrytypes.NewSlackChannelNull(), want: nil},
+		{name: "unknown", value: sentrytypes.NewSlackChannelUnknown(), want: nil},
+		{name: "set", value: sentrytypes.NewSlackChannelValue("#general"), want: ptr("#general")},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			got := slackTargetDisplay(tt.value)
+			if (got == nil) != (tt.want == nil) {
+				t.Fatalf("got %v, want %v", got, tt.want)
+			}
+			if got != nil && *got != *tt.want {
+				t.Fatalf("got %q, want %q", *got, *tt.want)
+			}
+		})
+	}
+}
+
+func TestSlackActionOmitsTargetDisplayWhenNameIsNotSet(t *testing.T) {
+	var action apiclient.OrganizationWorkflowActionFilterActionSlack
+	action.Config.TargetType = "specific"
+	action.Config.TargetIdentifier = "C0123456789"
+	action.Config.TargetDisplay = slackTargetDisplay(sentrytypes.NewSlackChannelNull())
+
+	body, err := json.Marshal(action)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var decoded struct {
+		Config map[string]any `json:"config"`
+	}
+	if err := json.Unmarshal(body, &decoded); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := decoded.Config["targetDisplay"]; ok {
+		t.Fatalf("expected targetDisplay to be omitted, got %s", body)
+	}
+}
 
 func TestNewOptionalTicketString(t *testing.T) {
 	// Sentry reports an unset ticket field either by omitting the key or by

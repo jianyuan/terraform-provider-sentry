@@ -418,7 +418,7 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				outSlack.IntegrationId = inSlack.IntegrationId.Get()
 				outSlack.Config.TargetType = "specific"
 				outSlack.Config.TargetIdentifier = inSlack.ChannelId.Get()
-				outSlack.Config.TargetDisplay = inSlack.ChannelName.ValueString()
+				outSlack.Config.TargetDisplay = slackTargetDisplay(inSlack.ChannelName)
 				if inSlack.Tags.IsKnown() {
 					outSlack.Data.Tags = new(inSlack.Tags.Get())
 				}
@@ -1482,7 +1482,7 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 				var outSlack AlertResourceModelActionFiltersItemActionsItemSlack
 				outSlack.IntegrationId = supertypes.NewStringValue(actionValue.IntegrationId)
 				outSlack.ChannelId = supertypes.NewStringValue(actionValue.Config.TargetIdentifier)
-				outSlack.ChannelName = sentrytypes.NewSlackChannelValue(actionValue.Config.TargetDisplay)
+				outSlack.ChannelName = sentrytypes.NewSlackChannelPointerValue(actionValue.Config.TargetDisplay)
 				if actionValue.Data.Tags != nil {
 					outSlack.Tags = supertypes.NewStringValue(*actionValue.Data.Tags)
 				}
@@ -1624,6 +1624,15 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 // the key may be absent, or present with an empty string -- and both mean "not
 // set". Normalising both to null keeps an omitted attribute from showing
 // permanent drift after apply.
+// slackTargetDisplay returns nil when the channel name is not set, so that
+// Sentry resolves the name from the channel ID.
+func slackTargetDisplay(v sentrytypes.SlackChannel) *string {
+	if v.IsNull() || v.IsUnknown() {
+		return nil
+	}
+	return new(v.ValueString())
+}
+
 func newOptionalTicketString(value *string) supertypes.StringValue {
 	if value == nil || *value == "" {
 		return supertypes.NewStringNull()

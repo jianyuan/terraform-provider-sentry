@@ -3675,7 +3675,6 @@ components:
           required:
             - targetType
             - targetIdentifier
-            - targetDisplay
           properties:
             targetType:
               type: string
