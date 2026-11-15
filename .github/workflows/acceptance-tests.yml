@@ -47,10 +47,14 @@ jobs:
           # On pull_request_target, check out the exact PR commit that was approved.
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
+          # Fork PR runs only start after approval of the "test-external" environment.
+          allow-unsafe-pr-checkout: ${{ github.event_name == 'pull_request_target' }}
       - uses: actions/setup-go@v7
         with:
           go-version-file: "go.mod"
           cache-dependency-path: "go.sum"
+          # Fork code must not write to the default-branch cache that release builds restore.
+          cache: ${{ github.event_name != 'pull_request_target' }}
       - uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: ${{ matrix.terraform }}
