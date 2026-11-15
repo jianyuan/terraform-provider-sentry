@@ -291,8 +291,7 @@ func (r *ProjectSymbolSourcesResource) Read(ctx context.Context, req resource.Re
 			ID: data.Id.ValueStringPointer(),
 		},
 	)
-	if apiResp.StatusCode == http.StatusNotFound {
-		resp.Diagnostics.Append(diagutils.NewNotFoundError("project symbol source"))
+	if apiResp != nil && apiResp.StatusCode == http.StatusNotFound {
 		resp.State.RemoveResource(ctx)
 		return
 	}
@@ -302,7 +301,6 @@ func (r *ProjectSymbolSourcesResource) Read(ctx context.Context, req resource.Re
 	}
 
 	if len(sources) != 1 {
-		resp.Diagnostics.Append(diagutils.NewNotFoundError("project symbol source"))
 		resp.State.RemoveResource(ctx)
 		return
 	}
