@@ -3131,7 +3131,8 @@ type CreateOrganizationTeamJSONBody struct {
 
 // ListOrganizationWorkflowsParams defines parameters for ListOrganizationWorkflows.
 type ListOrganizationWorkflowsParams struct {
-	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+	Cursor  *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+	Project *string `form:"project,omitempty" json:"project,omitempty"`
 }
 
 // UpdateOrganizationProjectJSONBody defines parameters for UpdateOrganizationProject.
@@ -9917,6 +9918,18 @@ func NewListOrganizationWorkflowsRequest(server string, organizationIdOrSlug Org
 		if params.Cursor != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Project != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "project", *params.Project, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
 				return nil, err
 			} else {
 				for _, qp := range strings.Split(queryFrag, "&") {
