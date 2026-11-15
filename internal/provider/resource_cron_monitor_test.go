@@ -370,11 +370,10 @@ func TestAccCronMonitorResource_basic(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:            rn,
-				ImportState:             true,
-				ImportStateIdFunc:       resourceid.ImportState2PartIDFunc(rn, "organization", "id"),
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"project"},
+				ResourceName:      rn,
+				ImportState:       true,
+				ImportStateIdFunc: resourceid.ImportState2PartIDFunc(rn, "organization", "id"),
+				ImportStateVerify: true,
 			},
 			{
 				ResourceName: rn,
@@ -385,8 +384,7 @@ func TestAccCronMonitorResource_basic(t *testing.T) {
 					"organization", "organization",
 					"id", "id",
 				),
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"project"},
+				ImportStateVerify: true,
 			},
 		},
 	})

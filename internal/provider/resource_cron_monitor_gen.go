@@ -250,6 +250,11 @@ func (r *CronMonitorResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
+	resp.Diagnostics.Append(r.postRead(ctx, &data, *responseData)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
