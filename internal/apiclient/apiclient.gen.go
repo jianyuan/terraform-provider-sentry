@@ -1873,7 +1873,7 @@ type OrganizationWorkflowActionFilterActionSentryAppType string
 // OrganizationWorkflowActionFilterActionSlack defines model for OrganizationWorkflow_ActionFilter_Action_Slack.
 type OrganizationWorkflowActionFilterActionSlack struct {
 	Config struct {
-		TargetDisplay    string                                                      `json:"targetDisplay"`
+		TargetDisplay    *string                                                     `json:"targetDisplay,omitempty"`
 		TargetIdentifier string                                                      `json:"targetIdentifier"`
 		TargetType       OrganizationWorkflowActionFilterActionSlackConfigTargetType `json:"targetType"`
 	} `json:"config"`

@@ -418,7 +418,8 @@ func (r *AlertResource) getActionFilters(ctx context.Context, data AlertResource
 				outSlack.IntegrationId = inSlack.IntegrationId.Get()
 				outSlack.Config.TargetType = "specific"
 				outSlack.Config.TargetIdentifier = inSlack.ChannelId.Get()
-				outSlack.Config.TargetDisplay = inSlack.ChannelName.ValueString()
+				// Omit the channel name when not set, so that Sentry resolves it from the channel ID.
+				outSlack.Config.TargetDisplay = sentrytypes.KnownStringPointer(inSlack.ChannelName)
 				if inSlack.Tags.IsKnown() {
 					outSlack.Data.Tags = new(inSlack.Tags.Get())
 				}
@@ -1482,7 +1483,7 @@ func (m *AlertResourceModel) Fill(ctx context.Context, data apiclient.Organizati
 				var outSlack AlertResourceModelActionFiltersItemActionsItemSlack
 				outSlack.IntegrationId = supertypes.NewStringValue(actionValue.IntegrationId)
 				outSlack.ChannelId = supertypes.NewStringValue(actionValue.Config.TargetIdentifier)
-				outSlack.ChannelName = sentrytypes.NewSlackChannelValue(actionValue.Config.TargetDisplay)
+				outSlack.ChannelName = sentrytypes.NewSlackChannelPointerValue(actionValue.Config.TargetDisplay)
 				if actionValue.Data.Tags != nil {
 					outSlack.Tags = supertypes.NewStringValue(*actionValue.Data.Tags)
 				}
