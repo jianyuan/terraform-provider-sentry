@@ -218,6 +218,7 @@ func TestAccMetricMonitorResource_threshold(t *testing.T) {
 					aggregate = "count()"
 					dataset = "events"
 					event_types = ["default", "error"]
+					time_window_seconds = 3600
 
 					condition_group = {
 						conditions = [
@@ -250,7 +251,7 @@ func TestAccMetricMonitorResource_threshold(t *testing.T) {
 					})),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query"), knownvalue.StringExact("")),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query_type"), knownvalue.StringExact("error")),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("time_window_seconds"), knownvalue.Int64Exact(0)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("time_window_seconds"), knownvalue.Int64Exact(3600)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("condition_group"), knownvalue.ObjectExact(map[string]knownvalue.Check{
 						"logic_type": knownvalue.StringExact("any"),
 						"conditions": knownvalue.ListExact([]knownvalue.Check{
@@ -273,6 +274,7 @@ func TestAccMetricMonitorResource_threshold(t *testing.T) {
 					aggregate = "count()"
 					dataset = "events"
 					event_types = ["default", "error"]
+					time_window_seconds = 3600
 
 					condition_group = {
 						conditions = [
@@ -305,7 +307,7 @@ func TestAccMetricMonitorResource_threshold(t *testing.T) {
 					})),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query"), knownvalue.StringExact("")),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query_type"), knownvalue.StringExact("error")),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("time_window_seconds"), knownvalue.Int64Exact(0)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("time_window_seconds"), knownvalue.Int64Exact(3600)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("condition_group"), knownvalue.ObjectExact(map[string]knownvalue.Check{
 						"logic_type": knownvalue.StringExact("any"),
 						"conditions": knownvalue.ListExact([]knownvalue.Check{
@@ -330,6 +332,7 @@ func TestAccMetricMonitorResource_threshold(t *testing.T) {
 					aggregate = "count()"
 					dataset = "events"
 					event_types = ["default", "error"]
+					time_window_seconds = 3600
 
 					condition_group = {
 						conditions = [
@@ -362,7 +365,7 @@ func TestAccMetricMonitorResource_threshold(t *testing.T) {
 					})),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query"), knownvalue.StringExact("")),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query_type"), knownvalue.StringExact("error")),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("time_window_seconds"), knownvalue.Int64Exact(0)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("time_window_seconds"), knownvalue.Int64Exact(3600)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("condition_group"), knownvalue.ObjectExact(map[string]knownvalue.Check{
 						"logic_type": knownvalue.StringExact("any"),
 						"conditions": knownvalue.ListExact([]knownvalue.Check{
