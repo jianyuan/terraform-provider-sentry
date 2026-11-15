@@ -9,6 +9,8 @@ resource "sentry_project" "default" {
   platform    = "javascript"
   resolve_age = 720
 
+  relay_automatic_json_expansion = true
+
   default_rules = false
 
   filters = {
