@@ -30,5 +30,6 @@ jobs:
           branch: update-sentry-data
           commit-message: Update Sentry data
           title: Update Sentry data
+          labels: sentry-data
           body: |
             This PR updates Sentry data.
