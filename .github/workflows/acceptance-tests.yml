@@ -12,13 +12,19 @@ on:
   # to an API change, even if the code did not change.
   schedule:
     - cron: "0 0 * * *"
+  # Runs PRs from forks with secrets. PR code can read every secret this job
+  # exposes, so the job uses the "test-external" environment, which needs a
+  # maintainer to approve each run after reviewing the diff.
+  pull_request_target:
+    types: [opened, synchronize, reopened]
 
 # Testing only needs permissions to read the repository contents.
 permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request_target' }}
 
 jobs:
   # Run acceptance tests in a matrix with Terraform CLI versions
@@ -26,7 +32,9 @@ jobs:
     name: Terraform Provider Acceptance Tests
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    environment: test
+    # PRs from branches in this repo are tested on merge to main instead.
+    if: github.event_name != 'pull_request_target' || github.event.pull_request.head.repo.full_name != github.repository
+    environment: ${{ github.event_name == 'pull_request_target' && 'test-external' || 'test' }}
     strategy:
       fail-fast: false
       max-parallel: 1
@@ -35,6 +43,10 @@ jobs:
           - "1.15.*"
     steps:
       - uses: actions/checkout@v7
+        with:
+          # On pull_request_target, check out the exact PR commit that was approved.
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
       - uses: actions/setup-go@v7
         with:
           go-version-file: "go.mod"
