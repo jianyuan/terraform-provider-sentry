@@ -226,7 +226,6 @@ func (r *IntegrationPagerDuty) Read(ctx context.Context, req resource.ReadReques
 		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 		return
 	} else if httpResp.StatusCode() == http.StatusNotFound {
-		resp.Diagnostics.Append(diagutils.NewNotFoundError("integration"))
 		resp.State.RemoveResource(ctx)
 		return
 	} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
@@ -251,7 +250,6 @@ func (r *IntegrationPagerDuty) Read(ctx context.Context, req resource.ReadReques
 	}
 
 	if found == nil {
-		resp.Diagnostics.Append(diagutils.NewClientError("read", fmt.Errorf("service table item not found: %s", data.IntegrationId.ValueString())))
 		resp.State.RemoveResource(ctx)
 		return
 	}

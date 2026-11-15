@@ -601,7 +601,7 @@ export default {
                   type: "string",
                   description: "The time period to compare against.",
                   computedOptionalRequired: "required",
-                  enum: `sentrydata.EventFrequencyStandardIntervals`,
+                  enum: `sentrydata.EventFrequencyComparisonIntervals`,
                 },
               ],
             },
@@ -625,7 +625,7 @@ export default {
                   description:
                     "The time period in which to evaluate the value. e.g. Percentage of sessions affected by an issue is more than `value` in `interval`.",
                   computedOptionalRequired: "required",
-                  enum: `sentrydata.EventFrequencyStandardIntervals`,
+                  enum: `sentrydata.EventFrequencyPercentIntervals`,
                 },
               ],
             },
@@ -691,14 +691,14 @@ export default {
                   description:
                     "The time period in which to evaluate the value. e.g. Percentage of sessions affected by an issue is `comparisonInterval` percent higher `value` compared to `interval`.",
                   computedOptionalRequired: "required",
-                  enum: `sentrydata.EventFrequencyStandardIntervals`,
+                  enum: `sentrydata.EventFrequencyPercentIntervals`,
                 },
                 {
                   name: "comparison_interval",
                   type: "string",
                   description: "The time period to compare against.",
                   computedOptionalRequired: "required",
-                  enum: `sentrydata.EventFrequencyStandardIntervals`,
+                  enum: `sentrydata.EventFrequencyComparisonIntervals`,
                 },
               ],
             },
@@ -914,8 +914,11 @@ export default {
                   name: "channel_name",
                   type: "string",
                   description:
-                    "The name of the Slack channel to send the notification to (e.g., #critical, Jane Schmidt).",
-                  computedOptionalRequired: "required",
+                    "The name of the Slack channel to send the notification to (e.g., #critical, Jane Schmidt). If omitted, Sentry resolves the name from `channel_id`. At least one of `channel_name` or `channel_id` must be set.",
+                  computedOptionalRequired: "computed_optional",
+                  validators: [
+                    `stringvalidator.AtLeastOneOf(path.MatchRelative().AtParent().AtName("channel_id"))`,
+                  ],
                   customType: {
                     type: "sentrytypes.SlackChannelType{}",
                     value: "sentrytypes.SlackChannel",
@@ -925,7 +928,7 @@ export default {
                   name: "channel_id",
                   type: "string",
                   description:
-                    "The Slack channel ID to send the notification to. This is an optional field that can be used to avoid rate-limiting.",
+                    "The Slack channel ID to send the notification to. If `channel_name` is omitted, Sentry resolves the channel name from this ID. Set it to avoid rate-limiting and to keep the alert valid when the channel is renamed.",
                   computedOptionalRequired: "computed_optional",
                 },
                 {

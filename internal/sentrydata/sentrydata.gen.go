@@ -271,6 +271,7 @@ var Platforms = []string{
 	"dotnet-xamarin",
 	"electron",
 	"elixir",
+	"expo",
 	"flutter",
 	"go",
 	"go-echo",

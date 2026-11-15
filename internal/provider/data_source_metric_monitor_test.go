@@ -153,6 +153,7 @@ func TestAccMetricMonitorDataSource_threshold(t *testing.T) {
 					aggregate = "count()"
 					dataset = "events"
 					event_types = ["default", "error"]
+					time_window_seconds = 3600
 
 					condition_group = {
 						conditions = [
@@ -186,6 +187,7 @@ func TestAccMetricMonitorDataSource_threshold(t *testing.T) {
 					aggregate = "count()"
 					dataset = "events"
 					event_types = ["default", "error"]
+					time_window_seconds = 3600
 
 					condition_group = {
 						conditions = [

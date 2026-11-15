@@ -1,0 +1,93 @@
+# Labels PRs from their conventional-commit title and changed files so that
+# .github/release.yml can group them in the release notes.
+name: Label PR
+
+on:
+  # pull_request_target so labels can be written on PRs from forks.
+  # This workflow never checks out or runs PR code.
+  pull_request_target:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v9
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const { owner, repo } = context.repo;
+
+            // Labels this workflow owns and keeps in sync with the PR.
+            const managed = [
+              "enhancement",
+              "bug",
+              "documentation",
+              "chore",
+              "feature: resource",
+              "feature: data source",
+              "feature: resource + data source",
+              "fix: resource",
+              "fix: data source",
+              "fix: resource + data source",
+            ];
+            // Labels this workflow adds but never removes.
+            const additive = new Set();
+            const wanted = new Set();
+
+            const match = pr.title.match(/^(\w+)(?:\(([^)]*)\))?(!)?:/);
+            const type = match?.[1].toLowerCase();
+            const scope = match?.[2]?.toLowerCase() ?? "";
+            const breaking = Boolean(match?.[3]) || /BREAKING[ -]CHANGE/.test(pr.body ?? "");
+
+            if (breaking) additive.add("breaking-change");
+
+            if (scope === "deps" || scope.startsWith("deps/")) {
+              additive.add("dependencies");
+            } else if (/^tests?$/.test(scope)) {
+              wanted.add("chore");
+            } else if (type === "feat" || type === "fix") {
+              const files = await github.paginate(github.rest.pulls.listFiles, {
+                owner,
+                repo,
+                pull_number: pr.number,
+                per_page: 100,
+              });
+              const paths = files.map((f) => f.filename).filter((f) => !f.endsWith("_test.go"));
+
+              const isResource = (f) =>
+                /^(internal\/provider|sentry)\/resource_/.test(f) ||
+                /^(docs|examples)\/resources\//.test(f);
+              const isDataSource = (f) =>
+                /^(internal\/provider|sentry)\/data_source_/.test(f) ||
+                /^(docs|examples)\/data-sources\//.test(f);
+
+              const resource = paths.some(isResource) || /^(resource|sentry_)/.test(scope);
+              const dataSource = paths.some(isDataSource) || /^data[-_]source/.test(scope);
+
+              const prefix = type === "feat" ? "feature" : "fix";
+              wanted.add(type === "feat" ? "enhancement" : "bug");
+              if (resource && dataSource) wanted.add(`${prefix}: resource + data source`);
+              else if (resource) wanted.add(`${prefix}: resource`);
+              else if (dataSource) wanted.add(`${prefix}: data source`);
+            } else if (type === "docs") {
+              wanted.add("documentation");
+            } else if (["chore", "ref", "refactor", "test", "ci", "build", "perf", "style"].includes(type)) {
+              wanted.add("chore");
+            }
+
+            const current = new Set(pr.labels.map((l) => l.name));
+            const toAdd = [...wanted, ...additive].filter((l) => !current.has(l));
+            const toRemove = managed.filter((l) => current.has(l) && !wanted.has(l));
+
+            for (const name of toRemove) {
+              await github.rest.issues.removeLabel({ owner, repo, issue_number: pr.number, name });
+            }
+            if (toAdd.length > 0) {
+              await github.rest.issues.addLabels({ owner, repo, issue_number: pr.number, labels: toAdd });
+            }
+            core.info(`Added: ${toAdd.join(", ") || "none"}; removed: ${toRemove.join(", ") || "none"}`);

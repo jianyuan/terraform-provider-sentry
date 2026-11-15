@@ -34,8 +34,8 @@ resource "sentry_key" "default" {
 ### Optional
 
 - `javascript_loader_script` (Attributes) The JavaScript loader script configuration. (see [below for nested schema](#nestedatt--javascript_loader_script))
-- `rate_limit_count` (Number) Number of events that can be reported within the rate limit window.
-- `rate_limit_window` (Number) Length of time in seconds that will be considered when checking the rate limit.
+- `rate_limit_count` (Number) Number of events that can be reported within the rate limit window. Requires a Sentry plan that supports per-key rate limits.
+- `rate_limit_window` (Number) Length of time in seconds that will be considered when checking the rate limit. Requires a Sentry plan that supports per-key rate limits.
 
 ### Read-Only
 
