@@ -58,10 +58,7 @@ jobs:
           terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
       - run: go mod download
-      - uses: robherley/go-test-action@v1
-        with:
-          testArguments: -v -cover -timeout 60m ./internal/provider/
-        env:
+      - env:
           TF_ACC: "1"
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_TEST_GITHUB_INSTALLATION_ID: ${{ secrets.SENTRY_TEST_GITHUB_INSTALLATION_ID }}
@@ -74,3 +71,4 @@ jobs:
           SENTRY_TEST_PAGERDUTY_ORGANIZATION: ${{ secrets.SENTRY_TEST_PAGERDUTY_ORGANIZATION }}
           SENTRY_TEST_VSTS_INSTALLATION_ID: ${{ secrets.SENTRY_TEST_VSTS_INSTALLATION_ID }}
           SENTRY_TEST_VSTS_REPOSITORY_IDENTIFIER: ${{ secrets.SENTRY_TEST_VSTS_REPOSITORY_IDENTIFIER }}
+        run: go tool gotestsum --format github-actions -- -cover -timeout 60m ./internal/provider/
