@@ -24,7 +24,10 @@ func init() {
 	sweep.Register("sentry_alert", func(ctx context.Context, pd *providerdata.ProviderData) ([]sweep.Sweepable, error) {
 		var sweepables []sweep.Sweepable
 
-		params := &apiclient.ListOrganizationWorkflowsParams{}
+		params := &apiclient.ListOrganizationWorkflowsParams{
+			// Without this, only workflows of projects the user is a member of are listed.
+			Project: new("-1"),
+		}
 		for {
 			listHttpResp, err := acctest.SharedApiClient.ListOrganizationWorkflowsWithResponse(ctx, acctest.TestOrganization, params)
 			if err != nil {

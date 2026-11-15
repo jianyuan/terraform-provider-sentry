@@ -384,6 +384,11 @@ paths:
       operationId: listOrganizationWorkflows
       parameters:
         - $ref: "#/components/parameters/cursor"
+        - name: project
+          in: query
+          required: false
+          schema:
+            type: string
       responses:
         "200":
           description: OK
