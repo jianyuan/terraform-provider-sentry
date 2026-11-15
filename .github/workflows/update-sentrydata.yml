@@ -18,7 +18,7 @@ jobs:
         with:
           go-version-file: "go.mod"
           cache-dependency-path: "go.sum"
-      - uses: astral-sh/setup-uv@v10.3.2
+      - uses: astral-sh/setup-uv@v10.3.3
       - uses: oven-sh/setup-bun@v2
       - uses: hashicorp/setup-terraform@v4
         with:
@@ -30,5 +30,6 @@ jobs:
           branch: update-sentry-data
           commit-message: Update Sentry data
           title: Update Sentry data
+          labels: sentry-data
           body: |
             This PR updates Sentry data.

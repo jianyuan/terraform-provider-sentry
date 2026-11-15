@@ -20,6 +20,13 @@ resource "sentry_alert" "default" {
             tags           = "environment,level"
             notes          = "Please <http://example.com|click here> for triage information."
           }
+        },
+        {
+          # Sentry resolves the channel name from the channel ID.
+          slack = {
+            integration_id = data.sentry_organization_integration.slack.id
+            channel_id     = "C0123456789"
+          }
         }
       ]
     }

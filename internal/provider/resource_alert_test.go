@@ -24,7 +24,10 @@ func init() {
 	sweep.Register("sentry_alert", func(ctx context.Context, pd *providerdata.ProviderData) ([]sweep.Sweepable, error) {
 		var sweepables []sweep.Sweepable
 
-		params := &apiclient.ListOrganizationWorkflowsParams{}
+		params := &apiclient.ListOrganizationWorkflowsParams{
+			// Without this, only workflows of projects the user is a member of are listed.
+			Project: new("-1"),
+		}
 		for {
 			listHttpResp, err := acctest.SharedApiClient.ListOrganizationWorkflowsWithResponse(ctx, acctest.TestOrganization, params)
 			if err != nil {
@@ -121,6 +124,28 @@ func stateCheckAlertExists(resourceAddress string, workflow *apiclient.Organizat
 }
 
 func TestAccAlertResource_validation(t *testing.T) {
+	invalidIntervalConfig := func(condition string) string {
+		return fmt.Sprintf(`
+			resource "sentry_alert" "test" {
+				organization      = "1"
+				name              = "alert name"
+				frequency_minutes = 1440
+				monitor_ids       = ["1"]
+				trigger_conditions = []
+				action_filters = [{
+					logic_type = "all"
+					conditions = [{ %s }]
+					actions = [{
+						email = {
+							target_type      = "issue_owners"
+							fallthrough_type = "AllMembers"
+						}
+					}]
+				}]
+			}
+		`, condition)
+	}
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -228,6 +253,26 @@ func TestAccAlertResource_validation(t *testing.T) {
 					}
 				`,
 				ExpectError: acctest.ExpectLiteralError(`Attribute "action_filters[0].conditions[0].assigned_to" cannot be specified when "action_filters[0].conditions[0].age_comparison" is specified`),
+			},
+			{
+				PlanOnly:    true,
+				Config:      invalidIntervalConfig(`percent_sessions_count = { value = 10, interval = "15m" }`),
+				ExpectError: acctest.ExpectLiteralError(`Attribute action_filters[0].conditions[0].percent_sessions_count.interval value must be one of: ["1m" "5m" "10m" "30m" "1h"], got: "15m"`),
+			},
+			{
+				PlanOnly:    true,
+				Config:      invalidIntervalConfig(`percent_sessions_percent = { value = 10, interval = "15m", comparison_interval = "5m" }`),
+				ExpectError: acctest.ExpectLiteralError(`Attribute action_filters[0].conditions[0].percent_sessions_percent.interval value must be one of: ["1m" "5m" "10m" "30m" "1h"], got: "15m"`),
+			},
+			{
+				PlanOnly:    true,
+				Config:      invalidIntervalConfig(`percent_sessions_percent = { value = 10, interval = "30m", comparison_interval = "1m" }`),
+				ExpectError: acctest.ExpectLiteralError(`Attribute action_filters[0].conditions[0].percent_sessions_percent.comparison_interval value must be one of: ["5m" "15m" "1h" "1d" "1w" "30d"], got: "1m"`),
+			},
+			{
+				PlanOnly:    true,
+				Config:      invalidIntervalConfig(`event_frequency_percent = { value = 100, interval = "1h", comparison_interval = "1m" }`),
+				ExpectError: acctest.ExpectLiteralError(`Attribute action_filters[0].conditions[0].event_frequency_percent.comparison_interval value must be one of: ["5m" "15m" "1h" "1d" "1w" "30d"], got: "1m"`),
 			},
 		},
 	})
@@ -903,6 +948,7 @@ func testAccAlertResourceConfig(projectName, monitorName, name, opsgenieTeamName
 		aggregate = "count()"
 		dataset = "events"
 		event_types = ["default", "error"]
+		time_window_seconds = 3600
 
 		condition_group = {
 			conditions = [
@@ -1006,13 +1052,13 @@ func testAccAlertResourceConfig(projectName, monitorName, name, opsgenieTeamName
 						{
 							percent_sessions_count = {
 								value = 10
-								interval = "1h"
+								interval = "10m"
 							}
 						},
 						{
 							percent_sessions_percent = {
 								value = 10
-								interval = "1h"
+								interval = "30m"
 								comparison_interval = "1w"
 							}
 						},
@@ -1095,7 +1141,7 @@ func testAccAlertResourceConfig(projectName, monitorName, name, opsgenieTeamName
 								filters = [
 									{ attribute = "message", match = "eq", value = "crash" }
 								]
-								interval            = "1h"
+								interval            = "10m"
 								comparison_interval = "1w"
 							}
 						}
