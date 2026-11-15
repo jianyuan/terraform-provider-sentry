@@ -514,6 +514,15 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
+	// Save the project to the state as soon as it exists, the same way an
+	// import does, so that a failure in any of the steps below leaves it
+	// tracked (and tainted) instead of orphaned in Sentry.
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization"), data.Organization)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), httpRespCreate.JSON201.Slug)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	// Update the project
 	updateBody := apiclient.UpdateOrganizationProjectJSONRequestBody{
 		Name: data.Name.ValueStringPointer(),
@@ -671,9 +680,12 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 		return
-	} else if httpRespRead.StatusCode() != http.StatusOK || httpRespRead.JSON200 == nil {
+	} else if httpRespRead.StatusCode() == http.StatusNotFound {
 		resp.Diagnostics.Append(diagutils.NewNotFoundError("project"))
 		resp.State.RemoveResource(ctx)
+		return
+	} else if httpRespRead.StatusCode() != http.StatusOK || httpRespRead.JSON200 == nil {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("read", httpRespRead.StatusCode(), httpRespRead.Body))
 		return
 	}
 

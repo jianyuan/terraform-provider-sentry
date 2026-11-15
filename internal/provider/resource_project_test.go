@@ -4,12 +4,18 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/http/httptest"
 	"regexp"
 	"slices"
 	"strings"
 	"testing"
 	"text/template"
 
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	fwresource "github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -621,6 +627,126 @@ func TestAccProjectResource_noDefaultKeyOnCreate(t *testing.T) {
 			},
 		},
 	})
+}
+
+// A failure after the project has been created must leave it in the state, so
+// that Terraform marks it as tainted instead of losing track of it.
+func TestProjectResource_createFailureAfterProjectExists(t *testing.T) {
+	const project = `{
+		"id": "1234",
+		"slug": "my-project",
+		"name": "My Project",
+		"platform": "go",
+		"organization": {"slug": "my-org"},
+		"teams": [{"slug": "my-team"}]
+	}`
+
+	testCases := []struct {
+		name          string
+		failRequest   string
+		failStatus    int
+		expectedError string
+	}{
+		{
+			name:          "update",
+			failRequest:   "PUT /api/0/projects/my-org/my-project/",
+			failStatus:    http.StatusBadRequest,
+			expectedError: "Unable to update, got status 400",
+		},
+		{
+			name:          "remove default key",
+			failRequest:   "DELETE /api/0/projects/my-org/1234/keys/default-key/",
+			failStatus:    http.StatusForbidden,
+			expectedError: "Unable to remove default key",
+		},
+		{
+			name:          "read",
+			failRequest:   "GET /api/0/projects/my-org/my-project/",
+			failStatus:    http.StatusTooManyRequests,
+			expectedError: "Unable to read, got status 429",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				request := r.Method + " " + r.URL.Path
+				w.Header().Set("Content-Type", "application/json")
+
+				if request == tc.failRequest {
+					w.WriteHeader(tc.failStatus)
+					_, _ = w.Write([]byte(`{"detail": "failed"}`))
+					return
+				}
+
+				switch request {
+				case "POST /api/0/teams/my-org/my-team/projects/":
+					w.WriteHeader(http.StatusCreated)
+					_, _ = w.Write([]byte(project))
+				case "PUT /api/0/projects/my-org/my-project/", "GET /api/0/projects/my-org/my-project/":
+					_, _ = w.Write([]byte(project))
+				case "GET /api/0/projects/my-org/my-project/keys/":
+					_, _ = w.Write([]byte(`[{"id": "default-key", "name": "Default"}]`))
+				case "DELETE /api/0/projects/my-org/1234/keys/default-key/":
+					w.WriteHeader(http.StatusNoContent)
+				default:
+					t.Errorf("unexpected request: %s", request)
+					w.WriteHeader(http.StatusNotFound)
+				}
+			}))
+			t.Cleanup(server.Close)
+
+			ctx := context.Background()
+			r := &ProjectResource{baseResource: baseResource{
+				apiClient: must.Get(apiclient.NewClientWithResponses(server.URL + "/api/")),
+			}}
+
+			var schemaResp fwresource.SchemaResponse
+			r.Schema(ctx, fwresource.SchemaRequest{}, &schemaResp)
+			objectType := schemaResp.Schema.Type().TerraformType(ctx).(tftypes.Object)
+
+			// The plan for a project with `default_key = false`, where every
+			// computed attribute is unknown.
+			planValues := make(map[string]tftypes.Value)
+			for name, attrType := range objectType.AttributeTypes {
+				planValues[name] = tftypes.NewValue(attrType, tftypes.UnknownValue)
+			}
+			planValues["organization"] = tftypes.NewValue(tftypes.String, "my-org")
+			planValues["teams"] = tftypes.NewValue(tftypes.Set{ElementType: tftypes.String}, []tftypes.Value{
+				tftypes.NewValue(tftypes.String, "my-team"),
+			})
+			planValues["name"] = tftypes.NewValue(tftypes.String, "My Project")
+			planValues["platform"] = tftypes.NewValue(tftypes.String, "go")
+			planValues["default_rules"] = tftypes.NewValue(tftypes.Bool, nil)
+			planValues["default_key"] = tftypes.NewValue(tftypes.Bool, false)
+
+			req := fwresource.CreateRequest{
+				Plan: tfsdk.Plan{Schema: schemaResp.Schema, Raw: tftypes.NewValue(objectType, planValues)},
+			}
+			resp := fwresource.CreateResponse{
+				State: tfsdk.State{Schema: schemaResp.Schema, Raw: tftypes.NewValue(objectType, nil)},
+			}
+			r.Create(ctx, req, &resp)
+
+			if !resp.Diagnostics.HasError() {
+				t.Fatal("expected an error")
+			}
+			if detail := resp.Diagnostics.Errors()[0].Detail(); !strings.Contains(detail, tc.expectedError) {
+				t.Errorf("expected error %q, got %q", tc.expectedError, detail)
+			}
+
+			if resp.State.Raw.IsNull() {
+				t.Fatal("expected the project to be saved in the state")
+			}
+
+			var organization, id types.String
+			resp.Diagnostics.Append(resp.State.GetAttribute(ctx, path.Root("organization"), &organization)...)
+			resp.Diagnostics.Append(resp.State.GetAttribute(ctx, path.Root("id"), &id)...)
+			if organization.ValueString() != "my-org" || id.ValueString() != "my-project" {
+				t.Errorf("expected organization %q and id %q in the state, got %s and %s", "my-org", "my-project", organization, id)
+			}
+		})
+	}
 }
 
 func TestAccProjectResource_validation(t *testing.T) {
