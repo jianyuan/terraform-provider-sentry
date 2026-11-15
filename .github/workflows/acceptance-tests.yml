@@ -23,7 +23,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  # Shared with the sweep workflow so a sweep never deletes resources from a run in progress.
+  group: sentry-test-org-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request_target' }}
 
 jobs:
