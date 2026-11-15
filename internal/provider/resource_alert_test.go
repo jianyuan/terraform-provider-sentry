@@ -903,6 +903,7 @@ func testAccAlertResourceConfig(projectName, monitorName, name, opsgenieTeamName
 		aggregate = "count()"
 		dataset = "events"
 		event_types = ["default", "error"]
+		time_window_seconds = 3600
 
 		condition_group = {
 			conditions = [
