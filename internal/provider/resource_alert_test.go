@@ -12,49 +12,53 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+	"github.com/jianyuan/terraform-plugin-framework-utils/fwsweep"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/resourceid"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
-	"github.com/jianyuan/terraform-provider-sentry/internal/sweep"
 )
 
 func init() {
-	sweep.Register("sentry_alert", func(ctx context.Context, pd *providerdata.ProviderData) ([]sweep.Sweepable, error) {
-		var sweepables []sweep.Sweepable
+	fwsweep.Register(
+		"sentry_alert",
+		func() *providerdata.ProviderData { return acctest.SharedProviderData },
+		func(ctx context.Context, pd *providerdata.ProviderData) ([]fwsweep.Sweepable, error) {
+			var sweepables []fwsweep.Sweepable
 
-		params := &apiclient.ListOrganizationWorkflowsParams{
-			// Without this, only workflows of projects the user is a member of are listed.
-			Project: new("-1"),
-		}
-		for {
-			listHttpResp, err := acctest.SharedApiClient.ListOrganizationWorkflowsWithResponse(ctx, acctest.TestOrganization, params)
-			if err != nil {
-				return nil, err
-			} else if listHttpResp.StatusCode() != http.StatusOK || listHttpResp.JSON200 == nil {
-				return nil, fmt.Errorf("failed to list organization workflows: %s", listHttpResp.Status())
+			params := &apiclient.ListOrganizationWorkflowsParams{
+				// Without this, only workflows of projects the user is a member of are listed.
+				Project: new("-1"),
 			}
-
-			for _, workflow := range *listHttpResp.JSON200 {
-				if !strings.HasPrefix(workflow.Name, "tf-alert") && workflow.Name != "Send a notification for high priority issues" {
-					continue
+			for {
+				listHttpResp, err := acctest.SharedApiClient.ListOrganizationWorkflowsWithResponse(ctx, acctest.TestOrganization, params)
+				if err != nil {
+					return nil, err
+				} else if listHttpResp.StatusCode() != http.StatusOK || listHttpResp.JSON200 == nil {
+					return nil, fmt.Errorf("failed to list organization workflows: %s", listHttpResp.Status())
 				}
 
-				sweepables = append(sweepables, sweep.NewSweepResource(NewAlertResource, pd, map[string]any{
-					"organization": acctest.TestOrganization,
-					"id":           workflow.Id,
-				}))
+				for _, workflow := range *listHttpResp.JSON200 {
+					if !strings.HasPrefix(workflow.Name, "tf-alert") && workflow.Name != "Send a notification for high priority issues" {
+						continue
+					}
+
+					sweepables = append(sweepables, fwsweep.NewResource(NewAlertResource, pd, map[string]any{
+						"organization": acctest.TestOrganization,
+						"id":           workflow.Id,
+					}))
+				}
+
+				params.Cursor = sentryclient.ParseNextPaginationCursor(listHttpResp.HTTPResponse)
+				if params.Cursor == nil {
+					break
+				}
 			}
 
-			params.Cursor = sentryclient.ParseNextPaginationCursor(listHttpResp.HTTPResponse)
-			if params.Cursor == nil {
-				break
-			}
-		}
-
-		return sweepables, nil
-	})
+			return sweepables, nil
+		},
+	)
 }
 
 var _ statecheck.StateCheck = (*expectAlertExists)(nil)
