@@ -13,8 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+	"github.com/jianyuan/terraform-plugin-framework-utils/fwdiag"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
-	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 )
 
 func TestAccOrganizationDataScrubbingResource(t *testing.T) {
@@ -99,7 +99,7 @@ func testAccCheckOrganizationDataScrubbingDestroy(s *terraform.State) error {
 
 		var settings OrganizationDataScrubbingResourceModel
 		if diags := settings.Fill(context.Background(), *httpResp.JSON200); diags.HasError() {
-			return diagutils.DiagnosticsError(diags)
+			return fwdiag.Error(diags)
 		}
 		settings.Id = types.StringNull()
 
