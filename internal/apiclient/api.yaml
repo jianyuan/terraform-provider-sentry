@@ -425,6 +425,11 @@ paths:
       operationId: listOrganizationWorkflows
       parameters:
         - $ref: "#/components/parameters/cursor"
+        - name: project
+          in: query
+          required: false
+          schema:
+            type: string
       responses:
         "200":
           description: OK
@@ -2932,12 +2937,14 @@ components:
         failure_issue_threshold:
           type: integer
           format: int64
+          nullable: true
         max_runtime:
           type: integer
           format: int64
         recovery_threshold:
           type: integer
           format: int64
+          nullable: true
         timezone:
           type: string
     ProjectMonitor_DataSource_Config_Cron_Crontab:
@@ -3766,7 +3773,6 @@ components:
           required:
             - targetType
             - targetIdentifier
-            - targetDisplay
           properties:
             targetType:
               type: string

@@ -12,13 +12,20 @@ on:
   # to an API change, even if the code did not change.
   schedule:
     - cron: "0 0 * * *"
+  # Runs PRs (from forks and from this repo) with secrets. PR code can read every
+  # secret this job exposes, so the job uses the "test-external" environment,
+  # which needs a maintainer to approve each run after reviewing the diff.
+  pull_request_target:
+    types: [opened, synchronize, reopened]
 
 # Testing only needs permissions to read the repository contents.
 permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  # Shared with the sweep workflow so a sweep never deletes resources from a run in progress.
+  group: sentry-test-org-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request_target' }}
 
 jobs:
   # Run acceptance tests in a matrix with Terraform CLI versions
@@ -26,7 +33,7 @@ jobs:
     name: Terraform Provider Acceptance Tests
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    environment: test
+    environment: ${{ github.event_name == 'pull_request_target' && 'test-external' || 'test' }}
     strategy:
       fail-fast: false
       max-parallel: 1
@@ -35,10 +42,18 @@ jobs:
           - "1.15.*"
     steps:
       - uses: actions/checkout@v7
+        with:
+          # On pull_request_target, check out the exact PR commit that was approved.
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+          # PR runs only start after approval of the "test-external" environment.
+          allow-unsafe-pr-checkout: ${{ github.event_name == 'pull_request_target' }}
       - uses: actions/setup-go@v7
         with:
           go-version-file: "go.mod"
           cache-dependency-path: "go.sum"
+          # PR code must not write to the default-branch cache that release builds restore.
+          cache: ${{ github.event_name != 'pull_request_target' }}
       - uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: ${{ matrix.terraform }}
@@ -57,4 +72,4 @@ jobs:
           SENTRY_TEST_PAGERDUTY_ORGANIZATION: ${{ secrets.SENTRY_TEST_PAGERDUTY_ORGANIZATION }}
           SENTRY_TEST_VSTS_INSTALLATION_ID: ${{ secrets.SENTRY_TEST_VSTS_INSTALLATION_ID }}
           SENTRY_TEST_VSTS_REPOSITORY_IDENTIFIER: ${{ secrets.SENTRY_TEST_VSTS_REPOSITORY_IDENTIFIER }}
-        run: go test -v -cover -timeout 60m ./internal/provider/
+        run: go tool gotestsum --format github-actions -- -cover -timeout 60m ./internal/provider/

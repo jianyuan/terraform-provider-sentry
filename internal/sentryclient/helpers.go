@@ -6,29 +6,39 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 )
 
-func GetProjectIdToSlugMap(ctx context.Context, client *sentry.Client) (map[string]string, error) {
+// GetProjectIdToSlugMap returns a map of project ID to project slug for all
+// projects in the organization.
+//
+// It uses the organization-scoped project list endpoint rather than the
+// global /0/projects/ endpoint, which only returns the projects the token's
+// user is a member of and rejects organization-scoped tokens such as internal
+// integration tokens.
+func GetProjectIdToSlugMap(ctx context.Context, apiClient *apiclient.ClientWithResponses, organization string) (map[string]string, error) {
 	projectMap := make(map[string]string)
 
-	listParams := &sentry.ListProjectsParams{}
+	params := &apiclient.ListOrganizationProjectsParams{}
 
 	for {
-		projects, resp, err := client.Projects.List(ctx, listParams)
+		httpResp, err := apiClient.ListOrganizationProjectsWithResponse(ctx, organization, params)
 		if err != nil {
 			return nil, err
+		} else if httpResp.StatusCode() != http.StatusOK {
+			return nil, fmt.Errorf("got status code %d: %s", httpResp.StatusCode(), string(httpResp.Body))
+		} else if httpResp.JSON200 == nil {
+			return nil, errors.New("got empty response body")
 		}
 
-		for _, project := range projects {
-			projectMap[project.ID] = project.Slug
+		for _, project := range *httpResp.JSON200 {
+			projectMap[project.Id] = project.Slug
 		}
 
-		if resp.Cursor == "" {
+		params.Cursor = ParseNextPaginationCursor(httpResp.HTTPResponse)
+		if params.Cursor == nil {
 			break
 		}
-		listParams.Cursor = resp.Cursor
 	}
 
 	return projectMap, nil
