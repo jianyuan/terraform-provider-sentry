@@ -157,8 +157,8 @@ type ProjectResourceModel struct {
 	DataScrubber                types.Bool                    `tfsdk:"data_scrubber"`
 	DataScrubberDefaults        types.Bool                    `tfsdk:"data_scrubber_defaults"`
 	ScrubIpAddresses            types.Bool                    `tfsdk:"scrub_ip_addresses"`
-	SensitiveFields             types.Set                     `tfsdk:"sensitive_fields"`
-	SafeFields                  types.Set                     `tfsdk:"safe_fields"`
+	SensitiveFields             supertypes.SetValueOf[string] `tfsdk:"sensitive_fields"`
+	SafeFields                  supertypes.SetValueOf[string] `tfsdk:"safe_fields"`
 	RelayPiiConfig              jsontypes.Normalized          `tfsdk:"relay_pii_config"`
 }
 
@@ -201,15 +201,15 @@ func (m *ProjectResourceModel) Fill(ctx context.Context, project apiclient.Proje
 	m.ScrubIpAddresses = types.BoolPointerValue(project.ScrubIPAddresses)
 
 	if project.SensitiveFields != nil {
-		m.SensitiveFields = fwdiag.Merge(stringSetValue(ctx, project.SensitiveFields))(&diags)
+		m.SensitiveFields = supertypes.NewSetValueOfSlice(ctx, *project.SensitiveFields)
 	} else {
-		m.SensitiveFields = types.SetNull(types.StringType)
+		m.SensitiveFields = supertypes.NewSetValueOfNull[string](ctx)
 	}
 
 	if project.SafeFields != nil {
-		m.SafeFields = fwdiag.Merge(stringSetValue(ctx, project.SafeFields))(&diags)
+		m.SafeFields = supertypes.NewSetValueOfSlice(ctx, *project.SafeFields)
 	} else {
-		m.SafeFields = types.SetNull(types.StringType)
+		m.SafeFields = supertypes.NewSetValueOfNull[string](ctx)
 	}
 
 	m.RelayPiiConfig = relayPiiConfigValue(project.RelayPiiConfig)
@@ -516,7 +516,7 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 			},
 			"sensitive_fields": schema.SetAttribute{
 				MarkdownDescription: "Additional field names to match against when scrubbing data. The organization's sensitive fields also apply.",
-				ElementType:         types.StringType,
+				CustomType:          supertypes.NewSetTypeOf[string](ctx),
 				Optional:            true,
 				Computed:            true,
 				Validators: []validator.Set{
@@ -528,7 +528,7 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 			},
 			"safe_fields": schema.SetAttribute{
 				MarkdownDescription: "Field names which data scrubbers should ignore. The organization's safe fields also apply.",
-				ElementType:         types.StringType,
+				CustomType:          supertypes.NewSetTypeOf[string](ctx),
 				Optional:            true,
 				Computed:            true,
 				Validators: []validator.Set{
@@ -770,7 +770,7 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 	}
 
 	if !data.SensitiveFields.IsUnknown() {
-		sensitiveFields := fwdiag.Merge(stringSetElements(ctx, data.SensitiveFields))(&resp.Diagnostics)
+		sensitiveFields := fwdiag.Merge(data.SensitiveFields.Get(ctx))(&resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -778,7 +778,7 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 	}
 
 	if !data.SafeFields.IsUnknown() {
-		safeFields := fwdiag.Merge(stringSetElements(ctx, data.SafeFields))(&resp.Diagnostics)
+		safeFields := fwdiag.Merge(data.SafeFields.Get(ctx))(&resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -1033,7 +1033,7 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 
 	if !plan.SensitiveFields.Equal(state.SensitiveFields) {
-		sensitiveFields := fwdiag.Merge(stringSetElements(ctx, plan.SensitiveFields))(&resp.Diagnostics)
+		sensitiveFields := fwdiag.Merge(plan.SensitiveFields.Get(ctx))(&resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -1041,7 +1041,7 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 
 	if !plan.SafeFields.Equal(state.SafeFields) {
-		safeFields := fwdiag.Merge(stringSetElements(ctx, plan.SafeFields))(&resp.Diagnostics)
+		safeFields := fwdiag.Merge(plan.SafeFields.Get(ctx))(&resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}

@@ -127,7 +127,7 @@ func testAccCheckOrganizationDataScrubbingDestroy(s *terraform.State) error {
 		}
 		settings.Id = types.StringNull()
 
-		if diff := cmp.Diff(organizationDataScrubbingDefaults(), settings, dataScrubbingCmpOptions); diff != "" {
+		if diff := cmp.Diff(organizationDataScrubbingDefaults(context.Background()), settings, dataScrubbingCmpOptions); diff != "" {
 			return fmt.Errorf("data scrubbing settings of organization %q were not reset (-want +got):\n%s", rs.Primary.ID, diff)
 		}
 	}

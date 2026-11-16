@@ -1,13 +1,10 @@
 package provider
 
 import (
-	"context"
 	"encoding/json"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/oapi-codegen/nullable"
 )
 
@@ -31,20 +28,4 @@ func relayPiiConfigValue(v nullable.Nullable[string]) jsontypes.Normalized {
 		s = string(b)
 	}
 	return jsontypes.NewNormalizedValue(s)
-}
-
-// stringSetValue returns an empty set for a missing list.
-func stringSetValue(ctx context.Context, values *[]string) (types.Set, diag.Diagnostics) {
-	elements := []string{}
-	if values != nil {
-		elements = append(elements, *values...)
-	}
-	return types.SetValueFrom(ctx, types.StringType, elements)
-}
-
-// stringSetElements returns a non-nil slice, because Sentry rejects null for list fields.
-func stringSetElements(ctx context.Context, set types.Set) ([]string, diag.Diagnostics) {
-	elements := []string{}
-	diags := set.ElementsAs(ctx, &elements, false)
-	return elements, diags
 }

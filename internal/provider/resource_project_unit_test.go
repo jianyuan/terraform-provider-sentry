@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
+	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 )
 
 func TestProjectResourceModel_FillDataScrubbing(t *testing.T) {
@@ -22,8 +23,8 @@ func TestProjectResourceModel_FillDataScrubbing(t *testing.T) {
 		DataScrubber         types.Bool
 		DataScrubberDefaults types.Bool
 		ScrubIpAddresses     types.Bool
-		SensitiveFields      types.Set
-		SafeFields           types.Set
+		SensitiveFields      supertypes.SetValueOf[string]
+		SafeFields           supertypes.SetValueOf[string]
 		RelayPiiConfig       jsontypes.Normalized
 	}
 
@@ -71,8 +72,8 @@ func TestProjectResourceModel_FillDataScrubbing(t *testing.T) {
 				DataScrubber:         types.BoolNull(),
 				DataScrubberDefaults: types.BoolNull(),
 				ScrubIpAddresses:     types.BoolNull(),
-				SensitiveFields:      types.SetNull(types.StringType),
-				SafeFields:           types.SetNull(types.StringType),
+				SensitiveFields:      supertypes.NewSetValueOfNull[string](context.Background()),
+				SafeFields:           supertypes.NewSetValueOfNull[string](context.Background()),
 				RelayPiiConfig:       jsontypes.NewNormalizedNull(),
 			},
 		},

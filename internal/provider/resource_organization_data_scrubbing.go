@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -21,18 +20,19 @@ import (
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	intresource "github.com/jianyuan/terraform-provider-sentry/internal/resource"
+	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 	"github.com/samber/lo"
 )
 
 type OrganizationDataScrubbingResourceModel struct {
-	Id                   types.String         `tfsdk:"id"`
-	Organization         types.String         `tfsdk:"organization"`
-	DataScrubber         types.Bool           `tfsdk:"data_scrubber"`
-	DataScrubberDefaults types.Bool           `tfsdk:"data_scrubber_defaults"`
-	ScrubIpAddresses     types.Bool           `tfsdk:"scrub_ip_addresses"`
-	SensitiveFields      types.Set            `tfsdk:"sensitive_fields"`
-	SafeFields           types.Set            `tfsdk:"safe_fields"`
-	RelayPiiConfig       jsontypes.Normalized `tfsdk:"relay_pii_config"`
+	Id                   types.String                  `tfsdk:"id"`
+	Organization         types.String                  `tfsdk:"organization"`
+	DataScrubber         types.Bool                    `tfsdk:"data_scrubber"`
+	DataScrubberDefaults types.Bool                    `tfsdk:"data_scrubber_defaults"`
+	ScrubIpAddresses     types.Bool                    `tfsdk:"scrub_ip_addresses"`
+	SensitiveFields      supertypes.SetValueOf[string] `tfsdk:"sensitive_fields"`
+	SafeFields           supertypes.SetValueOf[string] `tfsdk:"safe_fields"`
+	RelayPiiConfig       jsontypes.Normalized          `tfsdk:"relay_pii_config"`
 }
 
 // Fill keeps the configured organization, which may be the internal ID.
@@ -41,16 +41,16 @@ func (m *OrganizationDataScrubbingResourceModel) Fill(ctx context.Context, organ
 	m.DataScrubber = types.BoolValue(lo.FromPtr(organization.DataScrubber))
 	m.DataScrubberDefaults = types.BoolValue(lo.FromPtr(organization.DataScrubberDefaults))
 	m.ScrubIpAddresses = types.BoolValue(lo.FromPtr(organization.ScrubIPAddresses))
-	m.SensitiveFields = fwdiag.Merge(stringSetValue(ctx, organization.SensitiveFields))(&diags)
-	m.SafeFields = fwdiag.Merge(stringSetValue(ctx, organization.SafeFields))(&diags)
+	m.SensitiveFields = supertypes.NewSetValueOfSlice(ctx, lo.FromPtrOr(organization.SensitiveFields, []string{}))
+	m.SafeFields = supertypes.NewSetValueOfSlice(ctx, lo.FromPtrOr(organization.SafeFields, []string{}))
 	m.RelayPiiConfig = relayPiiConfigValue(organization.RelayPiiConfig)
 	return
 }
 
 // UpdateBody writes all six settings. A null relay_pii_config clears the rules.
 func (m OrganizationDataScrubbingResourceModel) UpdateBody(ctx context.Context) (body apiclient.UpdateOrganizationJSONRequestBody, diags diag.Diagnostics) {
-	sensitiveFields := fwdiag.Merge(stringSetElements(ctx, m.SensitiveFields))(&diags)
-	safeFields := fwdiag.Merge(stringSetElements(ctx, m.SafeFields))(&diags)
+	sensitiveFields := fwdiag.Merge(m.SensitiveFields.Get(ctx))(&diags)
+	safeFields := fwdiag.Merge(m.SafeFields.Get(ctx))(&diags)
 
 	body = apiclient.UpdateOrganizationJSONRequestBody{
 		DataScrubber:         m.DataScrubber.ValueBoolPointer(),
@@ -64,14 +64,13 @@ func (m OrganizationDataScrubbingResourceModel) UpdateBody(ctx context.Context) 
 }
 
 // organizationDataScrubbingDefaults holds the Sentry defaults: the schema defaults and what destroy restores.
-func organizationDataScrubbingDefaults() OrganizationDataScrubbingResourceModel {
-	emptyStringSet := types.SetValueMust(types.StringType, []attr.Value{})
+func organizationDataScrubbingDefaults(ctx context.Context) OrganizationDataScrubbingResourceModel {
 	return OrganizationDataScrubbingResourceModel{
 		DataScrubber:         types.BoolValue(false),
 		DataScrubberDefaults: types.BoolValue(false),
 		ScrubIpAddresses:     types.BoolValue(false),
-		SensitiveFields:      emptyStringSet,
-		SafeFields:           emptyStringSet,
+		SensitiveFields:      supertypes.NewSetValueOfSlice(ctx, []string{}),
+		SafeFields:           supertypes.NewSetValueOfSlice(ctx, []string{}),
 		RelayPiiConfig:       jsontypes.NewNormalizedNull(),
 	}
 }
@@ -93,7 +92,7 @@ func (r *OrganizationDataScrubbingResource) Metadata(ctx context.Context, req re
 }
 
 func (r *OrganizationDataScrubbingResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	defaults := organizationDataScrubbingDefaults()
+	defaults := organizationDataScrubbingDefaults(ctx)
 	nonEmptyStrings := []validator.Set{
 		setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
 	}
@@ -130,18 +129,18 @@ func (r *OrganizationDataScrubbingResource) Schema(ctx context.Context, req reso
 			},
 			"sensitive_fields": schema.SetAttribute{
 				MarkdownDescription: "Additional field names to match against when scrubbing data for all projects. Defaults to an empty set.",
-				ElementType:         types.StringType,
+				CustomType:          supertypes.NewSetTypeOf[string](ctx),
 				Optional:            true,
 				Computed:            true,
-				Default:             setdefault.StaticValue(defaults.SensitiveFields),
+				Default:             setdefault.StaticValue(defaults.SensitiveFields.SetValue),
 				Validators:          nonEmptyStrings,
 			},
 			"safe_fields": schema.SetAttribute{
 				MarkdownDescription: "Field names which data scrubbers should ignore for all projects. Defaults to an empty set.",
-				ElementType:         types.StringType,
+				CustomType:          supertypes.NewSetTypeOf[string](ctx),
 				Optional:            true,
 				Computed:            true,
-				Default:             setdefault.StaticValue(defaults.SafeFields),
+				Default:             setdefault.StaticValue(defaults.SafeFields.SetValue),
 				Validators:          nonEmptyStrings,
 			},
 			"relay_pii_config": schema.StringAttribute{
@@ -221,7 +220,7 @@ func (r *OrganizationDataScrubbingResource) Delete(ctx context.Context, req reso
 		return
 	}
 
-	body := fwdiag.Merge(organizationDataScrubbingDefaults().UpdateBody(ctx))(&resp.Diagnostics)
+	body := fwdiag.Merge(organizationDataScrubbingDefaults(ctx).UpdateBody(ctx))(&resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}

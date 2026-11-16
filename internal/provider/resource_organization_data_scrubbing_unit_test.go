@@ -7,9 +7,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
+	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 	"github.com/samber/lo"
 )
 
@@ -17,12 +17,12 @@ import (
 var dataScrubbingCmpOptions = cmp.Options{
 	cmp.Comparer(func(a, b types.String) bool { return a.Equal(b) }),
 	cmp.Comparer(func(a, b types.Bool) bool { return a.Equal(b) }),
-	cmp.Comparer(func(a, b types.Set) bool { return a.Equal(b) }),
+	cmp.Comparer(func(a, b supertypes.SetValueOf[string]) bool { return a.Equal(b) }),
 	cmp.Comparer(func(a, b jsontypes.Normalized) bool { return a.Equal(b) }),
 }
 
-func dataScrubbingStringSet(values ...string) types.Set {
-	return types.SetValueMust(types.StringType, lo.Map(values, func(v string, _ int) attr.Value { return types.StringValue(v) }))
+func dataScrubbingStringSet(values ...string) supertypes.SetValueOf[string] {
+	return supertypes.NewSetValueOfSlice(context.Background(), append([]string{}, values...))
 }
 
 func TestOrganizationDataScrubbingResourceModel_Fill(t *testing.T) {
@@ -118,7 +118,7 @@ func TestOrganizationDataScrubbingResourceModel_UpdateBody(t *testing.T) {
 		{
 			// Destroy sends this body: empty lists, not null, and an empty string to clear the rules.
 			name: "defaults",
-			data: organizationDataScrubbingDefaults(),
+			data: organizationDataScrubbingDefaults(context.Background()),
 			expected: `{
 				"dataScrubber": false, "dataScrubberDefaults": false, "scrubIPAddresses": false,
 				"sensitiveFields": [], "safeFields": [], "relayPiiConfig": ""
