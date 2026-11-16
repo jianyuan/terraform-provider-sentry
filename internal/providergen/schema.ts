@@ -154,6 +154,8 @@ export interface Resource {
   api: ResourceApiStrategy;
   generate?: {
     modelFillers?: boolean;
+    // Call a hand-written `r.postRead(ctx, &data, *responseData)` after Fill in Read.
+    postReadHook?: boolean;
   };
   import?: {
     url?: string;
