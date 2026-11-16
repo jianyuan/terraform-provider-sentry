@@ -21,48 +21,52 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+	"github.com/jianyuan/terraform-plugin-framework-utils/fwsweep"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/must"
 	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/resourceid"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
-	"github.com/jianyuan/terraform-provider-sentry/internal/sweep"
 	"github.com/samber/lo"
 )
 
 func init() {
-	sweep.Register("sentry_project", func(ctx context.Context, pd *providerdata.ProviderData) ([]sweep.Sweepable, error) {
-		var sweepables []sweep.Sweepable
+	fwsweep.Register(
+		"sentry_project",
+		func() *providerdata.ProviderData { return acctest.SharedProviderData },
+		func(ctx context.Context, pd *providerdata.ProviderData) ([]fwsweep.Sweepable, error) {
+			var sweepables []fwsweep.Sweepable
 
-		params := &apiclient.ListOrganizationProjectsParams{}
-		for {
-			listHttpResp, err := acctest.SharedApiClient.ListOrganizationProjectsWithResponse(ctx, acctest.TestOrganization, params)
-			if err != nil {
-				return nil, err
-			} else if listHttpResp.StatusCode() != http.StatusOK || listHttpResp.JSON200 == nil {
-				return nil, fmt.Errorf("failed to list organization workflows: %s", listHttpResp.Status())
-			}
-
-			for _, project := range *listHttpResp.JSON200 {
-				if !strings.HasPrefix(project.Slug, "tf-project") {
-					continue
+			params := &apiclient.ListOrganizationProjectsParams{}
+			for {
+				listHttpResp, err := acctest.SharedApiClient.ListOrganizationProjectsWithResponse(ctx, acctest.TestOrganization, params)
+				if err != nil {
+					return nil, err
+				} else if listHttpResp.StatusCode() != http.StatusOK || listHttpResp.JSON200 == nil {
+					return nil, fmt.Errorf("failed to list organization projects: %s", listHttpResp.Status())
 				}
 
-				sweepables = append(sweepables, sweep.NewSweepResource(NewProjectResource, pd, map[string]any{
-					"organization": acctest.TestOrganization,
-					"id":           project.Id,
-				}))
+				for _, project := range *listHttpResp.JSON200 {
+					if !strings.HasPrefix(project.Slug, "tf-project") {
+						continue
+					}
+
+					sweepables = append(sweepables, fwsweep.NewResource(NewProjectResource, pd, map[string]any{
+						"organization": acctest.TestOrganization,
+						"id":           project.Id,
+					}))
+				}
+
+				params.Cursor = sentryclient.ParseNextPaginationCursor(listHttpResp.HTTPResponse)
+				if params.Cursor == nil {
+					break
+				}
 			}
 
-			params.Cursor = sentryclient.ParseNextPaginationCursor(listHttpResp.HTTPResponse)
-			if params.Cursor == nil {
-				break
-			}
-		}
-
-		return sweepables, nil
-	})
+			return sweepables, nil
+		},
+	)
 }
 
 func TestAccProjectResource_basic(t *testing.T) {
