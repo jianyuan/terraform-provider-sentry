@@ -244,6 +244,9 @@ func (d *ClientKeyDataSource) Read(ctx context.Context, req datasource.ReadReque
 		if data.Name.IsNull() {
 			if len(allKeys) == 1 {
 				foundKey = new(allKeys[0])
+			} else if len(allKeys) == 0 {
+				resp.Diagnostics.Append(diagutils.NewNotFoundError("client key"))
+				return
 			} else if !data.First.IsNull() && data.First.ValueBool() {
 				// Find the first key
 
@@ -279,8 +282,8 @@ func (d *ClientKeyDataSource) Read(ctx context.Context, req datasource.ReadReque
 			resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 			return
 		}
-		if httpResp.StatusCode() != http.StatusOK {
-			resp.Diagnostics.Append(diagutils.NewClientError("read", err))
+		if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
+			resp.Diagnostics.Append(diagutils.NewClientStatusError("read", httpResp.StatusCode(), httpResp.Body))
 			return
 		}
 
