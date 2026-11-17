@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -160,6 +161,17 @@ func (r *NotificationActionResource) Create(ctx context.Context, req resource.Cr
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("create", err))
 		return
+	}
+
+	// Save the action to the state as soon as it exists, so that a failure in
+	// the steps below leaves it tracked (and tainted) instead of orphaned in
+	// Sentry, where every retry would create another one.
+	if action.ID != nil {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization"), data.Organization)...)
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), action.ID.String())...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 	}
 
 	var projectIdToSlugMap map[string]string
