@@ -328,6 +328,7 @@ var Platforms = []string{
 	"node-nestjs",
 	"node-pi-durable",
 	"php",
+	"php-bref",
 	"php-laravel",
 	"php-symfony",
 	"playstation",
