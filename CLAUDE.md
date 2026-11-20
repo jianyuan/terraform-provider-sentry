@@ -2,7 +2,7 @@
 
 ## Terraform Plugin Framework types: use `supertypes`
 
-Use `github.com/orange-cloudavenue/terraform-plugin-framework-supertypes`, imported as `supertypes`, for model fields and schema `CustomType`s. Don't use the untyped `types.Set`, `types.List`, `types.Map` or `types.Object` from `terraform-plugin-framework/types` in new code.
+Use `github.com/orange-cloudavenue/terraform-plugin-framework-supertypes`, imported as `supertypes`, for collection and nested object model fields and schema `CustomType`s. Don't use the untyped `types.Set`, `types.List`, `types.Map` or `types.Object` from `terraform-plugin-framework/types` in new code. Primitives (string, int64, bool, float64) stay on the plain `types` package.
 
 ```go
 import supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
@@ -12,10 +12,10 @@ The generic supertypes carry the element or nested model type, so you get typed 
 
 | Schema shape | Model field type | Schema `CustomType` |
 | --- | --- | --- |
-| string | `supertypes.StringValue` | `supertypes.StringType{}` |
-| int64 | `supertypes.Int64Value` | `supertypes.Int64Type{}` |
-| bool | `supertypes.BoolValue` | `supertypes.BoolType{}` |
-| float64 | `types.Float64` (see exception below) | `types.Float64Type` |
+| string | `types.String` | none |
+| int64 | `types.Int64` | none |
+| bool | `types.Bool` | none |
+| float64 | `types.Float64` | none |
 | list of primitives | `supertypes.ListValueOf[T]` | `supertypes.NewListTypeOf[T](ctx)` |
 | set of primitives | `supertypes.SetValueOf[T]` | `supertypes.NewSetTypeOf[T](ctx)` |
 | map of primitives | `supertypes.MapValueOf[T]` | `supertypes.NewMapTypeOf[T](ctx)` |
@@ -23,19 +23,37 @@ The generic supertypes carry the element or nested model type, so you get typed 
 | set nested attribute | `supertypes.SetNestedObjectValueOf[M]` | `supertypes.NewSetNestedObjectTypeOf[M](ctx)` |
 | single nested attribute | `supertypes.SingleNestedObjectValueOf[M]` | `supertypes.NewSingleNestedObjectTypeOf[M](ctx)` |
 
-`T` is a Go primitive (`string`, `int64`, `bool`); `M` is the nested model struct.
+`T` is a Go primitive (`string`, `int64`, `bool`) for list, set and map elements; `M` is the nested model struct.
 
 Constructors to reach for:
 
-- Primitives: `supertypes.NewStringValue`, `NewStringValueOrNull`, `NewStringPointerValueOrNull`, `NewStringNull`, `NewInt64Value`, `NewBoolValue`.
 - Collections: `supertypes.NewListValueOfSlice`, `NewSetValueOfSlice`, `NewSetValueOfNull`, `NewMapValueOfMap`, `NewMapValueOfNull`.
 - Nested objects: `supertypes.NewListNestedObjectValueOfValueSlice`, `NewSetNestedObjectValueOfValueSlice`, `NewListNestedObjectValueOfNull`, `NewSingleNestedObjectValueOf`, `NewSingleNestedObjectValueOfNull`.
 
 Read and write values with the typed helpers (`Get(ctx)`, `MustGet(ctx)`, `Set(ctx, v)`) rather than converting through `attr.Value`.
 
-Exception: keep `types.Float64` / `types.Float64Type` for floats. The supertypes wrapper inherits `Float64SemanticEquals` from basetypes without overriding it, so the type assertion rejects the wrapper on every plan (hashicorp/terraform-plugin-framework#786).
+Primitives use `types.String`, `types.Int64`, `types.Bool` and `types.Float64` with no `CustomType`. The supertypes wrappers add nothing for them, and the float wrapper is actively broken: it inherits `Float64SemanticEquals` from basetypes without overriding it, so the type assertion rejects the wrapper on every plan (hashicorp/terraform-plugin-framework#786).
 
 Some older resources (e.g. `resource_project.go`, `resource_client_key.go`, `resource_issue_alert.go`) still use `types.Set`/`types.List`/`types.Map`/`types.Object`. Don't copy that pattern. Migrate a field to supertypes when you're already changing it, as long as the change doesn't alter the schema or state.
+
+## Known checks: use `fwtypes.IsKnown`
+
+To check that a value is neither null nor unknown, use `fwtypes.IsKnown(value)` from `github.com/jianyuan/terraform-plugin-framework-utils/fwtypes` rather than writing `!value.IsNull() && !value.IsUnknown()`.
+
+```go
+import "github.com/jianyuan/terraform-plugin-framework-utils/fwtypes"
+```
+
+## Model fillers
+
+Fill a model from an API response with `func (m *Model) Fill(ctx context.Context, data apiclient.Model) (diags diag.Diagnostics)`, even when nothing in it can produce a diagnostic. Callers append the result and stop on error:
+
+```go
+resp.Diagnostics.Append(data.Fill(ctx, *httpResp.JSON200)...)
+if resp.Diagnostics.HasError() {
+	return
+}
+```
 
 ## Generated code
 
