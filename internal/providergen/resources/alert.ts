@@ -255,6 +255,23 @@ export default {
             },
           ],
         },
+        {
+          name: "seer_activity_trigger",
+          type: "single_nested",
+          description: "Seer runs on an issue and reaches one of the given stages.",
+          computedOptionalRequired: "optional",
+          attributes: [
+            {
+              name: "stages",
+              type: "set",
+              elementType: "string",
+              description: "The Seer stages that trigger the alert.",
+              computedOptionalRequired: "required",
+              enum: `[]string{"rca_completed", "solution_completed", "coding_completed", "pr_ready_for_review"}`,
+              validators: ["setvalidator.SizeAtLeast(1)"],
+            },
+          ],
+        },
       ]),
     },
     {

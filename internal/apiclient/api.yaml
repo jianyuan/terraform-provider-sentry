@@ -3483,6 +3483,9 @@ components:
           oneOf:
             - type: boolean
             - type: object # TODO: Legacy?
+            - type: array # seer_activity_trigger: the Seer stages
+              items:
+                type: string
         conditionResult:
           type: boolean
     OrganizationWorkflow_ActionFilter:
