@@ -11,48 +11,52 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+	"github.com/jianyuan/terraform-plugin-framework-utils/fwsweep"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/resourceid"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
-	"github.com/jianyuan/terraform-provider-sentry/internal/sweep"
 )
 
 func init() {
-	sweep.Register("sentry_cron_monitor", func(ctx context.Context, pd *providerdata.ProviderData) ([]sweep.Sweepable, error) {
-		var sweepables []sweep.Sweepable
+	fwsweep.Register(
+		"sentry_cron_monitor",
+		func() *providerdata.ProviderData { return acctest.SharedProviderData },
+		func(ctx context.Context, pd *providerdata.ProviderData) ([]fwsweep.Sweepable, error) {
+			var sweepables []fwsweep.Sweepable
 
-		params := &apiclient.ListOrganizationMonitorsParams{
-			Query: new("!type:issue_stream type:monitor_check_in_failure"),
-		}
-		for {
-			listHttpResp, err := acctest.SharedApiClient.ListOrganizationMonitorsWithResponse(ctx, acctest.TestOrganization, params)
-			if err != nil {
-				return nil, err
-			} else if listHttpResp.StatusCode() != http.StatusOK || listHttpResp.JSON200 == nil {
-				return nil, fmt.Errorf("failed to list organization monitors: %s", listHttpResp.Status())
+			params := &apiclient.ListOrganizationMonitorsParams{
+				Query: new("!type:issue_stream type:monitor_check_in_failure"),
 			}
-
-			for _, monitor := range *listHttpResp.JSON200 {
-				if !strings.HasPrefix(monitor.Name, "tf-cron-monitor") {
-					continue
+			for {
+				listHttpResp, err := acctest.SharedApiClient.ListOrganizationMonitorsWithResponse(ctx, acctest.TestOrganization, params)
+				if err != nil {
+					return nil, err
+				} else if listHttpResp.StatusCode() != http.StatusOK || listHttpResp.JSON200 == nil {
+					return nil, fmt.Errorf("failed to list organization monitors: %s", listHttpResp.Status())
 				}
 
-				sweepables = append(sweepables, sweep.NewSweepResource(NewCronMonitorResource, pd, map[string]any{
-					"organization": acctest.TestOrganization,
-					"id":           monitor.Id,
-				}))
+				for _, monitor := range *listHttpResp.JSON200 {
+					if !strings.HasPrefix(monitor.Name, "tf-cron-monitor") {
+						continue
+					}
+
+					sweepables = append(sweepables, fwsweep.NewResource(NewCronMonitorResource, pd, map[string]any{
+						"organization": acctest.TestOrganization,
+						"id":           monitor.Id,
+					}))
+				}
+
+				params.Cursor = sentryclient.ParseNextPaginationCursor(listHttpResp.HTTPResponse)
+				if params.Cursor == nil {
+					break
+				}
 			}
 
-			params.Cursor = sentryclient.ParseNextPaginationCursor(listHttpResp.HTTPResponse)
-			if params.Cursor == nil {
-				break
-			}
-		}
-
-		return sweepables, nil
-	})
+			return sweepables, nil
+		},
+	)
 }
 
 func TestAccCronMonitorResource_validation(t *testing.T) {

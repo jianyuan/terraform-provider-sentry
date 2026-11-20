@@ -514,6 +514,11 @@ paths:
       operationId: listOrganizationWorkflows
       parameters:
         - $ref: "#/components/parameters/cursor"
+        - name: project
+          in: query
+          required: false
+          schema:
+            type: string
       responses:
         "200":
           description: OK
@@ -863,6 +868,22 @@ paths:
                   type: array
                   items:
                     type: string
+                dataScrubber:
+                  type: boolean
+                dataScrubberDefaults:
+                  type: boolean
+                scrubIPAddresses:
+                  type: boolean
+                sensitiveFields:
+                  type: array
+                  items:
+                    type: string
+                safeFields:
+                  type: array
+                  items:
+                    type: string
+                relayPiiConfig:
+                  type: string
       responses:
         "200":
           description: OK
@@ -1999,6 +2020,23 @@ components:
           type: array
           items:
             type: string
+        dataScrubber:
+          type: boolean
+        dataScrubberDefaults:
+          type: boolean
+        scrubIPAddresses:
+          type: boolean
+        sensitiveFields:
+          type: array
+          items:
+            type: string
+        safeFields:
+          type: array
+          items:
+            type: string
+        relayPiiConfig:
+          type: string
+          nullable: true
     ProjectKey:
       type: object
       required:
@@ -3208,12 +3246,14 @@ components:
         failure_issue_threshold:
           type: integer
           format: int64
+          nullable: true
         max_runtime:
           type: integer
           format: int64
         recovery_threshold:
           type: integer
           format: int64
+          nullable: true
         timezone:
           type: string
     ProjectMonitor_DataSource_Config_Cron_Crontab:
@@ -4042,7 +4082,6 @@ components:
           required:
             - targetType
             - targetIdentifier
-            - targetDisplay
           properties:
             targetType:
               type: string
