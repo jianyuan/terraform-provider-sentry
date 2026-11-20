@@ -1502,6 +1502,11 @@ type Organization struct {
 	TeamRoleList         []TeamRoleListItem         `json:"teamRoleList"`
 }
 
+// OrganizationCodeMapping defines model for OrganizationCodeMapping.
+type OrganizationCodeMapping struct {
+	Id string `json:"id"`
+}
+
 // OrganizationIntegration defines model for OrganizationIntegration.
 type OrganizationIntegration struct {
 	AccountType                   nullable.Nullable[string] `json:"accountType"`
@@ -1592,6 +1597,13 @@ type OrganizationMemberWithRoles struct {
 	Pending      bool                       `json:"pending"`
 	TeamRoleList []TeamRoleListItem         `json:"teamRoleList"`
 	TeamRoles    []TeamRole                 `json:"teamRoles"`
+}
+
+// OrganizationRepository defines model for OrganizationRepository.
+type OrganizationRepository struct {
+	Id            string `json:"id"`
+	IntegrationId string `json:"integrationId"`
+	Name          string `json:"name"`
 }
 
 // OrganizationRoleListItem defines model for OrganizationRoleListItem.
@@ -2248,6 +2260,13 @@ type Project struct {
 	SubjectTemplate      string                    `json:"subjectTemplate"`
 	Teams                []Team                    `json:"teams"`
 	VerifySSL            bool                      `json:"verifySSL"`
+}
+
+// ProjectCodeOwners defines model for ProjectCodeOwners.
+type ProjectCodeOwners struct {
+	CodeMappingId string `json:"codeMappingId"`
+	Id            string `json:"id"`
+	Raw           string `json:"raw"`
 }
 
 // ProjectKey defines model for ProjectKey.
@@ -3080,6 +3099,16 @@ type UpdateOrganizationJSONBody struct {
 	SensitiveFields      *[]string `json:"sensitiveFields,omitempty"`
 }
 
+// CreateOrganizationCodeMappingJSONBody defines parameters for CreateOrganizationCodeMapping.
+type CreateOrganizationCodeMappingJSONBody struct {
+	DefaultBranch string `json:"defaultBranch"`
+	IntegrationId string `json:"integrationId"`
+	ProjectId     string `json:"projectId"`
+	RepositoryId  string `json:"repositoryId"`
+	SourceRoot    string `json:"sourceRoot"`
+	StackRoot     string `json:"stackRoot"`
+}
+
 // ListOrganizationMonitorsParams defines parameters for ListOrganizationMonitors.
 type ListOrganizationMonitorsParams struct {
 	Cursor  *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
@@ -3124,6 +3153,20 @@ type UpdateOrganizationMemberJSONBody struct {
 type ListOrganizationProjectsParams struct {
 	Cursor  *Cursor   `form:"cursor,omitempty" json:"cursor,omitempty"`
 	Options *[]string `form:"options,omitempty" json:"options,omitempty"`
+}
+
+// ListOrganizationRepositoriesParams defines parameters for ListOrganizationRepositories.
+type ListOrganizationRepositoriesParams struct {
+	Cursor        *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+	IntegrationId *string `form:"integration_id,omitempty" json:"integration_id,omitempty"`
+	Status        *string `form:"status,omitempty" json:"status,omitempty"`
+}
+
+// CreateOrganizationRepositoryJSONBody defines parameters for CreateOrganizationRepository.
+type CreateOrganizationRepositoryJSONBody struct {
+	Identifier   string `json:"identifier"`
+	Installation string `json:"installation"`
+	Provider     string `json:"provider"`
 }
 
 // ListSentryAppInstallationsParams defines parameters for ListSentryAppInstallations.
@@ -3181,6 +3224,18 @@ type UpdateOrganizationProjectJSONBody struct {
 	Slug                 *string                 `json:"slug,omitempty"`
 	SubjectTemplate      *string                 `json:"subjectTemplate,omitempty"`
 	VerifySSL            *bool                   `json:"verifySSL,omitempty"`
+}
+
+// CreateProjectCodeOwnersJSONBody defines parameters for CreateProjectCodeOwners.
+type CreateProjectCodeOwnersJSONBody struct {
+	CodeMappingId string `json:"codeMappingId"`
+	Raw           string `json:"raw"`
+}
+
+// UpdateProjectCodeOwnersJSONBody defines parameters for UpdateProjectCodeOwners.
+type UpdateProjectCodeOwnersJSONBody struct {
+	CodeMappingId *string `json:"codeMappingId,omitempty"`
+	Raw           *string `json:"raw,omitempty"`
 }
 
 // ListProjectClientKeysParams defines parameters for ListProjectClientKeys.
@@ -3269,6 +3324,9 @@ type CreateOrganizationTeamProjectJSONBody struct {
 // UpdateOrganizationJSONRequestBody defines body for UpdateOrganization for application/json ContentType.
 type UpdateOrganizationJSONRequestBody UpdateOrganizationJSONBody
 
+// CreateOrganizationCodeMappingJSONRequestBody defines body for CreateOrganizationCodeMapping for application/json ContentType.
+type CreateOrganizationCodeMappingJSONRequestBody CreateOrganizationCodeMappingJSONBody
+
 // UpdateProjectMonitorJSONRequestBody defines body for UpdateProjectMonitor for application/json ContentType.
 type UpdateProjectMonitorJSONRequestBody = ProjectMonitorRequest
 
@@ -3283,6 +3341,9 @@ type UpdateOrganizationMemberJSONRequestBody UpdateOrganizationMemberJSONBody
 
 // CreateProjectMonitorJSONRequestBody defines body for CreateProjectMonitor for application/json ContentType.
 type CreateProjectMonitorJSONRequestBody = ProjectMonitorRequest
+
+// CreateOrganizationRepositoryJSONRequestBody defines body for CreateOrganizationRepository for application/json ContentType.
+type CreateOrganizationRepositoryJSONRequestBody CreateOrganizationRepositoryJSONBody
 
 // DisableSpikeProtectionJSONRequestBody defines body for DisableSpikeProtection for application/json ContentType.
 type DisableSpikeProtectionJSONRequestBody DisableSpikeProtectionJSONBody
@@ -3301,6 +3362,12 @@ type UpdateOrganizationWorkflowJSONRequestBody = UpdateOrganizationWorkflowReque
 
 // UpdateOrganizationProjectJSONRequestBody defines body for UpdateOrganizationProject for application/json ContentType.
 type UpdateOrganizationProjectJSONRequestBody UpdateOrganizationProjectJSONBody
+
+// CreateProjectCodeOwnersJSONRequestBody defines body for CreateProjectCodeOwners for application/json ContentType.
+type CreateProjectCodeOwnersJSONRequestBody CreateProjectCodeOwnersJSONBody
+
+// UpdateProjectCodeOwnersJSONRequestBody defines body for UpdateProjectCodeOwners for application/json ContentType.
+type UpdateProjectCodeOwnersJSONRequestBody UpdateProjectCodeOwnersJSONBody
 
 // CreateProjectClientKeyJSONRequestBody defines body for CreateProjectClientKey for application/json ContentType.
 type CreateProjectClientKeyJSONRequestBody CreateProjectClientKeyJSONBody
@@ -7462,6 +7529,25 @@ type ClientInterface interface {
 	// Corresponds with PUT /0/organizations/{organization_id_or_slug}/ (the `UpdateOrganization` operationId).
 	UpdateOrganization(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body UpdateOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreateOrganizationCodeMappingWithBody Create a Code Mapping
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /0/organizations/{organization_id_or_slug}/code-mappings/ (the `CreateOrganizationCodeMapping` operationId).
+	CreateOrganizationCodeMappingWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateOrganizationCodeMapping Create a Code Mapping
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /0/organizations/{organization_id_or_slug}/code-mappings/ (the `CreateOrganizationCodeMapping` operationId).
+	CreateOrganizationCodeMapping(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationCodeMappingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteOrganizationCodeMapping Delete a Code Mapping
+	//
+	// Corresponds with DELETE /0/organizations/{organization_id_or_slug}/code-mappings/{code_mapping_id}/ (the `DeleteOrganizationCodeMapping` operationId).
+	DeleteOrganizationCodeMapping(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, codeMappingId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListOrganizationMonitors List Monitors for an Organization
 	//
 	// Corresponds with GET /0/organizations/{organization_id_or_slug}/detectors/ (the `ListOrganizationMonitors` operationId).
@@ -7576,6 +7662,30 @@ type ClientInterface interface {
 	//
 	// Corresponds with POST /0/organizations/{organization_id_or_slug}/projects/{project_id_or_slug}/detectors/ (the `CreateProjectMonitor` operationId).
 	CreateProjectMonitor(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body CreateProjectMonitorJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListOrganizationRepositories List an Organization's Repositories
+	//
+	// Corresponds with GET /0/organizations/{organization_id_or_slug}/repos/ (the `ListOrganizationRepositories` operationId).
+	ListOrganizationRepositories(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationRepositoriesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateOrganizationRepositoryWithBody Add a Repository to an Organization
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /0/organizations/{organization_id_or_slug}/repos/ (the `CreateOrganizationRepository` operationId).
+	CreateOrganizationRepositoryWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateOrganizationRepository Add a Repository to an Organization
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /0/organizations/{organization_id_or_slug}/repos/ (the `CreateOrganizationRepository` operationId).
+	CreateOrganizationRepository(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationRepositoryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteOrganizationRepository Delete a Repository from an Organization
+	//
+	// Corresponds with DELETE /0/organizations/{organization_id_or_slug}/repos/{repo_id}/ (the `DeleteOrganizationRepository` operationId).
+	DeleteOrganizationRepository(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, repoId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListSentryAppInstallations List Sentry App Installations
 	//
@@ -7695,6 +7805,44 @@ type ClientInterface interface {
 	//
 	// Corresponds with PUT /0/projects/{organization_id_or_slug}/{project_id_or_slug}/ (the `UpdateOrganizationProject` operationId).
 	UpdateOrganizationProject(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body UpdateOrganizationProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateProjectCodeOwnersWithBody Create a CODEOWNERS Configuration for a Project
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /0/projects/{organization_id_or_slug}/{project_id_or_slug}/codeowners/ (the `CreateProjectCodeOwners` operationId).
+	CreateProjectCodeOwnersWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateProjectCodeOwners Create a CODEOWNERS Configuration for a Project
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /0/projects/{organization_id_or_slug}/{project_id_or_slug}/codeowners/ (the `CreateProjectCodeOwners` operationId).
+	CreateProjectCodeOwners(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body CreateProjectCodeOwnersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteProjectCodeOwners Delete a Project's CODEOWNERS Configuration
+	//
+	// Corresponds with DELETE /0/projects/{organization_id_or_slug}/{project_id_or_slug}/codeowners/{codeowners_id}/ (the `DeleteProjectCodeOwners` operationId).
+	DeleteProjectCodeOwners(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, codeownersId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetProjectCodeOwners Retrieve a Project's CODEOWNERS Configuration
+	//
+	// Corresponds with GET /0/projects/{organization_id_or_slug}/{project_id_or_slug}/codeowners/{codeowners_id}/ (the `GetProjectCodeOwners` operationId).
+	GetProjectCodeOwners(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, codeownersId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateProjectCodeOwnersWithBody Update a Project's CODEOWNERS Configuration
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with PUT /0/projects/{organization_id_or_slug}/{project_id_or_slug}/codeowners/{codeowners_id}/ (the `UpdateProjectCodeOwners` operationId).
+	UpdateProjectCodeOwnersWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, codeownersId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateProjectCodeOwners Update a Project's CODEOWNERS Configuration
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with PUT /0/projects/{organization_id_or_slug}/{project_id_or_slug}/codeowners/{codeowners_id}/ (the `UpdateProjectCodeOwners` operationId).
+	UpdateProjectCodeOwners(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, codeownersId string, body UpdateProjectCodeOwnersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListProjectClientKeys List Client Keys
 	//
@@ -7885,6 +8033,55 @@ func (c *Client) UpdateOrganizationWithBody(ctx context.Context, organizationIdO
 // Corresponds with PUT /0/organizations/{organization_id_or_slug}/ (the `UpdateOrganization` operationId).
 func (c *Client) UpdateOrganization(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body UpdateOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateOrganizationRequest(c.Server, organizationIdOrSlug, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateOrganizationCodeMappingWithBody Create a Code Mapping
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /0/organizations/{organization_id_or_slug}/code-mappings/ (the `CreateOrganizationCodeMapping` operationId).
+func (c *Client) CreateOrganizationCodeMappingWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateOrganizationCodeMappingRequestWithBody(c.Server, organizationIdOrSlug, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateOrganizationCodeMapping Create a Code Mapping
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /0/organizations/{organization_id_or_slug}/code-mappings/ (the `CreateOrganizationCodeMapping` operationId).
+func (c *Client) CreateOrganizationCodeMapping(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationCodeMappingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateOrganizationCodeMappingRequest(c.Server, organizationIdOrSlug, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DeleteOrganizationCodeMapping Delete a Code Mapping
+//
+// Corresponds with DELETE /0/organizations/{organization_id_or_slug}/code-mappings/{code_mapping_id}/ (the `DeleteOrganizationCodeMapping` operationId).
+func (c *Client) DeleteOrganizationCodeMapping(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, codeMappingId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteOrganizationCodeMappingRequest(c.Server, organizationIdOrSlug, codeMappingId)
 	if err != nil {
 		return nil, err
 	}
@@ -8200,6 +8397,70 @@ func (c *Client) CreateProjectMonitor(ctx context.Context, organizationIdOrSlug 
 	return c.Client.Do(req)
 }
 
+// ListOrganizationRepositories List an Organization's Repositories
+//
+// Corresponds with GET /0/organizations/{organization_id_or_slug}/repos/ (the `ListOrganizationRepositories` operationId).
+func (c *Client) ListOrganizationRepositories(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationRepositoriesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListOrganizationRepositoriesRequest(c.Server, organizationIdOrSlug, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateOrganizationRepositoryWithBody Add a Repository to an Organization
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /0/organizations/{organization_id_or_slug}/repos/ (the `CreateOrganizationRepository` operationId).
+func (c *Client) CreateOrganizationRepositoryWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateOrganizationRepositoryRequestWithBody(c.Server, organizationIdOrSlug, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateOrganizationRepository Add a Repository to an Organization
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /0/organizations/{organization_id_or_slug}/repos/ (the `CreateOrganizationRepository` operationId).
+func (c *Client) CreateOrganizationRepository(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationRepositoryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateOrganizationRepositoryRequest(c.Server, organizationIdOrSlug, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DeleteOrganizationRepository Delete a Repository from an Organization
+//
+// Corresponds with DELETE /0/organizations/{organization_id_or_slug}/repos/{repo_id}/ (the `DeleteOrganizationRepository` operationId).
+func (c *Client) DeleteOrganizationRepository(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, repoId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteOrganizationRepositoryRequest(c.Server, organizationIdOrSlug, repoId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // ListSentryAppInstallations List Sentry App Installations
 //
 // Corresponds with GET /0/organizations/{organization_id_or_slug}/sentry-app-installations/ (the `ListSentryAppInstallations` operationId).
@@ -8499,6 +8760,104 @@ func (c *Client) UpdateOrganizationProjectWithBody(ctx context.Context, organiza
 // Corresponds with PUT /0/projects/{organization_id_or_slug}/{project_id_or_slug}/ (the `UpdateOrganizationProject` operationId).
 func (c *Client) UpdateOrganizationProject(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body UpdateOrganizationProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateOrganizationProjectRequest(c.Server, organizationIdOrSlug, projectIdOrSlug, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateProjectCodeOwnersWithBody Create a CODEOWNERS Configuration for a Project
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /0/projects/{organization_id_or_slug}/{project_id_or_slug}/codeowners/ (the `CreateProjectCodeOwners` operationId).
+func (c *Client) CreateProjectCodeOwnersWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateProjectCodeOwnersRequestWithBody(c.Server, organizationIdOrSlug, projectIdOrSlug, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateProjectCodeOwners Create a CODEOWNERS Configuration for a Project
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /0/projects/{organization_id_or_slug}/{project_id_or_slug}/codeowners/ (the `CreateProjectCodeOwners` operationId).
+func (c *Client) CreateProjectCodeOwners(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body CreateProjectCodeOwnersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateProjectCodeOwnersRequest(c.Server, organizationIdOrSlug, projectIdOrSlug, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DeleteProjectCodeOwners Delete a Project's CODEOWNERS Configuration
+//
+// Corresponds with DELETE /0/projects/{organization_id_or_slug}/{project_id_or_slug}/codeowners/{codeowners_id}/ (the `DeleteProjectCodeOwners` operationId).
+func (c *Client) DeleteProjectCodeOwners(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, codeownersId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteProjectCodeOwnersRequest(c.Server, organizationIdOrSlug, projectIdOrSlug, codeownersId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetProjectCodeOwners Retrieve a Project's CODEOWNERS Configuration
+//
+// Corresponds with GET /0/projects/{organization_id_or_slug}/{project_id_or_slug}/codeowners/{codeowners_id}/ (the `GetProjectCodeOwners` operationId).
+func (c *Client) GetProjectCodeOwners(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, codeownersId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetProjectCodeOwnersRequest(c.Server, organizationIdOrSlug, projectIdOrSlug, codeownersId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateProjectCodeOwnersWithBody Update a Project's CODEOWNERS Configuration
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with PUT /0/projects/{organization_id_or_slug}/{project_id_or_slug}/codeowners/{codeowners_id}/ (the `UpdateProjectCodeOwners` operationId).
+func (c *Client) UpdateProjectCodeOwnersWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, codeownersId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateProjectCodeOwnersRequestWithBody(c.Server, organizationIdOrSlug, projectIdOrSlug, codeownersId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateProjectCodeOwners Update a Project's CODEOWNERS Configuration
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with PUT /0/projects/{organization_id_or_slug}/{project_id_or_slug}/codeowners/{codeowners_id}/ (the `UpdateProjectCodeOwners` operationId).
+func (c *Client) UpdateProjectCodeOwners(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, codeownersId string, body UpdateProjectCodeOwnersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateProjectCodeOwnersRequest(c.Server, organizationIdOrSlug, projectIdOrSlug, codeownersId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -8967,6 +9326,94 @@ func NewUpdateOrganizationRequestWithBody(server string, organizationIdOrSlug Or
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewCreateOrganizationCodeMappingRequest calls the generic CreateOrganizationCodeMapping builder with application/json body
+func NewCreateOrganizationCodeMappingRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationCodeMappingJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateOrganizationCodeMappingRequestWithBody(server, organizationIdOrSlug, "application/json", bodyReader)
+}
+
+// NewCreateOrganizationCodeMappingRequestWithBody constructs an http.Request for the CreateOrganizationCodeMapping method, with any body, and a specified content type
+func NewCreateOrganizationCodeMappingRequestWithBody(server string, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/code-mappings/", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteOrganizationCodeMappingRequest constructs an http.Request for the DeleteOrganizationCodeMapping method
+func NewDeleteOrganizationCodeMappingRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, codeMappingId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "code_mapping_id", codeMappingId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/code-mappings/%s/", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -9743,6 +10190,179 @@ func NewCreateProjectMonitorRequestWithBody(server string, organizationIdOrSlug 
 	return req, nil
 }
 
+// NewListOrganizationRepositoriesRequest constructs an http.Request for the ListOrganizationRepositories method
+func NewListOrganizationRepositoriesRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationRepositoriesParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/repos/", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.IntegrationId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "integration_id", *params.IntegrationId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "status", *params.Status, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateOrganizationRepositoryRequest calls the generic CreateOrganizationRepository builder with application/json body
+func NewCreateOrganizationRepositoryRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationRepositoryJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateOrganizationRepositoryRequestWithBody(server, organizationIdOrSlug, "application/json", bodyReader)
+}
+
+// NewCreateOrganizationRepositoryRequestWithBody constructs an http.Request for the CreateOrganizationRepository method, with any body, and a specified content type
+func NewCreateOrganizationRepositoryRequestWithBody(server string, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/repos/", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteOrganizationRepositoryRequest constructs an http.Request for the DeleteOrganizationRepository method
+func NewDeleteOrganizationRepositoryRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, repoId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "repo_id", repoId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/organizations/%s/repos/%s/", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewListSentryAppInstallationsRequest constructs an http.Request for the ListSentryAppInstallations method
 func NewListSentryAppInstallationsRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, params *ListSentryAppInstallationsParams) (*http.Request, error) {
 	var err error
@@ -10379,6 +10999,217 @@ func NewUpdateOrganizationProjectRequestWithBody(server string, organizationIdOr
 	}
 
 	operationPath := fmt.Sprintf("/0/projects/%s/%s/", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewCreateProjectCodeOwnersRequest calls the generic CreateProjectCodeOwners builder with application/json body
+func NewCreateProjectCodeOwnersRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body CreateProjectCodeOwnersJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateProjectCodeOwnersRequestWithBody(server, organizationIdOrSlug, projectIdOrSlug, "application/json", bodyReader)
+}
+
+// NewCreateProjectCodeOwnersRequestWithBody constructs an http.Request for the CreateProjectCodeOwners method, with any body, and a specified content type
+func NewCreateProjectCodeOwnersRequestWithBody(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "project_id_or_slug", projectIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/projects/%s/%s/codeowners/", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteProjectCodeOwnersRequest constructs an http.Request for the DeleteProjectCodeOwners method
+func NewDeleteProjectCodeOwnersRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, codeownersId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "project_id_or_slug", projectIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam2 string
+
+	pathParam2, err = runtime.StyleParamWithOptions("simple", false, "codeowners_id", codeownersId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/projects/%s/%s/codeowners/%s/", pathParam0, pathParam1, pathParam2)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetProjectCodeOwnersRequest constructs an http.Request for the GetProjectCodeOwners method
+func NewGetProjectCodeOwnersRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, codeownersId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "project_id_or_slug", projectIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam2 string
+
+	pathParam2, err = runtime.StyleParamWithOptions("simple", false, "codeowners_id", codeownersId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/projects/%s/%s/codeowners/%s/", pathParam0, pathParam1, pathParam2)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateProjectCodeOwnersRequest calls the generic UpdateProjectCodeOwners builder with application/json body
+func NewUpdateProjectCodeOwnersRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, codeownersId string, body UpdateProjectCodeOwnersJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateProjectCodeOwnersRequestWithBody(server, organizationIdOrSlug, projectIdOrSlug, codeownersId, "application/json", bodyReader)
+}
+
+// NewUpdateProjectCodeOwnersRequestWithBody constructs an http.Request for the UpdateProjectCodeOwners method, with any body, and a specified content type
+func NewUpdateProjectCodeOwnersRequestWithBody(server string, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, codeownersId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "project_id_or_slug", projectIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam2 string
+
+	pathParam2, err = runtime.StyleParamWithOptions("simple", false, "codeowners_id", codeownersId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/0/projects/%s/%s/codeowners/%s/", pathParam0, pathParam1, pathParam2)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -11299,6 +12130,27 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with PUT /0/organizations/{organization_id_or_slug}/ (the `UpdateOrganization` operationId).
 	UpdateOrganizationWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body UpdateOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateOrganizationResponse, error)
 
+	// CreateOrganizationCodeMappingWithBodyWithResponse Create a Code Mapping
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /0/organizations/{organization_id_or_slug}/code-mappings/ (the `CreateOrganizationCodeMapping` operationId).
+	CreateOrganizationCodeMappingWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOrganizationCodeMappingResponse, error)
+
+	// CreateOrganizationCodeMappingWithResponse Create a Code Mapping
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /0/organizations/{organization_id_or_slug}/code-mappings/ (the `CreateOrganizationCodeMapping` operationId).
+	CreateOrganizationCodeMappingWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationCodeMappingJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateOrganizationCodeMappingResponse, error)
+
+	// DeleteOrganizationCodeMappingWithResponse Delete a Code Mapping
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with DELETE /0/organizations/{organization_id_or_slug}/code-mappings/{code_mapping_id}/ (the `DeleteOrganizationCodeMapping` operationId).
+	DeleteOrganizationCodeMappingWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, codeMappingId string, reqEditors ...RequestEditorFn) (*DeleteOrganizationCodeMappingResponse, error)
+
 	// ListOrganizationMonitorsWithResponse List Monitors for an Organization
 	//
 	// Returns a wrapper object for the known response body format(s).
@@ -11432,6 +12284,34 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /0/organizations/{organization_id_or_slug}/projects/{project_id_or_slug}/detectors/ (the `CreateProjectMonitor` operationId).
 	CreateProjectMonitorWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body CreateProjectMonitorJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateProjectMonitorResponse, error)
 
+	// ListOrganizationRepositoriesWithResponse List an Organization's Repositories
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /0/organizations/{organization_id_or_slug}/repos/ (the `ListOrganizationRepositories` operationId).
+	ListOrganizationRepositoriesWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationRepositoriesParams, reqEditors ...RequestEditorFn) (*ListOrganizationRepositoriesResponse, error)
+
+	// CreateOrganizationRepositoryWithBodyWithResponse Add a Repository to an Organization
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /0/organizations/{organization_id_or_slug}/repos/ (the `CreateOrganizationRepository` operationId).
+	CreateOrganizationRepositoryWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOrganizationRepositoryResponse, error)
+
+	// CreateOrganizationRepositoryWithResponse Add a Repository to an Organization
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /0/organizations/{organization_id_or_slug}/repos/ (the `CreateOrganizationRepository` operationId).
+	CreateOrganizationRepositoryWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationRepositoryJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateOrganizationRepositoryResponse, error)
+
+	// DeleteOrganizationRepositoryWithResponse Delete a Repository from an Organization
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with DELETE /0/organizations/{organization_id_or_slug}/repos/{repo_id}/ (the `DeleteOrganizationRepository` operationId).
+	DeleteOrganizationRepositoryWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, repoId string, reqEditors ...RequestEditorFn) (*DeleteOrganizationRepositoryResponse, error)
+
 	// ListSentryAppInstallationsWithResponse List Sentry App Installations
 	//
 	// Returns a wrapper object for the known response body format(s).
@@ -11564,6 +12444,48 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with PUT /0/projects/{organization_id_or_slug}/{project_id_or_slug}/ (the `UpdateOrganizationProject` operationId).
 	UpdateOrganizationProjectWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body UpdateOrganizationProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateOrganizationProjectResponse, error)
+
+	// CreateProjectCodeOwnersWithBodyWithResponse Create a CODEOWNERS Configuration for a Project
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /0/projects/{organization_id_or_slug}/{project_id_or_slug}/codeowners/ (the `CreateProjectCodeOwners` operationId).
+	CreateProjectCodeOwnersWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateProjectCodeOwnersResponse, error)
+
+	// CreateProjectCodeOwnersWithResponse Create a CODEOWNERS Configuration for a Project
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /0/projects/{organization_id_or_slug}/{project_id_or_slug}/codeowners/ (the `CreateProjectCodeOwners` operationId).
+	CreateProjectCodeOwnersWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body CreateProjectCodeOwnersJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateProjectCodeOwnersResponse, error)
+
+	// DeleteProjectCodeOwnersWithResponse Delete a Project's CODEOWNERS Configuration
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with DELETE /0/projects/{organization_id_or_slug}/{project_id_or_slug}/codeowners/{codeowners_id}/ (the `DeleteProjectCodeOwners` operationId).
+	DeleteProjectCodeOwnersWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, codeownersId string, reqEditors ...RequestEditorFn) (*DeleteProjectCodeOwnersResponse, error)
+
+	// GetProjectCodeOwnersWithResponse Retrieve a Project's CODEOWNERS Configuration
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /0/projects/{organization_id_or_slug}/{project_id_or_slug}/codeowners/{codeowners_id}/ (the `GetProjectCodeOwners` operationId).
+	GetProjectCodeOwnersWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, codeownersId string, reqEditors ...RequestEditorFn) (*GetProjectCodeOwnersResponse, error)
+
+	// UpdateProjectCodeOwnersWithBodyWithResponse Update a Project's CODEOWNERS Configuration
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /0/projects/{organization_id_or_slug}/{project_id_or_slug}/codeowners/{codeowners_id}/ (the `UpdateProjectCodeOwners` operationId).
+	UpdateProjectCodeOwnersWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, codeownersId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProjectCodeOwnersResponse, error)
+
+	// UpdateProjectCodeOwnersWithResponse Update a Project's CODEOWNERS Configuration
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /0/projects/{organization_id_or_slug}/{project_id_or_slug}/codeowners/{codeowners_id}/ (the `UpdateProjectCodeOwners` operationId).
+	UpdateProjectCodeOwnersWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, codeownersId string, body UpdateProjectCodeOwnersJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectCodeOwnersResponse, error)
 
 	// ListProjectClientKeysWithResponse List Client Keys
 	//
@@ -11830,6 +12752,81 @@ func (r UpdateOrganizationResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r UpdateOrganizationResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type CreateOrganizationCodeMappingResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON201 the response for an HTTP 201 `application/json` response
+	JSON201 *OrganizationCodeMapping
+}
+
+// GetJSON201 returns the response for an HTTP 201 `application/json` response
+func (r CreateOrganizationCodeMappingResponse) GetJSON201() *OrganizationCodeMapping {
+	return r.JSON201
+}
+
+// GetBody returns the raw response body bytes
+func (r CreateOrganizationCodeMappingResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateOrganizationCodeMappingResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateOrganizationCodeMappingResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateOrganizationCodeMappingResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DeleteOrganizationCodeMappingResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// GetBody returns the raw response body bytes
+func (r DeleteOrganizationCodeMappingResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteOrganizationCodeMappingResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteOrganizationCodeMappingResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeleteOrganizationCodeMappingResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -12389,6 +13386,122 @@ func (r CreateProjectMonitorResponse) ContentType() string {
 	return ""
 }
 
+type ListOrganizationRepositoriesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *[]OrganizationRepository
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ListOrganizationRepositoriesResponse) GetJSON200() *[]OrganizationRepository {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r ListOrganizationRepositoriesResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ListOrganizationRepositoriesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListOrganizationRepositoriesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListOrganizationRepositoriesResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type CreateOrganizationRepositoryResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON201 the response for an HTTP 201 `application/json` response
+	JSON201 *OrganizationRepository
+}
+
+// GetJSON201 returns the response for an HTTP 201 `application/json` response
+func (r CreateOrganizationRepositoryResponse) GetJSON201() *OrganizationRepository {
+	return r.JSON201
+}
+
+// GetBody returns the raw response body bytes
+func (r CreateOrganizationRepositoryResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateOrganizationRepositoryResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateOrganizationRepositoryResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateOrganizationRepositoryResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DeleteOrganizationRepositoryResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// GetBody returns the raw response body bytes
+func (r DeleteOrganizationRepositoryResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteOrganizationRepositoryResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteOrganizationRepositoryResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeleteOrganizationRepositoryResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type ListSentryAppInstallationsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -12888,6 +14001,163 @@ func (r UpdateOrganizationProjectResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r UpdateOrganizationProjectResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type CreateProjectCodeOwnersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON201 the response for an HTTP 201 `application/json` response
+	JSON201 *ProjectCodeOwners
+}
+
+// GetJSON201 returns the response for an HTTP 201 `application/json` response
+func (r CreateProjectCodeOwnersResponse) GetJSON201() *ProjectCodeOwners {
+	return r.JSON201
+}
+
+// GetBody returns the raw response body bytes
+func (r CreateProjectCodeOwnersResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateProjectCodeOwnersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateProjectCodeOwnersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateProjectCodeOwnersResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DeleteProjectCodeOwnersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// GetBody returns the raw response body bytes
+func (r DeleteProjectCodeOwnersResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteProjectCodeOwnersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteProjectCodeOwnersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeleteProjectCodeOwnersResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetProjectCodeOwnersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ProjectCodeOwners
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetProjectCodeOwnersResponse) GetJSON200() *ProjectCodeOwners {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r GetProjectCodeOwnersResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetProjectCodeOwnersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetProjectCodeOwnersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetProjectCodeOwnersResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type UpdateProjectCodeOwnersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ProjectCodeOwners
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r UpdateProjectCodeOwnersResponse) GetJSON200() *ProjectCodeOwners {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r UpdateProjectCodeOwnersResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateProjectCodeOwnersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateProjectCodeOwnersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r UpdateProjectCodeOwnersResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -13599,6 +14869,45 @@ func (c *ClientWithResponses) UpdateOrganizationWithResponse(ctx context.Context
 	return ParseUpdateOrganizationResponse(rsp)
 }
 
+// CreateOrganizationCodeMappingWithBodyWithResponse Create a Code Mapping
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /0/organizations/{organization_id_or_slug}/code-mappings/ (the `CreateOrganizationCodeMapping` operationId).
+func (c *ClientWithResponses) CreateOrganizationCodeMappingWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOrganizationCodeMappingResponse, error) {
+	rsp, err := c.CreateOrganizationCodeMappingWithBody(ctx, organizationIdOrSlug, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateOrganizationCodeMappingResponse(rsp)
+}
+
+// CreateOrganizationCodeMappingWithResponse Create a Code Mapping
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /0/organizations/{organization_id_or_slug}/code-mappings/ (the `CreateOrganizationCodeMapping` operationId).
+func (c *ClientWithResponses) CreateOrganizationCodeMappingWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationCodeMappingJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateOrganizationCodeMappingResponse, error) {
+	rsp, err := c.CreateOrganizationCodeMapping(ctx, organizationIdOrSlug, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateOrganizationCodeMappingResponse(rsp)
+}
+
+// DeleteOrganizationCodeMappingWithResponse Delete a Code Mapping
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with DELETE /0/organizations/{organization_id_or_slug}/code-mappings/{code_mapping_id}/ (the `DeleteOrganizationCodeMapping` operationId).
+func (c *ClientWithResponses) DeleteOrganizationCodeMappingWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, codeMappingId string, reqEditors ...RequestEditorFn) (*DeleteOrganizationCodeMappingResponse, error) {
+	rsp, err := c.DeleteOrganizationCodeMapping(ctx, organizationIdOrSlug, codeMappingId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteOrganizationCodeMappingResponse(rsp)
+}
+
 // ListOrganizationMonitorsWithResponse List Monitors for an Organization
 //
 // Returns a wrapper object for the known response body format(s).
@@ -13846,6 +15155,58 @@ func (c *ClientWithResponses) CreateProjectMonitorWithResponse(ctx context.Conte
 	return ParseCreateProjectMonitorResponse(rsp)
 }
 
+// ListOrganizationRepositoriesWithResponse List an Organization's Repositories
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /0/organizations/{organization_id_or_slug}/repos/ (the `ListOrganizationRepositories` operationId).
+func (c *ClientWithResponses) ListOrganizationRepositoriesWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, params *ListOrganizationRepositoriesParams, reqEditors ...RequestEditorFn) (*ListOrganizationRepositoriesResponse, error) {
+	rsp, err := c.ListOrganizationRepositories(ctx, organizationIdOrSlug, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListOrganizationRepositoriesResponse(rsp)
+}
+
+// CreateOrganizationRepositoryWithBodyWithResponse Add a Repository to an Organization
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /0/organizations/{organization_id_or_slug}/repos/ (the `CreateOrganizationRepository` operationId).
+func (c *ClientWithResponses) CreateOrganizationRepositoryWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOrganizationRepositoryResponse, error) {
+	rsp, err := c.CreateOrganizationRepositoryWithBody(ctx, organizationIdOrSlug, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateOrganizationRepositoryResponse(rsp)
+}
+
+// CreateOrganizationRepositoryWithResponse Add a Repository to an Organization
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /0/organizations/{organization_id_or_slug}/repos/ (the `CreateOrganizationRepository` operationId).
+func (c *ClientWithResponses) CreateOrganizationRepositoryWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationRepositoryJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateOrganizationRepositoryResponse, error) {
+	rsp, err := c.CreateOrganizationRepository(ctx, organizationIdOrSlug, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateOrganizationRepositoryResponse(rsp)
+}
+
+// DeleteOrganizationRepositoryWithResponse Delete a Repository from an Organization
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with DELETE /0/organizations/{organization_id_or_slug}/repos/{repo_id}/ (the `DeleteOrganizationRepository` operationId).
+func (c *ClientWithResponses) DeleteOrganizationRepositoryWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, repoId string, reqEditors ...RequestEditorFn) (*DeleteOrganizationRepositoryResponse, error) {
+	rsp, err := c.DeleteOrganizationRepository(ctx, organizationIdOrSlug, repoId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteOrganizationRepositoryResponse(rsp)
+}
+
 // ListSentryAppInstallationsWithResponse List Sentry App Installations
 //
 // Returns a wrapper object for the known response body format(s).
@@ -14091,6 +15452,84 @@ func (c *ClientWithResponses) UpdateOrganizationProjectWithResponse(ctx context.
 		return nil, err
 	}
 	return ParseUpdateOrganizationProjectResponse(rsp)
+}
+
+// CreateProjectCodeOwnersWithBodyWithResponse Create a CODEOWNERS Configuration for a Project
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /0/projects/{organization_id_or_slug}/{project_id_or_slug}/codeowners/ (the `CreateProjectCodeOwners` operationId).
+func (c *ClientWithResponses) CreateProjectCodeOwnersWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateProjectCodeOwnersResponse, error) {
+	rsp, err := c.CreateProjectCodeOwnersWithBody(ctx, organizationIdOrSlug, projectIdOrSlug, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateProjectCodeOwnersResponse(rsp)
+}
+
+// CreateProjectCodeOwnersWithResponse Create a CODEOWNERS Configuration for a Project
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /0/projects/{organization_id_or_slug}/{project_id_or_slug}/codeowners/ (the `CreateProjectCodeOwners` operationId).
+func (c *ClientWithResponses) CreateProjectCodeOwnersWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, body CreateProjectCodeOwnersJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateProjectCodeOwnersResponse, error) {
+	rsp, err := c.CreateProjectCodeOwners(ctx, organizationIdOrSlug, projectIdOrSlug, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateProjectCodeOwnersResponse(rsp)
+}
+
+// DeleteProjectCodeOwnersWithResponse Delete a Project's CODEOWNERS Configuration
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with DELETE /0/projects/{organization_id_or_slug}/{project_id_or_slug}/codeowners/{codeowners_id}/ (the `DeleteProjectCodeOwners` operationId).
+func (c *ClientWithResponses) DeleteProjectCodeOwnersWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, codeownersId string, reqEditors ...RequestEditorFn) (*DeleteProjectCodeOwnersResponse, error) {
+	rsp, err := c.DeleteProjectCodeOwners(ctx, organizationIdOrSlug, projectIdOrSlug, codeownersId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteProjectCodeOwnersResponse(rsp)
+}
+
+// GetProjectCodeOwnersWithResponse Retrieve a Project's CODEOWNERS Configuration
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /0/projects/{organization_id_or_slug}/{project_id_or_slug}/codeowners/{codeowners_id}/ (the `GetProjectCodeOwners` operationId).
+func (c *ClientWithResponses) GetProjectCodeOwnersWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, codeownersId string, reqEditors ...RequestEditorFn) (*GetProjectCodeOwnersResponse, error) {
+	rsp, err := c.GetProjectCodeOwners(ctx, organizationIdOrSlug, projectIdOrSlug, codeownersId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetProjectCodeOwnersResponse(rsp)
+}
+
+// UpdateProjectCodeOwnersWithBodyWithResponse Update a Project's CODEOWNERS Configuration
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /0/projects/{organization_id_or_slug}/{project_id_or_slug}/codeowners/{codeowners_id}/ (the `UpdateProjectCodeOwners` operationId).
+func (c *ClientWithResponses) UpdateProjectCodeOwnersWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, codeownersId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProjectCodeOwnersResponse, error) {
+	rsp, err := c.UpdateProjectCodeOwnersWithBody(ctx, organizationIdOrSlug, projectIdOrSlug, codeownersId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateProjectCodeOwnersResponse(rsp)
+}
+
+// UpdateProjectCodeOwnersWithResponse Update a Project's CODEOWNERS Configuration
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /0/projects/{organization_id_or_slug}/{project_id_or_slug}/codeowners/{codeowners_id}/ (the `UpdateProjectCodeOwners` operationId).
+func (c *ClientWithResponses) UpdateProjectCodeOwnersWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, projectIdOrSlug ProjectIdOrSlug, codeownersId string, body UpdateProjectCodeOwnersJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectCodeOwnersResponse, error) {
+	rsp, err := c.UpdateProjectCodeOwners(ctx, organizationIdOrSlug, projectIdOrSlug, codeownersId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateProjectCodeOwnersResponse(rsp)
 }
 
 // ListProjectClientKeysWithResponse List Client Keys
@@ -14463,6 +15902,57 @@ func ParseUpdateOrganizationResponse(rsp *http.Response) (*UpdateOrganizationRes
 	case rsp.StatusCode == 404:
 		break // No content-type
 
+	}
+
+	return response, nil
+}
+
+// ParseCreateOrganizationCodeMappingResponse parses an HTTP response from a CreateOrganizationCodeMappingWithResponse call
+func ParseCreateOrganizationCodeMappingResponse(rsp *http.Response) (*CreateOrganizationCodeMappingResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateOrganizationCodeMappingResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest OrganizationCodeMapping
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case rsp.StatusCode == 401:
+		break // No content-type
+
+	case rsp.StatusCode == 403:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteOrganizationCodeMappingResponse parses an HTTP response from a DeleteOrganizationCodeMappingWithResponse call
+func ParseDeleteOrganizationCodeMappingResponse(rsp *http.Response) (*DeleteOrganizationCodeMappingResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteOrganizationCodeMappingResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil
@@ -14895,6 +16385,92 @@ func ParseCreateProjectMonitorResponse(rsp *http.Response) (*CreateProjectMonito
 	return response, nil
 }
 
+// ParseListOrganizationRepositoriesResponse parses an HTTP response from a ListOrganizationRepositoriesWithResponse call
+func ParseListOrganizationRepositoriesResponse(rsp *http.Response) (*ListOrganizationRepositoriesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListOrganizationRepositoriesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []OrganizationRepository
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 401:
+		break // No content-type
+
+	case rsp.StatusCode == 403:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateOrganizationRepositoryResponse parses an HTTP response from a CreateOrganizationRepositoryWithResponse call
+func ParseCreateOrganizationRepositoryResponse(rsp *http.Response) (*CreateOrganizationRepositoryResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateOrganizationRepositoryResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest OrganizationRepository
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case rsp.StatusCode == 401:
+		break // No content-type
+
+	case rsp.StatusCode == 403:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteOrganizationRepositoryResponse parses an HTTP response from a DeleteOrganizationRepositoryWithResponse call
+func ParseDeleteOrganizationRepositoryResponse(rsp *http.Response) (*DeleteOrganizationRepositoryResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteOrganizationRepositoryResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
 // ParseListSentryAppInstallationsResponse parses an HTTP response from a ListSentryAppInstallationsWithResponse call
 func ParseListSentryAppInstallationsResponse(rsp *http.Response) (*ListSentryAppInstallationsResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -15256,6 +16832,133 @@ func ParseUpdateOrganizationProjectResponse(rsp *http.Response) (*UpdateOrganiza
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case rsp.StatusCode == 401:
+		break // No content-type
+
+	case rsp.StatusCode == 403:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateProjectCodeOwnersResponse parses an HTTP response from a CreateProjectCodeOwnersWithResponse call
+func ParseCreateProjectCodeOwnersResponse(rsp *http.Response) (*CreateProjectCodeOwnersResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateProjectCodeOwnersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest ProjectCodeOwners
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 401:
+		break // No content-type
+
+	case rsp.StatusCode == 403:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteProjectCodeOwnersResponse parses an HTTP response from a DeleteProjectCodeOwnersWithResponse call
+func ParseDeleteProjectCodeOwnersResponse(rsp *http.Response) (*DeleteProjectCodeOwnersResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteProjectCodeOwnersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetProjectCodeOwnersResponse parses an HTTP response from a GetProjectCodeOwnersWithResponse call
+func ParseGetProjectCodeOwnersResponse(rsp *http.Response) (*GetProjectCodeOwnersResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetProjectCodeOwnersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProjectCodeOwners
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 401:
+		break // No content-type
+
+	case rsp.StatusCode == 403:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateProjectCodeOwnersResponse parses an HTTP response from a UpdateProjectCodeOwnersWithResponse call
+func ParseUpdateProjectCodeOwnersResponse(rsp *http.Response) (*UpdateProjectCodeOwnersResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateProjectCodeOwnersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProjectCodeOwners
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
 
 	case rsp.StatusCode == 401:
 		break // No content-type
