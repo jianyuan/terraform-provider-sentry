@@ -20,6 +20,7 @@ import (
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	intresource "github.com/jianyuan/terraform-provider-sentry/internal/resource"
+	"github.com/oapi-codegen/nullable"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 	"github.com/samber/lo"
 )
@@ -58,7 +59,7 @@ func (m OrganizationDataScrubbingResourceModel) UpdateBody(ctx context.Context) 
 		ScrubIPAddresses:     m.ScrubIpAddresses.ValueBoolPointer(),
 		SensitiveFields:      &sensitiveFields,
 		SafeFields:           &safeFields,
-		RelayPiiConfig:       new(m.RelayPiiConfig.ValueString()),
+		RelayPiiConfig:       nullable.NewNullableWithValue(m.RelayPiiConfig.ValueString()),
 	}
 	return
 }
