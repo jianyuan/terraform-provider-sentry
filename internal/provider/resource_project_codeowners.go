@@ -11,19 +11,20 @@ import (
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	intresource "github.com/jianyuan/terraform-provider-sentry/internal/resource"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
 )
 
 type ProjectCodeOwnersResourceModel struct {
-	Id            types.String `tfsdk:"id"`
-	Organization  types.String `tfsdk:"organization"`
-	Project       types.String `tfsdk:"project"`
-	Raw           types.String `tfsdk:"raw"`
-	CodeMappingId types.String `tfsdk:"code_mapping_id"`
+	Id            types.String              `tfsdk:"id"`
+	Organization  types.String              `tfsdk:"organization"`
+	Project       types.String              `tfsdk:"project"`
+	Raw           sentrytypes.TrimmedString `tfsdk:"raw"`
+	CodeMappingId types.String              `tfsdk:"code_mapping_id"`
 }
 
 func (m *ProjectCodeOwnersResourceModel) Fill(ctx context.Context, codeOwners apiclient.ProjectCodeOwners) (diags diag.Diagnostics) {
 	m.Id = types.StringValue(codeOwners.Id)
-	m.Raw = types.StringValue(codeOwners.Raw)
+	m.Raw = sentrytypes.TrimmedStringValue(codeOwners.Raw)
 	m.CodeMappingId = types.StringValue(codeOwners.CodeMappingId)
 
 	return
@@ -55,6 +56,7 @@ func (r *ProjectCodeOwnersResource) Schema(ctx context.Context, req resource.Sch
 			"project":      ResourceProjectAttribute(),
 			"raw": schema.StringAttribute{
 				MarkdownDescription: "The raw contents of the CODEOWNERS file.",
+				CustomType:          sentrytypes.TrimmedStringType{},
 				Required:            true,
 			},
 			"code_mapping_id": schema.StringAttribute{
