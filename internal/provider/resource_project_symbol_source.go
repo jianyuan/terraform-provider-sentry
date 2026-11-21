@@ -382,7 +382,7 @@ func (r *ProjectSymbolSourcesResource) Delete(ctx context.Context, req resource.
 		data.Project.ValueString(),
 		data.Id.ValueString(),
 	)
-	if apiResp.StatusCode == http.StatusNotFound {
+	if apiResp != nil && apiResp.StatusCode == http.StatusNotFound {
 		return
 	}
 	if err != nil {
