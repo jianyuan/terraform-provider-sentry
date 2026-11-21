@@ -328,6 +328,7 @@ var Platforms = []string{
 	"node-nestjs",
 	"node-pi-durable",
 	"php",
+	"php-bref",
 	"php-laravel",
 	"php-symfony",
 	"playstation",
@@ -1056,6 +1057,7 @@ var DataConditionTypes = []string{
 	"event_unique_user_frequency_percent",
 	"percent_sessions_count",
 	"percent_sessions_percent",
+	"activity_type_in",
 	"seer_activity_trigger",
 }
 
