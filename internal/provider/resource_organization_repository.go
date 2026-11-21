@@ -160,7 +160,7 @@ func (r *OrganizationRepositoryResource) Delete(ctx context.Context, req resourc
 		data.Organization.ValueString(),
 		data.Id.ValueString(),
 	)
-	if apiResp.StatusCode == http.StatusNotFound {
+	if apiResp != nil && apiResp.StatusCode == http.StatusNotFound {
 		return
 	}
 	if err != nil {
