@@ -1,5 +1,6 @@
 <!--
 PR title: Conventional Commits, scoped to the affected resource(s) or data source(s).
+Always use the full Terraform name as the scope (`sentry_project`, not `project`).
 
   fix(sentry_project): keep project in state when a later step fails
   feat(sentry_project_codeowners): new resource
@@ -27,7 +28,7 @@ Types: feat, fix, docs, refactor, test, ci, chore. Use `deps` as the scope for d
 
 ## Checklist
 
-- [ ] PR title follows Conventional Commits with the resource(s) as scope
+- [ ] PR title follows Conventional Commits with the full resource or data source name(s) as scope, e.g. `sentry_project`
 - [ ] Acceptance tests added or updated, and they pass against a real Sentry organization
 - [ ] Examples in `examples/` added or updated for new resources, data sources or attributes
 - [ ] `make generate` run, and the generated code and docs are committed
