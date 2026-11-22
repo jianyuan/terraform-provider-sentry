@@ -192,7 +192,7 @@ func (r *NotificationActionResource) Read(ctx context.Context, req resource.Read
 		data.Organization.ValueString(),
 		data.Id.ValueString(),
 	)
-	if apiResp.StatusCode == http.StatusNotFound {
+	if apiResp != nil && apiResp.StatusCode == http.StatusNotFound {
 		resp.Diagnostics.Append(diagutils.NewNotFoundError("notification action"))
 		resp.State.RemoveResource(ctx)
 		return
@@ -246,7 +246,7 @@ func (r *NotificationActionResource) Update(ctx context.Context, req resource.Up
 			Projects:         projects,
 		},
 	)
-	if apiResp.StatusCode == http.StatusNotFound {
+	if apiResp != nil && apiResp.StatusCode == http.StatusNotFound {
 		resp.Diagnostics.Append(diagutils.NewNotFoundError("notification action"))
 		resp.State.RemoveResource(ctx)
 		return
@@ -286,7 +286,7 @@ func (r *NotificationActionResource) Delete(ctx context.Context, req resource.De
 		data.Organization.ValueString(),
 		data.Id.ValueString(),
 	)
-	if apiResp.StatusCode == http.StatusNotFound {
+	if apiResp != nil && apiResp.StatusCode == http.StatusNotFound {
 		return
 	}
 	if err != nil {
