@@ -1,0 +1,95 @@
+# Labels for jianyuan/auto-labeler-action, used by .github/workflows/label-pr.yml.
+# Each key is a label. It applies when any matcher in its list holds; a matcher
+# holds when all its conditions hold. Labels missing from the repo are skipped.
+#
+# Titles with a deps scope only get `dependencies`, and titles with a test(s)
+# scope only get `chore`. feat and fix PRs also get a resource and/or data
+# source label, from the files they change (tests excluded) or their scope.
+
+breaking-change:
+  - title: '^\w+(\([^)]*\))?!:'
+  - body: 'BREAKING[ -]CHANGE'
+
+dependencies:
+  - title: '^\w+\(deps(/[^)]*)?\)!?:'
+
+enhancement:
+  - title: &feat '^feat(\((?!deps(/|\))|tests?\))[^)]*\))?!?:'
+
+bug:
+  - title: &fix '^fix(\((?!deps(/|\))|tests?\))[^)]*\))?!?:'
+
+documentation:
+  - title: '^docs(\((?!deps(/|\))|tests?\))[^)]*\))?!?:'
+
+chore:
+  - title: '^(chore|ref|refactor|test|ci|build|perf|style)(\((?!deps(/|\)))[^)]*\))?!?:'
+  - title: '^\w+\(tests?\)!?:'
+
+# Resource only: resource files or scope, and neither data source files nor scope.
+'feature: resource':
+  - title: '^feat(\((?!deps(/|\))|tests?\)|data[-_]source)[^)]*\))?!?:'
+    any-file: &resource
+      - internal/provider/resource_!(*_test.go)
+      - sentry/resource_!(*_test.go)
+      - docs/resources/**
+      - examples/resources/**
+    not:
+      any-file: &data-source
+        - internal/provider/data_source_!(*_test.go)
+        - sentry/data_source_!(*_test.go)
+        - docs/data-sources/**
+        - examples/data-sources/**
+  - title: &feat-res '^feat\((resource|sentry_)[^)]*\)!?:'
+    not:
+      any-file: *data-source
+
+'feature: data source':
+  - title: '^feat(\((?!deps(/|\))|tests?\)|resource|sentry_)[^)]*\))?!?:'
+    any-file: *data-source
+    not:
+      any-file: *resource
+  - title: &feat-ds '^feat\(data[-_]source[^)]*\)!?:'
+    not:
+      any-file: *resource
+
+# Both: one matcher can hold only one any-file, so the second goes through a double not.
+'feature: resource + data source':
+  - title: *feat
+    any-file: *resource
+    not:
+      not:
+        any-file: *data-source
+  - title: *feat-res
+    any-file: *data-source
+  - title: *feat-ds
+    any-file: *resource
+
+'fix: resource':
+  - title: '^fix(\((?!deps(/|\))|tests?\)|data[-_]source)[^)]*\))?!?:'
+    any-file: *resource
+    not:
+      any-file: *data-source
+  - title: &fix-res '^fix\((resource|sentry_)[^)]*\)!?:'
+    not:
+      any-file: *data-source
+
+'fix: data source':
+  - title: '^fix(\((?!deps(/|\))|tests?\)|resource|sentry_)[^)]*\))?!?:'
+    any-file: *data-source
+    not:
+      any-file: *resource
+  - title: &fix-ds '^fix\(data[-_]source[^)]*\)!?:'
+    not:
+      any-file: *resource
+
+'fix: resource + data source':
+  - title: *fix
+    any-file: *resource
+    not:
+      not:
+        any-file: *data-source
+  - title: *fix-res
+    any-file: *data-source
+  - title: *fix-ds
+    any-file: *resource

@@ -9,6 +9,8 @@ resource "sentry_project" "default" {
   platform    = "javascript"
   resolve_age = 720
 
+  relay_automatic_json_expansion = true
+
   default_rules = false
 
   filters = {
@@ -31,4 +33,19 @@ resource "sentry_project" "default" {
   EOT
 
   highlight_tags = ["release", "environment"]
+
+  data_scrubber          = true
+  data_scrubber_defaults = true
+  scrub_ip_addresses     = true
+  sensitive_fields       = ["email"]
+
+  # [Remove] [Anything] from [contexts.device.name]
+  relay_pii_config = jsonencode({
+    rules = {
+      "0" = { type = "anything", redaction = { method = "remove" } }
+    }
+    applications = {
+      "contexts.device.name" = ["0"]
+    }
+  })
 }

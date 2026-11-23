@@ -7,6 +7,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -134,24 +135,31 @@ func (m *ProjectClientSecurityResourceModel) Fill(ctx context.Context, project a
 }
 
 type ProjectResourceModel struct {
-	Id                   types.String                  `tfsdk:"id"`
-	Organization         types.String                  `tfsdk:"organization"`
-	Teams                supertypes.SetValueOf[string] `tfsdk:"teams"`
-	Name                 types.String                  `tfsdk:"name"`
-	Slug                 types.String                  `tfsdk:"slug"`
-	Platform             types.String                  `tfsdk:"platform"`
-	DefaultRules         types.Bool                    `tfsdk:"default_rules"`
-	DefaultKey           types.Bool                    `tfsdk:"default_key"`
-	InternalId           types.String                  `tfsdk:"internal_id"`
-	Features             supertypes.SetValueOf[string] `tfsdk:"features"`
-	DigestsMinDelay      types.Int64                   `tfsdk:"digests_min_delay"`
-	DigestsMaxDelay      types.Int64                   `tfsdk:"digests_max_delay"`
-	ResolveAge           types.Int64                   `tfsdk:"resolve_age"`
-	Filters              types.Object                  `tfsdk:"filters"`
-	FingerprintingRules  sentrytypes.TrimmedString     `tfsdk:"fingerprinting_rules"`
-	GroupingEnhancements sentrytypes.TrimmedString     `tfsdk:"grouping_enhancements"`
-	ClientSecurity       types.Object                  `tfsdk:"client_security"`
-	HighlightTags        supertypes.SetValueOf[string] `tfsdk:"highlight_tags"`
+	Id                          types.String                  `tfsdk:"id"`
+	Organization                types.String                  `tfsdk:"organization"`
+	Teams                       supertypes.SetValueOf[string] `tfsdk:"teams"`
+	Name                        types.String                  `tfsdk:"name"`
+	Slug                        types.String                  `tfsdk:"slug"`
+	Platform                    types.String                  `tfsdk:"platform"`
+	DefaultRules                types.Bool                    `tfsdk:"default_rules"`
+	DefaultKey                  types.Bool                    `tfsdk:"default_key"`
+	InternalId                  types.String                  `tfsdk:"internal_id"`
+	Features                    supertypes.SetValueOf[string] `tfsdk:"features"`
+	DigestsMinDelay             types.Int64                   `tfsdk:"digests_min_delay"`
+	DigestsMaxDelay             types.Int64                   `tfsdk:"digests_max_delay"`
+	ResolveAge                  types.Int64                   `tfsdk:"resolve_age"`
+	Filters                     types.Object                  `tfsdk:"filters"`
+	FingerprintingRules         sentrytypes.TrimmedString     `tfsdk:"fingerprinting_rules"`
+	GroupingEnhancements        sentrytypes.TrimmedString     `tfsdk:"grouping_enhancements"`
+	ClientSecurity              types.Object                  `tfsdk:"client_security"`
+	HighlightTags               supertypes.SetValueOf[string] `tfsdk:"highlight_tags"`
+	RelayAutomaticJsonExpansion types.Bool                    `tfsdk:"relay_automatic_json_expansion"`
+	DataScrubber                types.Bool                    `tfsdk:"data_scrubber"`
+	DataScrubberDefaults        types.Bool                    `tfsdk:"data_scrubber_defaults"`
+	ScrubIpAddresses            types.Bool                    `tfsdk:"scrub_ip_addresses"`
+	SensitiveFields             supertypes.SetValueOf[string] `tfsdk:"sensitive_fields"`
+	SafeFields                  supertypes.SetValueOf[string] `tfsdk:"safe_fields"`
+	RelayPiiConfig              jsontypes.Normalized          `tfsdk:"relay_pii_config"`
 }
 
 func (m *ProjectResourceModel) Fill(ctx context.Context, project apiclient.Project) (diags diag.Diagnostics) {
@@ -186,7 +194,62 @@ func (m *ProjectResourceModel) Fill(ctx context.Context, project apiclient.Proje
 		m.HighlightTags = supertypes.NewSetValueOfNull[string](ctx)
 	}
 
+	diags.Append(m.fillRelayAutomaticJsonExpansion(project)...)
+
+	m.DataScrubber = types.BoolPointerValue(project.DataScrubber)
+	m.DataScrubberDefaults = types.BoolPointerValue(project.DataScrubberDefaults)
+	m.ScrubIpAddresses = types.BoolPointerValue(project.ScrubIPAddresses)
+
+	if project.SensitiveFields != nil {
+		m.SensitiveFields = supertypes.NewSetValueOfSlice(ctx, *project.SensitiveFields)
+	} else {
+		m.SensitiveFields = supertypes.NewSetValueOfNull[string](ctx)
+	}
+
+	if project.SafeFields != nil {
+		m.SafeFields = supertypes.NewSetValueOfSlice(ctx, *project.SafeFields)
+	} else {
+		m.SafeFields = supertypes.NewSetValueOfNull[string](ctx)
+	}
+
+	m.RelayPiiConfig = relayPiiConfigValue(project.RelayPiiConfig)
+
 	return
+}
+
+func (m *ProjectResourceModel) fillRelayAutomaticJsonExpansion(project apiclient.Project) (diags diag.Diagnostics) {
+	if project.Options == nil {
+		m.RelayAutomaticJsonExpansion = types.BoolValue(false)
+		return
+	}
+
+	value, ok := project.Options["sentry:relay_automatic_json_expansion"]
+	if !ok || value == nil {
+		m.RelayAutomaticJsonExpansion = types.BoolValue(false)
+		return
+	}
+
+	enabled, ok := value.(bool)
+	if !ok {
+		diags.Append(diagutils.NewFillError(fmt.Errorf("invalid type for sentry:relay_automatic_json_expansion: %T", value)))
+		return
+	}
+
+	m.RelayAutomaticJsonExpansion = types.BoolValue(enabled)
+	return
+}
+
+func assignRelayAutomaticJsonExpansion(options **map[string]interface{}, value types.Bool) {
+	if value.IsNull() || value.IsUnknown() {
+		return
+	}
+
+	if *options == nil {
+		assigned := map[string]interface{}{}
+		*options = &assigned
+	}
+
+	(**options)["sentry:relay_automatic_json_expansion"] = value.ValueBool()
 }
 
 var _ resource.Resource = &ProjectResource{}
@@ -419,6 +482,71 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 					setplanmodifier.UseStateForUnknown(),
 				},
 			},
+			"relay_automatic_json_expansion": schema.BoolAttribute{
+				MarkdownDescription: "Expand JSON-like string attributes on logs into nested attributes that can be searched. Only applies to logs received after this is enabled.",
+				Optional:            true,
+				Computed:            true,
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"data_scrubber": schema.BoolAttribute{
+				MarkdownDescription: "Enable server-side data scrubbing for this project. If the organization requires data scrubbing, it applies regardless of this setting.",
+				Optional:            true,
+				Computed:            true,
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"data_scrubber_defaults": schema.BoolAttribute{
+				MarkdownDescription: "Apply the default scrubbers to prevent things like passwords and credit cards from being stored. If the organization requires the default scrubbers, they apply regardless of this setting.",
+				Optional:            true,
+				Computed:            true,
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"scrub_ip_addresses": schema.BoolAttribute{
+				MarkdownDescription: "Prevent IP addresses from being stored for new events. If the organization requires IP address scrubbing, it applies regardless of this setting.",
+				Optional:            true,
+				Computed:            true,
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"sensitive_fields": schema.SetAttribute{
+				MarkdownDescription: "Additional field names to match against when scrubbing data. The organization's sensitive fields also apply.",
+				CustomType:          supertypes.NewSetTypeOf[string](ctx),
+				Optional:            true,
+				Computed:            true,
+				Validators: []validator.Set{
+					setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+				},
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"safe_fields": schema.SetAttribute{
+				MarkdownDescription: "Field names which data scrubbers should ignore. The organization's safe fields also apply.",
+				CustomType:          supertypes.NewSetTypeOf[string](ctx),
+				Optional:            true,
+				Computed:            true,
+				Validators: []validator.Set{
+					setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+				},
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"relay_pii_config": schema.StringAttribute{
+				MarkdownDescription: relayPiiConfigMarkdownDescription + " To remove all rules, set it to `jsonencode({})`. The organization's rules also apply.",
+				CustomType:          jsontypes.NormalizedType{},
+				Optional:            true,
+				Computed:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
 		},
 	}
 }
@@ -514,6 +642,15 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
+	// Save the project to the state as soon as it exists, the same way an
+	// import does, so that a failure in any of the steps below leaves it
+	// tracked (and tainted) instead of orphaned in Sentry.
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization"), data.Organization)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), httpRespCreate.JSON201.Slug)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	// Update the project
 	updateBody := apiclient.UpdateOrganizationProjectJSONRequestBody{
 		Name: data.Name.ValueStringPointer(),
@@ -579,6 +716,8 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 		}
 	}
 
+	assignRelayAutomaticJsonExpansion(&updateBody.Options, data.RelayAutomaticJsonExpansion)
+
 	if !data.FingerprintingRules.IsUnknown() {
 		updateBody.FingerprintingRules = data.FingerprintingRules.ValueStringPointer()
 	}
@@ -616,6 +755,46 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 		if !clientSecurity.VerifyTlsSsl.IsUnknown() {
 			updateBody.VerifySSL = clientSecurity.VerifyTlsSsl.ValueBoolPointer()
 		}
+	}
+
+	if !data.HighlightTags.IsUnknown() {
+		highlightTags := fwdiag.Merge(data.HighlightTags.Get(ctx))(&resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		updateBody.HighlightTags = &highlightTags
+	}
+
+	if !data.DataScrubber.IsUnknown() {
+		updateBody.DataScrubber = data.DataScrubber.ValueBoolPointer()
+	}
+
+	if !data.DataScrubberDefaults.IsUnknown() {
+		updateBody.DataScrubberDefaults = data.DataScrubberDefaults.ValueBoolPointer()
+	}
+
+	if !data.ScrubIpAddresses.IsUnknown() {
+		updateBody.ScrubIPAddresses = data.ScrubIpAddresses.ValueBoolPointer()
+	}
+
+	if !data.SensitiveFields.IsUnknown() {
+		sensitiveFields := fwdiag.Merge(data.SensitiveFields.Get(ctx))(&resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		updateBody.SensitiveFields = &sensitiveFields
+	}
+
+	if !data.SafeFields.IsUnknown() {
+		safeFields := fwdiag.Merge(data.SafeFields.Get(ctx))(&resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		updateBody.SafeFields = &safeFields
+	}
+
+	if !data.RelayPiiConfig.IsUnknown() {
+		updateBody.RelayPiiConfig = data.RelayPiiConfig.ValueStringPointer()
 	}
 
 	httpRespUpdate, err := r.apiClient.UpdateOrganizationProjectWithResponse(
@@ -671,9 +850,12 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
 		return
-	} else if httpRespRead.StatusCode() != http.StatusOK || httpRespRead.JSON200 == nil {
+	} else if httpRespRead.StatusCode() == http.StatusNotFound {
 		resp.Diagnostics.Append(diagutils.NewNotFoundError("project"))
 		resp.State.RemoveResource(ctx)
+		return
+	} else if httpRespRead.StatusCode() != http.StatusOK || httpRespRead.JSON200 == nil {
+		resp.Diagnostics.Append(diagutils.NewClientStatusError("read", httpRespRead.StatusCode(), httpRespRead.Body))
 		return
 	}
 
@@ -793,6 +975,10 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 		}
 	}
 
+	if !plan.RelayAutomaticJsonExpansion.Equal(state.RelayAutomaticJsonExpansion) {
+		assignRelayAutomaticJsonExpansion(&updateBody.Options, plan.RelayAutomaticJsonExpansion)
+	}
+
 	if !plan.FingerprintingRules.Equal(state.FingerprintingRules) {
 		updateBody.FingerprintingRules = plan.FingerprintingRules.ValueStringPointer()
 	}
@@ -840,6 +1026,38 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 			return
 		}
 		updateBody.HighlightTags = &highlightTags
+	}
+
+	if !plan.DataScrubber.Equal(state.DataScrubber) {
+		updateBody.DataScrubber = plan.DataScrubber.ValueBoolPointer()
+	}
+
+	if !plan.DataScrubberDefaults.Equal(state.DataScrubberDefaults) {
+		updateBody.DataScrubberDefaults = plan.DataScrubberDefaults.ValueBoolPointer()
+	}
+
+	if !plan.ScrubIpAddresses.Equal(state.ScrubIpAddresses) {
+		updateBody.ScrubIPAddresses = plan.ScrubIpAddresses.ValueBoolPointer()
+	}
+
+	if !plan.SensitiveFields.Equal(state.SensitiveFields) {
+		sensitiveFields := fwdiag.Merge(plan.SensitiveFields.Get(ctx))(&resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		updateBody.SensitiveFields = &sensitiveFields
+	}
+
+	if !plan.SafeFields.Equal(state.SafeFields) {
+		safeFields := fwdiag.Merge(plan.SafeFields.Get(ctx))(&resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		updateBody.SafeFields = &safeFields
+	}
+
+	if !plan.RelayPiiConfig.Equal(state.RelayPiiConfig) {
+		updateBody.RelayPiiConfig = plan.RelayPiiConfig.ValueStringPointer()
 	}
 
 	httpRespUpdate, err := r.apiClient.UpdateOrganizationProjectWithResponse(

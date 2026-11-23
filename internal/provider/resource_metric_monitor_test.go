@@ -11,48 +11,52 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+	"github.com/jianyuan/terraform-plugin-framework-utils/fwsweep"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/resourceid"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
-	"github.com/jianyuan/terraform-provider-sentry/internal/sweep"
 )
 
 func init() {
-	sweep.Register("sentry_metric_monitor", func(ctx context.Context, pd *providerdata.ProviderData) ([]sweep.Sweepable, error) {
-		var sweepables []sweep.Sweepable
+	fwsweep.Register(
+		"sentry_metric_monitor",
+		func() *providerdata.ProviderData { return acctest.SharedProviderData },
+		func(ctx context.Context, pd *providerdata.ProviderData) ([]fwsweep.Sweepable, error) {
+			var sweepables []fwsweep.Sweepable
 
-		params := &apiclient.ListOrganizationMonitorsParams{
-			Query: new("!type:issue_stream type:metric_issue"),
-		}
-		for {
-			listHttpResp, err := acctest.SharedApiClient.ListOrganizationMonitorsWithResponse(ctx, acctest.TestOrganization, params)
-			if err != nil {
-				return nil, err
-			} else if listHttpResp.StatusCode() != http.StatusOK || listHttpResp.JSON200 == nil {
-				return nil, fmt.Errorf("failed to list organization monitors: %s", listHttpResp.Status())
+			params := &apiclient.ListOrganizationMonitorsParams{
+				Query: new("!type:issue_stream type:metric_issue"),
 			}
-
-			for _, monitor := range *listHttpResp.JSON200 {
-				if !strings.HasPrefix(monitor.Name, "tf-metric-monitor") {
-					continue
+			for {
+				listHttpResp, err := acctest.SharedApiClient.ListOrganizationMonitorsWithResponse(ctx, acctest.TestOrganization, params)
+				if err != nil {
+					return nil, err
+				} else if listHttpResp.StatusCode() != http.StatusOK || listHttpResp.JSON200 == nil {
+					return nil, fmt.Errorf("failed to list organization monitors: %s", listHttpResp.Status())
 				}
 
-				sweepables = append(sweepables, sweep.NewSweepResource(NewMetricMonitorResource, pd, map[string]any{
-					"organization": acctest.TestOrganization,
-					"id":           monitor.Id,
-				}))
+				for _, monitor := range *listHttpResp.JSON200 {
+					if !strings.HasPrefix(monitor.Name, "tf-metric-monitor") {
+						continue
+					}
+
+					sweepables = append(sweepables, fwsweep.NewResource(NewMetricMonitorResource, pd, map[string]any{
+						"organization": acctest.TestOrganization,
+						"id":           monitor.Id,
+					}))
+				}
+
+				params.Cursor = sentryclient.ParseNextPaginationCursor(listHttpResp.HTTPResponse)
+				if params.Cursor == nil {
+					break
+				}
 			}
 
-			params.Cursor = sentryclient.ParseNextPaginationCursor(listHttpResp.HTTPResponse)
-			if params.Cursor == nil {
-				break
-			}
-		}
-
-		return sweepables, nil
-	})
+			return sweepables, nil
+		},
+	)
 }
 
 func TestAccMetricMonitorResource_validation(t *testing.T) {
@@ -218,6 +222,7 @@ func TestAccMetricMonitorResource_threshold(t *testing.T) {
 					aggregate = "count()"
 					dataset = "events"
 					event_types = ["default", "error"]
+					time_window_seconds = 3600
 
 					condition_group = {
 						conditions = [
@@ -250,7 +255,7 @@ func TestAccMetricMonitorResource_threshold(t *testing.T) {
 					})),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query"), knownvalue.StringExact("")),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query_type"), knownvalue.StringExact("error")),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("time_window_seconds"), knownvalue.Int64Exact(0)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("time_window_seconds"), knownvalue.Int64Exact(3600)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("condition_group"), knownvalue.ObjectExact(map[string]knownvalue.Check{
 						"logic_type": knownvalue.StringExact("any"),
 						"conditions": knownvalue.ListExact([]knownvalue.Check{
@@ -273,6 +278,7 @@ func TestAccMetricMonitorResource_threshold(t *testing.T) {
 					aggregate = "count()"
 					dataset = "events"
 					event_types = ["default", "error"]
+					time_window_seconds = 3600
 
 					condition_group = {
 						conditions = [
@@ -305,7 +311,7 @@ func TestAccMetricMonitorResource_threshold(t *testing.T) {
 					})),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query"), knownvalue.StringExact("")),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query_type"), knownvalue.StringExact("error")),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("time_window_seconds"), knownvalue.Int64Exact(0)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("time_window_seconds"), knownvalue.Int64Exact(3600)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("condition_group"), knownvalue.ObjectExact(map[string]knownvalue.Check{
 						"logic_type": knownvalue.StringExact("any"),
 						"conditions": knownvalue.ListExact([]knownvalue.Check{
@@ -330,6 +336,7 @@ func TestAccMetricMonitorResource_threshold(t *testing.T) {
 					aggregate = "count()"
 					dataset = "events"
 					event_types = ["default", "error"]
+					time_window_seconds = 3600
 
 					condition_group = {
 						conditions = [
@@ -362,7 +369,7 @@ func TestAccMetricMonitorResource_threshold(t *testing.T) {
 					})),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query"), knownvalue.StringExact("")),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("query_type"), knownvalue.StringExact("error")),
-					statecheck.ExpectKnownValue(rn, tfjsonpath.New("time_window_seconds"), knownvalue.Int64Exact(0)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("time_window_seconds"), knownvalue.Int64Exact(3600)),
 					statecheck.ExpectKnownValue(rn, tfjsonpath.New("condition_group"), knownvalue.ObjectExact(map[string]knownvalue.Check{
 						"logic_type": knownvalue.StringExact("any"),
 						"conditions": knownvalue.ListExact([]knownvalue.Check{

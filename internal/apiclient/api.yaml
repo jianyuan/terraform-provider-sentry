@@ -34,6 +34,47 @@ paths:
           description: Forbidden
         "404":
           description: Not Found
+    put:
+      summary: Update an Organization
+      operationId: updateOrganization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dataScrubber:
+                  type: boolean
+                dataScrubberDefaults:
+                  type: boolean
+                scrubIPAddresses:
+                  type: boolean
+                sensitiveFields:
+                  type: array
+                  items:
+                    type: string
+                safeFields:
+                  type: array
+                  items:
+                    type: string
+                relayPiiConfig:
+                  type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Organization"
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
   /0/organizations/{organization_id_or_slug}/teams/:
     parameters:
       - $ref: "#/components/parameters/organization_id_or_slug"
@@ -323,6 +364,157 @@ paths:
           description: Forbidden
         "404":
           description: Not Found
+  /0/organizations/{organization_id_or_slug}/repos/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+    get:
+      summary: List an Organization's Repositories
+      operationId: listOrganizationRepositories
+      parameters:
+        - $ref: "#/components/parameters/cursor"
+        - name: integration_id
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OrganizationRepository"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+    post:
+      summary: Add a Repository to an Organization
+      operationId: createOrganizationRepository
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - provider
+                - installation
+                - identifier
+              properties:
+                provider:
+                  type: string
+                installation:
+                  type: string
+                identifier:
+                  type: string
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrganizationRepository"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+  /0/organizations/{organization_id_or_slug}/repos/{repo_id}/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+      - name: repo_id
+        in: path
+        required: true
+        schema:
+          type: string
+    delete:
+      summary: Delete a Repository from an Organization
+      operationId: deleteOrganizationRepository
+      responses:
+        "202":
+          description: Accepted
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+  /0/organizations/{organization_id_or_slug}/code-mappings/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+    post:
+      summary: Create a Code Mapping
+      operationId: createOrganizationCodeMapping
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - projectId
+                - repositoryId
+                - integrationId
+                - stackRoot
+                - sourceRoot
+                - defaultBranch
+              properties:
+                projectId:
+                  type: string
+                repositoryId:
+                  type: string
+                integrationId:
+                  type: string
+                stackRoot:
+                  type: string
+                sourceRoot:
+                  type: string
+                defaultBranch:
+                  type: string
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrganizationCodeMapping"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+  /0/organizations/{organization_id_or_slug}/code-mappings/{code_mapping_id}/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+      - name: code_mapping_id
+        in: path
+        required: true
+        schema:
+          type: string
+    delete:
+      summary: Delete a Code Mapping
+      operationId: deleteOrganizationCodeMapping
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
   /0/organizations/{organization_id_or_slug}/spike-protections/:
     parameters:
       - $ref: "#/components/parameters/organization_id_or_slug"
@@ -384,6 +576,11 @@ paths:
       operationId: listOrganizationWorkflows
       parameters:
         - $ref: "#/components/parameters/cursor"
+        - name: project
+          in: query
+          required: false
+          schema:
+            type: string
       responses:
         "200":
           description: OK
@@ -733,6 +930,22 @@ paths:
                   type: array
                   items:
                     type: string
+                dataScrubber:
+                  type: boolean
+                dataScrubberDefaults:
+                  type: boolean
+                scrubIPAddresses:
+                  type: boolean
+                sensitiveFields:
+                  type: array
+                  items:
+                    type: string
+                safeFields:
+                  type: array
+                  items:
+                    type: string
+                relayPiiConfig:
+                  type: string
       responses:
         "200":
           description: OK
@@ -1142,6 +1355,108 @@ paths:
           description: Forbidden
         "404":
           description: Not Found
+  /0/projects/{organization_id_or_slug}/{project_id_or_slug}/codeowners/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+      - $ref: "#/components/parameters/project_id_or_slug"
+    post:
+      summary: Create a CODEOWNERS Configuration for a Project
+      operationId: createProjectCodeOwners
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - raw
+                - codeMappingId
+              properties:
+                raw:
+                  type: string
+                codeMappingId:
+                  type: string
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectCodeOwners"
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+  /0/projects/{organization_id_or_slug}/{project_id_or_slug}/codeowners/{codeowners_id}/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+      - $ref: "#/components/parameters/project_id_or_slug"
+      - name: codeowners_id
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Retrieve a Project's CODEOWNERS Configuration
+      operationId: getProjectCodeOwners
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectCodeOwners"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+    put:
+      summary: Update a Project's CODEOWNERS Configuration
+      operationId: updateProjectCodeOwners
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                raw:
+                  type: string
+                codeMappingId:
+                  type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectCodeOwners"
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+    delete:
+      summary: Delete a Project's CODEOWNERS Configuration
+      operationId: deleteProjectCodeOwners
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
   /0/projects/{organization_id_or_slug}/{project_id_or_slug}/ownership:
     parameters:
       - $ref: "#/components/parameters/organization_id_or_slug"
@@ -1277,6 +1592,23 @@ components:
           type: array
           items:
             type: string
+        dataScrubber:
+          type: boolean
+        dataScrubberDefaults:
+          type: boolean
+        scrubIPAddresses:
+          type: boolean
+        sensitiveFields:
+          type: array
+          items:
+            type: string
+        safeFields:
+          type: array
+          items:
+            type: string
+        relayPiiConfig:
+          type: string
+          nullable: true
     OrganizationMember:
       type: object
       required:
@@ -1412,6 +1744,26 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/TeamRoleListItem"
+    OrganizationRepository:
+      type: object
+      required:
+        - id
+        - name
+        - integrationId
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        integrationId:
+          type: string
+    OrganizationCodeMapping:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
     OrganizationIntegration:
       type: object
       required:
@@ -1632,6 +1984,23 @@ components:
           type: array
           items:
             type: string
+        dataScrubber:
+          type: boolean
+        dataScrubberDefaults:
+          type: boolean
+        scrubIPAddresses:
+          type: boolean
+        sensitiveFields:
+          type: array
+          items:
+            type: string
+        safeFields:
+          type: array
+          items:
+            type: string
+        relayPiiConfig:
+          type: string
+          nullable: true
     ProjectKey:
       type: object
       required:
@@ -2450,6 +2819,19 @@ components:
           type: array
           items:
             type: object
+    ProjectCodeOwners:
+      type: object
+      required:
+        - id
+        - raw
+        - codeMappingId
+      properties:
+        id:
+          type: string
+        raw:
+          type: string
+        codeMappingId:
+          type: string
     ProjectOwnership:
       type: object
       required:
@@ -2841,12 +3223,14 @@ components:
         failure_issue_threshold:
           type: integer
           format: int64
+          nullable: true
         max_runtime:
           type: integer
           format: int64
         recovery_threshold:
           type: integer
           format: int64
+          nullable: true
         timezone:
           type: string
     ProjectMonitor_DataSource_Config_Cron_Crontab:
@@ -3678,7 +4062,6 @@ components:
           required:
             - targetType
             - targetIdentifier
-            - targetDisplay
           properties:
             targetType:
               type: string

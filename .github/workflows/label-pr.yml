@@ -1,0 +1,24 @@
+name: Label PR
+
+on:
+  pull_request_target:
+    types: [opened, edited, reopened, synchronize]
+  # Labels open PRs and PRs merged since the latest release.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || 'backfill' }}
+  cancel-in-progress: true
+
+jobs:
+  label:
+    name: Label PR
+    runs-on: ubuntu-latest
+    steps:
+      # Reads .github/auto-labeler.yml through the API and never checks out PR code, so it is safe
+      # to run on pull_request_target.
+      - uses: jianyuan/auto-labeler-action@v1

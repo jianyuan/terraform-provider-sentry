@@ -4,59 +4,69 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/http/httptest"
 	"regexp"
 	"slices"
 	"strings"
 	"testing"
 	"text/template"
 
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	fwresource "github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+	"github.com/jianyuan/terraform-plugin-framework-utils/fwsweep"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/must"
 	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/resourceid"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
-	"github.com/jianyuan/terraform-provider-sentry/internal/sweep"
 	"github.com/samber/lo"
 )
 
 func init() {
-	sweep.Register("sentry_project", func(ctx context.Context, pd *providerdata.ProviderData) ([]sweep.Sweepable, error) {
-		var sweepables []sweep.Sweepable
+	fwsweep.Register(
+		"sentry_project",
+		func() *providerdata.ProviderData { return acctest.SharedProviderData },
+		func(ctx context.Context, pd *providerdata.ProviderData) ([]fwsweep.Sweepable, error) {
+			var sweepables []fwsweep.Sweepable
 
-		params := &apiclient.ListOrganizationProjectsParams{}
-		for {
-			listHttpResp, err := acctest.SharedApiClient.ListOrganizationProjectsWithResponse(ctx, acctest.TestOrganization, params)
-			if err != nil {
-				return nil, err
-			} else if listHttpResp.StatusCode() != http.StatusOK || listHttpResp.JSON200 == nil {
-				return nil, fmt.Errorf("failed to list organization workflows: %s", listHttpResp.Status())
-			}
-
-			for _, project := range *listHttpResp.JSON200 {
-				if !strings.HasPrefix(project.Slug, "tf-project") {
-					continue
+			params := &apiclient.ListOrganizationProjectsParams{}
+			for {
+				listHttpResp, err := acctest.SharedApiClient.ListOrganizationProjectsWithResponse(ctx, acctest.TestOrganization, params)
+				if err != nil {
+					return nil, err
+				} else if listHttpResp.StatusCode() != http.StatusOK || listHttpResp.JSON200 == nil {
+					return nil, fmt.Errorf("failed to list organization projects: %s", listHttpResp.Status())
 				}
 
-				sweepables = append(sweepables, sweep.NewSweepResource(NewProjectResource, pd, map[string]any{
-					"organization": acctest.TestOrganization,
-					"id":           project.Id,
-				}))
+				for _, project := range *listHttpResp.JSON200 {
+					if !strings.HasPrefix(project.Slug, "tf-project") {
+						continue
+					}
+
+					sweepables = append(sweepables, fwsweep.NewResource(NewProjectResource, pd, map[string]any{
+						"organization": acctest.TestOrganization,
+						"id":           project.Id,
+					}))
+				}
+
+				params.Cursor = sentryclient.ParseNextPaginationCursor(listHttpResp.HTTPResponse)
+				if params.Cursor == nil {
+					break
+				}
 			}
 
-			params.Cursor = sentryclient.ParseNextPaginationCursor(listHttpResp.HTTPResponse)
-			if params.Cursor == nil {
-				break
-			}
-		}
-
-		return sweepables, nil
-	})
+			return sweepables, nil
+		},
+	)
 }
 
 func TestAccProjectResource_basic(t *testing.T) {
@@ -458,6 +468,89 @@ func TestAccProjectResource_filters(t *testing.T) {
 	})
 }
 
+func TestAccProjectResource_relayAutomaticJsonExpansion(t *testing.T) {
+	teamName := acctest.RandomWithPrefix("tf-team")
+	projectName := acctest.RandomWithPrefix("tf-project")
+	rn := "sentry_project.test"
+
+	checks := []statecheck.StateCheck{
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("organization"), knownvalue.StringExact(acctest.TestOrganization)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("teams"), knownvalue.SetExact([]knownvalue.Check{knownvalue.StringExact(teamName)})),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("name"), knownvalue.StringExact(projectName)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("slug"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("platform"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_rules"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("default_key"), knownvalue.Null()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("internal_id"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("features"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_min_delay"), knownvalue.Int64Exact(300)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("digests_max_delay"), knownvalue.Int64Exact(1800)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("resolve_age"), knownvalue.Int64Exact(0)),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("fingerprinting_rules"), knownvalue.StringExact("")),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("grouping_enhancements"), knownvalue.StringExact("")),
+		statecheck.ExpectKnownValue(rn, tfjsonpath.New("client_security"), knownvalue.ObjectExact(map[string]knownvalue.Check{
+			"allowed_domains": knownvalue.SetExact([]knownvalue.Check{
+				knownvalue.StringExact("*"),
+			}),
+			"scrape_javascript":     knownvalue.Bool(true),
+			"security_token":        knownvalue.NotNull(),
+			"security_token_header": knownvalue.StringExact(""),
+			"verify_tls_ssl":        knownvalue.Bool(false),
+		})),
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
+					TeamName:    teamName,
+					ProjectName: projectName,
+					Platform:    "go",
+					Extras: `
+						relay_automatic_json_expansion = true
+					`,
+				}),
+				Check: testAccCheckProject(rn, testAccCheckRelayAutomaticJsonExpansion(true)),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("relay_automatic_json_expansion"), knownvalue.Bool(true)),
+				),
+			},
+			{
+				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
+					TeamName:    teamName,
+					ProjectName: projectName,
+					Platform:    "go",
+				}),
+				Check: testAccCheckProject(rn, testAccCheckRelayAutomaticJsonExpansion(true)),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("relay_automatic_json_expansion"), knownvalue.Bool(true)),
+				),
+			},
+			{
+				Config: testAccProjectResourceConfig(testAccProjectResourceConfigData{
+					TeamName:    teamName,
+					ProjectName: projectName,
+					Platform:    "go",
+					Extras: `
+						relay_automatic_json_expansion = false
+					`,
+				}),
+				Check: testAccCheckProject(rn, testAccCheckRelayAutomaticJsonExpansion(false)),
+				ConfigStateChecks: append(
+					checks,
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("relay_automatic_json_expansion"), knownvalue.Bool(false)),
+				),
+			},
+		},
+	})
+}
+
 func TestAccProjectResource_issueGrouping(t *testing.T) {
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
@@ -562,6 +655,114 @@ func TestAccProjectResource_issueGrouping(t *testing.T) {
 	})
 }
 
+func TestAccProjectResource_dataScrubbing(t *testing.T) {
+	teamName := acctest.RandomWithPrefix("tf-team")
+	projectName := acctest.RandomWithPrefix("tf-project")
+	rn := "sentry_project.test"
+
+	config := func(extras string) string {
+		return testAccProjectResourceConfig(testAccProjectResourceConfigData{
+			TeamName:    teamName,
+			ProjectName: projectName,
+			Platform:    "go",
+			Extras:      extras,
+		})
+	}
+
+	const relayPiiConfig = `{"applications":{"$message":["0"],"extra.foo":["1"]},"rules":{"0":{"redaction":{"method":"mask"},"type":"creditcard"},"1":{"redaction":{"method":"remove"},"type":"anything"}}}`
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: config(""),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("data_scrubber"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("data_scrubber_defaults"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("scrub_ip_addresses"), knownvalue.Bool(false)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("sensitive_fields"), knownvalue.SetSizeExact(0)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("safe_fields"), knownvalue.SetSizeExact(0)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("relay_pii_config"), knownvalue.Null()),
+				},
+			},
+			{
+				// The heredoc layout differs from the stored value; the post-apply plan must still be empty.
+				Config: config(`
+					data_scrubber_defaults = false
+					scrub_ip_addresses     = true
+					sensitive_fields       = ["email", "IBAN"]
+					safe_fields            = ["order_id"]
+					relay_pii_config       = <<-EOT
+						{
+							"rules": {
+								"0": {"type": "creditcard", "redaction": {"method": "mask"}},
+								"1": {"type": "anything", "redaction": {"method": "remove"}}
+							},
+							"applications": {"$message": ["0"], "extra.foo": ["1"]}
+						}
+					EOT
+				`),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("data_scrubber"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("data_scrubber_defaults"), knownvalue.Bool(false)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("scrub_ip_addresses"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("sensitive_fields"), knownvalue.SetExact([]knownvalue.Check{
+						knownvalue.StringExact("email"),
+						knownvalue.StringExact("IBAN"),
+					})),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("safe_fields"), knownvalue.SetExact([]knownvalue.Check{
+						knownvalue.StringExact("order_id"),
+					})),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("relay_pii_config"), knownvalue.NotNull()),
+				},
+				Check: testAccCheckProject(rn, func(project apiclient.Project) error {
+					if got := relayPiiConfigValue(project.RelayPiiConfig).ValueString(); got != relayPiiConfig {
+						return fmt.Errorf("unexpected relayPiiConfig in Sentry: %s", got)
+					}
+					return nil
+				}),
+			},
+			{
+				// Omitted attributes keep their values.
+				Config: config(""),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("data_scrubber_defaults"), knownvalue.Bool(false)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("scrub_ip_addresses"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("sensitive_fields"), knownvalue.SetSizeExact(2)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("safe_fields"), knownvalue.SetSizeExact(1)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("relay_pii_config"), knownvalue.NotNull()),
+				},
+			},
+			{
+				Config: config(`
+					data_scrubber          = false
+					data_scrubber_defaults = true
+					scrub_ip_addresses     = false
+					sensitive_fields       = []
+					safe_fields            = []
+					relay_pii_config       = jsonencode({})
+				`),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("data_scrubber"), knownvalue.Bool(false)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("data_scrubber_defaults"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("scrub_ip_addresses"), knownvalue.Bool(false)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("sensitive_fields"), knownvalue.SetSizeExact(0)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("safe_fields"), knownvalue.SetSizeExact(0)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("relay_pii_config"), knownvalue.StringExact("{}")),
+				},
+			},
+			{
+				ResourceName:      rn,
+				ImportState:       true,
+				ImportStateIdFunc: resourceid.ImportState2PartIDFunc(rn, "organization", "id"),
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAccProjectResource_noDefaultKeyOnCreate(t *testing.T) {
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
@@ -621,6 +822,126 @@ func TestAccProjectResource_noDefaultKeyOnCreate(t *testing.T) {
 			},
 		},
 	})
+}
+
+// A failure after the project has been created must leave it in the state, so
+// that Terraform marks it as tainted instead of losing track of it.
+func TestProjectResource_createFailureAfterProjectExists(t *testing.T) {
+	const project = `{
+		"id": "1234",
+		"slug": "my-project",
+		"name": "My Project",
+		"platform": "go",
+		"organization": {"slug": "my-org"},
+		"teams": [{"slug": "my-team"}]
+	}`
+
+	testCases := []struct {
+		name          string
+		failRequest   string
+		failStatus    int
+		expectedError string
+	}{
+		{
+			name:          "update",
+			failRequest:   "PUT /api/0/projects/my-org/my-project/",
+			failStatus:    http.StatusBadRequest,
+			expectedError: "Unable to update, got status 400",
+		},
+		{
+			name:          "remove default key",
+			failRequest:   "DELETE /api/0/projects/my-org/1234/keys/default-key/",
+			failStatus:    http.StatusForbidden,
+			expectedError: "Unable to remove default key",
+		},
+		{
+			name:          "read",
+			failRequest:   "GET /api/0/projects/my-org/my-project/",
+			failStatus:    http.StatusTooManyRequests,
+			expectedError: "Unable to read, got status 429",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				request := r.Method + " " + r.URL.Path
+				w.Header().Set("Content-Type", "application/json")
+
+				if request == tc.failRequest {
+					w.WriteHeader(tc.failStatus)
+					_, _ = w.Write([]byte(`{"detail": "failed"}`))
+					return
+				}
+
+				switch request {
+				case "POST /api/0/teams/my-org/my-team/projects/":
+					w.WriteHeader(http.StatusCreated)
+					_, _ = w.Write([]byte(project))
+				case "PUT /api/0/projects/my-org/my-project/", "GET /api/0/projects/my-org/my-project/":
+					_, _ = w.Write([]byte(project))
+				case "GET /api/0/projects/my-org/my-project/keys/":
+					_, _ = w.Write([]byte(`[{"id": "default-key", "name": "Default"}]`))
+				case "DELETE /api/0/projects/my-org/1234/keys/default-key/":
+					w.WriteHeader(http.StatusNoContent)
+				default:
+					t.Errorf("unexpected request: %s", request)
+					w.WriteHeader(http.StatusNotFound)
+				}
+			}))
+			t.Cleanup(server.Close)
+
+			ctx := context.Background()
+			r := &ProjectResource{baseResource: baseResource{
+				apiClient: must.Get(apiclient.NewClientWithResponses(server.URL + "/api/")),
+			}}
+
+			var schemaResp fwresource.SchemaResponse
+			r.Schema(ctx, fwresource.SchemaRequest{}, &schemaResp)
+			objectType := schemaResp.Schema.Type().TerraformType(ctx).(tftypes.Object)
+
+			// The plan for a project with `default_key = false`, where every
+			// computed attribute is unknown.
+			planValues := make(map[string]tftypes.Value)
+			for name, attrType := range objectType.AttributeTypes {
+				planValues[name] = tftypes.NewValue(attrType, tftypes.UnknownValue)
+			}
+			planValues["organization"] = tftypes.NewValue(tftypes.String, "my-org")
+			planValues["teams"] = tftypes.NewValue(tftypes.Set{ElementType: tftypes.String}, []tftypes.Value{
+				tftypes.NewValue(tftypes.String, "my-team"),
+			})
+			planValues["name"] = tftypes.NewValue(tftypes.String, "My Project")
+			planValues["platform"] = tftypes.NewValue(tftypes.String, "go")
+			planValues["default_rules"] = tftypes.NewValue(tftypes.Bool, nil)
+			planValues["default_key"] = tftypes.NewValue(tftypes.Bool, false)
+
+			req := fwresource.CreateRequest{
+				Plan: tfsdk.Plan{Schema: schemaResp.Schema, Raw: tftypes.NewValue(objectType, planValues)},
+			}
+			resp := fwresource.CreateResponse{
+				State: tfsdk.State{Schema: schemaResp.Schema, Raw: tftypes.NewValue(objectType, nil)},
+			}
+			r.Create(ctx, req, &resp)
+
+			if !resp.Diagnostics.HasError() {
+				t.Fatal("expected an error")
+			}
+			if detail := resp.Diagnostics.Errors()[0].Detail(); !strings.Contains(detail, tc.expectedError) {
+				t.Errorf("expected error %q, got %q", tc.expectedError, detail)
+			}
+
+			if resp.State.Raw.IsNull() {
+				t.Fatal("expected the project to be saved in the state")
+			}
+
+			var organization, id types.String
+			resp.Diagnostics.Append(resp.State.GetAttribute(ctx, path.Root("organization"), &organization)...)
+			resp.Diagnostics.Append(resp.State.GetAttribute(ctx, path.Root("id"), &id)...)
+			if organization.ValueString() != "my-org" || id.ValueString() != "my-project" {
+				t.Errorf("expected organization %q and id %q in the state, got %s and %s", "my-org", "my-project", organization, id)
+			}
+		})
+	}
 }
 
 func TestAccProjectResource_validation(t *testing.T) {
@@ -792,6 +1113,29 @@ func testAccCheckProject(rn string, check func(apiclient.Project) error) resourc
 		}
 
 		return check(*httpResp.JSON200)
+	}
+}
+
+func testAccCheckRelayAutomaticJsonExpansion(want bool) func(apiclient.Project) error {
+	return func(project apiclient.Project) error {
+		if project.Options == nil {
+			return fmt.Errorf("project options are nil")
+		}
+
+		value, ok := project.Options["sentry:relay_automatic_json_expansion"]
+		if !ok {
+			return fmt.Errorf("sentry:relay_automatic_json_expansion is missing")
+		}
+
+		enabled, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("sentry:relay_automatic_json_expansion has type %T", value)
+		}
+		if enabled != want {
+			return fmt.Errorf("sentry:relay_automatic_json_expansion = %v, want %v", enabled, want)
+		}
+
+		return nil
 	}
 }
 
