@@ -239,7 +239,7 @@ func (r *ProjectInboundDataFilterResource) Delete(ctx context.Context, req resou
 			Active: sentry.Bool(false),
 		},
 	)
-	if apiResp.StatusCode == http.StatusNotFound {
+	if apiResp != nil && apiResp.StatusCode == http.StatusNotFound {
 		return
 	}
 	if err != nil {

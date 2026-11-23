@@ -757,6 +757,14 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 		}
 	}
 
+	if !data.HighlightTags.IsUnknown() {
+		highlightTags := fwdiag.Merge(data.HighlightTags.Get(ctx))(&resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		updateBody.HighlightTags = &highlightTags
+	}
+
 	if !data.DataScrubber.IsUnknown() {
 		updateBody.DataScrubber = data.DataScrubber.ValueBoolPointer()
 	}

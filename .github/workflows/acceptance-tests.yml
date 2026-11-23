@@ -39,7 +39,7 @@ jobs:
       max-parallel: 1
       matrix:
         terraform:
-          - "1.15.*"
+          - "1.17.*"
     steps:
       - uses: actions/checkout@v7
         with:
