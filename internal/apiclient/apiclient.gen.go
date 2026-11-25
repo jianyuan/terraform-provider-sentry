@@ -1487,6 +1487,25 @@ func (e ListProjectClientKeysParamsStatus) Valid() bool {
 	}
 }
 
+// ExternalActor defines model for ExternalActor.
+type ExternalActor struct {
+	ExternalId    *string `json:"externalId,omitempty"`
+	ExternalName  string  `json:"externalName"`
+	Id            string  `json:"id"`
+	IntegrationId string  `json:"integrationId"`
+	Provider      string  `json:"provider"`
+	TeamId        *string `json:"teamId,omitempty"`
+	UserId        *string `json:"userId,omitempty"`
+}
+
+// ExternalActorRequest defines model for ExternalActorRequest.
+type ExternalActorRequest struct {
+	ExternalId    nullable.Nullable[string] `json:"external_id,omitempty"`
+	ExternalName  string                    `json:"external_name"`
+	IntegrationId int64                     `json:"integration_id"`
+	Provider      string                    `json:"provider"`
+}
+
 // Organization defines model for Organization.
 type Organization struct {
 	DataScrubber         *bool                      `json:"dataScrubber,omitempty"`
@@ -3032,12 +3051,13 @@ type SentryAppInstallation struct {
 
 // Team defines model for Team.
 type Team struct {
-	HasAccess *bool  `json:"hasAccess,omitempty"`
-	Id        string `json:"id"`
-	IsMember  *bool  `json:"isMember,omitempty"`
-	IsPending *bool  `json:"isPending,omitempty"`
-	Name      string `json:"name"`
-	Slug      string `json:"slug"`
+	ExternalTeams *[]ExternalActor `json:"externalTeams,omitempty"`
+	HasAccess     *bool            `json:"hasAccess,omitempty"`
+	Id            string           `json:"id"`
+	IsMember      *bool            `json:"isMember,omitempty"`
+	IsPending     *bool            `json:"isPending,omitempty"`
+	Name          string           `json:"name"`
+	Slug          string           `json:"slug"`
 }
 
 // TeamRole defines model for TeamRole.
@@ -3392,6 +3412,12 @@ type CreateProjectRuleJSONRequestBody CreateProjectRuleJSONBody
 
 // UpdateProjectRuleJSONRequestBody defines body for UpdateProjectRule for application/json ContentType.
 type UpdateProjectRuleJSONRequestBody UpdateProjectRuleJSONBody
+
+// CreateTeamExternalTeamJSONRequestBody defines body for CreateTeamExternalTeam for application/json ContentType.
+type CreateTeamExternalTeamJSONRequestBody = ExternalActorRequest
+
+// UpdateTeamExternalTeamJSONRequestBody defines body for UpdateTeamExternalTeam for application/json ContentType.
+type UpdateTeamExternalTeamJSONRequestBody = ExternalActorRequest
 
 // CreateOrganizationTeamProjectJSONRequestBody defines body for CreateOrganizationTeamProject for application/json ContentType.
 type CreateOrganizationTeamProjectJSONRequestBody CreateOrganizationTeamProjectJSONBody
@@ -8242,6 +8268,39 @@ type ClientInterface interface {
 	// Corresponds with GET /0/teams/{organization_id_or_slug}/{team_id_or_slug}/ (the `GetOrganizationTeam` operationId).
 	GetOrganizationTeam(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreateTeamExternalTeamWithBody Create an External Team
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /0/teams/{organization_id_or_slug}/{team_id_or_slug}/external-teams/ (the `CreateTeamExternalTeam` operationId).
+	CreateTeamExternalTeamWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateTeamExternalTeam Create an External Team
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /0/teams/{organization_id_or_slug}/{team_id_or_slug}/external-teams/ (the `CreateTeamExternalTeam` operationId).
+	CreateTeamExternalTeam(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, body CreateTeamExternalTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteTeamExternalTeam Delete an External Team
+	//
+	// Corresponds with DELETE /0/teams/{organization_id_or_slug}/{team_id_or_slug}/external-teams/{external_team_id}/ (the `DeleteTeamExternalTeam` operationId).
+	DeleteTeamExternalTeam(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, externalTeamId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateTeamExternalTeamWithBody Update an External Team
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with PUT /0/teams/{organization_id_or_slug}/{team_id_or_slug}/external-teams/{external_team_id}/ (the `UpdateTeamExternalTeam` operationId).
+	UpdateTeamExternalTeamWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, externalTeamId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateTeamExternalTeam Update an External Team
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with PUT /0/teams/{organization_id_or_slug}/{team_id_or_slug}/external-teams/{external_team_id}/ (the `UpdateTeamExternalTeam` operationId).
+	UpdateTeamExternalTeam(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, externalTeamId string, body UpdateTeamExternalTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateOrganizationTeamProjectWithBody Create a Project
 	//
 	// Takes any type of body and a specified content type.
@@ -9456,6 +9515,89 @@ func (c *Client) DeleteOrganizationTeam(ctx context.Context, organizationIdOrSlu
 // Corresponds with GET /0/teams/{organization_id_or_slug}/{team_id_or_slug}/ (the `GetOrganizationTeam` operationId).
 func (c *Client) GetOrganizationTeam(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetOrganizationTeamRequest(c.Server, organizationIdOrSlug, teamIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateTeamExternalTeamWithBody Create an External Team
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /0/teams/{organization_id_or_slug}/{team_id_or_slug}/external-teams/ (the `CreateTeamExternalTeam` operationId).
+func (c *Client) CreateTeamExternalTeamWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateTeamExternalTeamRequestWithBody(c.Server, organizationIdOrSlug, teamIdOrSlug, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateTeamExternalTeam Create an External Team
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /0/teams/{organization_id_or_slug}/{team_id_or_slug}/external-teams/ (the `CreateTeamExternalTeam` operationId).
+func (c *Client) CreateTeamExternalTeam(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, body CreateTeamExternalTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateTeamExternalTeamRequest(c.Server, organizationIdOrSlug, teamIdOrSlug, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DeleteTeamExternalTeam Delete an External Team
+//
+// Corresponds with DELETE /0/teams/{organization_id_or_slug}/{team_id_or_slug}/external-teams/{external_team_id}/ (the `DeleteTeamExternalTeam` operationId).
+func (c *Client) DeleteTeamExternalTeam(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, externalTeamId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteTeamExternalTeamRequest(c.Server, organizationIdOrSlug, teamIdOrSlug, externalTeamId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateTeamExternalTeamWithBody Update an External Team
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with PUT /0/teams/{organization_id_or_slug}/{team_id_or_slug}/external-teams/{external_team_id}/ (the `UpdateTeamExternalTeam` operationId).
+func (c *Client) UpdateTeamExternalTeamWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, externalTeamId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateTeamExternalTeamRequestWithBody(c.Server, organizationIdOrSlug, teamIdOrSlug, externalTeamId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateTeamExternalTeam Update an External Team
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with PUT /0/teams/{organization_id_or_slug}/{team_id_or_slug}/external-teams/{external_team_id}/ (the `UpdateTeamExternalTeam` operationId).
+func (c *Client) UpdateTeamExternalTeam(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, externalTeamId string, body UpdateTeamExternalTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateTeamExternalTeamRequest(c.Server, organizationIdOrSlug, teamIdOrSlug, externalTeamId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -12282,6 +12424,169 @@ func NewGetOrganizationTeamRequest(server string, organizationIdOrSlug Organizat
 	return req, nil
 }
 
+// NewCreateTeamExternalTeamRequest calls the generic CreateTeamExternalTeam builder with application/json body
+func NewCreateTeamExternalTeamRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, body CreateTeamExternalTeamJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := runtime.JSONMarshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateTeamExternalTeamRequestWithBody(server, organizationIdOrSlug, teamIdOrSlug, "application/json", bodyReader)
+}
+
+// NewCreateTeamExternalTeamRequestWithBody constructs an http.Request for the CreateTeamExternalTeam method, with any body, and a specified content type
+func NewCreateTeamExternalTeamRequestWithBody(server string, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "team_id_or_slug", teamIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := "/0/teams/" + pathParam0 + "/" + pathParam1 + "/external-teams/"
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteTeamExternalTeamRequest constructs an http.Request for the DeleteTeamExternalTeam method
+func NewDeleteTeamExternalTeamRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, externalTeamId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "team_id_or_slug", teamIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam2 string
+
+	pathParam2, err = runtime.StyleParamWithOptions("simple", false, "external_team_id", externalTeamId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := "/0/teams/" + pathParam0 + "/" + pathParam1 + "/external-teams/" + pathParam2 + "/"
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateTeamExternalTeamRequest calls the generic UpdateTeamExternalTeam builder with application/json body
+func NewUpdateTeamExternalTeamRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, externalTeamId string, body UpdateTeamExternalTeamJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := runtime.JSONMarshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateTeamExternalTeamRequestWithBody(server, organizationIdOrSlug, teamIdOrSlug, externalTeamId, "application/json", bodyReader)
+}
+
+// NewUpdateTeamExternalTeamRequestWithBody constructs an http.Request for the UpdateTeamExternalTeam method, with any body, and a specified content type
+func NewUpdateTeamExternalTeamRequestWithBody(server string, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, externalTeamId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "team_id_or_slug", teamIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam2 string
+
+	pathParam2, err = runtime.StyleParamWithOptions("simple", false, "external_team_id", externalTeamId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := "/0/teams/" + pathParam0 + "/" + pathParam1 + "/external-teams/" + pathParam2 + "/"
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewCreateOrganizationTeamProjectRequest calls the generic CreateOrganizationTeamProject builder with application/json body
 func NewCreateOrganizationTeamProjectRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, body CreateOrganizationTeamProjectJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -12904,6 +13209,41 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with GET /0/teams/{organization_id_or_slug}/{team_id_or_slug}/ (the `GetOrganizationTeam` operationId).
 	GetOrganizationTeamWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, reqEditors ...RequestEditorFn) (*GetOrganizationTeamResponse, error)
+
+	// CreateTeamExternalTeamWithBodyWithResponse Create an External Team
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /0/teams/{organization_id_or_slug}/{team_id_or_slug}/external-teams/ (the `CreateTeamExternalTeam` operationId).
+	CreateTeamExternalTeamWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateTeamExternalTeamResponse, error)
+
+	// CreateTeamExternalTeamWithResponse Create an External Team
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /0/teams/{organization_id_or_slug}/{team_id_or_slug}/external-teams/ (the `CreateTeamExternalTeam` operationId).
+	CreateTeamExternalTeamWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, body CreateTeamExternalTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateTeamExternalTeamResponse, error)
+
+	// DeleteTeamExternalTeamWithResponse Delete an External Team
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with DELETE /0/teams/{organization_id_or_slug}/{team_id_or_slug}/external-teams/{external_team_id}/ (the `DeleteTeamExternalTeam` operationId).
+	DeleteTeamExternalTeamWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, externalTeamId string, reqEditors ...RequestEditorFn) (*DeleteTeamExternalTeamResponse, error)
+
+	// UpdateTeamExternalTeamWithBodyWithResponse Update an External Team
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /0/teams/{organization_id_or_slug}/{team_id_or_slug}/external-teams/{external_team_id}/ (the `UpdateTeamExternalTeam` operationId).
+	UpdateTeamExternalTeamWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, externalTeamId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateTeamExternalTeamResponse, error)
+
+	// UpdateTeamExternalTeamWithResponse Update an External Team
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /0/teams/{organization_id_or_slug}/{team_id_or_slug}/external-teams/{external_team_id}/ (the `UpdateTeamExternalTeam` operationId).
+	UpdateTeamExternalTeamWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, externalTeamId string, body UpdateTeamExternalTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateTeamExternalTeamResponse, error)
 
 	// CreateOrganizationTeamProjectWithBodyWithResponse Create a Project
 	//
@@ -15054,6 +15394,129 @@ func (r GetOrganizationTeamResponse) ContentType() string {
 	return ""
 }
 
+type CreateTeamExternalTeamResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ExternalActor
+	// JSON201 the response for an HTTP 201 `application/json` response
+	JSON201 *ExternalActor
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r CreateTeamExternalTeamResponse) GetJSON200() *ExternalActor {
+	return r.JSON200
+}
+
+// GetJSON201 returns the response for an HTTP 201 `application/json` response
+func (r CreateTeamExternalTeamResponse) GetJSON201() *ExternalActor {
+	return r.JSON201
+}
+
+// GetBody returns the raw response body bytes
+func (r CreateTeamExternalTeamResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateTeamExternalTeamResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateTeamExternalTeamResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateTeamExternalTeamResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DeleteTeamExternalTeamResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// GetBody returns the raw response body bytes
+func (r DeleteTeamExternalTeamResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteTeamExternalTeamResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteTeamExternalTeamResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeleteTeamExternalTeamResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type UpdateTeamExternalTeamResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ExternalActor
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r UpdateTeamExternalTeamResponse) GetJSON200() *ExternalActor {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r UpdateTeamExternalTeamResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateTeamExternalTeamResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateTeamExternalTeamResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r UpdateTeamExternalTeamResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type CreateOrganizationTeamProjectResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -16068,6 +16531,71 @@ func (c *ClientWithResponses) GetOrganizationTeamWithResponse(ctx context.Contex
 		return nil, err
 	}
 	return ParseGetOrganizationTeamResponse(rsp)
+}
+
+// CreateTeamExternalTeamWithBodyWithResponse Create an External Team
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /0/teams/{organization_id_or_slug}/{team_id_or_slug}/external-teams/ (the `CreateTeamExternalTeam` operationId).
+func (c *ClientWithResponses) CreateTeamExternalTeamWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateTeamExternalTeamResponse, error) {
+	rsp, err := c.CreateTeamExternalTeamWithBody(ctx, organizationIdOrSlug, teamIdOrSlug, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateTeamExternalTeamResponse(rsp)
+}
+
+// CreateTeamExternalTeamWithResponse Create an External Team
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /0/teams/{organization_id_or_slug}/{team_id_or_slug}/external-teams/ (the `CreateTeamExternalTeam` operationId).
+func (c *ClientWithResponses) CreateTeamExternalTeamWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, body CreateTeamExternalTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateTeamExternalTeamResponse, error) {
+	rsp, err := c.CreateTeamExternalTeam(ctx, organizationIdOrSlug, teamIdOrSlug, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateTeamExternalTeamResponse(rsp)
+}
+
+// DeleteTeamExternalTeamWithResponse Delete an External Team
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with DELETE /0/teams/{organization_id_or_slug}/{team_id_or_slug}/external-teams/{external_team_id}/ (the `DeleteTeamExternalTeam` operationId).
+func (c *ClientWithResponses) DeleteTeamExternalTeamWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, externalTeamId string, reqEditors ...RequestEditorFn) (*DeleteTeamExternalTeamResponse, error) {
+	rsp, err := c.DeleteTeamExternalTeam(ctx, organizationIdOrSlug, teamIdOrSlug, externalTeamId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteTeamExternalTeamResponse(rsp)
+}
+
+// UpdateTeamExternalTeamWithBodyWithResponse Update an External Team
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /0/teams/{organization_id_or_slug}/{team_id_or_slug}/external-teams/{external_team_id}/ (the `UpdateTeamExternalTeam` operationId).
+func (c *ClientWithResponses) UpdateTeamExternalTeamWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, externalTeamId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateTeamExternalTeamResponse, error) {
+	rsp, err := c.UpdateTeamExternalTeamWithBody(ctx, organizationIdOrSlug, teamIdOrSlug, externalTeamId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateTeamExternalTeamResponse(rsp)
+}
+
+// UpdateTeamExternalTeamWithResponse Update an External Team
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /0/teams/{organization_id_or_slug}/{team_id_or_slug}/external-teams/{external_team_id}/ (the `UpdateTeamExternalTeam` operationId).
+func (c *ClientWithResponses) UpdateTeamExternalTeamWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, teamIdOrSlug TeamIdOrSlug, externalTeamId string, body UpdateTeamExternalTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateTeamExternalTeamResponse, error) {
+	rsp, err := c.UpdateTeamExternalTeam(ctx, organizationIdOrSlug, teamIdOrSlug, externalTeamId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateTeamExternalTeamResponse(rsp)
 }
 
 // CreateOrganizationTeamProjectWithBodyWithResponse Create a Project
@@ -17723,6 +18251,96 @@ func ParseGetOrganizationTeamResponse(rsp *http.Response) (*GetOrganizationTeamR
 		response.JSON200 = &dest
 
 	case rsp.StatusCode == 401:
+		break // No content-type
+
+	case rsp.StatusCode == 403:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateTeamExternalTeamResponse parses an HTTP response from a CreateTeamExternalTeamWithResponse call
+func ParseCreateTeamExternalTeamResponse(rsp *http.Response) (*CreateTeamExternalTeamResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateTeamExternalTeamResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ExternalActor
+		if err := runtime.JSONUnmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest ExternalActor
+		if err := runtime.JSONUnmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 403:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteTeamExternalTeamResponse parses an HTTP response from a DeleteTeamExternalTeamWithResponse call
+func ParseDeleteTeamExternalTeamResponse(rsp *http.Response) (*DeleteTeamExternalTeamResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteTeamExternalTeamResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseUpdateTeamExternalTeamResponse parses an HTTP response from a UpdateTeamExternalTeamWithResponse call
+func ParseUpdateTeamExternalTeamResponse(rsp *http.Response) (*UpdateTeamExternalTeamResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateTeamExternalTeamResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ExternalActor
+		if err := runtime.JSONUnmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 400:
 		break // No content-type
 
 	case rsp.StatusCode == 403:

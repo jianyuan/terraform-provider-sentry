@@ -73,6 +73,12 @@ func TestResourceRead_removesResourceDeletedOutsideTerraform(t *testing.T) {
 	}))
 	t.Cleanup(emptyList.Close)
 
+	teamWithoutExternalTeams := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"id":"1","slug":"my-team","name":"my-team","externalTeams":[]}`))
+	}))
+	t.Cleanup(teamWithoutExternalTeams.Close)
+
 	project := map[string]string{"organization": "my-org", "project": "my-project"}
 	with := func(extra map[string]string) map[string]string {
 		m := map[string]string{}
@@ -92,6 +98,8 @@ func TestResourceRead_removesResourceDeletedOutsideTerraform(t *testing.T) {
 		attrs    map[string]string
 	}{
 		{"sentry_key/404", NewClientKeyResource, notFound, with(map[string]string{"id": "abc"})},
+		{"sentry_external_team/404", NewExternalTeamResource, notFound, map[string]string{"organization": "my-org", "team": "my-team", "id": "1"}},
+		{"sentry_external_team/missing", NewExternalTeamResource, teamWithoutExternalTeams, map[string]string{"organization": "my-org", "team": "my-team", "id": "1"}},
 		{"sentry_project_codeowners/404", NewProjectCodeOwnersResource, notFound, with(map[string]string{"id": "1"})},
 		{"sentry_project_spike_protection/404", NewProjectSpikeProtectionResource, notFound, project},
 		{"sentry_project_inbound_data_filter/404", NewProjectInboundDataFilterResource, notFound, with(map[string]string{"filter_id": "browser-extensions"})},

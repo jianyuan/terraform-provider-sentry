@@ -823,6 +823,79 @@ paths:
           description: Forbidden
         "404":
           description: Not Found
+  /0/teams/{organization_id_or_slug}/{team_id_or_slug}/external-teams/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+      - $ref: "#/components/parameters/team_id_or_slug"
+    post:
+      summary: Create an External Team
+      operationId: createTeamExternalTeam
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExternalActorRequest"
+      responses:
+        "200":
+          description: OK (the mapping already exists)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExternalActor"
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExternalActor"
+        "400":
+          description: Bad Request
+        "403":
+          description: Forbidden
+  /0/teams/{organization_id_or_slug}/{team_id_or_slug}/external-teams/{external_team_id}/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+      - $ref: "#/components/parameters/team_id_or_slug"
+      - name: external_team_id
+        in: path
+        required: true
+        schema:
+          type: string
+    put:
+      summary: Update an External Team
+      operationId: updateTeamExternalTeam
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExternalActorRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExternalActor"
+        "400":
+          description: Bad Request
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+    delete:
+      summary: Delete an External Team
+      operationId: deleteTeamExternalTeam
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
   /0/teams/{organization_id_or_slug}/{team_id_or_slug}/projects/:
     parameters:
       - $ref: "#/components/parameters/organization_id_or_slug"
@@ -3371,6 +3444,49 @@ components:
           type: boolean
         isMember:
           type: boolean
+        externalTeams:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExternalActor"
+    ExternalActor:
+      type: object
+      required:
+        - id
+        - provider
+        - externalName
+        - integrationId
+      properties:
+        id:
+          type: string
+        provider:
+          type: string
+        externalName:
+          type: string
+        externalId:
+          type: string
+        integrationId:
+          type: string
+        userId:
+          type: string
+        teamId:
+          type: string
+    ExternalActorRequest:
+      type: object
+      required:
+        - external_name
+        - provider
+        - integration_id
+      properties:
+        external_name:
+          type: string
+        provider:
+          type: string
+        integration_id:
+          type: integer
+          format: int64
+        external_id:
+          type: string
+          nullable: true
     OrganizationWorkflowRequest:
       type: object
       required:
