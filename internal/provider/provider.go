@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
 	"github.com/hashicorp/terraform-plugin-framework/function"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
@@ -19,6 +20,7 @@ import (
 )
 
 var _ provider.Provider = &SentryProvider{}
+var _ provider.ProviderWithEphemeralResources = &SentryProvider{}
 var _ provider.ProviderWithFunctions = &SentryProvider{}
 
 // SentryProvider defines the provider implementation.
@@ -134,6 +136,7 @@ func (p *SentryProvider) Configure(ctx context.Context, req provider.ConfigureRe
 
 	resp.DataSourceData = providerData
 	resp.ResourceData = providerData
+	resp.EphemeralResourceData = providerData
 }
 
 func (p *SentryProvider) Resources(ctx context.Context) []func() resource.Resource {
@@ -171,6 +174,13 @@ func (p *SentryProvider) DataSources(ctx context.Context) []func() datasource.Da
 		NewOrganizationMemberDataSource,
 		NewSentryAppInstallationDataSource,
 	)
+}
+
+func (p *SentryProvider) EphemeralResources(ctx context.Context) []func() ephemeral.EphemeralResource {
+	// Please keep the ephemeral resources sorted by name.
+	return []func() ephemeral.EphemeralResource{
+		NewClientKeyEphemeralResource,
+	}
 }
 
 func (p *SentryProvider) Functions(ctx context.Context) []func() function.Function {
