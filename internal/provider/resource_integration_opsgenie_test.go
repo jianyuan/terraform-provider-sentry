@@ -110,7 +110,7 @@ func TestAccIntegrationOpsgenieResource(t *testing.T) {
 	teamName := acctest.RandomWithPrefix("tf-opsgenie")
 	rn := "sentry_integration_opsgenie.test"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.PreCheck(t)
 

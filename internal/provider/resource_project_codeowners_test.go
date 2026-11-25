@@ -79,7 +79,7 @@ func TestAccProjectCodeOwnersResource_basic(t *testing.T) {
 
 	codeMappingId := testAccProjectCodeOwnersCodeMapping(t).Id
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.PreCheck(t)
 			if acctest.TestGitHubInstallationId == "" {

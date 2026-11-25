@@ -14,7 +14,7 @@ func TestAccProjectInboundDataFilterResource(t *testing.T) {
 	project := acctest.RandomWithPrefix("tf-project")
 	filterId := "browser-extensions"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -51,7 +51,7 @@ func TestAccProjectInboundDataFilterResource_Conflict(t *testing.T) {
 	project := acctest.RandomWithPrefix("tf-project")
 	filterId := "browser-extensions"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -71,7 +71,7 @@ func TestAccProjectInboundDataFilterResource_LegacyBrowser(t *testing.T) {
 	project := acctest.RandomWithPrefix("tf-project")
 	filterId := "legacy-browsers"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{

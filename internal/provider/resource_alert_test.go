@@ -150,7 +150,7 @@ func TestAccAlertResource_validation(t *testing.T) {
 		`, condition)
 	}
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -295,7 +295,7 @@ func TestAccAlertResource_basic(t *testing.T) {
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
 	}
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -421,7 +421,7 @@ func TestAccAlertResource_eventFrequencyCountTriggerRoundTrip(t *testing.T) {
 	config := testAccAlertResourceEventFrequencyCountConfig(projectName, alertName)
 
 	var workflow apiclient.OrganizationWorkflow
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -528,7 +528,7 @@ func TestAccAlertResource_eventFrequencyPercentTriggerRoundTrip(t *testing.T) {
 	config := testAccAlertResourceEventFrequencyPercentConfig(projectName, alertName)
 
 	var workflow apiclient.OrganizationWorkflow
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -637,7 +637,7 @@ func TestAccAlertResource_eventUniqueUserFrequencyCountTriggerRoundTrip(t *testi
 	config := testAccAlertResourceEventUniqueUserFrequencyCountConfig(projectName, alertName)
 
 	var workflow apiclient.OrganizationWorkflow
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -744,7 +744,7 @@ func TestAccAlertResource_percentSessionsCountTriggerRoundTrip(t *testing.T) {
 	config := testAccAlertResourcePercentSessionsCountConfig(projectName, alertName)
 
 	var workflow apiclient.OrganizationWorkflow
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -851,7 +851,7 @@ func TestAccAlertResource_percentSessionsPercentTriggerRoundTrip(t *testing.T) {
 	config := testAccAlertResourcePercentSessionsPercentConfig(projectName, alertName)
 
 	var workflow apiclient.OrganizationWorkflow
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{

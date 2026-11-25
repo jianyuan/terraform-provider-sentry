@@ -25,7 +25,7 @@ func TestAccTeamDataSource(t *testing.T) {
 		statecheck.ExpectKnownValue(dsn, tfjsonpath.New("is_member"), knownvalue.NotNull()),  // Deprecated
 	}
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{

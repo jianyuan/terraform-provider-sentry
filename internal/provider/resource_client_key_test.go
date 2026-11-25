@@ -17,7 +17,7 @@ import (
 )
 
 func TestAccClientKeyResource_validation(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -143,7 +143,7 @@ func TestAccClientKeyResource(t *testing.T) {
 		statecheck.CompareValuePairs(rn, tfjsonpath.New("dsn_csp"), rn, tfjsonpath.New("dsn").AtMapKey("csp"), compare.ValuesSame()),
 	}
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -306,7 +306,7 @@ func TestAccClientKeyResource_createWithRateLimit(t *testing.T) {
 	keyName := acctest.RandomWithPrefix("tf-key")
 	rn := "sentry_key.test"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{

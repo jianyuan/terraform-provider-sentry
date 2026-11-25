@@ -21,7 +21,7 @@ func TestAccIssueAlertDataSource(t *testing.T) {
 	alert := acctest.RandomWithPrefix("tf-issue-alert")
 	var alertId string
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{

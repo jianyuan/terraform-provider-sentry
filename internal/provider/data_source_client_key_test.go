@@ -48,7 +48,7 @@ func TestAccClientKeyDataSource_id(t *testing.T) {
 		statecheck.CompareValuePairs(rn, tfjsonpath.New("dsn_csp"), rn, tfjsonpath.New("dsn").AtMapKey("csp"), compare.ValuesSame()),
 	}
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -98,7 +98,7 @@ func TestAccClientKeyDataSource_name(t *testing.T) {
 		statecheck.CompareValuePairs(rn, tfjsonpath.New("dsn_csp"), rn, tfjsonpath.New("dsn").AtMapKey("csp"), compare.ValuesSame()),
 	}
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -148,7 +148,7 @@ func TestAccClientKeyDataSource_first(t *testing.T) {
 		statecheck.CompareValuePairs(rn, tfjsonpath.New("dsn_csp"), rn, tfjsonpath.New("dsn").AtMapKey("csp"), compare.ValuesSame()),
 	}
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
