@@ -675,6 +675,13 @@ func (r *${resourceName}) Create(ctx context.Context, req resource.CreateRequest
     return
   }
 
+${
+  resource.generate?.postWriteHook
+    ? `
+  plannedData := data
+`
+    : ""
+}
   body, diags := r.getCreateJSONRequestBody(ctx, data)
   resp.Diagnostics.Append(diags...)
   if resp.Diagnostics.HasError() {
@@ -703,6 +710,16 @@ func (r *${resourceName}) Create(ctx context.Context, req resource.CreateRequest
     return
   }
 
+${
+  resource.generate?.postWriteHook
+    ? `
+  resp.Diagnostics.Append(r.postWrite(ctx, &data, plannedData)...)
+  if resp.Diagnostics.HasError() {
+    return
+  }
+`
+    : ""
+}
   resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -827,6 +844,13 @@ func (r *${resourceName}) Update(ctx context.Context, req resource.UpdateRequest
         return
       }
 
+      ${
+        resource.generate?.postWriteHook
+          ? `
+      plannedData := data
+    `
+          : ""
+      }
       body, diags := r.getUpdateJSONRequestBody(ctx, data)
       resp.Diagnostics.Append(diags...)
       if resp.Diagnostics.HasError() {
@@ -852,6 +876,16 @@ func (r *${resourceName}) Update(ctx context.Context, req resource.UpdateRequest
         return
       }
 
+      ${
+        resource.generate?.postWriteHook
+          ? `
+      resp.Diagnostics.Append(r.postWrite(ctx, &data, plannedData)...)
+      if resp.Diagnostics.HasError() {
+        return
+      }
+    `
+          : ""
+      }
       resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
       `.trim()
       : dedent`
