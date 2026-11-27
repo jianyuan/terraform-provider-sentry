@@ -22,6 +22,7 @@ import (
 	intresource "github.com/jianyuan/terraform-provider-sentry/internal/resource"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 	"github.com/oapi-codegen/nullable"
+	"github.com/samber/lo"
 )
 
 var numericIdRegexp = regexp.MustCompile(`^[0-9]+$`)
@@ -201,7 +202,7 @@ func (r *ExternalTeamResource) Create(ctx context.Context, req resource.CreateRe
 				"Sentry already has an external team mapping for provider %q, integration %q and external name %q "+
 					"(mapping ID %q, Sentry team ID %q). An external name can only be linked to one Sentry team. "+
 					"Import the existing mapping with ID \"<organization>/<team>/%s\", or delete it before creating a new one.",
-				existing.Provider, existing.IntegrationId, existing.ExternalName, existing.Id, stringPointerOrEmpty(existing.TeamId), existing.Id,
+				existing.Provider, existing.IntegrationId, existing.ExternalName, existing.Id, lo.FromPtr(existing.TeamId), existing.Id,
 			),
 		)
 		return
@@ -329,11 +330,4 @@ func (r *ExternalTeamResource) Delete(ctx context.Context, req resource.DeleteRe
 
 func (r *ExternalTeamResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	intresource.ImportState3PartPath("organization", "team", "id")(ctx, req, resp)
-}
-
-func stringPointerOrEmpty(v *string) string {
-	if v == nil {
-		return ""
-	}
-	return *v
 }
