@@ -230,8 +230,8 @@ github.com/orange-cloudavenue/terraform-plugin-framework-supertypes v1.2.0 h1:tv
 github.com/orange-cloudavenue/terraform-plugin-framework-supertypes v1.2.0/go.mod h1:5SJrMDAHcQopy+p9Oq3anoaqclPZgTs27b0WQ3J97E0=
 github.com/orange-cloudavenue/terraform-plugin-framework-validators v1.17.0 h1:NQoKMaDbpRgn/92SAEYzc02BpqnFLHucQs7S4ROmOOE=
 github.com/orange-cloudavenue/terraform-plugin-framework-validators v1.17.0/go.mod h1:XRoHgbq0xhmUvb3Ti5EiwBaL4r/FHM+eawMH/m7gIqw=
-github.com/peterhellberg/link v1.2.0 h1:UA5pg3Gp/E0F2WdX7GERiNrPQrM1K6CVJUUWfHa4t6c=
-github.com/peterhellberg/link v1.2.0/go.mod h1:gYfAh+oJgQu2SrZHg5hROVRQe1ICoK0/HHJTcE0edxc=
+github.com/peterhellberg/link v1.3.0 h1:veh3x+9324iHsl9AO8lpsTXTrBNTShs2u8kzHrL+DEc=
+github.com/peterhellberg/link v1.3.0/go.mod h1:G5qijIR04RtnSo3hGTTAabsfXnhhVpX0+Mi8TmzQETs=
 github.com/pjbgf/sha1cd v0.6.0 h1:3WJ8Wz8gvDz29quX1OcEmkAlUg9diU4GxJHqs0/XiwU=
 github.com/pjbgf/sha1cd v0.6.0/go.mod h1:lhpGlyHLpQZoxMv8HcgXvZEhcGs0PG/vsZnEJ7H0iCM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
