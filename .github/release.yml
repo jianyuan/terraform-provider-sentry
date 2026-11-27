@@ -12,27 +12,39 @@ changelog:
     - title: ⚠️ Breaking Changes
       labels:
         - breaking-change
+    - title: 🚀 Features — Resources & Data Sources
+      labels:
+        - "feature: resource + data source"
     - title: 🚀 Features — Resources
       labels:
         - "feature: resource"
     - title: 🚀 Features — Data Sources
       labels:
         - "feature: data source"
-    - title: 🚀 Features — Resources & Data Sources
+    - title: 🚀 Features — Ephemeral Resources
       labels:
-        - "feature: resource + data source"
+        - "feature: ephemeral resource"
+    - title: 🚀 Features — Functions
+      labels:
+        - "feature: function"
     - title: 🚀 Features — Other
       labels:
         - enhancement
+    - title: 🐛 Bug Fixes — Resources & Data Sources
+      labels:
+        - "fix: resource + data source"
     - title: 🐛 Bug Fixes — Resources
       labels:
         - "fix: resource"
     - title: 🐛 Bug Fixes — Data Sources
       labels:
         - "fix: data source"
-    - title: 🐛 Bug Fixes — Resources & Data Sources
+    - title: 🐛 Bug Fixes — Ephemeral Resources
       labels:
-        - "fix: resource + data source"
+        - "fix: ephemeral resource"
+    - title: 🐛 Bug Fixes — Functions
+      labels:
+        - "fix: function"
     - title: 🐛 Bug Fixes — Other
       labels:
         - bug
