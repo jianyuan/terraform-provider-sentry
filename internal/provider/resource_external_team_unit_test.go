@@ -196,6 +196,8 @@ resource "sentry_external_team" "test" {
 }
 
 func TestExternalTeamResource_lifecycle(t *testing.T) {
+	t.Parallel()
+
 	rn := "sentry_external_team.test"
 	store := newFakeExternalActorStore()
 	server := newExternalTeamTestServer(t, store)
@@ -240,6 +242,8 @@ func TestExternalTeamResource_lifecycle(t *testing.T) {
 }
 
 func TestExternalTeamResource_alreadyExists(t *testing.T) {
+	t.Parallel()
+
 	store := newFakeExternalActorStore()
 	// A mapping for the same Slack channel that belongs to another team.
 	store.actors["7"] = map[string]any{

@@ -16,7 +16,7 @@ func TestAccExternalTeamResource_basic(t *testing.T) {
 	rn := "sentry_external_team.test"
 	teamName := acctest.RandomWithPrefix("tf-team")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.PreCheck(t)
 			if acctest.TestGitHubInstallationId == "" {
