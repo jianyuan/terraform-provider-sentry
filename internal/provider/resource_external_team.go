@@ -20,22 +20,9 @@ import (
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	intresource "github.com/jianyuan/terraform-provider-sentry/internal/resource"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 	"github.com/oapi-codegen/nullable"
 )
-
-// externalTeamProviders are the providers accepted by Sentry's external team endpoints.
-var externalTeamProviders = []string{
-	"github",
-	"github_enterprise",
-	"jira_server",
-	"slack",
-	"slack_staging",
-	"perforce",
-	"gitlab",
-	"cursor_origin",
-	"msteams",
-	"custom_scm",
-}
 
 var numericIdRegexp = regexp.MustCompile(`^[0-9]+$`)
 
@@ -149,10 +136,10 @@ func (r *ExternalTeamResource) Schema(ctx context.Context, req resource.SchemaRe
 				},
 			},
 			"provider_name": schema.StringAttribute{
-				MarkdownDescription: "The external provider. Named `provider_name` because `provider` is a reserved Terraform meta-argument. One of: `" + strings.Join(externalTeamProviders, "`, `") + "`.",
+				MarkdownDescription: "The external provider. Named `provider_name` because `provider` is a reserved Terraform meta-argument. One of: `" + strings.Join(sentrydata.ExternalActorProviders, "`, `") + "`.",
 				Required:            true,
 				Validators: []validator.String{
-					stringvalidator.OneOf(externalTeamProviders...),
+					stringvalidator.OneOf(sentrydata.ExternalActorProviders...),
 				},
 			},
 			"external_name": schema.StringAttribute{

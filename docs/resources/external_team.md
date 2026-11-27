@@ -61,7 +61,7 @@ resource "sentry_external_team" "backend_github" {
 - `external_name` (String) The name of the team or channel in the external provider, such as `#backend-alerts` for a Slack channel or `@my-org/backend` for a GitHub team. GitHub, GitHub Enterprise, GitLab and Cursor names must start with `@`.
 - `integration_id` (String) The ID of the organization integration the mapping belongs to, for example `data.sentry_organization_integration.slack.id`.
 - `organization` (String) The slug of the organization the team belongs to.
-- `provider_name` (String) The external provider. Named `provider_name` because `provider` is a reserved Terraform meta-argument. One of: `github`, `github_enterprise`, `jira_server`, `slack`, `slack_staging`, `perforce`, `gitlab`, `cursor_origin`, `msteams`, `custom_scm`.
+- `provider_name` (String) The external provider. Named `provider_name` because `provider` is a reserved Terraform meta-argument. One of: `github`, `github_enterprise`, `gitlab`, `cursor_origin`, `slack`, `slack_staging`, `msteams`, `jira_server`, `perforce`, `custom_scm`.
 - `team` (String) The slug of the Sentry team to link.
 
 ### Optional
