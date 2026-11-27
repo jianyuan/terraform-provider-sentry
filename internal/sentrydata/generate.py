@@ -649,6 +649,83 @@ async def parse_event_frequency(
     return out
 
 
+async def parse_external_actor_providers(
+    get_file_data: GetFileDataCallable,
+) -> dict[str, Variable[Any]]:
+    types_data, actor_data = await asyncio.gather(
+        get_file_data("src/sentry/integrations/types.py"),
+        get_file_data("src/sentry/integrations/api/bases/external_actor.py"),
+    )
+
+    def class_values(name: str) -> dict[str, ast.expr]:
+        for node in ast.walk(types_data.tree):
+            if isinstance(node, ast.ClassDef) and node.name == name:
+                return {
+                    stmt.targets[0].id: stmt.value
+                    for stmt in node.body
+                    if isinstance(stmt, ast.Assign)
+                    and isinstance(stmt.targets[0], ast.Name)
+                }
+        raise ValueError(f"Class {name} not found")
+
+    slugs = class_values("IntegrationProviderSlug")
+
+    def resolve(value: ast.expr) -> str:
+        match value:
+            case ast.Constant(value=str() as v):
+                return v
+            case ast.Attribute(value=ast.Name(id="IntegrationProviderSlug"), attr=attr):
+                return resolve(slugs[attr])
+            case _:
+                raise ValueError(f"Unsupported value {ast.dump(value)}")
+
+    enum_values = {k: resolve(v) for k, v in class_values("ExternalProviderEnum").items()}
+
+    # EXTERNAL_PROVIDERS maps ExternalProviders.X to ExternalProviderEnum.Y.value.
+    names: dict[str, str] = {}
+    for node in ast.walk(types_data.tree):
+        match node:
+            case ast.Assign(
+                targets=[ast.Name(id="EXTERNAL_PROVIDERS")],
+                value=ast.Dict(keys=keys, values=values),
+            ):
+                for key, value in zip(keys, values):
+                    match key, value:
+                        case (
+                            ast.Attribute(value=ast.Name(id="ExternalProviders"), attr=k),
+                            ast.Attribute(
+                                value=ast.Attribute(
+                                    value=ast.Name(id="ExternalProviderEnum"), attr=v
+                                ),
+                                attr="value",
+                            ),
+                        ):
+                            names[k] = enum_values[v]
+                        case _:
+                            raise ValueError(f"Unsupported entry {ast.dump(key)}")
+            case _:
+                pass
+
+    out: dict[str, Variable[Any]] = {}
+    for node in ast.walk(actor_data.tree):
+        match node:
+            case ast.Assign(
+                targets=[ast.Name(id="AVAILABLE_PROVIDERS")],
+                value=ast.Set(elts=elts),
+            ):
+                result: list[str] = []
+                for elt in elts:
+                    assert isinstance(elt, ast.Attribute)
+                    result.append(names[elt.attr])
+                out["ExternalActorProviders"] = Variable(
+                    github_url=actor_data.github_url, data=result
+                )
+            case _:
+                pass
+    assert out, "AVAILABLE_PROVIDERS not found"
+    return out
+
+
 async def generate_and_format_code(variables: dict[str, Variable[Any]]) -> bytes:
     lines = ["package sentrydata", ""]
 
@@ -713,6 +790,7 @@ async def main() -> None:
             parse_data_condition_types(get_file_data=_get_file_data),
             parse_data_condition_group_types(get_file_data=_get_file_data),
             parse_event_frequency(get_file_data=_get_file_data),
+            parse_external_actor_providers(get_file_data=_get_file_data),
         )
 
     variables: OrderedDict[str, Variable[Any]] = OrderedDict()

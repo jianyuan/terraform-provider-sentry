@@ -1098,3 +1098,17 @@ var EventFrequencyPercentIntervals = []string{
 	"30m",
 	"1h",
 }
+
+// https://github.com/getsentry/sentry/blob/master/src/sentry/integrations/api/bases/external_actor.py
+var ExternalActorProviders = []string{
+	"github",
+	"github_enterprise",
+	"gitlab",
+	"cursor_origin",
+	"slack",
+	"slack_staging",
+	"msteams",
+	"jira_server",
+	"perforce",
+	"custom_scm",
+}
