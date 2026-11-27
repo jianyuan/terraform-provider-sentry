@@ -15,40 +15,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/jianyuan/terraform-plugin-framework-utils/fwtypes"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	intresource "github.com/jianyuan/terraform-provider-sentry/internal/resource"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
-	"github.com/oapi-codegen/nullable"
 	"github.com/samber/lo"
 )
-
-// externalIdCreateValue omits external_id from a create request when it is not set.
-func externalIdCreateValue(value types.String) nullable.Nullable[string] {
-	if value.IsNull() || value.IsUnknown() {
-		return nullable.Nullable[string]{}
-	}
-	return nullable.NewNullableWithValue(value.ValueString())
-}
-
-// externalIdUpdateValue sends an explicit null to clear external_id when it is removed from the configuration.
-func externalIdUpdateValue(value types.String) nullable.Nullable[string] {
-	if value.IsNull() || value.IsUnknown() {
-		return nullable.NewNullNullable[string]()
-	}
-	return nullable.NewNullableWithValue(value.ValueString())
-}
-
-// withQueryParam adds a query parameter that the generated client does not expose.
-func withQueryParam(key, value string) apiclient.RequestEditorFn {
-	return func(ctx context.Context, req *http.Request) error {
-		q := req.URL.Query()
-		q.Add(key, value)
-		req.URL.RawQuery = q.Encode()
-		return nil
-	}
-}
 
 type ExternalTeamResourceModel struct {
 	Id            types.String              `tfsdk:"id"`
@@ -82,10 +56,9 @@ func (m ExternalTeamResourceModel) toRequest(update bool) (apiclient.ExternalAct
 		ExternalName:  m.ExternalName.ValueString(),
 		IntegrationId: integrationId,
 	}
-	if update {
-		body.ExternalId = externalIdUpdateValue(m.ExternalId)
-	} else {
-		body.ExternalId = externalIdCreateValue(m.ExternalId)
+	// Omit external_id from a create when it is not set; on update, an explicit null clears it.
+	if update || fwtypes.IsKnown(m.ExternalId) {
+		body.ExternalId = nullableFromPtr(sentrytypes.KnownStringPointer(m.ExternalId))
 	}
 
 	return body, diags
@@ -222,7 +195,7 @@ func (r *ExternalTeamResource) Read(ctx context.Context, req resource.ReadReques
 		ctx,
 		data.Organization.ValueString(),
 		data.Team.ValueString(),
-		withQueryParam("expand", "externalTeams"),
+		apiclient.WithQueryParam("expand", "externalTeams"),
 	)
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("read", err))
