@@ -150,6 +150,7 @@ func (p *SentryProvider) Resources(ctx context.Context) []func() resource.Resour
 		NewIntegrationPagerDuty,
 		NewIssueAlertResource,
 		NewNotificationActionResource,
+		NewOrganizationAuthTokenResource,
 		NewOrganizationDataScrubbingResource,
 		NewOrganizationRepositoryResource,
 		NewProjectCodeOwnersResource,

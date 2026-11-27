@@ -310,6 +310,81 @@ paths:
           description: Forbidden
         "404":
           description: Not Found
+  /0/organizations/{organization_id_or_slug}/org-auth-tokens/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+    get:
+      summary: List an Organization's Org Auth Tokens
+      operationId: listOrganizationAuthTokens
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OrgAuthToken"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+    post:
+      summary: Create an Org Auth Token
+      operationId: createOrganizationAuthToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - scopes
+              properties:
+                name:
+                  type: string
+                scopes:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrgAuthToken"
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+  /0/organizations/{organization_id_or_slug}/org-auth-tokens/{token_id}/:
+    parameters:
+      - $ref: "#/components/parameters/organization_id_or_slug"
+      - name: token_id
+        in: path
+        required: true
+        schema:
+          type: string
+    delete:
+      summary: Revoke an Org Auth Token
+      operationId: deleteOrganizationAuthToken
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
   /0/organizations/{organization_id_or_slug}/projects/:
     parameters:
       - $ref: "#/components/parameters/organization_id_or_slug"
@@ -1817,6 +1892,37 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/TeamRoleListItem"
+    OrgAuthToken:
+      type: object
+      required:
+        - id
+        - name
+        - scopes
+        - dateCreated
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        scopes:
+          type: array
+          items:
+            type: string
+        tokenLastCharacters:
+          type: string
+          nullable: true
+        dateCreated:
+          type: string
+          format: date-time
+        dateLastUsed:
+          type: string
+          format: date-time
+          nullable: true
+        projectLastUsedId:
+          type: string
+          nullable: true
+        token:
+          type: string
     OrganizationRepository:
       type: object
       required:

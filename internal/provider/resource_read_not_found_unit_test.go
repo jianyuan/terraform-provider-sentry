@@ -100,6 +100,8 @@ func TestResourceRead_removesResourceDeletedOutsideTerraform(t *testing.T) {
 		{"sentry_key/404", NewClientKeyResource, notFound, with(map[string]string{"id": "abc"})},
 		{"sentry_external_team/404", NewExternalTeamResource, notFound, map[string]string{"organization": "my-org", "team": "my-team", "id": "1"}},
 		{"sentry_external_team/missing", NewExternalTeamResource, teamWithoutExternalTeams, map[string]string{"organization": "my-org", "team": "my-team", "id": "1"}},
+		{"sentry_organization_auth_token/404", NewOrganizationAuthTokenResource, notFound, map[string]string{"organization": "my-org", "id": "1"}},
+		{"sentry_organization_auth_token/missing", NewOrganizationAuthTokenResource, emptyList, map[string]string{"organization": "my-org", "id": "1"}},
 		{"sentry_project_codeowners/404", NewProjectCodeOwnersResource, notFound, with(map[string]string{"id": "1"})},
 		{"sentry_project_spike_protection/404", NewProjectSpikeProtectionResource, notFound, project},
 		{"sentry_project_inbound_data_filter/404", NewProjectInboundDataFilterResource, notFound, with(map[string]string{"filter_id": "browser-extensions"})},
