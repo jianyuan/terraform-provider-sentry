@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	schemaR "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -20,11 +22,13 @@ import (
 )
 
 type IntegrationOpsgenieModel struct {
-	Id             types.String `tfsdk:"id"`
-	Organization   types.String `tfsdk:"organization"`
-	IntegrationId  types.String `tfsdk:"integration_id"`
-	Team           types.String `tfsdk:"team"`
-	IntegrationKey types.String `tfsdk:"integration_key"`
+	Id                      types.String `tfsdk:"id"`
+	Organization            types.String `tfsdk:"organization"`
+	IntegrationId           types.String `tfsdk:"integration_id"`
+	Team                    types.String `tfsdk:"team"`
+	IntegrationKey          types.String `tfsdk:"integration_key"`
+	IntegrationKeyWo        types.String `tfsdk:"integration_key_wo"`
+	IntegrationKeyWoVersion types.Int64  `tfsdk:"integration_key_wo_version"`
 }
 
 func (m *IntegrationOpsgenieModel) Fill(ctx context.Context, item apiclient.OrganizationIntegrationOpsgenieTeamTableItem) (diags diag.Diagnostics) {
@@ -37,6 +41,7 @@ func (m *IntegrationOpsgenieModel) Fill(ctx context.Context, item apiclient.Orga
 var _ resource.Resource = &IntegrationOpsgenie{}
 var _ resource.ResourceWithConfigure = &IntegrationOpsgenie{}
 var _ resource.ResourceWithImportState = &IntegrationOpsgenie{}
+var _ resource.ResourceWithConfigValidators = &IntegrationOpsgenie{}
 
 func NewIntegrationOpsgenie() resource.Resource {
 	return &IntegrationOpsgenie{}
@@ -53,7 +58,7 @@ func (r *IntegrationOpsgenie) Metadata(ctx context.Context, req resource.Metadat
 func (r *IntegrationOpsgenie) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = superschema.Schema{
 		Resource: superschema.SchemaDetails{
-			MarkdownDescription: "Manage an Opsgenie team integration.",
+			MarkdownDescription: "Manage an Opsgenie team integration.\n\n" + integrationKeyWriteOnlyNote,
 		},
 		Attributes: superschema.Attributes{
 			"id": superschema.StringAttribute{
@@ -91,13 +96,28 @@ func (r *IntegrationOpsgenie) Schema(ctx context.Context, req resource.SchemaReq
 			},
 			"integration_key": superschema.StringAttribute{
 				Resource: &schemaR.StringAttribute{
-					MarkdownDescription: "The integration key of the Opsgenie service.",
-					Required:            true,
+					MarkdownDescription: "The integration key of the Opsgenie service. Exactly one of `integration_key` or `integration_key_wo` must be set.",
+					Optional:            true,
 					Sensitive:           true,
 				},
 			},
+			"integration_key_wo": superschema.StringAttribute{
+				Resource: new(writeOnlyStringAttribute("integration_key", "The integration key of the Opsgenie service. Exactly one of `integration_key` or `integration_key_wo` must be set.")),
+			},
+			"integration_key_wo_version": superschema.Int64Attribute{
+				Resource: new(writeOnlyVersionAttribute("integration_key")),
+			},
 		},
 	}.GetResource(ctx)
+}
+
+func (r *IntegrationOpsgenie) ConfigValidators(ctx context.Context) []resource.ConfigValidator {
+	return []resource.ConfigValidator{
+		resourcevalidator.ExactlyOneOf(
+			path.MatchRoot("integration_key"),
+			path.MatchRoot("integration_key_wo"),
+		),
+	}
 }
 
 func (r *IntegrationOpsgenie) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -105,6 +125,16 @@ func (r *IntegrationOpsgenie) Create(ctx context.Context, req resource.CreateReq
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	integrationKey, diags := resolveWriteOnlySecretFromConfig(ctx, req.Config, resp.Private, "integration_key", data.IntegrationKey, data.IntegrationKeyWoVersion, nil)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if integrationKey.Value == nil {
+		resp.Diagnostics.AddAttributeError(path.Root("integration_key"), "Missing integration key", "One of `integration_key` or `integration_key_wo` must be set.")
 		return
 	}
 
@@ -135,7 +165,7 @@ func (r *IntegrationOpsgenie) Create(ctx context.Context, req resource.CreateReq
 
 	specificIntegration.ConfigData.TeamTable = append(specificIntegration.ConfigData.TeamTable, apiclient.OrganizationIntegrationOpsgenieTeamTableItem{
 		Team:           data.Team.ValueString(),
-		IntegrationKey: data.IntegrationKey.ValueString(),
+		IntegrationKey: *integrationKey.Value,
 		Id:             "",
 	})
 
@@ -182,7 +212,7 @@ func (r *IntegrationOpsgenie) Create(ctx context.Context, req resource.CreateReq
 
 	var found *apiclient.OrganizationIntegrationOpsgenieTeamTableItem
 	for _, item := range specificIntegration.ConfigData.TeamTable {
-		if item.Team == data.Team.ValueString() && item.IntegrationKey == data.IntegrationKey.ValueString() {
+		if item.Team == data.Team.ValueString() && item.IntegrationKey == *integrationKey.Value {
 			if _, ok := idsSeen[item.Id]; !ok {
 				found = &item
 				break
@@ -199,8 +229,12 @@ func (r *IntegrationOpsgenie) Create(ctx context.Context, req resource.CreateReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	if integrationKey.InUse {
+		data.IntegrationKey = types.StringNull()
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(setWriteOnlyInUse(ctx, resp.Private, "integration_key", integrationKey.InUse)...)
 }
 
 func (r *IntegrationOpsgenie) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -249,6 +283,14 @@ func (r *IntegrationOpsgenie) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
+	// Sentry returns the integration key in full. Keep it out of the state when
+	// it is managed through integration_key_wo.
+	inUse, diags := writeOnlyInUse(ctx, req.Private, "integration_key")
+	resp.Diagnostics.Append(diags...)
+	if inUse {
+		data.IntegrationKey = types.StringNull()
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -256,6 +298,18 @@ func (r *IntegrationOpsgenie) Update(ctx context.Context, req resource.UpdateReq
 	var data IntegrationOpsgenieModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var priorVersion types.Int64
+	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("integration_key_wo_version"), &priorVersion)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	integrationKey, diags := resolveWriteOnlySecretFromConfig(ctx, req.Config, req.Private, "integration_key", data.IntegrationKey, data.IntegrationKeyWoVersion, &priorVersion)
+	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -296,7 +350,10 @@ func (r *IntegrationOpsgenie) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	found.Team = data.Team.ValueString()
-	found.IntegrationKey = data.IntegrationKey.ValueString()
+	// A nil value means the write-only key has not changed, so keep the one Sentry has.
+	if integrationKey.Value != nil {
+		found.IntegrationKey = *integrationKey.Value
+	}
 
 	configDataJSON, err := json.Marshal(specificIntegration.ConfigData)
 	if err != nil {
@@ -362,8 +419,12 @@ func (r *IntegrationOpsgenie) Update(ctx context.Context, req resource.UpdateReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	if integrationKey.InUse {
+		data.IntegrationKey = types.StringNull()
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(setWriteOnlyInUse(ctx, resp.Private, "integration_key", integrationKey.InUse)...)
 }
 
 func (r *IntegrationOpsgenie) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {

@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	schemaR "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -20,11 +22,13 @@ import (
 )
 
 type IntegrationPagerDutyModel struct {
-	Id             types.String `tfsdk:"id"`
-	Organization   types.String `tfsdk:"organization"`
-	IntegrationId  types.String `tfsdk:"integration_id"`
-	Service        types.String `tfsdk:"service"`
-	IntegrationKey types.String `tfsdk:"integration_key"`
+	Id                      types.String `tfsdk:"id"`
+	Organization            types.String `tfsdk:"organization"`
+	IntegrationId           types.String `tfsdk:"integration_id"`
+	Service                 types.String `tfsdk:"service"`
+	IntegrationKey          types.String `tfsdk:"integration_key"`
+	IntegrationKeyWo        types.String `tfsdk:"integration_key_wo"`
+	IntegrationKeyWoVersion types.Int64  `tfsdk:"integration_key_wo_version"`
 }
 
 func (m *IntegrationPagerDutyModel) Fill(ctx context.Context, item apiclient.OrganizationIntegrationPagerDutyServiceTableItem) (diags diag.Diagnostics) {
@@ -47,6 +51,7 @@ type IntegrationPagerDutyConfigData struct {
 var _ resource.Resource = &IntegrationPagerDuty{}
 var _ resource.ResourceWithConfigure = &IntegrationPagerDuty{}
 var _ resource.ResourceWithImportState = &IntegrationPagerDuty{}
+var _ resource.ResourceWithConfigValidators = &IntegrationPagerDuty{}
 
 func NewIntegrationPagerDuty() resource.Resource {
 	return &IntegrationPagerDuty{}
@@ -63,7 +68,7 @@ func (r *IntegrationPagerDuty) Metadata(ctx context.Context, req resource.Metada
 func (r *IntegrationPagerDuty) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = superschema.Schema{
 		Resource: superschema.SchemaDetails{
-			MarkdownDescription: "Manage a PagerDuty service integration.",
+			MarkdownDescription: "Manage a PagerDuty service integration.\n\n" + integrationKeyWriteOnlyNote,
 		},
 		Attributes: superschema.Attributes{
 			"id": superschema.StringAttribute{
@@ -101,13 +106,28 @@ func (r *IntegrationPagerDuty) Schema(ctx context.Context, req resource.SchemaRe
 			},
 			"integration_key": superschema.StringAttribute{
 				Resource: &schemaR.StringAttribute{
-					MarkdownDescription: "The integration key of the PagerDuty service.",
-					Required:            true,
+					MarkdownDescription: "The integration key of the PagerDuty service. Exactly one of `integration_key` or `integration_key_wo` must be set.",
+					Optional:            true,
 					Sensitive:           true,
 				},
 			},
+			"integration_key_wo": superschema.StringAttribute{
+				Resource: new(writeOnlyStringAttribute("integration_key", "The integration key of the PagerDuty service. Exactly one of `integration_key` or `integration_key_wo` must be set.")),
+			},
+			"integration_key_wo_version": superschema.Int64Attribute{
+				Resource: new(writeOnlyVersionAttribute("integration_key")),
+			},
 		},
 	}.GetResource(ctx)
+}
+
+func (r *IntegrationPagerDuty) ConfigValidators(ctx context.Context) []resource.ConfigValidator {
+	return []resource.ConfigValidator{
+		resourcevalidator.ExactlyOneOf(
+			path.MatchRoot("integration_key"),
+			path.MatchRoot("integration_key_wo"),
+		),
+	}
 }
 
 func (r *IntegrationPagerDuty) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -115,6 +135,16 @@ func (r *IntegrationPagerDuty) Create(ctx context.Context, req resource.CreateRe
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	integrationKey, diags := resolveWriteOnlySecretFromConfig(ctx, req.Config, resp.Private, "integration_key", data.IntegrationKey, data.IntegrationKeyWoVersion, nil)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if integrationKey.Value == nil {
+		resp.Diagnostics.AddAttributeError(path.Root("integration_key"), "Missing integration key", "One of `integration_key` or `integration_key_wo` must be set.")
 		return
 	}
 
@@ -145,7 +175,7 @@ func (r *IntegrationPagerDuty) Create(ctx context.Context, req resource.CreateRe
 
 	specificIntegration.ConfigData.ServiceTable = append(specificIntegration.ConfigData.ServiceTable, apiclient.OrganizationIntegrationPagerDutyServiceTableItem{
 		Service:        data.Service.ValueString(),
-		IntegrationKey: data.IntegrationKey.ValueString(),
+		IntegrationKey: *integrationKey.Value,
 		Id:             json.Number("0"),
 	})
 
@@ -192,7 +222,7 @@ func (r *IntegrationPagerDuty) Create(ctx context.Context, req resource.CreateRe
 
 	var found *apiclient.OrganizationIntegrationPagerDutyServiceTableItem
 	for _, item := range specificIntegration.ConfigData.ServiceTable {
-		if item.Service == data.Service.ValueString() && item.IntegrationKey == data.IntegrationKey.ValueString() {
+		if item.Service == data.Service.ValueString() && item.IntegrationKey == *integrationKey.Value {
 			if _, ok := idsSeen[item.Id]; !ok {
 				found = &item
 				break
@@ -209,8 +239,12 @@ func (r *IntegrationPagerDuty) Create(ctx context.Context, req resource.CreateRe
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	if integrationKey.InUse {
+		data.IntegrationKey = types.StringNull()
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(setWriteOnlyInUse(ctx, resp.Private, "integration_key", integrationKey.InUse)...)
 }
 
 func (r *IntegrationPagerDuty) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -259,6 +293,14 @@ func (r *IntegrationPagerDuty) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 
+	// Sentry returns the integration key in full. Keep it out of the state when
+	// it is managed through integration_key_wo.
+	inUse, diags := writeOnlyInUse(ctx, req.Private, "integration_key")
+	resp.Diagnostics.Append(diags...)
+	if inUse {
+		data.IntegrationKey = types.StringNull()
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -266,6 +308,18 @@ func (r *IntegrationPagerDuty) Update(ctx context.Context, req resource.UpdateRe
 	var data IntegrationPagerDutyModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var priorVersion types.Int64
+	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("integration_key_wo_version"), &priorVersion)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	integrationKey, diags := resolveWriteOnlySecretFromConfig(ctx, req.Config, req.Private, "integration_key", data.IntegrationKey, data.IntegrationKeyWoVersion, &priorVersion)
+	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -306,7 +360,10 @@ func (r *IntegrationPagerDuty) Update(ctx context.Context, req resource.UpdateRe
 	}
 
 	found.Service = data.Service.ValueString()
-	found.IntegrationKey = data.IntegrationKey.ValueString()
+	// A nil value means the write-only key has not changed, so keep the one Sentry has.
+	if integrationKey.Value != nil {
+		found.IntegrationKey = *integrationKey.Value
+	}
 
 	configDataJSON, err := json.Marshal(specificIntegration.ConfigData)
 	if err != nil {
@@ -372,8 +429,12 @@ func (r *IntegrationPagerDuty) Update(ctx context.Context, req resource.UpdateRe
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	if integrationKey.InUse {
+		data.IntegrationKey = types.StringNull()
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(setWriteOnlyInUse(ctx, resp.Private, "integration_key", integrationKey.InUse)...)
 }
 
 func (r *IntegrationPagerDuty) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {

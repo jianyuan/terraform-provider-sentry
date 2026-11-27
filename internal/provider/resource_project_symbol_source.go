@@ -3,14 +3,19 @@ package provider
 import (
 	"context"
 	"net/http"
+	"net/url"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-sentry/v2/sentry"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
@@ -18,25 +23,93 @@ import (
 )
 
 type ProjectSymbolSourcesResourceModel struct {
-	Id                   types.String                             `tfsdk:"id"`
-	Organization         types.String                             `tfsdk:"organization"`
-	Project              types.String                             `tfsdk:"project"`
-	Type                 types.String                             `tfsdk:"type"`
-	Name                 types.String                             `tfsdk:"name"`
-	Layout               *ProjectSymbolSourcesResourceLayoutModel `tfsdk:"layout"`
-	AppConnectIssuer     types.String                             `tfsdk:"app_connect_issuer"`
-	AppConnectPrivateKey types.String                             `tfsdk:"app_connect_private_key"`
-	AppId                types.String                             `tfsdk:"app_id"`
-	Url                  types.String                             `tfsdk:"url"`
-	Username             types.String                             `tfsdk:"username"`
-	Password             types.String                             `tfsdk:"password"`
-	Bucket               types.String                             `tfsdk:"bucket"`
-	Region               types.String                             `tfsdk:"region"`
-	AccessKey            types.String                             `tfsdk:"access_key"`
-	SecretKey            types.String                             `tfsdk:"secret_key"`
-	Prefix               types.String                             `tfsdk:"prefix"`
-	ClientEmail          types.String                             `tfsdk:"client_email"`
-	PrivateKey           types.String                             `tfsdk:"private_key"`
+	Id                            types.String                             `tfsdk:"id"`
+	Organization                  types.String                             `tfsdk:"organization"`
+	Project                       types.String                             `tfsdk:"project"`
+	Type                          types.String                             `tfsdk:"type"`
+	Name                          types.String                             `tfsdk:"name"`
+	Layout                        *ProjectSymbolSourcesResourceLayoutModel `tfsdk:"layout"`
+	AppConnectIssuer              types.String                             `tfsdk:"app_connect_issuer"`
+	AppConnectPrivateKey          types.String                             `tfsdk:"app_connect_private_key"`
+	AppConnectPrivateKeyWo        types.String                             `tfsdk:"app_connect_private_key_wo"`
+	AppConnectPrivateKeyWoVersion types.Int64                              `tfsdk:"app_connect_private_key_wo_version"`
+	AppId                         types.String                             `tfsdk:"app_id"`
+	Url                           types.String                             `tfsdk:"url"`
+	Username                      types.String                             `tfsdk:"username"`
+	Password                      types.String                             `tfsdk:"password"`
+	PasswordWo                    types.String                             `tfsdk:"password_wo"`
+	PasswordWoVersion             types.Int64                              `tfsdk:"password_wo_version"`
+	Bucket                        types.String                             `tfsdk:"bucket"`
+	Region                        types.String                             `tfsdk:"region"`
+	AccessKey                     types.String                             `tfsdk:"access_key"`
+	SecretKey                     types.String                             `tfsdk:"secret_key"`
+	SecretKeyWo                   types.String                             `tfsdk:"secret_key_wo"`
+	SecretKeyWoVersion            types.Int64                              `tfsdk:"secret_key_wo_version"`
+	Prefix                        types.String                             `tfsdk:"prefix"`
+	ClientEmail                   types.String                             `tfsdk:"client_email"`
+	PrivateKey                    types.String                             `tfsdk:"private_key"`
+	PrivateKeyWo                  types.String                             `tfsdk:"private_key_wo"`
+	PrivateKeyWoVersion           types.Int64                              `tfsdk:"private_key_wo_version"`
+}
+
+// projectSymbolSourceSecret is a secret of a symbol source that can be set
+// through either a regular attribute or a write-only attribute.
+type projectSymbolSourceSecret struct {
+	// attr is the name of the regular attribute.
+	attr string
+	// fields returns the value of the regular attribute and the version of the
+	// write-only value.
+	fields func(m *ProjectSymbolSourcesResourceModel) (plain types.String, version types.Int64)
+	// set sets the secret in an update request body.
+	set func(b *projectSymbolSourceUpdateBody, v any)
+}
+
+var projectSymbolSourceSecrets = []projectSymbolSourceSecret{
+	{
+		attr: "app_connect_private_key",
+		fields: func(m *ProjectSymbolSourcesResourceModel) (types.String, types.Int64) {
+			return m.AppConnectPrivateKey, m.AppConnectPrivateKeyWoVersion
+		},
+		set: func(b *projectSymbolSourceUpdateBody, v any) { b.AppConnectPrivateKey = v },
+	},
+	{
+		attr: "password",
+		fields: func(m *ProjectSymbolSourcesResourceModel) (types.String, types.Int64) {
+			return m.Password, m.PasswordWoVersion
+		},
+		set: func(b *projectSymbolSourceUpdateBody, v any) { b.Password = v },
+	},
+	{
+		attr: "secret_key",
+		fields: func(m *ProjectSymbolSourcesResourceModel) (types.String, types.Int64) {
+			return m.SecretKey, m.SecretKeyWoVersion
+		},
+		set: func(b *projectSymbolSourceUpdateBody, v any) { b.SecretKey = v },
+	},
+	{
+		attr: "private_key",
+		fields: func(m *ProjectSymbolSourcesResourceModel) (types.String, types.Int64) {
+			return m.PrivateKey, m.PrivateKeyWoVersion
+		},
+		set: func(b *projectSymbolSourceUpdateBody, v any) { b.PrivateKey = v },
+	},
+}
+
+// projectSymbolSourceHiddenSecret is how Sentry returns a secret, and tells
+// Sentry to keep the stored value when sent in an update. An update replaces
+// the whole source, so a secret left out of it is removed or, if the source
+// type requires it, rejected.
+var projectSymbolSourceHiddenSecret = map[string]bool{"hidden-secret": true}
+
+// projectSymbolSourceUpdateBody is the update request body. Its secret fields
+// shadow the ones in the embedded params, so they can hold either a string or
+// projectSymbolSourceHiddenSecret.
+type projectSymbolSourceUpdateBody struct {
+	*sentry.UpdateProjectSymbolSourceParams
+	AppConnectPrivateKey any `json:"appconnectPrivateKey,omitempty"`
+	Password             any `json:"password,omitempty"`
+	SecretKey            any `json:"secret_key,omitempty"`
+	PrivateKey           any `json:"private_key,omitempty"`
 }
 
 func (data *ProjectSymbolSourcesResourceModel) Fill(source sentry.ProjectSymbolSource) error {
@@ -65,6 +138,7 @@ func (data *ProjectSymbolSourcesResourceModel) Fill(source sentry.ProjectSymbolS
 var _ resource.Resource = &ProjectSymbolSourcesResource{}
 var _ resource.ResourceWithConfigure = &ProjectSymbolSourcesResource{}
 var _ resource.ResourceWithImportState = &ProjectSymbolSourcesResource{}
+var _ resource.ResourceWithConfigValidators = &ProjectSymbolSourcesResource{}
 
 func NewProjectSymbolSourcesResource() resource.Resource {
 	return &ProjectSymbolSourcesResource{}
@@ -99,7 +173,10 @@ func (r *ProjectSymbolSourcesResource) Metadata(ctx context.Context, req resourc
 
 func (r *ProjectSymbolSourcesResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Sentry Project Symbol Source. See the [Sentry documentation](https://docs.sentry.io/api/projects/add-a-symbol-source-to-a-project/) for more information.",
+		MarkdownDescription: "Sentry Project Symbol Source. See the [Sentry documentation](https://docs.sentry.io/api/projects/add-a-symbol-source-to-a-project/) for more information.\n\n" +
+			"Each secret (`app_connect_private_key`, `password`, `secret_key` and `private_key`) can instead be set through a write-only `<name>_wo` attribute, which is not stored in the Terraform state. " +
+			"Write-only attributes require Terraform 1.11 or later. Change `<name>_wo_version` to send a new value.\n\n" +
+			"Sentry does not return these secrets, so neither the secrets nor their write-only attributes are populated on import.",
 
 		Attributes: map[string]schema.Attribute{
 			"id":           ResourceIdAttribute(),
@@ -157,13 +234,15 @@ func (r *ProjectSymbolSourcesResource) Schema(ctx context.Context, req resource.
 				Optional:    true,
 			},
 			"app_connect_private_key": schema.StringAttribute{
-				Description: "The App Store Connect API Private Key. Required for AppStoreConnect sources, invalid for all others.",
+				Description: "The App Store Connect API Private Key. Required for AppStoreConnect sources, invalid for all others. Conflicts with `app_connect_private_key_wo`.",
 				Optional:    true,
 				Sensitive:   true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
+			"app_connect_private_key_wo":         writeOnlyStringAttribute("app_connect_private_key", "The App Store Connect API Private Key. Required for AppStoreConnect sources unless `app_connect_private_key` is set, invalid for all others. Conflicts with `app_connect_private_key`."),
+			"app_connect_private_key_wo_version": writeOnlyVersionAttribute("app_connect_private_key"),
 			"app_id": schema.StringAttribute{
 				Description: "The App Store Connect App ID. Required for AppStoreConnect sources, invalid for all others.",
 				Optional:    true,
@@ -177,13 +256,15 @@ func (r *ProjectSymbolSourcesResource) Schema(ctx context.Context, req resource.
 				Optional:    true,
 			},
 			"password": schema.StringAttribute{
-				Description: "The password for accessing the source. Optional for HTTP sources, invalid for all others.",
+				Description: "The password for accessing the source. Optional for HTTP sources, invalid for all others. Conflicts with `password_wo`.",
 				Optional:    true,
 				Sensitive:   true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
+			"password_wo":         writeOnlyStringAttribute("password", "The password for accessing the source. Optional for HTTP sources, invalid for all others. Conflicts with `password`."),
+			"password_wo_version": writeOnlyVersionAttribute("password"),
 			"bucket": schema.StringAttribute{
 				Description: "The GCS or S3 bucket where the source resides. Required for GCS and S3 sourcse, invalid for HTTP and AppStoreConnect sources.",
 				Optional:    true,
@@ -197,13 +278,15 @@ func (r *ProjectSymbolSourcesResource) Schema(ctx context.Context, req resource.
 				Optional:    true,
 			},
 			"secret_key": schema.StringAttribute{
-				Description: "The AWS Secret Access Key.Required for S3 sources, invalid for all others.",
+				Description: "The AWS Secret Access Key.Required for S3 sources, invalid for all others. Conflicts with `secret_key_wo`.",
 				Optional:    true,
 				Sensitive:   true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
+			"secret_key_wo":         writeOnlyStringAttribute("secret_key", "The AWS Secret Access Key. Required for S3 sources unless `secret_key` is set, invalid for all others. Conflicts with `secret_key`."),
+			"secret_key_wo_version": writeOnlyVersionAttribute("secret_key"),
 			"prefix": schema.StringAttribute{
 				Description: "The GCS or S3 prefix. Optional for GCS and S3 sourcse, invalid for HTTP and AppStoreConnect sources.",
 				Optional:    true,
@@ -213,15 +296,62 @@ func (r *ProjectSymbolSourcesResource) Schema(ctx context.Context, req resource.
 				Optional:    true,
 			},
 			"private_key": schema.StringAttribute{
-				Description: "The GCS private key. Required for GCS sources, invalid for all others.",
+				Description: "The GCS private key. Required for GCS sources, invalid for all others. Conflicts with `private_key_wo`.",
 				Optional:    true,
 				Sensitive:   true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
+			"private_key_wo":         writeOnlyStringAttribute("private_key", "The GCS private key. Required for GCS sources unless `private_key` is set, invalid for all others. Conflicts with `private_key`."),
+			"private_key_wo_version": writeOnlyVersionAttribute("private_key"),
 		},
 	}
+}
+
+func (r *ProjectSymbolSourcesResource) ConfigValidators(ctx context.Context) []resource.ConfigValidator {
+	validators := make([]resource.ConfigValidator, 0, len(projectSymbolSourceSecrets))
+	for _, secret := range projectSymbolSourceSecrets {
+		validators = append(validators, resourcevalidator.Conflicting(
+			path.MatchRoot(secret.attr),
+			path.MatchRoot(secret.attr+"_wo"),
+		))
+	}
+	return validators
+}
+
+// resolveSecrets works out what to send for each secret. data is the plan,
+// prior is the state before an update, or nil on create.
+func (r *ProjectSymbolSourcesResource) resolveSecrets(
+	ctx context.Context,
+	config tfsdk.Config,
+	data *ProjectSymbolSourcesResourceModel,
+	prior *ProjectSymbolSourcesResourceModel,
+	private privateState,
+) (secrets map[string]writeOnlySecret, diags diag.Diagnostics) {
+	secrets = make(map[string]writeOnlySecret, len(projectSymbolSourceSecrets))
+	for _, secret := range projectSymbolSourceSecrets {
+		plain, version := secret.fields(data)
+
+		var priorVersion *types.Int64
+		if prior != nil {
+			_, v := secret.fields(prior)
+			priorVersion = &v
+		}
+
+		resolved, d := resolveWriteOnlySecretFromConfig(ctx, config, private, secret.attr, plain, version, priorVersion)
+		diags.Append(d...)
+		secrets[secret.attr] = resolved
+	}
+	return
+}
+
+// saveSecretsInUse records in private state which write-only secrets are in use.
+func saveSecretsInUse(ctx context.Context, private privateState, secrets map[string]writeOnlySecret) (diags diag.Diagnostics) {
+	for attr, secret := range secrets {
+		diags.Append(setWriteOnlyInUse(ctx, private, attr, secret.InUse)...)
+	}
+	return
 }
 
 func (r *ProjectSymbolSourcesResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -232,22 +362,28 @@ func (r *ProjectSymbolSourcesResource) Create(ctx context.Context, req resource.
 		return
 	}
 
+	secrets, diags := r.resolveSecrets(ctx, req.Config, &data, nil, resp.Private)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	params := &sentry.CreateProjectSymbolSourceParams{
 		Type:                 data.Type.ValueStringPointer(),
 		Name:                 data.Name.ValueStringPointer(),
 		AppConnectIssuer:     data.AppConnectIssuer.ValueStringPointer(),
-		AppConnectPrivateKey: data.AppConnectPrivateKey.ValueStringPointer(),
+		AppConnectPrivateKey: secrets["app_connect_private_key"].Value,
 		AppId:                data.AppId.ValueStringPointer(),
 		Url:                  data.Url.ValueStringPointer(),
 		Username:             data.Username.ValueStringPointer(),
-		Password:             data.Password.ValueStringPointer(),
+		Password:             secrets["password"].Value,
 		Bucket:               data.Bucket.ValueStringPointer(),
 		Region:               data.Region.ValueStringPointer(),
 		AccessKey:            data.AccessKey.ValueStringPointer(),
-		SecretKey:            data.SecretKey.ValueStringPointer(),
+		SecretKey:            secrets["secret_key"].Value,
 		Prefix:               data.Prefix.ValueStringPointer(),
 		ClientEmail:          data.ClientEmail.ValueStringPointer(),
-		PrivateKey:           data.PrivateKey.ValueStringPointer(),
+		PrivateKey:           secrets["private_key"].Value,
 	}
 	if data.Layout != nil {
 		params.Layout = &sentry.ProjectSymbolSourceLayout{
@@ -273,6 +409,7 @@ func (r *ProjectSymbolSourcesResource) Create(ctx context.Context, req resource.
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(saveSecretsInUse(ctx, resp.Private, secrets)...)
 }
 
 func (r *ProjectSymbolSourcesResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -323,49 +460,74 @@ func (r *ProjectSymbolSourcesResource) Update(ctx context.Context, req resource.
 		return
 	}
 
-	params := &sentry.UpdateProjectSymbolSourceParams{
-		ID:                   data.Id.ValueStringPointer(),
-		Type:                 data.Type.ValueStringPointer(),
-		Name:                 data.Name.ValueStringPointer(),
-		AppConnectIssuer:     data.AppConnectIssuer.ValueStringPointer(),
-		AppConnectPrivateKey: data.AppConnectPrivateKey.ValueStringPointer(),
-		AppId:                data.AppId.ValueStringPointer(),
-		Url:                  data.Url.ValueStringPointer(),
-		Username:             data.Username.ValueStringPointer(),
-		Password:             data.Password.ValueStringPointer(),
-		Bucket:               data.Bucket.ValueStringPointer(),
-		Region:               data.Region.ValueStringPointer(),
-		AccessKey:            data.AccessKey.ValueStringPointer(),
-		SecretKey:            data.SecretKey.ValueStringPointer(),
-		Prefix:               data.Prefix.ValueStringPointer(),
-		ClientEmail:          data.ClientEmail.ValueStringPointer(),
-		PrivateKey:           data.PrivateKey.ValueStringPointer(),
+	var state ProjectSymbolSourcesResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	secrets, diags := r.resolveSecrets(ctx, req.Config, &data, &state, req.Private)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	body := &projectSymbolSourceUpdateBody{
+		UpdateProjectSymbolSourceParams: &sentry.UpdateProjectSymbolSourceParams{
+			ID:               data.Id.ValueStringPointer(),
+			Type:             data.Type.ValueStringPointer(),
+			Name:             data.Name.ValueStringPointer(),
+			AppConnectIssuer: data.AppConnectIssuer.ValueStringPointer(),
+			AppId:            data.AppId.ValueStringPointer(),
+			Url:              data.Url.ValueStringPointer(),
+			Username:         data.Username.ValueStringPointer(),
+			Bucket:           data.Bucket.ValueStringPointer(),
+			Region:           data.Region.ValueStringPointer(),
+			AccessKey:        data.AccessKey.ValueStringPointer(),
+			Prefix:           data.Prefix.ValueStringPointer(),
+			ClientEmail:      data.ClientEmail.ValueStringPointer(),
+		},
 	}
 	if data.Layout != nil {
-		params.Layout = &sentry.ProjectSymbolSourceLayout{
+		body.Layout = &sentry.ProjectSymbolSourceLayout{
 			Type:   data.Layout.Type.ValueStringPointer(),
 			Casing: data.Layout.Casing.ValueStringPointer(),
 		}
 	}
+	for _, secret := range projectSymbolSourceSecrets {
+		switch s := secrets[secret.attr]; {
+		case s.Value != nil:
+			secret.set(body, *s.Value)
+		case s.Keep:
+			secret.set(body, projectSymbolSourceHiddenSecret)
+		}
+	}
 
-	source, _, err := r.client.ProjectSymbolSources.Update(
-		ctx,
-		data.Organization.ValueString(),
-		data.Project.ValueString(),
-		data.Id.ValueString(),
-		params,
+	// The go-sentry update params only take strings for secrets, so build the
+	// request here to be able to send projectSymbolSourceHiddenSecret.
+	httpReq, err := r.client.NewRequest(
+		http.MethodPut,
+		"0/projects/"+data.Organization.ValueString()+"/"+data.Project.ValueString()+"/symbol-sources/?id="+url.QueryEscape(data.Id.ValueString()),
+		body,
 	)
 	if err != nil {
 		resp.Diagnostics.Append(diagutils.NewClientError("update", err))
 		return
 	}
 
-	if err := data.Fill(*source); err != nil {
+	var source sentry.ProjectSymbolSource
+	if _, err := r.client.Do(ctx, httpReq, &source); err != nil {
+		resp.Diagnostics.Append(diagutils.NewClientError("update", err))
+		return
+	}
+
+	if err := data.Fill(source); err != nil {
 		resp.Diagnostics.Append(diagutils.NewFillError(err))
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(saveSecretsInUse(ctx, resp.Private, secrets)...)
 }
 
 func (r *ProjectSymbolSourcesResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {

@@ -12,9 +12,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/resourceid"
@@ -122,45 +124,7 @@ func TestAccIntegrationOpsgenieResource(t *testing.T) {
 			}
 		},
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		CheckDestroy: func(s *terraform.State) error {
-			for _, rs := range s.RootModule().Resources {
-				if rs.Type != "sentry_integration_opsgenie" {
-					continue
-				}
-
-				ctx := context.Background()
-				httpResp, err := acctest.SharedApiClient.GetOrganizationIntegrationWithResponse(
-					ctx,
-					rs.Primary.Attributes["organization"],
-					rs.Primary.Attributes["integration_id"],
-				)
-
-				if err != nil {
-					return err
-				} else if httpResp.StatusCode() == http.StatusNotFound {
-					return nil
-				} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
-					return fmt.Errorf("failed to read Opsgenie integration: %s", httpResp.Status())
-				}
-
-				integration := *httpResp.JSON200
-
-				specificIntegration, err := integration.AsOrganizationIntegrationOpsgenie()
-				if err != nil {
-					return err
-				}
-
-				for _, i := range specificIntegration.ConfigData.TeamTable {
-					if i.Id == rs.Primary.ID {
-						return fmt.Errorf("Opsgenie service %q still exists", rs.Primary.ID)
-					}
-				}
-
-				return nil
-			}
-
-			return nil
-		},
+		CheckDestroy:             testAccCheckIntegrationOpsgenieResourceDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccIntegrationOpsgenieResourceConfig(teamName),
@@ -207,4 +171,119 @@ resource "sentry_integration_opsgenie" "test" {
 	integration_key = "%[4]s"
 }
 `, acctest.TestOrganization, acctest.TestOpsgenieOrganization, teamName, acctest.TestOpsgenieIntegrationKey)
+}
+
+func testAccCheckIntegrationOpsgenieResourceDestroy(s *terraform.State) error {
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "sentry_integration_opsgenie" {
+			continue
+		}
+
+		ctx := context.Background()
+		httpResp, err := acctest.SharedApiClient.GetOrganizationIntegrationWithResponse(
+			ctx,
+			rs.Primary.Attributes["organization"],
+			rs.Primary.Attributes["integration_id"],
+		)
+
+		if err != nil {
+			return err
+		} else if httpResp.StatusCode() == http.StatusNotFound {
+			return nil
+		} else if httpResp.StatusCode() != http.StatusOK || httpResp.JSON200 == nil {
+			return fmt.Errorf("failed to read Opsgenie integration: %s", httpResp.Status())
+		}
+
+		integration := *httpResp.JSON200
+
+		specificIntegration, err := integration.AsOrganizationIntegrationOpsgenie()
+		if err != nil {
+			return err
+		}
+
+		for _, i := range specificIntegration.ConfigData.TeamTable {
+			if i.Id == rs.Primary.ID {
+				return fmt.Errorf("Opsgenie service %q still exists", rs.Primary.ID)
+			}
+		}
+
+		return nil
+	}
+
+	return nil
+}
+
+func TestAccIntegrationOpsgenieResource_writeOnly(t *testing.T) {
+	teamName := acctest.RandomWithPrefix("tf-opsgenie")
+	rn := "sentry_integration_opsgenie.test"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			acctest.PreCheck(t)
+
+			if acctest.TestOpsgenieOrganization == "" {
+				t.Skip("Skipping test due to missing SENTRY_TEST_OPSGENIE_ORGANIZATION environment variable")
+			}
+			if acctest.TestOpsgenieIntegrationKey == "" {
+				t.Skip("Skipping test due to missing SENTRY_TEST_OPSGENIE_INTEGRATION_KEY environment variable")
+			}
+		},
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.SkipBelow(tfversion.Version1_11_0),
+		},
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckIntegrationOpsgenieResourceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccIntegrationOpsgenieResourceWriteOnlyConfig(teamName, 1),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("team"), knownvalue.StringExact(teamName)),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("integration_key"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("integration_key_wo"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("integration_key_wo_version"), knownvalue.Int64Exact(1)),
+				},
+			},
+			// Bumping the version sends the key again. Sentry validates Opsgenie
+			// keys, so this reuses the one test key.
+			{
+				Config: testAccIntegrationOpsgenieResourceWriteOnlyConfig(teamName, 2),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(rn, plancheck.ResourceActionUpdate),
+					},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("integration_key"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(rn, tfjsonpath.New("integration_key_wo_version"), knownvalue.Int64Exact(2)),
+				},
+			},
+			// Import reads integration_key from Sentry; the write-only attributes are not imported.
+			{
+				ResourceName:            rn,
+				ImportState:             true,
+				ImportStateIdFunc:       resourceid.ImportState3PartIDFunc(rn, "organization", "integration_id", "id"),
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"integration_key", "integration_key_wo", "integration_key_wo_version"},
+			},
+		},
+	})
+}
+
+func testAccIntegrationOpsgenieResourceWriteOnlyConfig(teamName string, integrationKeyVersion int) string {
+	return fmt.Sprintf(`
+data "sentry_organization_integration" "opsgenie" {
+	organization = "%[1]s"
+	provider_key = "opsgenie"
+	name         = "%[2]s"
+}
+
+resource "sentry_integration_opsgenie" "test" {
+	organization               = data.sentry_organization_integration.opsgenie.organization
+	integration_id             = data.sentry_organization_integration.opsgenie.id
+	team                       = "%[3]s"
+	integration_key_wo         = "%[4]s"
+	integration_key_wo_version = %[5]d
+}
+`, acctest.TestOrganization, acctest.TestOpsgenieOrganization, teamName, acctest.TestOpsgenieIntegrationKey, integrationKeyVersion)
 }

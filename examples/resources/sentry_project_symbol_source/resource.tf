@@ -74,3 +74,28 @@ resource "sentry_project_symbol_source" "s3" {
   access_key = "access_key"
   secret_key = "secret_key"
 }
+
+# Keep the secret out of the Terraform state with a write-only attribute
+# (Terraform 1.11 or later). Increment `secret_key_wo_version` to send a new
+# value.
+variable "s3_secret_key" {
+  type      = string
+  sensitive = true
+  ephemeral = true
+}
+
+resource "sentry_project_symbol_source" "s3_write_only" {
+  organization = sentry_project.default.organization
+  project      = sentry_project.default.id
+  type         = "s3"
+  name         = "Amazon S3"
+  layout = {
+    type   = "native"
+    casing = "default"
+  }
+  bucket                = "s3-bucket-name"
+  region                = "us-east-1"
+  access_key            = "access_key"
+  secret_key_wo         = var.s3_secret_key
+  secret_key_wo_version = 1
+}
