@@ -72,4 +72,4 @@ jobs:
           SENTRY_TEST_PAGERDUTY_ORGANIZATION: ${{ secrets.SENTRY_TEST_PAGERDUTY_ORGANIZATION }}
           SENTRY_TEST_VSTS_INSTALLATION_ID: ${{ secrets.SENTRY_TEST_VSTS_INSTALLATION_ID }}
           SENTRY_TEST_VSTS_REPOSITORY_IDENTIFIER: ${{ secrets.SENTRY_TEST_VSTS_REPOSITORY_IDENTIFIER }}
-        run: go tool gotestsum --format github-actions -- -cover -timeout 60m ./internal/provider/
+        run: go tool gotestsum --format github-actions -- -cover -timeout 60m -parallel=8 ./internal/provider/

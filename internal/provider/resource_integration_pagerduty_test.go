@@ -20,7 +20,7 @@ func TestAccIntegrationPagerDutyResource(t *testing.T) {
 	integrationKey := acctest.RandomWithPrefix("tf-integration-key")
 	rn := "sentry_integration_pagerduty.test"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.PreCheck(t)
 

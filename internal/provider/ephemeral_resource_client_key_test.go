@@ -75,7 +75,7 @@ func TestAccClientKeyEphemeralResource_id(t *testing.T) {
 	projectName := acctest.RandomWithPrefix("tf-project")
 	keyName := acctest.RandomWithPrefix("tf-key")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactoriesWithEcho,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -100,7 +100,7 @@ func TestAccClientKeyEphemeralResource_name(t *testing.T) {
 	projectName := acctest.RandomWithPrefix("tf-project")
 	keyName := acctest.RandomWithPrefix("tf-key")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactoriesWithEcho,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -125,7 +125,7 @@ func TestAccClientKeyEphemeralResource_first(t *testing.T) {
 	projectName := acctest.RandomWithPrefix("tf-project")
 	keyName := acctest.RandomWithPrefix("tf-key")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactoriesWithEcho,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{

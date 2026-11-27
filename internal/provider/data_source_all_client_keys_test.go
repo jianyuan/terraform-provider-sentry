@@ -15,7 +15,7 @@ func TestAccAllClientKeysDataSource(t *testing.T) {
 	project := acctest.RandomWithPrefix("tf-project")
 	rn := "data.sentry_all_keys.test"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{

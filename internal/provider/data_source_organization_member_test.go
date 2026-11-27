@@ -13,7 +13,7 @@ func TestAccOrganizationMemberDataSource(t *testing.T) {
 	dn := "data.sentry_organization_member.test"
 	email := acctest.RandomWithPrefix("tf-member") + "@example.com"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{

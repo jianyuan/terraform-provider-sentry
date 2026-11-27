@@ -17,7 +17,7 @@ func TestAccAllOrganizationMembersDataSource(t *testing.T) {
 	email := acctest.RandomWithPrefix("tf-member") + "@example.com"
 	role := "member"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{

@@ -22,7 +22,7 @@ func TestAccIssueAlertResource_validation(t *testing.T) {
 	project := acctest.RandomWithPrefix("tf-project")
 	alert := acctest.RandomWithPrefix("tf-issue-alert")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -142,7 +142,7 @@ func TestAccIssueAlertResource_basic(t *testing.T) {
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("actions"), knownvalue.Null()),
 	}
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		// TODO: Precheck acctest.TestOpsgenieIntegrationKey
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -706,7 +706,7 @@ func TestAccIssueAlertResource_importRoundTrip(t *testing.T) {
 		}),
 	}))
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccCheckIssueAlertDestroy,
@@ -785,7 +785,7 @@ func TestAccIssueAlertResource_emptyArray(t *testing.T) {
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters_v2"), knownvalue.Null()),
 	}
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccCheckIssueAlertDestroy,
@@ -872,7 +872,7 @@ func TestAccIssueAlertResource_jsonValues(t *testing.T) {
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("actions"), knownvalue.NotNull()),
 	}
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccCheckIssueAlertDestroy,
@@ -939,7 +939,7 @@ func TestAccIssueAlertResource_jsonValues_emptyArray(t *testing.T) {
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("filters_v2"), knownvalue.Null()),
 	}
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccCheckIssueAlertDestroy,
@@ -1048,7 +1048,7 @@ func TestAccIssueAlertResource_slackChannelNormalization(t *testing.T) {
 
 	channelIdCheck := knownvalue.StringRegexp(regexp.MustCompile(`^[CGD][A-Z0-9]+$`))
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccCheckIssueAlertDestroy,
@@ -1090,7 +1090,7 @@ func TestAccIssueAlertResource_forExpression(t *testing.T) {
 	project := acctest.RandomWithPrefix("tf-project")
 	alert := acctest.RandomWithPrefix("tf-issue-alert")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccCheckIssueAlertDestroy,

@@ -1,5 +1,6 @@
 SWEEP ?= cloud
 SWEEP_TIMEOUT ?= 360m
+TESTACC_PARALLEL ?= 8
 
 default: fmt lint install generate
 
@@ -32,7 +33,7 @@ test:
 
 .PHONY: testacc
 testacc:
-	TF_ACC=1 go test ./... -v -cover -timeout 120m $(TESTARGS)
+	TF_ACC=1 go test ./... -v -cover -timeout 120m -parallel=$(TESTACC_PARALLEL) $(TESTARGS)
 
 .PHONY: sweep
 sweep:

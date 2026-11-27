@@ -28,7 +28,7 @@ func TestAccAlertDataSource_basic(t *testing.T) {
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("action_filters_json"), acctest.StringJson()),
 	}
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{

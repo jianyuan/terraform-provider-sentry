@@ -202,7 +202,7 @@ func TestAccProjectResource_basic(t *testing.T) {
 		}
 	}
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccCheckProjectDestroy,
@@ -378,7 +378,7 @@ func TestAccProjectResource_filters(t *testing.T) {
 		})),
 	}
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccCheckProjectDestroy,
@@ -500,7 +500,7 @@ func TestAccProjectResource_relayAutomaticJsonExpansion(t *testing.T) {
 		})),
 	}
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccCheckProjectDestroy,
@@ -586,7 +586,7 @@ func TestAccProjectResource_issueGrouping(t *testing.T) {
 		})),
 	}
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccCheckProjectDestroy,
@@ -671,7 +671,7 @@ func TestAccProjectResource_dataScrubbing(t *testing.T) {
 
 	const relayPiiConfig = `{"applications":{"$message":["0"],"extra.foo":["1"]},"rules":{"0":{"redaction":{"method":"mask"},"type":"creditcard"},"1":{"redaction":{"method":"remove"},"type":"anything"}}}`
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccCheckProjectDestroy,
@@ -768,7 +768,7 @@ func TestAccProjectResource_noDefaultKeyOnCreate(t *testing.T) {
 	projectName := acctest.RandomWithPrefix("tf-project")
 	rn := "sentry_project.test"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccCheckProjectDestroy,
@@ -948,7 +948,7 @@ func TestAccProjectResource_validation(t *testing.T) {
 	teamName := acctest.RandomWithPrefix("tf-team")
 	projectName := acctest.RandomWithPrefix("tf-project")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccCheckProjectDestroy,
@@ -1019,7 +1019,7 @@ func TestAccProjectResource_upgradeFromVersion(t *testing.T) {
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("features"), knownvalue.NotNull()),
 	}
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acctest.PreCheck(t) },
 		CheckDestroy: testAccCheckProjectDestroy,
 		Steps: []resource.TestStep{

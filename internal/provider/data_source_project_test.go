@@ -23,7 +23,7 @@ func TestAccProjectDataSource(t *testing.T) {
 		statecheck.ExpectKnownValue(rn, tfjsonpath.New("is_public"), knownvalue.NotNull()),
 	}
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{

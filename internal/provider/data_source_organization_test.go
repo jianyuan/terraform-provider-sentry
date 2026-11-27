@@ -15,7 +15,7 @@ import (
 func TestAccOrganizationDataSource(t *testing.T) {
 	rn := "data.sentry_organization.test"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{

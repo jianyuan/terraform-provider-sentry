@@ -19,7 +19,7 @@ func TestAccProjectOwnershipResource(t *testing.T) {
 	autoAssignment := "Auto Assign to Issue Owner"
 	raw := fmt.Sprintf("path:src/views/* #%s", acctest.TestTeam.Slug)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -64,7 +64,7 @@ func TestAccProjectOwnershipResource_IllegalAutoAssignment(t *testing.T) {
 	autoAssignment := "This auto-assignment mode is not supported"
 	raw := fmt.Sprintf("path:src/views/* #%s", acctest.TestTeam.Slug)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{

@@ -15,7 +15,7 @@ func TestAccTeamMemberResource(t *testing.T) {
 	member1Email := acctest.RandomWithPrefix("tf-member") + "@example.com"
 	member2Email := acctest.RandomWithPrefix("tf-member") + "@example.com"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -70,7 +70,7 @@ func TestAccTeamMemberResource_teamDeletedOutOfBand(t *testing.T) {
 	team := acctest.RandomWithPrefix("tf-team")
 	memberEmail := acctest.RandomWithPrefix("tf-member") + "@example.com"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -131,7 +131,7 @@ func TestAccTeamMemberResource_minimumPriority(t *testing.T) {
 	team := acctest.RandomWithPrefix("tf-team")
 	memberEmail := acctest.RandomWithPrefix("tf-member") + "@example.com"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
