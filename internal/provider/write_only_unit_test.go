@@ -25,6 +25,7 @@ import (
 )
 
 func TestResolveWriteOnlySecret(t *testing.T) {
+	t.Parallel()
 	plain := types.StringValue("plain")
 	writeOnly := types.StringValue("write-only")
 	null := types.StringNull()
@@ -207,6 +208,7 @@ func expectSecretKey(f *fakeSymbolSourceAPI, sent any, stored string) resource.T
 }
 
 func TestProjectSymbolSourceResource_writeOnlyFakeApi(t *testing.T) {
+	t.Parallel()
 	rn := "sentry_project_symbol_source.test"
 	f, server := newFakeSymbolSourceAPI(t)
 	hidden := map[string]any{"hidden-secret": true}
@@ -291,6 +293,7 @@ func TestProjectSymbolSourceResource_writeOnlyFakeApi(t *testing.T) {
 }
 
 func TestProjectSymbolSourceResource_writeOnlyValidation(t *testing.T) {
+	t.Parallel()
 	resource.UnitTest(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.SkipBelow(tfversion.Version1_11_0),
@@ -428,8 +431,10 @@ func expectIntegrationKey(f *fakeIntegrationAPI, name, key string) resource.Test
 }
 
 func TestIntegrationResources_writeOnlyFakeApi(t *testing.T) {
+	t.Parallel()
 	for _, tc := range writeOnlyIntegrationTestCases {
 		t.Run(tc.resourceType, func(t *testing.T) {
+			t.Parallel()
 			rn := tc.resourceType + ".test"
 			f, server := newFakeIntegrationAPI(t, tc.providerKey, tc.tableKey, tc.nameKey)
 			config := func(name, keyAttrs string) string {
@@ -519,8 +524,10 @@ func TestIntegrationResources_writeOnlyFakeApi(t *testing.T) {
 // The regular integration_key attribute keeps working as before, including
 // being read back from Sentry on refresh and import.
 func TestIntegrationResources_integrationKeyFakeApi(t *testing.T) {
+	t.Parallel()
 	for _, tc := range writeOnlyIntegrationTestCases {
 		t.Run(tc.resourceType, func(t *testing.T) {
+			t.Parallel()
 			rn := tc.resourceType + ".test"
 			f, server := newFakeIntegrationAPI(t, tc.providerKey, tc.tableKey, tc.nameKey)
 
@@ -547,8 +554,10 @@ func TestIntegrationResources_integrationKeyFakeApi(t *testing.T) {
 }
 
 func TestIntegrationResources_writeOnlyValidation(t *testing.T) {
+	t.Parallel()
 	for _, tc := range writeOnlyIntegrationTestCases {
 		t.Run(tc.resourceType, func(t *testing.T) {
+			t.Parallel()
 			config := func(keyAttrs string) string {
 				return testIntegrationWriteOnlyFakeConfig("http://127.0.0.1:1", tc.resourceType, tc.nameKey, "svc", keyAttrs)
 			}
@@ -585,6 +594,7 @@ func TestIntegrationResources_writeOnlyValidation(t *testing.T) {
 // The update body must put each secret under the key Sentry uses for it, as a
 // string or as the hidden secret marker, and leave unset secrets out.
 func TestProjectSymbolSourceUpdateBody_secrets(t *testing.T) {
+	t.Parallel()
 	jsonKeys := map[string]string{
 		"app_connect_private_key": "appconnectPrivateKey",
 		"password":                "password",

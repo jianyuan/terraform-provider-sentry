@@ -95,7 +95,7 @@ func TestAccProjectSymbolSourceResource_writeOnly(t *testing.T) {
 	rn := "sentry_project_symbol_source.test"
 	project := acctest.RandomWithPrefix("tf-project")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() { acctest.PreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.SkipBelow(tfversion.Version1_11_0),
