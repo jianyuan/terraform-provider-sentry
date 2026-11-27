@@ -24,6 +24,7 @@ import (
 )
 
 func TestProvider_ephemeralResources(t *testing.T) {
+	t.Parallel()
 	ctx := context.Background()
 
 	server, err := providerserver.NewProtocol6WithError(New("test")())()
@@ -149,6 +150,7 @@ func openClientKeyEphemeralResourceAgainst(t *testing.T, baseURL string, attrs m
 }
 
 func TestClientKeyEphemeralResourceOpen(t *testing.T) {
+	t.Parallel()
 	ctx := context.Background()
 	server := newClientKeyEphemeralTestServer(t)
 
@@ -171,6 +173,7 @@ func TestClientKeyEphemeralResourceOpen(t *testing.T) {
 		{name: "id not found", attrs: map[string]tftypes.Value{"id": tftypes.NewValue(tftypes.String, "missing")}, wantError: "got status 404"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			attrs := map[string]tftypes.Value{}
 			for k, v := range project {
 				attrs[k] = v
@@ -217,6 +220,7 @@ func TestClientKeyEphemeralResourceOpen(t *testing.T) {
 }
 
 func TestClientKeyEphemeralResource_echo(t *testing.T) {
+	t.Parallel()
 	server := newClientKeyEphemeralTestServer(t)
 
 	for _, tc := range []struct {
@@ -229,6 +233,7 @@ func TestClientKeyEphemeralResource_echo(t *testing.T) {
 		{name: "first", extras: `first = true`, wantId: "aaa"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			resource.UnitTest(t, resource.TestCase{
 				ProtoV6ProviderFactories: testAccProtoV6ProviderFactoriesWithEcho,
 				TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -269,6 +274,7 @@ resource "echo" "test" {}
 }
 
 func TestClientKeyEphemeralResource_conflictingLookups(t *testing.T) {
+	t.Parallel()
 	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactoriesWithEcho,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
