@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -21,21 +19,10 @@ import (
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	intresource "github.com/jianyuan/terraform-provider-sentry/internal/resource"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
 	"github.com/oapi-codegen/nullable"
 	"github.com/samber/lo"
 )
-
-var numericIdRegexp = regexp.MustCompile(`^[0-9]+$`)
-
-// parseNumericId converts a numeric string attribute into the integer the Sentry API expects.
-func parseNumericId(attrPath path.Path, value types.String) (int64, diag.Diagnostics) {
-	var diags diag.Diagnostics
-	v, err := strconv.ParseInt(value.ValueString(), 10, 64)
-	if err != nil {
-		diags.AddAttributeError(attrPath, "Invalid ID", fmt.Sprintf("Expected a numeric ID, got %q.", value.ValueString()))
-	}
-	return v, diags
-}
 
 // externalIdCreateValue omits external_id from a create request when it is not set.
 func externalIdCreateValue(value types.String) nullable.Nullable[string] {
@@ -64,27 +51,31 @@ func withQueryParam(key, value string) apiclient.RequestEditorFn {
 }
 
 type ExternalTeamResourceModel struct {
-	Id            types.String `tfsdk:"id"`
-	Organization  types.String `tfsdk:"organization"`
-	Team          types.String `tfsdk:"team"`
-	ProviderName  types.String `tfsdk:"provider_name"`
-	ExternalName  types.String `tfsdk:"external_name"`
-	IntegrationId types.String `tfsdk:"integration_id"`
-	ExternalId    types.String `tfsdk:"external_id"`
+	Id            types.String              `tfsdk:"id"`
+	Organization  types.String              `tfsdk:"organization"`
+	Team          types.String              `tfsdk:"team"`
+	ProviderName  types.String              `tfsdk:"provider_name"`
+	ExternalName  types.String              `tfsdk:"external_name"`
+	IntegrationId sentrytypes.NumericString `tfsdk:"integration_id"`
+	ExternalId    types.String              `tfsdk:"external_id"`
 }
 
 func (m *ExternalTeamResourceModel) Fill(ctx context.Context, data apiclient.ExternalActor) (diags diag.Diagnostics) {
 	m.Id = types.StringValue(data.Id)
 	m.ProviderName = types.StringValue(data.Provider)
 	m.ExternalName = types.StringValue(data.ExternalName)
-	m.IntegrationId = types.StringValue(data.IntegrationId)
+	m.IntegrationId = sentrytypes.NumericStringValue(data.IntegrationId)
 	m.ExternalId = types.StringPointerValue(data.ExternalId)
 
 	return
 }
 
 func (m ExternalTeamResourceModel) toRequest(update bool) (apiclient.ExternalActorRequest, diag.Diagnostics) {
-	integrationId, diags := parseNumericId(path.Root("integration_id"), m.IntegrationId)
+	var diags diag.Diagnostics
+	integrationId, err := m.IntegrationId.ValueInt64()
+	if err != nil {
+		diags.AddAttributeError(path.Root("integration_id"), "Invalid ID", err.Error())
+	}
 
 	body := apiclient.ExternalActorRequest{
 		Provider:      m.ProviderName.ValueString(),
@@ -153,9 +144,7 @@ func (r *ExternalTeamResource) Schema(ctx context.Context, req resource.SchemaRe
 			"integration_id": schema.StringAttribute{
 				MarkdownDescription: "The ID of the organization integration the mapping belongs to, for example `data.sentry_organization_integration.slack.id`.",
 				Required:            true,
-				Validators: []validator.String{
-					stringvalidator.RegexMatches(numericIdRegexp, "must be a numeric ID"),
-				},
+				CustomType:          sentrytypes.NumericStringType{},
 			},
 			"external_id": schema.StringAttribute{
 				MarkdownDescription: "The ID of the team or channel in the external provider, such as a Slack channel ID (`C0123456789`).",
