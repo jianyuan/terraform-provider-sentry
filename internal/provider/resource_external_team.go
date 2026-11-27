@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -15,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/jianyuan/terraform-plugin-framework-utils/fwschema"
 	"github.com/jianyuan/terraform-plugin-framework-utils/fwtypes"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
@@ -81,7 +81,7 @@ func (r *ExternalTeamResource) Metadata(ctx context.Context, req resource.Metada
 }
 
 func (r *ExternalTeamResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = fwschema.Describe(ctx, schema.Schema{
 		MarkdownDescription: "Sentry External Team. Links a Sentry team to a team or channel in an external provider, such as a Slack channel for team notifications, or a GitHub or GitLab team so that CODEOWNERS team handles resolve to the Sentry team. Sentry only allows this on organizations with the `integrations-codeowners` feature enabled; otherwise the API returns `403 Forbidden`.",
 
 		Attributes: map[string]schema.Attribute{
@@ -101,7 +101,7 @@ func (r *ExternalTeamResource) Schema(ctx context.Context, req resource.SchemaRe
 				},
 			},
 			"provider_name": schema.StringAttribute{
-				MarkdownDescription: "The external provider. Named `provider_name` because `provider` is a reserved Terraform meta-argument. One of: `" + strings.Join(sentrydata.ExternalActorProviders, "`, `") + "`.",
+				MarkdownDescription: "The external provider. Named `provider_name` because `provider` is a reserved Terraform meta-argument.",
 				Required:            true,
 				Validators: []validator.String{
 					stringvalidator.OneOf(sentrydata.ExternalActorProviders...),
@@ -127,7 +127,7 @@ func (r *ExternalTeamResource) Schema(ctx context.Context, req resource.SchemaRe
 				},
 			},
 		},
-	}
+	}, fwschema.Enum())
 }
 
 func (r *ExternalTeamResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
