@@ -23,8 +23,8 @@ import (
 	"github.com/oapi-codegen/nullable"
 )
 
-// externalActorProviders are the providers accepted by Sentry's external team and external user endpoints.
-var externalActorProviders = []string{
+// externalTeamProviders are the providers accepted by Sentry's external team endpoints.
+var externalTeamProviders = []string{
 	"github",
 	"github_enterprise",
 	"jira_server",
@@ -38,49 +38,6 @@ var externalActorProviders = []string{
 }
 
 var numericIdRegexp = regexp.MustCompile(`^[0-9]+$`)
-
-// externalActorFeatureNote is appended to the description of the external team and external user resources.
-const externalActorFeatureNote = "Sentry only allows this on organizations with the `integrations-codeowners` feature enabled; otherwise the API returns `403 Forbidden`."
-
-func externalActorProviderNameAttribute() schema.StringAttribute {
-	return schema.StringAttribute{
-		MarkdownDescription: "The external provider. Named `provider_name` because `provider` is a reserved Terraform meta-argument. One of: `" + strings.Join(externalActorProviders, "`, `") + "`.",
-		Required:            true,
-		Validators: []validator.String{
-			stringvalidator.OneOf(externalActorProviders...),
-		},
-	}
-}
-
-func externalActorExternalNameAttribute(description string) schema.StringAttribute {
-	return schema.StringAttribute{
-		MarkdownDescription: description,
-		Required:            true,
-		Validators: []validator.String{
-			stringvalidator.LengthBetween(1, 255),
-		},
-	}
-}
-
-func externalActorIntegrationIdAttribute() schema.StringAttribute {
-	return schema.StringAttribute{
-		MarkdownDescription: "The ID of the organization integration the mapping belongs to, for example `data.sentry_organization_integration.slack.id`.",
-		Required:            true,
-		Validators: []validator.String{
-			stringvalidator.RegexMatches(numericIdRegexp, "must be a numeric ID"),
-		},
-	}
-}
-
-func externalActorExternalIdAttribute(description string) schema.StringAttribute {
-	return schema.StringAttribute{
-		MarkdownDescription: description,
-		Optional:            true,
-		Validators: []validator.String{
-			stringvalidator.LengthBetween(1, 64),
-		},
-	}
-}
 
 // parseNumericId converts a numeric string attribute into the integer the Sentry API expects.
 func parseNumericId(attrPath path.Path, value types.String) (int64, diag.Diagnostics) {
@@ -173,7 +130,7 @@ func (r *ExternalTeamResource) Metadata(ctx context.Context, req resource.Metada
 
 func (r *ExternalTeamResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Sentry External Team. Links a Sentry team to a team or channel in an external provider, such as a Slack channel for team notifications, or a GitHub or GitLab team so that CODEOWNERS team handles resolve to the Sentry team. " + externalActorFeatureNote,
+		MarkdownDescription: "Sentry External Team. Links a Sentry team to a team or channel in an external provider, such as a Slack channel for team notifications, or a GitHub or GitLab team so that CODEOWNERS team handles resolve to the Sentry team. Sentry only allows this on organizations with the `integrations-codeowners` feature enabled; otherwise the API returns `403 Forbidden`.",
 
 		Attributes: map[string]schema.Attribute{
 			"id": ResourceIdAttribute(),
@@ -191,14 +148,34 @@ func (r *ExternalTeamResource) Schema(ctx context.Context, req resource.SchemaRe
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
-			"provider_name": externalActorProviderNameAttribute(),
-			"external_name": externalActorExternalNameAttribute(
-				"The name of the team or channel in the external provider, such as `#backend-alerts` for a Slack channel or `@my-org/backend` for a GitHub team. GitHub, GitHub Enterprise, GitLab and Cursor names must start with `@`.",
-			),
-			"integration_id": externalActorIntegrationIdAttribute(),
-			"external_id": externalActorExternalIdAttribute(
-				"The ID of the team or channel in the external provider, such as a Slack channel ID (`C0123456789`).",
-			),
+			"provider_name": schema.StringAttribute{
+				MarkdownDescription: "The external provider. Named `provider_name` because `provider` is a reserved Terraform meta-argument. One of: `" + strings.Join(externalTeamProviders, "`, `") + "`.",
+				Required:            true,
+				Validators: []validator.String{
+					stringvalidator.OneOf(externalTeamProviders...),
+				},
+			},
+			"external_name": schema.StringAttribute{
+				MarkdownDescription: "The name of the team or channel in the external provider, such as `#backend-alerts` for a Slack channel or `@my-org/backend` for a GitHub team. GitHub, GitHub Enterprise, GitLab and Cursor names must start with `@`.",
+				Required:            true,
+				Validators: []validator.String{
+					stringvalidator.LengthBetween(1, 255),
+				},
+			},
+			"integration_id": schema.StringAttribute{
+				MarkdownDescription: "The ID of the organization integration the mapping belongs to, for example `data.sentry_organization_integration.slack.id`.",
+				Required:            true,
+				Validators: []validator.String{
+					stringvalidator.RegexMatches(numericIdRegexp, "must be a numeric ID"),
+				},
+			},
+			"external_id": schema.StringAttribute{
+				MarkdownDescription: "The ID of the team or channel in the external provider, such as a Slack channel ID (`C0123456789`).",
+				Optional:            true,
+				Validators: []validator.String{
+					stringvalidator.LengthBetween(1, 64),
+				},
+			},
 		},
 	}
 }

@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 )
 
-// fakeExternalActorStore mimics how Sentry stores external actors: it keys mappings by ID, returns
+// fakeExternalActorStore mimics how Sentry stores external teams: it keys mappings by ID, returns
 // 200 with the existing mapping when a create matches one, and omits `externalId` when it is empty.
 type fakeExternalActorStore struct {
 	mu      sync.Mutex
@@ -29,14 +29,14 @@ func newFakeExternalActorStore() *fakeExternalActorStore {
 	return &fakeExternalActorStore{nextId: 42, actors: map[string]map[string]any{}}
 }
 
-// create stores a mapping from a decoded create request body. actorKey is "teamId" or "userId".
-func (s *fakeExternalActorStore) create(w http.ResponseWriter, body map[string]any, actorKey, actorId string, matchActor bool) {
-
+// create stores a mapping from a decoded create request body. Like Sentry, it matches an existing
+// mapping regardless of the team it belongs to.
+func (s *fakeExternalActorStore) create(w http.ResponseWriter, body map[string]any, teamId string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	for _, a := range s.actors {
-		if a["provider"] == body["provider"] && a["externalName"] == body["external_name"] && (!matchActor || a[actorKey] == actorId) {
+		if a["provider"] == body["provider"] && a["externalName"] == body["external_name"] {
 			_ = json.NewEncoder(w).Encode(a)
 			return
 		}
@@ -50,7 +50,7 @@ func (s *fakeExternalActorStore) create(w http.ResponseWriter, body map[string]a
 		"provider":      body["provider"],
 		"externalName":  body["external_name"],
 		"integrationId": fmt.Sprint(body["integration_id"]),
-		actorKey:        actorId,
+		"teamId":        teamId,
 	}
 	if v, ok := body["external_id"].(string); ok && v != "" {
 		a["externalId"] = v
@@ -61,8 +61,8 @@ func (s *fakeExternalActorStore) create(w http.ResponseWriter, body map[string]a
 	_ = json.NewEncoder(w).Encode(a)
 }
 
-// update applies a partial update. Like Sentry, the response has no `teamId` or `userId`.
-func (s *fakeExternalActorStore) update(w http.ResponseWriter, r *http.Request, id string, actorKey string) {
+// update applies a partial update. Like Sentry, the response has no `teamId`.
+func (s *fakeExternalActorStore) update(w http.ResponseWriter, r *http.Request, id string) {
 	var body map[string]any
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -86,9 +86,6 @@ func (s *fakeExternalActorStore) update(w http.ResponseWriter, r *http.Request, 
 	if v, ok := body["integration_id"]; ok {
 		a["integrationId"] = fmt.Sprint(v)
 	}
-	if v, ok := body["user_id"]; ok && actorKey == "userId" {
-		a["userId"] = fmt.Sprint(v)
-	}
 	if v, ok := body["external_id"]; ok {
 		if s, ok := v.(string); ok && s != "" {
 			a["externalId"] = s
@@ -99,7 +96,7 @@ func (s *fakeExternalActorStore) update(w http.ResponseWriter, r *http.Request, 
 
 	resp := map[string]any{}
 	for k, v := range a {
-		if k != "teamId" && k != "userId" {
+		if k != "teamId" {
 			resp[k] = v
 		}
 	}
@@ -118,14 +115,14 @@ func (s *fakeExternalActorStore) delete(w http.ResponseWriter, id string) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// list returns the mappings whose actorKey matches actorId.
-func (s *fakeExternalActorStore) list(actorKey, actorId string) []map[string]any {
+// list returns the mappings that belong to teamId.
+func (s *fakeExternalActorStore) list(teamId string) []map[string]any {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	out := []map[string]any{}
 	for _, a := range s.actors {
-		if a[actorKey] == actorId {
+		if a["teamId"] == teamId {
 			out = append(out, a)
 		}
 	}
@@ -154,18 +151,17 @@ func newExternalTeamTestServer(t *testing.T, store *fakeExternalActorStore) *htt
 		mux.HandleFunc("GET /api/0/teams/test-org/test-team/", func(w http.ResponseWriter, r *http.Request) {
 			team := map[string]any{"id": "1", "slug": "test-team", "name": "test-team"}
 			if r.URL.Query().Get("expand") == "externalTeams" {
-				team["externalTeams"] = store.list("teamId", "1")
+				team["externalTeams"] = store.list("1")
 			}
 			_ = json.NewEncoder(w).Encode(team)
 		})
 		mux.HandleFunc("POST /api/0/teams/test-org/test-team/external-teams/", func(w http.ResponseWriter, r *http.Request) {
 			var body map[string]any
 			_ = json.NewDecoder(r.Body).Decode(&body)
-			// Like Sentry, match an existing mapping regardless of the team it belongs to.
-			store.create(w, body, "teamId", "1", false)
+			store.create(w, body, "1")
 		})
 		mux.HandleFunc("PUT /api/0/teams/test-org/test-team/external-teams/{id}/", func(w http.ResponseWriter, r *http.Request) {
-			store.update(w, r, r.PathValue("id"), "teamId")
+			store.update(w, r, r.PathValue("id"))
 		})
 		mux.HandleFunc("DELETE /api/0/teams/test-org/test-team/external-teams/{id}/", func(w http.ResponseWriter, r *http.Request) {
 			store.delete(w, r.PathValue("id"))
@@ -236,7 +232,7 @@ func TestExternalTeamResource_lifecycle(t *testing.T) {
 	if store.creates != 1 {
 		t.Fatalf("expected exactly one create, got %d", store.creates)
 	}
-	if n := len(store.list("teamId", "1")); n != 0 {
+	if n := len(store.list("1")); n != 0 {
 		t.Fatalf("expected the mapping to be deleted, %d left", n)
 	}
 }
