@@ -202,3 +202,17 @@ func (m *UptimeMonitorResourceModel) Fill(ctx context.Context, data apiclient.Pr
 func (r *UptimeMonitorResource) postRead(ctx context.Context, data *UptimeMonitorResourceModel, monitor apiclient.ProjectMonitor) diag.Diagnostics {
 	return fillMonitorProject(ctx, r.apiClient, data.Organization.Get(), &data.Project, monitor.ProjectId)
 }
+
+func (r *UptimeMonitorResource) postWrite(_ context.Context, data *UptimeMonitorResourceModel, planned UptimeMonitorResourceModel) diag.Diagnostics {
+	var diags diag.Diagnostics
+	if fwtypes.IsKnown(planned.Enabled) {
+		if fwtypes.IsKnown(data.Enabled) && planned.Enabled.Get() != data.Enabled.Get() {
+			diags.AddWarning(
+				"Sentry returned a different enabled value",
+				fmt.Sprintf("Monitor %q was configured with enabled = %t but Sentry returned enabled = %t. Terraform will retain the configured value for this write; a subsequent refresh will read Sentry's actual state.", planned.Name.Get(), planned.Enabled.Get(), data.Enabled.Get()),
+			)
+		}
+		data.Enabled = planned.Enabled
+	}
+	return diags
+}

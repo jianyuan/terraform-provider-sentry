@@ -156,6 +156,8 @@ export interface Resource {
     modelFillers?: boolean;
     // Call a hand-written `r.postRead(ctx, &data, *responseData)` after Fill in Read.
     postReadHook?: boolean;
+    // Call a hand-written `r.postWrite(ctx, &data, plannedData)` after Fill in Create and Update.
+    postWriteHook?: boolean;
   };
   import?: {
     url?: string;

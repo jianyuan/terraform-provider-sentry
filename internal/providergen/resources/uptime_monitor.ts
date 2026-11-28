@@ -22,6 +22,7 @@ export default {
   generate: {
     modelFillers: false,
     postReadHook: true,
+    postWriteHook: true,
   },
   import: {
     url: "https://{organization}.sentry.io/monitors/{id}/",

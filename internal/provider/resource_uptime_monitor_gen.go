@@ -185,6 +185,8 @@ func (r *UptimeMonitorResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
+	plannedData := data
+
 	body, diags := r.getCreateJSONRequestBody(ctx, data)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -207,6 +209,11 @@ func (r *UptimeMonitorResource) Create(ctx context.Context, req resource.CreateR
 	}
 
 	resp.Diagnostics.Append(data.Fill(ctx, *httpResp.JSON201)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(r.postWrite(ctx, &data, plannedData)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -265,6 +272,8 @@ func (r *UptimeMonitorResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
+	plannedData := data
+
 	body, diags := r.getUpdateJSONRequestBody(ctx, data)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -284,6 +293,11 @@ func (r *UptimeMonitorResource) Update(ctx context.Context, req resource.UpdateR
 	}
 
 	resp.Diagnostics.Append(data.Fill(ctx, *httpResp.JSON200)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(r.postWrite(ctx, &data, plannedData)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
