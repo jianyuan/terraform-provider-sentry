@@ -22,12 +22,16 @@ func init() {
 	resource.AddTestSweepers("sentry_organization_repository", &resource.Sweeper{
 		Name: "sentry_organization_repository",
 		F: func(r string) error {
-			return testAccOrganizationRepositoryResourcePreCheck()
+			return testAccOrganizationRepositoryResourcePreCheck("")
 		},
 	})
 }
 
-func testAccOrganizationRepositoryResourcePreCheck() error {
+// testAccOrganizationRepositoryResourcePreCheck deletes leftover test repositories of the given
+// integration type, or of every type when it is empty. Tests run in parallel, so each
+// must only delete its own: Sentry renames a deleted repository's identifier, which
+// breaks a test whose repository another test deleted.
+func testAccOrganizationRepositoryResourcePreCheck(integrationType string) error {
 	ctx := context.Background()
 
 	listParams := &sentry.ListOrganizationRepositoriesParams{
@@ -57,6 +61,10 @@ func testAccOrganizationRepositoryResourcePreCheck() error {
 				found = true
 			} else if acctest.TestVSTSInstallationId != "" && repo.Provider.ID == "integrations:vsts" && repo.IntegrationId == acctest.TestVSTSInstallationId && externalSlugStr == acctest.TestVSTSRepositoryIdentifier {
 				found = true
+			}
+
+			if integrationType != "" && repo.Provider.ID != "integrations:"+integrationType {
+				found = false
 			}
 
 			if !found {
@@ -97,7 +105,7 @@ func TestAccOrganizationRepositoryResource_GitHub(t *testing.T) {
 				t.Skip("Skipping test due to missing SENTRY_TEST_GITHUB_REPOSITORY_IDENTIFIER environment variable")
 			}
 
-			must.Do(testAccOrganizationRepositoryResourcePreCheck())
+			must.Do(testAccOrganizationRepositoryResourcePreCheck("github"))
 		},
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -139,7 +147,7 @@ func TestAccOrganizationRepositoryResource_GitLab(t *testing.T) {
 				t.Skip("Skipping test due to missing SENTRY_TEST_GITLAB_REPOSITORY_IDENTIFIER environment variable")
 			}
 
-			must.Do(testAccOrganizationRepositoryResourcePreCheck())
+			must.Do(testAccOrganizationRepositoryResourcePreCheck("gitlab"))
 		},
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -181,7 +189,7 @@ func TestAccOrganizationRepositoryResource_VSTS(t *testing.T) {
 				t.Skip("Skipping test due to missing SENTRY_TEST_VSTS_REPOSITORY_IDENTIFIER environment variable")
 			}
 
-			must.Do(testAccOrganizationRepositoryResourcePreCheck())
+			must.Do(testAccOrganizationRepositoryResourcePreCheck("vsts"))
 		},
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
