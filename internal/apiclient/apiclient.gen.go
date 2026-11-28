@@ -1506,6 +1506,18 @@ type ExternalActorRequest struct {
 	Provider      string                    `json:"provider"`
 }
 
+// OrgAuthToken defines model for OrgAuthToken.
+type OrgAuthToken struct {
+	DateCreated         time.Time                    `json:"dateCreated"`
+	DateLastUsed        nullable.Nullable[time.Time] `json:"dateLastUsed,omitempty"`
+	Id                  string                       `json:"id"`
+	Name                string                       `json:"name"`
+	ProjectLastUsedId   nullable.Nullable[string]    `json:"projectLastUsedId,omitempty"`
+	Scopes              []string                     `json:"scopes"`
+	Token               *string                      `json:"token,omitempty"`
+	TokenLastCharacters nullable.Nullable[string]    `json:"tokenLastCharacters,omitempty"`
+}
+
 // Organization defines model for Organization.
 type Organization struct {
 	DataScrubber         *bool                      `json:"dataScrubber,omitempty"`
@@ -3170,6 +3182,12 @@ type UpdateOrganizationMemberJSONBody struct {
 	TeamRoles *[]TeamRole `json:"teamRoles,omitempty"`
 }
 
+// CreateOrganizationAuthTokenJSONBody defines body for CreateOrganizationAuthToken for application/json ContentType.
+type CreateOrganizationAuthTokenJSONBody struct {
+	Name   string   `json:"name"`
+	Scopes []string `json:"scopes"`
+}
+
 // ListOrganizationProjectsParams defines parameters for ListOrganizationProjects.
 type ListOrganizationProjectsParams struct {
 	Cursor  *Cursor   `form:"cursor,omitempty" json:"cursor,omitempty"`
@@ -3367,6 +3385,9 @@ type CreateOrganizationMemberJSONRequestBody CreateOrganizationMemberJSONBody
 
 // UpdateOrganizationMemberJSONRequestBody defines body for UpdateOrganizationMember for application/json ContentType.
 type UpdateOrganizationMemberJSONRequestBody UpdateOrganizationMemberJSONBody
+
+// CreateOrganizationAuthTokenJSONRequestBody defines body for CreateOrganizationAuthToken for application/json ContentType.
+type CreateOrganizationAuthTokenJSONRequestBody CreateOrganizationAuthTokenJSONBody
 
 // CreateProjectMonitorJSONRequestBody defines body for CreateProjectMonitor for application/json ContentType.
 type CreateProjectMonitorJSONRequestBody = ProjectMonitorRequest
@@ -7948,6 +7969,30 @@ type ClientInterface interface {
 	// Corresponds with PUT /0/organizations/{organization_id_or_slug}/members/{member_id}/ (the `UpdateOrganizationMember` operationId).
 	UpdateOrganizationMember(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, memberId MemberId, body UpdateOrganizationMemberJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListOrganizationAuthTokens List an Organization's Org Auth Tokens
+	//
+	// Corresponds with GET /0/organizations/{organization_id_or_slug}/org-auth-tokens/ (the `ListOrganizationAuthTokens` operationId).
+	ListOrganizationAuthTokens(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateOrganizationAuthTokenWithBody Create an Org Auth Token
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /0/organizations/{organization_id_or_slug}/org-auth-tokens/ (the `CreateOrganizationAuthToken` operationId).
+	CreateOrganizationAuthTokenWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateOrganizationAuthToken Create an Org Auth Token
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /0/organizations/{organization_id_or_slug}/org-auth-tokens/ (the `CreateOrganizationAuthToken` operationId).
+	CreateOrganizationAuthToken(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationAuthTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteOrganizationAuthToken Revoke an Org Auth Token
+	//
+	// Corresponds with DELETE /0/organizations/{organization_id_or_slug}/org-auth-tokens/{token_id}/ (the `DeleteOrganizationAuthToken` operationId).
+	DeleteOrganizationAuthToken(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, tokenId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListOrganizationProjects List Organization Projects
 	//
 	// Corresponds with GET /0/organizations/{organization_id_or_slug}/projects/ (the `ListOrganizationProjects` operationId).
@@ -8675,6 +8720,70 @@ func (c *Client) UpdateOrganizationMemberWithBody(ctx context.Context, organizat
 // Corresponds with PUT /0/organizations/{organization_id_or_slug}/members/{member_id}/ (the `UpdateOrganizationMember` operationId).
 func (c *Client) UpdateOrganizationMember(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, memberId MemberId, body UpdateOrganizationMemberJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateOrganizationMemberRequest(c.Server, organizationIdOrSlug, memberId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ListOrganizationAuthTokens List an Organization's Org Auth Tokens
+//
+// Corresponds with GET /0/organizations/{organization_id_or_slug}/org-auth-tokens/ (the `ListOrganizationAuthTokens` operationId).
+func (c *Client) ListOrganizationAuthTokens(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListOrganizationAuthTokensRequest(c.Server, organizationIdOrSlug)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateOrganizationAuthTokenWithBody Create an Org Auth Token
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /0/organizations/{organization_id_or_slug}/org-auth-tokens/ (the `CreateOrganizationAuthToken` operationId).
+func (c *Client) CreateOrganizationAuthTokenWithBody(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateOrganizationAuthTokenRequestWithBody(c.Server, organizationIdOrSlug, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateOrganizationAuthToken Create an Org Auth Token
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /0/organizations/{organization_id_or_slug}/org-auth-tokens/ (the `CreateOrganizationAuthToken` operationId).
+func (c *Client) CreateOrganizationAuthToken(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationAuthTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateOrganizationAuthTokenRequest(c.Server, organizationIdOrSlug, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DeleteOrganizationAuthToken Revoke an Org Auth Token
+//
+// Corresponds with DELETE /0/organizations/{organization_id_or_slug}/org-auth-tokens/{token_id}/ (the `DeleteOrganizationAuthToken` operationId).
+func (c *Client) DeleteOrganizationAuthToken(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, tokenId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteOrganizationAuthTokenRequest(c.Server, organizationIdOrSlug, tokenId)
 	if err != nil {
 		return nil, err
 	}
@@ -10479,6 +10588,128 @@ func NewUpdateOrganizationMemberRequestWithBody(server string, organizationIdOrS
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListOrganizationAuthTokensRequest constructs an http.Request for the ListOrganizationAuthTokens method
+func NewListOrganizationAuthTokensRequest(server string, organizationIdOrSlug OrganizationIdOrSlug) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := "/0/organizations/" + pathParam0 + "/org-auth-tokens/"
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateOrganizationAuthTokenRequest calls the generic CreateOrganizationAuthToken builder with application/json body
+func NewCreateOrganizationAuthTokenRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationAuthTokenJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := runtime.JSONMarshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateOrganizationAuthTokenRequestWithBody(server, organizationIdOrSlug, "application/json", bodyReader)
+}
+
+// NewCreateOrganizationAuthTokenRequestWithBody constructs an http.Request for the CreateOrganizationAuthToken method, with any body, and a specified content type
+func NewCreateOrganizationAuthTokenRequestWithBody(server string, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := "/0/organizations/" + pathParam0 + "/org-auth-tokens/"
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteOrganizationAuthTokenRequest constructs an http.Request for the DeleteOrganizationAuthToken method
+func NewDeleteOrganizationAuthTokenRequest(server string, organizationIdOrSlug OrganizationIdOrSlug, tokenId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "organization_id_or_slug", organizationIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "token_id", tokenId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := "/0/organizations/" + pathParam0 + "/org-auth-tokens/" + pathParam1 + "/"
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -12846,6 +13077,34 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with PUT /0/organizations/{organization_id_or_slug}/members/{member_id}/ (the `UpdateOrganizationMember` operationId).
 	UpdateOrganizationMemberWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, memberId MemberId, body UpdateOrganizationMemberJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateOrganizationMemberResponse, error)
 
+	// ListOrganizationAuthTokensWithResponse List an Organization's Org Auth Tokens
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /0/organizations/{organization_id_or_slug}/org-auth-tokens/ (the `ListOrganizationAuthTokens` operationId).
+	ListOrganizationAuthTokensWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*ListOrganizationAuthTokensResponse, error)
+
+	// CreateOrganizationAuthTokenWithBodyWithResponse Create an Org Auth Token
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /0/organizations/{organization_id_or_slug}/org-auth-tokens/ (the `CreateOrganizationAuthToken` operationId).
+	CreateOrganizationAuthTokenWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOrganizationAuthTokenResponse, error)
+
+	// CreateOrganizationAuthTokenWithResponse Create an Org Auth Token
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /0/organizations/{organization_id_or_slug}/org-auth-tokens/ (the `CreateOrganizationAuthToken` operationId).
+	CreateOrganizationAuthTokenWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationAuthTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateOrganizationAuthTokenResponse, error)
+
+	// DeleteOrganizationAuthTokenWithResponse Revoke an Org Auth Token
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with DELETE /0/organizations/{organization_id_or_slug}/org-auth-tokens/{token_id}/ (the `DeleteOrganizationAuthToken` operationId).
+	DeleteOrganizationAuthTokenWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, tokenId string, reqEditors ...RequestEditorFn) (*DeleteOrganizationAuthTokenResponse, error)
+
 	// ListOrganizationProjectsWithResponse List Organization Projects
 	//
 	// Returns a wrapper object for the known response body format(s).
@@ -13916,6 +14175,122 @@ func (r UpdateOrganizationMemberResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r UpdateOrganizationMemberResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ListOrganizationAuthTokensResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *[]OrgAuthToken
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ListOrganizationAuthTokensResponse) GetJSON200() *[]OrgAuthToken {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r ListOrganizationAuthTokensResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ListOrganizationAuthTokensResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListOrganizationAuthTokensResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListOrganizationAuthTokensResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type CreateOrganizationAuthTokenResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON201 the response for an HTTP 201 `application/json` response
+	JSON201 *OrgAuthToken
+}
+
+// GetJSON201 returns the response for an HTTP 201 `application/json` response
+func (r CreateOrganizationAuthTokenResponse) GetJSON201() *OrgAuthToken {
+	return r.JSON201
+}
+
+// GetBody returns the raw response body bytes
+func (r CreateOrganizationAuthTokenResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateOrganizationAuthTokenResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateOrganizationAuthTokenResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateOrganizationAuthTokenResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DeleteOrganizationAuthTokenResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// GetBody returns the raw response body bytes
+func (r DeleteOrganizationAuthTokenResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteOrganizationAuthTokenResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteOrganizationAuthTokenResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeleteOrganizationAuthTokenResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -15857,6 +16232,58 @@ func (c *ClientWithResponses) UpdateOrganizationMemberWithResponse(ctx context.C
 	return ParseUpdateOrganizationMemberResponse(rsp)
 }
 
+// ListOrganizationAuthTokensWithResponse List an Organization's Org Auth Tokens
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /0/organizations/{organization_id_or_slug}/org-auth-tokens/ (the `ListOrganizationAuthTokens` operationId).
+func (c *ClientWithResponses) ListOrganizationAuthTokensWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, reqEditors ...RequestEditorFn) (*ListOrganizationAuthTokensResponse, error) {
+	rsp, err := c.ListOrganizationAuthTokens(ctx, organizationIdOrSlug, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListOrganizationAuthTokensResponse(rsp)
+}
+
+// CreateOrganizationAuthTokenWithBodyWithResponse Create an Org Auth Token
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /0/organizations/{organization_id_or_slug}/org-auth-tokens/ (the `CreateOrganizationAuthToken` operationId).
+func (c *ClientWithResponses) CreateOrganizationAuthTokenWithBodyWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOrganizationAuthTokenResponse, error) {
+	rsp, err := c.CreateOrganizationAuthTokenWithBody(ctx, organizationIdOrSlug, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateOrganizationAuthTokenResponse(rsp)
+}
+
+// CreateOrganizationAuthTokenWithResponse Create an Org Auth Token
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /0/organizations/{organization_id_or_slug}/org-auth-tokens/ (the `CreateOrganizationAuthToken` operationId).
+func (c *ClientWithResponses) CreateOrganizationAuthTokenWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, body CreateOrganizationAuthTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateOrganizationAuthTokenResponse, error) {
+	rsp, err := c.CreateOrganizationAuthToken(ctx, organizationIdOrSlug, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateOrganizationAuthTokenResponse(rsp)
+}
+
+// DeleteOrganizationAuthTokenWithResponse Revoke an Org Auth Token
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with DELETE /0/organizations/{organization_id_or_slug}/org-auth-tokens/{token_id}/ (the `DeleteOrganizationAuthToken` operationId).
+func (c *ClientWithResponses) DeleteOrganizationAuthTokenWithResponse(ctx context.Context, organizationIdOrSlug OrganizationIdOrSlug, tokenId string, reqEditors ...RequestEditorFn) (*DeleteOrganizationAuthTokenResponse, error) {
+	rsp, err := c.DeleteOrganizationAuthToken(ctx, organizationIdOrSlug, tokenId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteOrganizationAuthTokenResponse(rsp)
+}
+
 // ListOrganizationProjectsWithResponse List Organization Projects
 //
 // Returns a wrapper object for the known response body format(s).
@@ -17116,6 +17543,95 @@ func ParseUpdateOrganizationMemberResponse(rsp *http.Response) (*UpdateOrganizat
 	case rsp.StatusCode == 404:
 		break // No content-type
 
+	}
+
+	return response, nil
+}
+
+// ParseListOrganizationAuthTokensResponse parses an HTTP response from a ListOrganizationAuthTokensWithResponse call
+func ParseListOrganizationAuthTokensResponse(rsp *http.Response) (*ListOrganizationAuthTokensResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListOrganizationAuthTokensResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []OrgAuthToken
+		if err := runtime.JSONUnmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 401:
+		break // No content-type
+
+	case rsp.StatusCode == 403:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateOrganizationAuthTokenResponse parses an HTTP response from a CreateOrganizationAuthTokenWithResponse call
+func ParseCreateOrganizationAuthTokenResponse(rsp *http.Response) (*CreateOrganizationAuthTokenResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateOrganizationAuthTokenResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest OrgAuthToken
+		if err := runtime.JSONUnmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case rsp.StatusCode == 400:
+		break // No content-type
+
+	case rsp.StatusCode == 401:
+		break // No content-type
+
+	case rsp.StatusCode == 403:
+		break // No content-type
+
+	case rsp.StatusCode == 404:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteOrganizationAuthTokenResponse parses an HTTP response from a DeleteOrganizationAuthTokenWithResponse call
+func ParseDeleteOrganizationAuthTokenResponse(rsp *http.Response) (*DeleteOrganizationAuthTokenResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteOrganizationAuthTokenResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil
